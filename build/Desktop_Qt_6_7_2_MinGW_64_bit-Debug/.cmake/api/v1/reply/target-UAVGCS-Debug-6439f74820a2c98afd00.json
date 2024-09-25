@@ -75,13 +75,13 @@
 			{
 				"command" : 4,
 				"file" : 1,
-				"line" : 69,
+				"line" : 71,
 				"parent" : 0
 			},
 			{
 				"command" : 5,
 				"file" : 1,
-				"line" : 52,
+				"line" : 54,
 				"parent" : 0
 			},
 			{
@@ -495,7 +495,7 @@
 			"sourceIndexes" : 
 			[
 				3,
-				6
+				8
 			]
 		},
 		{
@@ -504,14 +504,16 @@
 			[
 				4,
 				5,
-				7
+				6,
+				7,
+				9
 			]
 		},
 		{
 			"name" : "CMake Rules",
 			"sourceIndexes" : 
 			[
-				8
+				10
 			]
 		}
 	],
@@ -549,6 +551,16 @@
 		{
 			"backtrace" : 4,
 			"path" : "UAVGCS_en_US.ts",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 4,
+			"path" : "Vehicle.py",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 4,
+			"path" : "Xbee.py",
 			"sourceGroupIndex" : 2
 		},
 		{

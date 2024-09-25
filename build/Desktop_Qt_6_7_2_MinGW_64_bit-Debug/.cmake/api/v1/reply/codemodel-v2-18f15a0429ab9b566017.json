@@ -7,7 +7,7 @@
 				{
 					"build" : ".",
 					"hasInstallRule" : true,
-					"jsonFile" : "directory-.-Debug-3b49e8e3697223ef44c3.json",
+					"jsonFile" : "directory-.-Debug-373c45529eacb74f4206.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.16"
@@ -44,7 +44,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "UAVGCS::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-UAVGCS-Debug-151542470d0261b32091.json",
+					"jsonFile" : "target-UAVGCS-Debug-6439f74820a2c98afd00.json",
 					"name" : "UAVGCS",
 					"projectIndex" : 0
 				},
