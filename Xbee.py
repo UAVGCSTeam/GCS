@@ -4,7 +4,7 @@
 from digi.xbee.devices import XBeeDevice, RemoteXBeeDevice, XBee64BitAddress
 from digi.xbee.exception import XBeeException
 
-class xbee:
+class Xbee:
     # Replace with the port where your sender module is connected to.
     PORT = "/dev/ttyUSB0"
     # Replace with the baud rate of your sender module.
