@@ -6,26 +6,63 @@
    <rect>
     <x>0</x>
     <y>0</y>
+<<<<<<< HEAD
     <width>800</width>
+=======
+    <width>821</width>
+>>>>>>> brandon
     <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+<<<<<<< HEAD
   <widget class="QWidget" name="centralwidget"/>
+=======
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QQuickWidget" name="quickWidget_MapView">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>-10</y>
+      <width>821</width>
+      <height>561</height>
+     </rect>
+    </property>
+    <property name="resizeMode">
+     <enum>QQuickWidget::ResizeMode::SizeRootObjectToView</enum>
+    </property>
+   </widget>
+  </widget>
+>>>>>>> brandon
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
+<<<<<<< HEAD
      <width>800</width>
      <height>25</height>
+=======
+     <width>821</width>
+     <height>37</height>
+>>>>>>> brandon
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+<<<<<<< HEAD
+=======
+ <customwidgets>
+  <customwidget>
+   <class>QQuickWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">QtQuickWidgets/QQuickWidget</header>
+  </customwidget>
+ </customwidgets>
+>>>>>>> brandon
  <resources/>
  <connections/>
 </ui>

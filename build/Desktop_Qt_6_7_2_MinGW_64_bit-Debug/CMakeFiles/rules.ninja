@@ -6,7 +6,7 @@
 # It is included in the main 'build.ninja'.
 
 # =============================================================================
-# Project: UAVGCS
+# Project: GCS
 # Configurations: Debug
 # =============================================================================
 # =============================================================================
@@ -14,7 +14,7 @@
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__UAVGCS_unscanned_Debug
+rule CXX_COMPILER__GCS_unscanned_Debug
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}C:\Qt\Tools\mingw1120_64\bin\g++.exe $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -24,7 +24,7 @@ rule CXX_COMPILER__UAVGCS_unscanned_Debug
 #############################################
 # Rule for linking CXX executable.
 
-rule CXX_EXECUTABLE_LINKER__UAVGCS_Debug
+rule CXX_EXECUTABLE_LINKER__GCS_Debug
   command = C:\Windows\system32\cmd.exe /C "$PRE_LINK && C:\Qt\Tools\mingw1120_64\bin\g++.exe $FLAGS $LINK_FLAGS $in -o $TARGET_FILE -Wl,--out-implib,$TARGET_IMPLIB -Wl,--major-image-version,0,--minor-image-version,0 $LINK_PATH $LINK_LIBRARIES && $POST_BUILD"
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
@@ -42,17 +42,8 @@ rule CUSTOM_COMMAND
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe --regenerate-during-build -SC:\Users\megan\OneDrive\Documents\UAVGCS -BC:\Users\megan\OneDrive\Documents\UAVGCS\build\Desktop_Qt_6_7_2_MinGW_64_bit-Debug
+  command = C:\Qt\Tools\CMake_64\bin\cmake.exe --regenerate-during-build -SC:\Users\Brandon\Desktop\Programming\GCS -BC:\Users\Brandon\Desktop\Programming\GCS\build\Desktop_Qt_6_7_2_MinGW_64_bit-Debug
   description = Re-running CMake...
-  generator = 1
-
-
-#############################################
-# Rule for re-checking globbed directories.
-
-rule VERIFY_GLOBS
-  command = C:\Qt\Tools\CMake_64\bin\cmake.exe -P C:\Users\megan\OneDrive\Documents\UAVGCS\build\Desktop_Qt_6_7_2_MinGW_64_bit-Debug\CMakeFiles\VerifyGlobs.cmake
-  description = Re-checking globbed directories...
   generator = 1
 
 
