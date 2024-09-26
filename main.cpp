@@ -1,23 +1,37 @@
-#include "mainwindow.h"
-
-#include <QApplication>
-#include <QLocale>
-#include <QTranslator>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include "mapcontroller.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QGuiApplication app(argc, argv);
 
-    QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "UAVGCS_" + QLocale(locale).name();
-        if (translator.load(":/i18n/" + baseName)) {
-            a.installTranslator(&translator);
-            break;
-        }
-    }
-    MainWindow w;
-    w.show();
-    return a.exec();
+    /*
+     * We want to use QQmlApplicationEngine as it provides more resources for our use case
+     * https://doc.qt.io/qt-6/qqmlapplicationengine.html
+    */
+
+    QQmlApplicationEngine engine;
+
+    // Create and register MapController
+    MapController mapController;
+    engine.rootContext()->setContextProperty("mapController", &mapController);
+
+    const QUrl url(QStringLiteral("qrc:/main.qml"));
+    /*
+     * main.qml is our entry point for all of our UI/GUI resources.
+     * It calls all of our QML files needed to create and display our GUI
+     * As such, it allows for us to create very modular UI displays
+    */
+
+
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+                     &app, [url](QObject *obj, const QUrl &objUrl) {
+                         if (!obj && url == objUrl)
+                             QCoreApplication::exit(-1);
+                     }, Qt::QueuedConnection);
+    engine.load(url);
+
+    return app.exec();
 }
