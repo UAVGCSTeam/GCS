@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    // Create and register MapController
+    // Create and register MapController as an object that the cpp can use
     MapController mapController;
     engine.rootContext()->setContextProperty("mapController", &mapController);
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
      * As such, it allows for us to create very modular UI displays
     */
 
-
+    // Creates the root object, which is the engine that runs the program
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
                          if (!obj && url == objUrl)

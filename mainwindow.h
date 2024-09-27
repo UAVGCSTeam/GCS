@@ -7,6 +7,10 @@
 #include <QVariant>
 #include <QQuickWidget>
 
+/*
+ * Provides the functions and constructors for our mainwindow object
+*/
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -18,6 +22,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    // This references mainwindow.ui, which is where we can create our specific UI elements, making all elements accessible
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 

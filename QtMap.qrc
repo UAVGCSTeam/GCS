@@ -3,6 +3,7 @@
         <file>QmlMap.qml</file>
         <file>main.qml</file>
         <file>coordinates.js</file>
+        <file>MapDisplayTypeButton.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>

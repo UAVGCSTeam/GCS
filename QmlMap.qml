@@ -8,19 +8,31 @@ Item
 
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
+    // Current map "types", dont have real control over map type in osm. Will keep for when we change map provider, just plug in.
+    property var supportedMapTypes: [
+        { name: "Street", type: Map.StreetMap },
+        { name: "Satellite", type: Map.SatelliteMapDay },
+        { name: "Terrain", type: Map.TerrainMap },
+    ]
+    property int currentMapTypeIndex: 0
 
-    Plugin
-    {
-        // Define as googlemapview
-        id:googlemapview
-        name:"osm"
+    Plugin {
+        id: mapPlugin
+        name: "osm"
+        // This refers to map type 'here' provides different map views as opposed to google maps and especially osm
+        // We will want to change to here in the future, but it requires a paid API key and Token
+        // name: "here"
+        // PluginParameter { name: "here.app_id"; value: "GCS" }
+        // PluginParameter { name: "here.token"; value: "sgISOwxxqF1JeBFaXKRbkHSsfHxsxWITKXCqeCkLP0A" }
     }
+
     Map
     {
         // Create actual Map Component
+        // Reference id, not file name
         id:mapview
         anchors.fill: parent
-        plugin: googlemapview
+        plugin: mapPlugin
         center: QtPositioning.coordinate(latitude,longitude)
         zoomLevel: 18
         // Handles clicking and dragging and zoom
@@ -51,8 +63,7 @@ Item
             }
         }
 
-        DragHandler
-        {
+        DragHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
             onTranslationChanged: (delta) => { mapview.pan(-delta.x, -delta.y); }
@@ -69,23 +80,30 @@ Item
                 sourceItem: Image {
                     id: markerImage
                     source: "qrc:/resources/mappin.svg"  // Make sure this path is correct, currently in the CMake as this path
-                    width: 20
+                    width: 15
                     height: 40
                 }
             }
         }
     }
 
-    function setCenterPosition(lati, longi)
-    {
-        mapview.center = QtPositioning.coordinate(lati, longi)
-        latitude = lati
-        longitude = longi
-    }
-
-    function setLocationMarking(lati, longi)
-    {
-        // Adds pin to our pin list
-        markersModel.append({"latitude": lati, "longitude": longi})
+    /*
+      These are our QML declarations of these functions, they occur once the signal is emitted from our cpp files.
+      They listen for emit and then take the data that is emitted and uses it
+    */
+    Connections {
+        target: mapController
+        function onCenterPositionChanged(lat, lon) {
+            mapview.center = QtPositioning.coordinate(lat, lon)
+        }
+        function onLocationMarked(lat, lon) {
+            markersModel.append({"latitude": lat, "longitude": lon})
+        }
+        function onMapTypeChanged(index) {
+            if (index < mapview.supportedMapTypes.length) {
+                // Sets current maptype
+                mapview.activeMapType = mapview.supportedMapTypes[index]
+            }
+        }
     }
 }
