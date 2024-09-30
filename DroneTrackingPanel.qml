@@ -1,13 +1,21 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
+import "qrc:/gcsStyle" as GcsStyle
+
+/*
+  Welcome to the wild west....
+  We say GcsStyle.PanelStyle because that is how it is defined as a singleton
+  Our singleton definition is in /gcsStyle/qmldir
+  This might be some of the nastiest code ever written... CSS/QSS is hell
+*/
 
 Rectangle {
     id: mainPanel
     width: 300
-    height: 400
-    color: "#f0f0f0"
-    radius: 10
+    height: 600
+    color: GcsStyle.PanelStyle.primaryColor
+    radius: GcsStyle.PanelStyle.cornerRadius
 
     RowLayout {
         anchors.fill: parent
@@ -16,9 +24,9 @@ Rectangle {
         // Left vertical bar
         Rectangle {
             Layout.fillHeight: true
-            width: 50
-            color: "#4CAF50"
-            radius: 10
+            width: GcsStyle.PanelStyle.sidebarWidth
+            color: GcsStyle.PanelStyle.primaryColor
+            radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
 
             Rectangle {
@@ -30,28 +38,31 @@ Rectangle {
 
             ColumnLayout {
                 anchors.fill: parent
-                spacing: 10
+                anchors.topMargin: GcsStyle.PanelStyle.sidebarTopMargin
+                spacing: GcsStyle.PanelStyle.buttonSpacing // Small space between buttons
 
                 // Toggle button 1
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    width: 40
-                    height: 40
-                    color: droneListView.visible ? "#45A049" : "transparent"
-                    radius: 8
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    color: droneListView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
+                    radius: GcsStyle.PanelStyle.buttonRadius
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: "🚁"
-                        font.pixelSize: 24
-                        color: "white"
+                    Image {
+                        anchors.right: parent.right
+                        anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/resources/droneSVG.svg"
+                        sourceSize.width: GcsStyle.PanelStyle.iconSize
+                        sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
                             droneListView.visible = true
-                            settingsView.visible = false
+                            fireView.visible = false
                         }
                     }
                 }
@@ -59,26 +70,29 @@ Rectangle {
                 // Toggle button 2
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    width: 40
-                    height: 40
-                    color: settingsView.visible ? "#45A049" : "transparent"
-                    radius: 8
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    color: fireView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
+                    radius: GcsStyle.PanelStyle.buttonRadius
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: "⚙️"
-                        font.pixelSize: 24
-                        color: "white"
+                    Image {
+                        anchors.right: parent.right
+                        anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/resources/fireSVG.svg"
+                        sourceSize.width: GcsStyle.PanelStyle.iconSize
+                        sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
                             droneListView.visible = false
-                            settingsView.visible = true
+                            fireView.visible = true
                         }
                     }
                 }
+                Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
             }
         }
 
@@ -91,9 +105,9 @@ Rectangle {
             // Header
             Rectangle {
                 Layout.fillWidth: true
-                height: 50
-                color: "#4CAF50"
-                radius: 10
+                height: GcsStyle.PanelStyle.headerHeight
+                color: GcsStyle.PanelStyle.primaryColor
+                radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
                 Rectangle {
@@ -106,21 +120,28 @@ Rectangle {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 10
+                    anchors.margins: GcsStyle.PanelStyle.defaultMargin
                     spacing: 0
 
                     Text {
                         text: "Drone Tracking"
-                        font.pixelSize: 18
-                        color: "white"
+                        font.pixelSize: GcsStyle.PanelStyle.headerFontSize
+                        color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                     Text {
                         text: "4 drones in fleet : 3 active"
-                        font.pixelSize: 12
-                        color: "white"
+                        font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
+                        color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
             }
+
+            /*
+              TODO:
+                    Search Bar goes HERE
+                    It needs to be able to quickly go through our list of current fleet drones
+                    Then filter and show ONLY that one
+            */
 
             // Drone list view
             ListView {
@@ -129,6 +150,22 @@ Rectangle {
                 Layout.fillHeight: true
                 clip: true
                 visible: true
+                /*
+                  Eventually this will read from our cpp list of drones
+                  We will be able to dynamically read this list and create what we need
+
+                  TODO:
+                        Based on read in data of the drones, create it so it updates the
+                        numbers like charge amount etc.
+                        This is as much as I could do right now without proper data
+                        or even drone connection.
+
+                        Make drone list item selectable and display real data.
+
+                        Make fire page as well-we need real time fire data for this page.
+
+                        Make header allocate those numbers dynamically.
+                */
                 model: ListModel {
                     ListElement { name: "Drone #1"; status: "Flying"; battery: 93 }
                     ListElement { name: "Drone #2"; status: "Idle"; battery: 54 }
@@ -137,20 +174,20 @@ Rectangle {
                 }
                 delegate: Rectangle {
                     width: parent.width
-                    height: 50
-                    color: index % 2 == 0 ? "#ffffff" : "#f5f5f5"
+                    height: GcsStyle.PanelStyle.listItemHeight
+                    color: index % 2 == 0 ? GcsStyle.PanelStyle.listItemEvenColor : GcsStyle.PanelStyle.listItemOddColor
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: 10
-                        spacing: 10
+                        anchors.margins: GcsStyle.PanelStyle.defaultMargin
+                        spacing: GcsStyle.PanelStyle.defaultSpacing
 
                         Image {
-                            source: "qrc:/resources/droneSVG.svg"
-                            sourceSize.width: 24
-                            sourceSize.height: 24
-                            Layout.preferredWidth: 24
-                            Layout.preferredHeight: 24
+                            source: "qrc:/resources/droneStatusSVG.svg"
+                            sourceSize.width: GcsStyle.PanelStyle.statusIconSize
+                            sourceSize.height: GcsStyle.PanelStyle.statusIconSize
+                            Layout.preferredWidth: GcsStyle.PanelStyle.statusIconSize
+                            Layout.preferredHeight: GcsStyle.PanelStyle.statusIconSize
                         }
 
                         ColumnLayout {
@@ -159,39 +196,41 @@ Rectangle {
 
                             Text {
                                 text: name
-                                color: "#333333"
-                                font.pixelSize: 16
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
                                 text: status
-                                color: "#666666"
-                                font.pixelSize: 12
+                                color: GcsStyle.PanelStyle.textSecondaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
 
                         Text {
                             text: battery + "%"
-                            color: "#333333"
-                            font.pixelSize: 14
+                            color: battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
+                                   battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
+                                                  GcsStyle.PanelStyle.batteryLowColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                         }
                     }
                 }
             }
 
-            // Settings view (placeholder)
+            // Fire view (placeholder)
             Rectangle {
-                id: settingsView
+                id: fireView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: "white"
+                color: GcsStyle.PanelStyle.secondaryColor
                 visible: false
-                radius: 10
+                radius: GcsStyle.PanelStyle.cornerRadius
 
                 Text {
                     anchors.centerIn: parent
-                    text: "Settings View"
-                    font.pixelSize: 18
-                    color: "#333333"
+                    text: "Fire View"
+                    font.pixelSize: GcsStyle.PanelStyle.fontSizeLarge
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                 }
             }
         }

@@ -13,4 +13,8 @@
         <file>droneSVG.svg</file>
         <file>fireSVG.svg</file>
     </qresource>
+    <qresource prefix="/gcsStyle">
+        <file>panelStyle.qml</file>
+        <file>qmldir</file>
+    </qresource>
 </RCC>
