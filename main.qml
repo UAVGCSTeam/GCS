@@ -8,10 +8,10 @@ import "coordinates.js" as Coordinates
 */
 
 Window {
-    width: 640
-    height: 480
+    width: 1280
+    height: 720
     visible: true
-    title: qsTr("Map Application")
+    title: qsTr("GCS - Cal Poly Pomona")
 
     // These are our components that sit on top of our Window object
     QmlMap {
@@ -25,6 +25,15 @@ Window {
         anchors {
             top: parent.top
             right: parent.right
+            margins: 10
+        }
+    }
+
+    DroneTrackingPanel {
+        id: dronepanel
+        anchors {
+            top: parent.top
+            left: parent.left
             margins: 10
         }
     }
