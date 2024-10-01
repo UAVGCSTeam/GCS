@@ -17,14 +17,24 @@
    <widget class="QQuickWidget" name="quickWidget_MapView">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>740</x>
       <y>0</y>
-      <width>821</width>
-      <height>551</height>
+      <width>81</width>
+      <height>61</height>
      </rect>
     </property>
     <property name="resizeMode">
      <enum>QQuickWidget::ResizeMode::SizeRootObjectToView</enum>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="listWidget">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>20</y>
+      <width>141</width>
+      <height>411</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -34,7 +44,7 @@
      <x>0</x>
      <y>0</y>
      <width>821</width>
-     <height>37</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

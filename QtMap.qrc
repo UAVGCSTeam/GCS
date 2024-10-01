@@ -4,8 +4,17 @@
         <file>main.qml</file>
         <file>coordinates.js</file>
         <file>MapDisplayTypeButton.qml</file>
+        <file>DroneTrackingPanel.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>
+        <file>cppLOGO.svg</file>
+        <file>droneStatusSVG.svg</file>
+        <file>droneSVG.svg</file>
+        <file>fireSVG.svg</file>
+    </qresource>
+    <qresource prefix="/gcsStyle">
+        <file>panelStyle.qml</file>
+        <file>qmldir</file>
     </qresource>
 </RCC>
