@@ -165,6 +165,8 @@ Rectangle {
                         Make fire page as well-we need real time fire data for this page.
 
                         Make header allocate those numbers dynamically.
+
+                        Make drone symbols update based on status.
                 */
                 model: ListModel {
                     ListElement { name: "Drone #1"; status: "Flying"; battery: 93 }
