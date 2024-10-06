@@ -5,6 +5,7 @@
         <file>coordinates.js</file>
         <file>MapDisplayTypeButton.qml</file>
         <file>DroneTrackingPanel.qml</file>
+        <file>DroneStatusPanel.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>

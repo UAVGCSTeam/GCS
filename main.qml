@@ -29,14 +29,24 @@ Window {
         }
     }
 
+    DroneStatusPanel {
+        id: droneStatusPanel
+        anchors {
+            top: parent.top
+            right: parent.right
+            margins: 10
+        }
+    }
+
     DroneTrackingPanel {
-        id: dronepanel
+        id: droneTrackingPanel
         anchors {
             top: parent.top
             left: parent.left
             margins: 10
         }
     }
+
 
     /*
       Connections is how we connect our QML and QML together
@@ -47,7 +57,6 @@ Window {
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
     Connections {
-
     }
 
     // Once the component is fully loaded, run through our js file to grab the needed info
@@ -60,5 +69,19 @@ Window {
             mapController.setLocationMarking(coord.lat, coord.lon)
             console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
+
+        fetch();
+    }
+
+    function fetch() {
+        const response = [
+                           {name: "Drone 1", status: "Flying", battery: 10},
+                           {name: "Drone 2", status: "Idle", battery: 54},
+                           {name: "Drone 3", status: "Stationy", battery: 70},
+                           {name: "Drone 4", status: "Dead", battery: 0},
+                           {name: "Drone 5", status: "Flying", battery: 90},
+                           {name: "Drone 6", status: "Ready", battery: 100}
+                          ]
+        droneTrackingPanel.populateListModel(response)
     }
 }
