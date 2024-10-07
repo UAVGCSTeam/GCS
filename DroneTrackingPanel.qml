@@ -17,6 +17,15 @@ Rectangle {
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
+    signal updateSelectedDroneSignal(string name, string status, string battery)
+
+    // property var droneArray: [["Drone 1", "Charging", "10%"], ["Drone 2", "Flying", "70%"]]
+    // property var droneArray: [droneObject1, droneObject2]
+    property var droneObject1: { "name": "Drone1", "status": "Active", "battery": 10}
+    property var droneObject2: { "name": "Drone2", "status": "Active", "battery": 10}
+
+
+
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -168,16 +177,27 @@ Rectangle {
 
                         Make drone symbols update based on status.
                 */
-                model: ListModel {
-                    ListElement { name: "Drone #1"; status: "Flying"; battery: 93 }
-                    ListElement { name: "Drone #2"; status: "Idle"; battery: 54 }
-                    ListElement { name: "Drone #3"; status: "Flying"; battery: 42 }
-                    ListElement { name: "Drone #4"; status: "Charging"; battery: 20 }
+                ListModel {
+                    // This ListModel gets its data from the fetch() JS function in main.qml
+                    id: droneListModel
                 }
+
+                model: droneListModel
+
                 delegate: Rectangle {
                     width: parent.width
                     height: GcsStyle.PanelStyle.listItemHeight
                     color: index % 2 == 0 ? GcsStyle.PanelStyle.listItemEvenColor : GcsStyle.PanelStyle.listItemOddColor
+
+                    MouseArea {
+                        id: droneItem
+                        anchors.fill: parent
+                        onClicked: {
+                            // ideally this would capture the clicked drone as an OBJECT, not individual properties
+                            // passActiveDrone(model.name, model.status, model.battery)
+                            updateSelectedDroneSignal(model.name, model.status, model.battery)
+                        }
+                    }
 
                     RowLayout {
                         anchors.fill: parent
@@ -211,14 +231,13 @@ Rectangle {
                         Text {
                             text: battery + "%"
                             color: battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
-                                   battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
-                                                  GcsStyle.PanelStyle.batteryLowColor
+                                                  battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
+                                                                 GcsStyle.PanelStyle.batteryLowColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                         }
                     }
                 }
             }
-
             // Fire view (placeholder)
             Rectangle {
                 id: fireView
@@ -236,5 +255,16 @@ Rectangle {
                 }
             }
         }
+    }
+
+    // In the future in function might pull from a C++ file of the active drones.
+    function populateListModel(droneList) {
+        droneList.forEach(drone => {
+                              droneListModel.append({ name: drone.name,
+                                                        status: drone.status,
+                                                        battery: drone.battery
+                                                    }
+                                                    )
+                          })
     }
 }
