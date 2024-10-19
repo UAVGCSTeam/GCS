@@ -1,8 +1,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <pybind11/pybind11.h>
 
 using namespace std;
+namespace py = pybind11;
 
 class Vehicle {
     public:
@@ -126,56 +128,65 @@ class Vehicle {
 
 std::vector<Vehicle*> Vehicle::VehicleList;
 
-int main() {
-    cout << "------------------------------" << endl;
-    Vehicle v1;
-    v1.updateId("001");
-    v1.updateRole("arona");
-    v1.updateStatus("sleeping");
-    v1.printAllInfo();
+PYBIND11_MODULE(vehicle, m) {
+    py::class_<Vehicle>(m, "Vehicle")
+        .def(py::init<>())
+        .def("getRole", &Vehicle::getRole)
+        .def("updateRole", &Vehicle::updateRole);
+}
 
-    Vehicle v2;
-    v2.updateId("002");
-    v2.updateRole("plana");
-    v1.updateStatus("on");
-    v2.printAllInfo();
+// std::vector<Vehicle*> Vehicle::VehicleList;
 
-    Vehicle v3 = Vehicle::getVehicle("001");
-    v3.printAllInfo();
+// int main() {
+//     cout << "------------------------------" << endl;
+//     Vehicle v1;
+//     v1.updateId("001");
+//     v1.updateRole("arona");
+//     v1.updateStatus("sleeping");
+//     v1.printAllInfo();
 
-    v3.updateRole("shiroko");
+//     Vehicle v2;
+//     v2.updateId("002");
+//     v2.updateRole("plana");
+//     v1.updateStatus("on");
+//     v2.printAllInfo();
 
-    v1.printAllInfo();
-    v3.printAllInfo();
+//     Vehicle v3 = Vehicle::getVehicle("001");
+//     v3.printAllInfo();
 
-    Vehicle v4 = Vehicle::getVehicle("003");
+//     v3.updateRole("shiroko");
 
-    v1.updatePosition(25, 25, 5);
-    v1.printAllInfo();
+//     v1.printAllInfo();
+//     v3.printAllInfo();
 
-    v1.updateVelocity(5, -1, 0);
-    v1.printAllInfo();
+//     Vehicle v4 = Vehicle::getVehicle("003");
 
-    v1.updateOrientation(90, 90, 0);
-    v1.printAllInfo();
+//     v1.updatePosition(25, 25, 5);
+//     v1.printAllInfo();
 
-    // v1.updatePosition(25, 25, 5);
-    // float* tempPosition = v1.getPosition();
-    // for(int i = 0; i < 3; i++) {
-    //     cout << tempPosition[i] << endl;
-    // }
+//     v1.updateVelocity(5, -1, 0);
+//     v1.printAllInfo();
 
-    // v1.updateVelocity(5, -1, 0);
-    // int* tempVelocity = v1.getVelocity();
-    // for(int i = 0; i < 3; i++) {
-    //     cout << tempVelocity[i] << endl;
-    // }
+//     v1.updateOrientation(90, 90, 0);
+//     v1.printAllInfo();
 
-    // v1.updateOrientation(90, 90, 0);
-    // int* tempOrientation = v1.getOrientation();
-    // for(int i = 0; i < 3; i++) {
-    //     cout << tempOrientation[i] << endl;
-    // }
+//     // v1.updatePosition(25, 25, 5);
+//     // float* tempPosition = v1.getPosition();
+//     // for(int i = 0; i < 3; i++) {
+//     //     cout << tempPosition[i] << endl;
+//     // }
 
-    return 0;
-};
+//     // v1.updateVelocity(5, -1, 0);
+//     // int* tempVelocity = v1.getVelocity();
+//     // for(int i = 0; i < 3; i++) {
+//     //     cout << tempVelocity[i] << endl;
+//     // }
+
+//     // v1.updateOrientation(90, 90, 0);
+//     // int* tempOrientation = v1.getOrientation();
+//     // for(int i = 0; i < 3; i++) {
+//     //     cout << tempOrientation[i] << endl;
+//     // }
+
+//     return 0;
+// };
