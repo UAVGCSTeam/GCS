@@ -36,17 +36,22 @@ Window {
             right: parent.right
             margins: 10
         }
+        visible: false // Initially hidden
     }
 
     DroneTrackingPanel {
         id: droneTrackingPanel
-        anchors {
-            top: parent.top
-            left: parent.left
-            margins: 10
+        // Signal connection: when a drone is clicked, show the status panel
+        onUpdateSelectedDroneSignal: {
+            droneStatusPanel.visible = true;
+            droneStatusPanel.populateActiveDroneModel(name, status, battery);
         }
     }
 
+    function handleDroneSelection(name, status, battery) {
+        droneStatusPanel.visible = true;
+        droneStatusPanel.populateActiveDroneModel(name, status, battery);
+    }
 
     /*
       Connections is how we connect our QML and QML together
@@ -57,6 +62,8 @@ Window {
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
     Connections {
+        target: droneTrackingPanel
+        onUpdatedSelectedDroneSignal: handleDroneSelection
     }
 
     // Once the component is fully loaded, run through our js file to grab the needed info

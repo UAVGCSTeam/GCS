@@ -103,10 +103,11 @@ Rectangle {
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
     function populateActiveDroneModel(name, status, battery) {
-        activeDroneModel.clear()
+        console.log("Populating Drone Status Panel with data: ", name, status, battery); // Debugging to ensure component is clicked
+        activeDroneModel.clear();
         activeDroneModel.append({ name: name,
                                     status: status,
                                     battery: battery
-                                })
+                                });
     }
 }

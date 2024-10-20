@@ -17,7 +17,7 @@ Rectangle {
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
-    signal updateSelectedDroneSignal(string name, string status, string battery)
+    signal updateSelectedDroneSignal(string name, string status, int battery)
 
     // property var droneArray: [["Drone 1", "Charging", "10%"], ["Drone 2", "Flying", "70%"]]
     // property var droneArray: [droneObject1, droneObject2]
@@ -159,6 +159,7 @@ Rectangle {
                 Layout.fillHeight: true
                 clip: true
                 visible: true
+                model: droneListModel
                 /*
                   Eventually this will read from our cpp list of drones
                   We will be able to dynamically read this list and create what we need
@@ -182,8 +183,6 @@ Rectangle {
                     id: droneListModel
                 }
 
-                model: droneListModel
-
                 delegate: Rectangle {
                     width: parent.width
                     height: GcsStyle.PanelStyle.listItemHeight
@@ -195,7 +194,7 @@ Rectangle {
                         onClicked: {
                             // ideally this would capture the clicked drone as an OBJECT, not individual properties
                             // passActiveDrone(model.name, model.status, model.battery)
-                            updateSelectedDroneSignal(model.name, model.status, model.battery)
+                            updateSelectedDroneSignal(name, status, battery)
                         }
                     }
 
