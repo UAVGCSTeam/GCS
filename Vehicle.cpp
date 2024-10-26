@@ -151,12 +151,14 @@ std::vector<Vehicle*> Vehicle::VehicleList;
 PYBIND11_MODULE(vehicle, m) {
     py::class_<Vehicle>(m, "Vehicle")
         .def(py::init<>())
+        .def_static("getVehicle", &Vehicle::getVehicle)
         .def("getRole", &Vehicle::getRole)
         .def("updateRole", &Vehicle::updateRole)
         .def("getStatus", &Vehicle::getStatus)
         .def("updateStatus", &Vehicle::updateStatus)
         .def("getBatteryLevel", &Vehicle::getBatteryLevel)
         .def("updateBatteryLevel", &Vehicle::updateBatteryLevel)
+<<<<<<< HEAD
         .def("getPosition", &Vehicle::getPosition)
         .def("updatePosition", &Vehicle::updatePosition)
         .def("getVelocity", &Vehicle::getVelocity)
@@ -171,6 +173,23 @@ PYBIND11_MODULE(vehicle, m) {
 
 int main(){
     cout << "starting the program" << endl;
+=======
+        .def("getPosition", [](Vehicle& v) {
+            return py::make_tuple(v.position[0], v.position[1], v.position[2]);
+        })
+        .def("updatePosition", &Vehicle::updatePosition)
+        .def("getVelocity", [](Vehicle& v) {
+            return py::make_tuple(v.velocity[0], v.velocity[1], v.velocity[2]);
+        })
+        .def("updateVelocity", &Vehicle::updateVelocity)
+        .def("getId", &Vehicle::getId)
+        .def("updateId", &Vehicle::updateId)
+        .def("getOrientation", [](Vehicle& v) {
+            return py::make_tuple(v.orientation[0], v.orientation[1], v.orientation[2]);
+        })
+        .def("updateOrientation", &Vehicle::updateOrientation)
+        .def("printAllInfo", &Vehicle::printAllInfo);
+>>>>>>> d66dd14335249da810524930f4635828c40ed15e
 }
 
 // std::vector<Vehicle*> Vehicle::VehicleList;

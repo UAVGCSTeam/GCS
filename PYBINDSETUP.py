@@ -11,7 +11,7 @@ ext_modules = [
 ]
 
 setup(
-    name='vehicle',
+    name='vehicle_module',
     ext_modules=ext_modules,
 )
 
