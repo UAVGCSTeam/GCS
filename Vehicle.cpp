@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 using namespace std;
 namespace py = pybind11;
@@ -19,9 +20,20 @@ class Vehicle {
         int orientation[3] = {-1, -1, -1}; // x, y, z
         // Flight flightLog[]; will implement later when 'Flight' object is also implemented
         string remoteXbeeAddress;
+        string name;
 
+    // we are going to need to add extra parameters to get the function to work, like the id, role, name, and/or remoteXbeeAddress
     Vehicle() {
         VehicleList.push_back(this);
+        // might need to add the private stuff here haha but maybe not
+    }
+
+    Vehicle(string input_id, string input_role, string input_remoteXbeeAddress, string input_name){
+        VehicleList.push_back(this);
+        id = id;
+        role = role;
+        remoteXbeeAddress = remoteXbeeAddress;
+        name = name;
     }
 
     // this is returning a copy of the vehicle that you are looking for
@@ -124,6 +136,14 @@ class Vehicle {
         cout << "Remote XBee Address: " << remoteXbeeAddress << endl;
         cout << "------------------------------" << endl;
     }
+
+    // this is extremely basic for right now, however the gist is there and it should work. we need to implement this into the gui
+    // i also need to see if c++ code can run python stuffies
+    void sendXbeeMessage(string message) {
+        py::module xbee_module = py::module::import("xbeeFuncs");
+        xbee_module.attr("send_command_to_xbee")(message);
+    }
+
 };
 
 std::vector<Vehicle*> Vehicle::VehicleList;
@@ -132,7 +152,25 @@ PYBIND11_MODULE(vehicle, m) {
     py::class_<Vehicle>(m, "Vehicle")
         .def(py::init<>())
         .def("getRole", &Vehicle::getRole)
-        .def("updateRole", &Vehicle::updateRole);
+        .def("updateRole", &Vehicle::updateRole)
+        .def("getStatus", &Vehicle::getStatus)
+        .def("updateStatus", &Vehicle::updateStatus)
+        .def("getBatteryLevel", &Vehicle::getBatteryLevel)
+        .def("updateBatteryLevel", &Vehicle::updateBatteryLevel)
+        .def("getPosition", &Vehicle::getPosition)
+        .def("updatePosition", &Vehicle::updatePosition)
+        .def("getVelocity", &Vehicle::getVelocity)
+        .def("updateVelocity", &Vehicle::updateVelocity)
+        .def("getId", &Vehicle::getId)
+        .def("updateId", &Vehicle::updateId)
+        .def("getOrientation", &Vehicle::getOrientation)
+        .def("updateOrientation", &Vehicle::updateOrientation)
+        .def("printAllInfo", &Vehicle::printAllInfo);
+
+}
+
+int main(){
+    cout << "starting the program" << endl;
 }
 
 // std::vector<Vehicle*> Vehicle::VehicleList;

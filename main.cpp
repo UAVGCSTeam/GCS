@@ -2,9 +2,13 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "mapcontroller.h"
+#include <pybind11/pybind11.h>
 
 int main(int argc, char *argv[])
 {
+    // added to start the python interpreter across all files of the program
+    py:scoped_interpreter guard{};
+    
     QGuiApplication app(argc, argv);
 
     /*

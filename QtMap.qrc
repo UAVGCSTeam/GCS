@@ -13,6 +13,7 @@
         <file>droneStatusSVG.svg</file>
         <file>droneSVG.svg</file>
         <file>fireSVG.svg</file>
+        <file>quadCropter.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
