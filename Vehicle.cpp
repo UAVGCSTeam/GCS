@@ -24,6 +24,14 @@ class Vehicle {
         VehicleList.push_back(this);
     }
 
+    Vehicle(string input_id, string input_role, string input_remoteXbeeAddress, string input_name){
+        VehicleList.push_back(this);
+        id = id;
+        role = role;
+        remoteXbeeAddress = remoteXbeeAddress;
+        name = name;
+    }
+
     // this is returning a copy of the vehicle that you are looking for
     static Vehicle getVehicle(string inputId) {
         Vehicle temp;
