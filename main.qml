@@ -42,9 +42,13 @@ Window {
     DroneTrackingPanel {
         id: droneTrackingPanel
         // Signal connection: when a drone is clicked, show the status panel
+
         onUpdateSelectedDroneSignal: {
-            droneStatusPanel.visible = true;
-            droneStatusPanel.populateActiveDroneModel(name, status, battery);
+            droneStatusPanel.visible = !droneStatusPanel.visible
+
+            if (droneStatusPanel.visible) {
+                droneStatusPanel.populateActiveDroneModel(name, status, battery);
+            }
         }
     }
 
