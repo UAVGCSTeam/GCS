@@ -1,49 +1,37 @@
-#ifndef MAPCONTROLLER_H
-#define MAPCONTROLLER_H
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include "mapcontroller.h"
 
-#include <QObject>
-#include <QVariant>
-#include <QPair>
-#include <QVector>
-
-/*
- * Qt uses Slots and Signals to create responsive UI/GUI applications.
- * It allows for communication between QML and C++.
- * https://doc.qt.io/qt-6/signalsandslots.html
-*/
-
-/*
- * Our API to control all map functionality.
- * Everything regarding the map should go here.
- * Ensures separation of different functions.
- * Keeps logic in cpp and QML purely for UI.
-*/
-
-class MapController : public QObject
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
+    QGuiApplication app(argc, argv);
 
-public:
-    explicit MapController(QObject *parent = nullptr);
+    /*
+     * We want to use QQmlApplicationEngine as it provides more resources for our use case
+     * https://doc.qt.io/qt-6/qqmlapplicationengine.html
+    */
 
-public slots:
-    void setCenterPosition(const QVariant &lat, const QVariant &lon);
-    void setLocationMarking(const QVariant &lat, const QVariant &lon);
-    void changeMapType(int typeIndex);
+    QQmlApplicationEngine engine;
 
-signals:
-    void centerPositionChanged(const QVariant &lat, const QVariant &lon);
-    void locationMarked(const QVariant &lat, const QVariant &lon);
-    void mapTypeChanged(int typeIndex);
+    // Create and register MapController as an object that the cpp can use
+    MapController mapController;
+    engine.rootContext()->setContextProperty("mapController", &mapController);
 
-private:
-    QPair<double, double> m_center;
-    QVector<QPair<double, double>> m_markers;
-    int m_currentMapType;
-    int m_supportedMapTypesCount;
+    const QUrl url(QStringLiteral("qrc:/main.qml"));
+    /*
+     * main.qml is our entry point for all of our UI/GUI resources.
+     * It calls all of our QML files needed to create and display our GUI
+     * As such, it allows for us to create very modular UI displays
+    */
 
-    void updateCenter(const QPair<double, double> &center);
-    void addMarker(const QPair<double, double> &position);
-};
+    // Creates the root object, which is the engine that runs the program
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+                     &app, [url](QObject *obj, const QUrl &objUrl) {
+                         if (!obj && url == objUrl)
+                             QCoreApplication::exit(-1);
+                     }, Qt::QueuedConnection);
+    engine.load(url);
 
-#endif // MAPCONTROLLER_H
+    return app.exec();
+}
