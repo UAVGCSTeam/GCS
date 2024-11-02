@@ -1,10 +1,9 @@
-
 #ifndef MAPCONTROLLER_H
 #define MAPCONTROLLER_H
 
 #include <QObject>
-#include <QPair>
 #include <QVariant>
+#include <QPair>
 #include <QVector>
 
 /*
