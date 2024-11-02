@@ -5,7 +5,7 @@ from digi.xbee.devices import XBeeDevice, RemoteXBeeDevice #, XBee64BitAddress
 from digi.xbee.exception import XBeeException
 from digi.xbee.models.address import XBee64BitAddress
 
-PORT = "COM3" # need to change when we get new xbees (COM3: A)
+PORT = "COM4" # need to change when we get new xbees (COM3: A)
     # Replace with the baud rate of your sender module.
 BAUD_RATE = 9600
 
@@ -44,7 +44,7 @@ def connect_gcs_xbee():
         # try opening device, and if successful, print results for user
         xbee_device.open()
         print("Successfully opened")
-        xbee_device.add_data_received_callback(xbee_device.data_receive_callback)
+        xbee_device.add_data_received_callback(data_receive_callback)
     except XBeeException as e:
         print("myDevice.open() >> Error")
         print(e)
@@ -77,19 +77,27 @@ def create_remote_xbee_device(address, drone_id):
     remote_devices_count += 1
 
 def data_receive_callback(xbee_message):
-    # Callback function when data is received
-    print(f"Received data: {xbee_message.data.decode()}")
+    data = xbee_message.data.decode("utf-8")
+    lines = data.split('\n')
+    # print(lines)
+    print(lines)
+    v1.updatePosition(float(lines[1]), float(lines[2]), float(lines[3]))
+    v1.printAllInfo()
+    # parsed_data = {}
+    # for line in lines:
+    #     if line.strip():  # Check if the line is not empty
+    #         try:
+    #             key, value = line.split(': ', 1)
+    #             parsed_data[key.strip()] = value.strip()
+    #         except ValueError:
+    #             print(f"Skipping malformed line: {line}")
+    # # vehicle.Vehicle.getVehicle(data[0:1])
+  # idk what the python to c++ looks like but after getting the vehicle we need to update its parameters using the dictionary we have
 
-    # how i think this function will work:
-    """
-    parse the message into individual compnents, this means drone id, remote address and more
-    get drone from the vehicle class with:
-    temp_drone = vehicle.getVehicle(drone_id)
-    from there the usage of the c++ functions should be easy
-    example:
-    if update_drone_bit == 1:
-        temp_drone.updateBatteryLevel(battery_level_bits)
-        ...
-    
-    this should be a good template to follow for now
-    """
+v1 = vehicle.Vehicle()
+def main():
+    connect_gcs_xbee()
+    while(True):
+        pass
+
+main()

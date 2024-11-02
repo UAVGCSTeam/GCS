@@ -11,6 +11,7 @@ class Vehicle
 public:
     static std::vector<Vehicle *> VehicleList;
 
+    string name;
     string role;
     string status;
     int batteryLevel = -1;
