@@ -12,15 +12,29 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    width: 300
+    width: 50
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
-    signal updateSelectedDroneSignal(string name, string status, string battery)
+    signal updateSelectedDroneSignal(string name, string status, int battery)
 
-    // Storing the full list of drones allows filtering
-    property var fullDroneList: []
+    // property var droneArray: [["Drone 1", "Charging", "10%"], ["Drone 2", "Flying", "70%"]]
+    // property var droneArray: [droneObject1, droneObject2]
+    property var droneObject1: { "name": "Drone1", "status": "Active", "battery": 10}
+    property var droneObject2: { "name": "Drone2", "status": "Active", "battery": 10}
+
+    // Function to update layout based on visibility of fireView and droneListView
+    function updateRightPanelLayout() {
+        if (droneListView.visible || fireView.visible) {
+            rightPanel.width = 300 // Set fixed with for rightPanel when visible
+            rightPanel.Layout.fillWidth = false
+        }
+        else {
+            rightPanel.width = 0 // Set width to 0 when both are hidden / not visible
+            rightPanel.Layout.fillWidth = true
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -39,6 +53,7 @@ Rectangle {
                 width: parent.width / 2
                 height: parent.height
                 color: parent.color
+                visible: false
             }
 
             ColumnLayout {
@@ -46,7 +61,15 @@ Rectangle {
                 anchors.topMargin: GcsStyle.PanelStyle.sidebarTopMargin
                 spacing: GcsStyle.PanelStyle.buttonSpacing // Small space between buttons
 
-                // Toggle button 1
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    color: GcsStyle.PanelStyle.buttonColor
+                    radius: GcsStyle.PanelStyle.buttonRadius
+            }
+
+                // Drone List View Toggle Button
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
@@ -64,15 +87,18 @@ Rectangle {
                     }
 
                     MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            droneListView.visible = true
-                            fireView.visible = false
+                            anchors.fill: parent
+                            onClicked: {
+                                droneListView.visible = !droneListView.visible  // Toggle visibility
+                                if (droneListView.visible) {
+                                    fireView.visible = false  // Hide fireView when droneListView is visible
+                                }
+                                updateRightPanelLayout()
+                            }
                         }
-                    }
                 }
 
-                // Toggle button 2
+                // Fire View Toggle Button
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
@@ -90,12 +116,15 @@ Rectangle {
                     }
 
                     MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            droneListView.visible = false
-                            fireView.visible = true
+                            anchors.fill: parent
+                            onClicked: {
+                                fireView.visible = !fireView.visible  // Toggle visibility
+                                if (fireView.visible) {
+                                    droneListView.visible = false  // Hide fireView when droneListView is visible
+                                }
+                                updateRightPanelLayout()
+                            }
                         }
-                    }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
             }
@@ -103,9 +132,10 @@ Rectangle {
 
         // Right view
         ColumnLayout {
-            Layout.fillWidth: true
+            id: rightPanel
             Layout.fillHeight: true
             spacing: 0
+            Layout.preferredWidth: (droneListView.visible || fireView.visible) ? 300 : 0 // Dynamically adjust width
 
             // Header
             Rectangle {
@@ -132,11 +162,13 @@ Rectangle {
                         text: "Drone Tracking"
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
+                        visible: droneListView.visible || fireView.visible // Only show header when either view is visible
                     }
                     Text {
                         text: "4 drones in fleet : 3 active"
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
+                        visible: droneListView.visible || fireView.visible // Only show subheader when either view is visible
                     }
                 }
             }
@@ -156,7 +188,8 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
-                visible: true
+                visible: false
+                model: droneListModel
                 /*
                   Eventually this will read from our cpp list of drones
                   We will be able to dynamically read this list and create what we need
@@ -180,8 +213,6 @@ Rectangle {
                     id: droneListModel
                 }
 
-                model: droneListModel
-
                 delegate: Rectangle {
                     width: parent.width
                     height: GcsStyle.PanelStyle.listItemHeight
@@ -193,7 +224,7 @@ Rectangle {
                         onClicked: {
                             // ideally this would capture the clicked drone as an OBJECT, not individual properties
                             // passActiveDrone(model.name, model.status, model.battery)
-                            updateSelectedDroneSignal(model.name, model.status, model.battery)
+                            updateSelectedDroneSignal(name, status, battery)
                         }
                     }
 
