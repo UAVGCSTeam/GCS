@@ -1,30 +1,30 @@
 #include <iostream>
+#include <pybind11/pybind11.h>
 #include <string>
 #include <vector>
-#include <pybind11/pybind11.h>
 
 using namespace std;
 namespace py = pybind11;
 
-class Vehicle {
-    public:
-        static std::vector<Vehicle*> VehicleList;
+class Vehicle
+{
+public:
+    static std::vector<Vehicle *> VehicleList;
 
-        string role;
-        string status;
-        int batteryLevel = -1;
-        float position[3] = {-1, -1, -1}; // longitude, lattidue, altitude
-        int velocity[3] = {-1, -1, -1}; // x, y, z
-        string id;
-        int orientation[3] = {-1, -1, -1}; // x, y, z
-        // Flight flightLog[]; will implement later when 'Flight' object is also implemented
-        string remoteXbeeAddress;
+    string role;
+    string status;
+    int batteryLevel = -1;
+    float position[3] = {-1, -1, -1}; // longitude, lattidue, altitude
+    int velocity[3] = {-1, -1, -1};   // x, y, z
+    string id;
+    int orientation[3] = {-1, -1, -1}; // x, y, z
+    // Flight flightLog[]; will implement later when 'Flight' object is also implemented
+    string remoteXbeeAddress;
 
-    Vehicle() {
-        VehicleList.push_back(this);
-    }
+    Vehicle() { VehicleList.push_back(this); }
 
-    Vehicle(string input_id, string input_role, string input_remoteXbeeAddress, string input_name){
+    Vehicle(string input_id, string input_role, string input_remoteXbeeAddress, string input_name)
+    {
         VehicleList.push_back(this);
         id = id;
         role = role;
@@ -33,79 +33,61 @@ class Vehicle {
     }
 
     // this is returning a copy of the vehicle that you are looking for
-    static Vehicle getVehicle(string inputId) {
+    static Vehicle getVehicle(string inputId)
+    {
         Vehicle temp;
         Vehicle nullVehicle;
-        for(Vehicle* vehicle : VehicleList) {
+        for (Vehicle *vehicle : VehicleList) {
             temp = *vehicle;
 
-            if(temp.id == inputId) {
+            if (temp.id == inputId) {
                 return temp;
             }
-        } 
+        }
 
         cout << ">   No vehicle with Id: '" << inputId << "' found." << endl;
         cout << "------------------------------" << endl;
         return nullVehicle;
     }
 
-    string getRole() {
-        return role;
-    }
+    string getRole() { return role; }
 
-    void updateRole(string inputRole) {
-        role = inputRole;
-    }
+    void updateRole(string inputRole) { role = inputRole; }
 
-    string getStatus() {
-        return status;
-    }
+    string getStatus() { return status; }
 
-    void updateStatus(string inputStatus) {
-        status = inputStatus;
-    }
+    void updateStatus(string inputStatus) { status = inputStatus; }
 
-    int getBatteryLevel() {
-        return batteryLevel;
-    }
+    int getBatteryLevel() { return batteryLevel; }
 
-    void updateBatteryLevel(int inputBatteryLevel) {
-        batteryLevel = inputBatteryLevel;
-    }
+    void updateBatteryLevel(int inputBatteryLevel) { batteryLevel = inputBatteryLevel; }
 
-    float* getPosition() {
-        return position;
-    }
+    float *getPosition() { return position; }
 
-    void updatePosition(float longitude, float latitude, float altitude) {
+    void updatePosition(float longitude, float latitude, float altitude)
+    {
         position[0] = longitude;
         position[1] = latitude;
         position[2] = altitude;
     }
 
-    int* getVelocity() {
-        return velocity;
-    }
+    int *getVelocity() { return velocity; }
 
-    void updateVelocity(int x, int y, int z) {
+    void updateVelocity(int x, int y, int z)
+    {
         velocity[0] = x;
         velocity[1] = y;
         velocity[2] = z;
     }
 
-    string getId() {
-        return id;
-    }
+    string getId() { return id; }
 
-    void updateId(string inputId) {
-        id = inputId;
-    }
+    void updateId(string inputId) { id = inputId; }
 
-    int* getOrientation() {
-        return orientation;
-    }
+    int *getOrientation() { return orientation; }
 
-    void updateOrientation(int x, int y, int z) {
+    void updateOrientation(int x, int y, int z)
+    {
         orientation[0] = x;
         orientation[1] = y;
         orientation[2] = z;
@@ -114,8 +96,9 @@ class Vehicle {
     // bool checkXbeeOpen() {
     //
     // }
-    
-    void printAllInfo() {
+
+    void printAllInfo()
+    {
         cout << "Role: " << role << endl;
         cout << "Status: " << status << endl;
         cout << "Battery Level: " << batteryLevel << endl;
@@ -134,9 +117,10 @@ class Vehicle {
     }
 };
 
-std::vector<Vehicle*> Vehicle::VehicleList;
+std::vector<Vehicle *> Vehicle::VehicleList;
 
-PYBIND11_MODULE(vehicle, m) {
+PYBIND11_MODULE(vehicle, m)
+{
     py::class_<Vehicle>(m, "Vehicle")
         .def(py::init<>())
         .def_static("getVehicle", &Vehicle::getVehicle)
@@ -146,19 +130,18 @@ PYBIND11_MODULE(vehicle, m) {
         .def("updateStatus", &Vehicle::updateStatus)
         .def("getBatteryLevel", &Vehicle::getBatteryLevel)
         .def("updateBatteryLevel", &Vehicle::updateBatteryLevel)
-        .def("getPosition", [](Vehicle& v) {
-            return py::make_tuple(v.position[0], v.position[1], v.position[2]);
-        })
+        .def("getPosition",
+             [](Vehicle &v) { return py::make_tuple(v.position[0], v.position[1], v.position[2]); })
         .def("updatePosition", &Vehicle::updatePosition)
-        .def("getVelocity", [](Vehicle& v) {
-            return py::make_tuple(v.velocity[0], v.velocity[1], v.velocity[2]);
-        })
+        .def("getVelocity",
+             [](Vehicle &v) { return py::make_tuple(v.velocity[0], v.velocity[1], v.velocity[2]); })
         .def("updateVelocity", &Vehicle::updateVelocity)
         .def("getId", &Vehicle::getId)
         .def("updateId", &Vehicle::updateId)
-        .def("getOrientation", [](Vehicle& v) {
-            return py::make_tuple(v.orientation[0], v.orientation[1], v.orientation[2]);
-        })
+        .def("getOrientation",
+             [](Vehicle &v) {
+                 return py::make_tuple(v.orientation[0], v.orientation[1], v.orientation[2]);
+             })
         .def("updateOrientation", &Vehicle::updateOrientation)
         .def("printAllInfo", &Vehicle::printAllInfo);
 }

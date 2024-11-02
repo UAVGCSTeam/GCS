@@ -9,7 +9,10 @@
 // Define constructor for MapController class
 MapController::MapController(QObject *parent)
     // Defines all variables within our map
-    : QObject(parent), m_currentMapType(0), m_supportedMapTypesCount(3) {}
+    : QObject(parent)
+    , m_currentMapType(0)
+    , m_supportedMapTypesCount(3)
+{}
 
 void MapController::setCenterPosition(const QVariant &lat, const QVariant &lon)
 {
@@ -24,7 +27,6 @@ void MapController::setLocationMarking(const QVariant &lat, const QVariant &lon)
     // addMarker below
     addMarker(position);
 }
-
 
 // emit sends the data that our cpp logic did to our QML files
 void MapController::changeMapType(int index)

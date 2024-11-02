@@ -2,8 +2,8 @@
 #define MAPCONTROLLER_H
 
 #include <QObject>
-#include <QVariant>
 #include <QPair>
+#include <QVariant>
 #include <QVector>
 
 /*

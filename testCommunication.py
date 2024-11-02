@@ -78,10 +78,7 @@ def create_remote_xbee_device(address, drone_id):
 
 def data_receive_callback(xbee_message):
     # Callback function when data is received
-    data = xbee_message.data.decode()
-    print(f"Received data: {data}")
-    lon = data[0:3]
-    lat = data[3:6]
+    print(f"Received data: {xbee_message.data.decode()}")
 
     # how i think this function will work:
     """
