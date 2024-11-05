@@ -26,6 +26,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         QtMap.qrc
         main.cpp
         mapcontroller.h mapcontroller.cpp
+        vehicle.h vehicle.cpp
+        vehicle_python_binded.cpp
+        vehicleDriver.cpp
+        gcs_xbee_module.py
 
     )
 # Define target properties for Android with Qt 6 as:
