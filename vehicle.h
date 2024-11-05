@@ -1,7 +1,7 @@
 #ifndef VEHICLE_H
 #define VEHICLE_H
 
-#include <QObject> // added this to change signals
+//#include <QObject> // added this to change signals
 #include <string>
 // Not using namespace std, just for better C++ mem protection
 // Seperating pybind and Vehicle Class for now

@@ -12,6 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 6.7.3 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core)
 
+#set(CMAKE_PREFIX_PATH "N:/CSProjects/GCS/gcs_env/Lib/site-packages/pybind11/share/cmake/pybind11" ${CMAKE_PREFIX_PATH})
+# Add the include path to Pybind11 headers
+include_directories("N:/CSProjects/GCS/gcs_env/Lib/site-packages/pybind11/include")
+#include_directories("N:/CSProjects/GCS/gcs_env/Lib/site-packages/pybind11/include/pybind11")
+set(PYBIND11_FINDPYTHON ON)
+set(CMAKE_PREFIX_PATH "N:/CSProjects/GCS/gcs_env/Lib/site-packages/pybind11/share/cmake/pybind11" ${CMAKE_PREFIX_PATH})
+find_package(pybind11 REQUIRED)
+# Add the Pybind11 module
+pybind11_add_module(gcsdrone_interface vehicle_python_binded.cpp vehicle.cpp vehicleDriver.cpp)
+
 set(PROJECT_SOURCES
 
         mainwindow.cpp
@@ -30,7 +40,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         vehicle_python_binded.cpp
         vehicleDriver.cpp
         gcs_xbee_module.py
-
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GCS APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -55,6 +64,7 @@ Qt${QT_VERSION_MAJOR}::Widgets
 Qt${QT_VERSION_MAJOR}::Quick
 Qt${QT_VERSION_MAJOR}::QuickWidgets
 Qt${QT_VERSION_MAJOR}::Core)
+
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

@@ -29,13 +29,13 @@ void runSimpleVehicleTest()
     std::cout << "------------------------------" << std::endl;
     // Create default  Vehicle and use update to do it.
     Vehicle v1;
-    v1.updateId("001");
+    v1.updateID("001");
     v1.updateRole("arona");
     v1.updateStatus("sleeping");
     v1.printAllDroneInfo();
 
     Vehicle v2;
-    v2.updateId("002");
+    v2.updateID("002");
     v2.updateRole("plana");
     v1.updateStatus("on");
     v2.printAllDroneInfo();
