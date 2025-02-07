@@ -19,7 +19,10 @@ Window {
         id: menuBar
         Menu {
             id: gcsMenu
+            // title of the menu bar
             title: qsTr("GCS")
+            // first button tab of the menu bar allows you to open the manage drone panel
+            // this button is attached to the manage drone window.qml
             MenuItem {
                 text: qsTr("Manage Drone")
                 onTriggered: {
