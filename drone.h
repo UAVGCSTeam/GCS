@@ -135,7 +135,7 @@ public:
     /**
      * Prints all information related to the drone for debugging or display.
      */
-    void printAllDroneInfo() const;
+    void printAllDroneInfo();
 
 private:
     std::string ICAO_ID;        /** Unique ID for the drone (ICAO ID). */
