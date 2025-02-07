@@ -19,12 +19,8 @@ Rectangle {
 
     signal updateSelectedDroneSignal(string name, string status, string battery)
 
-    // property var droneArray: [["Drone 1", "Charging", "10%"], ["Drone 2", "Flying", "70%"]]
-    // property var droneArray: [droneObject1, droneObject2]
-    property var droneObject1: { "name": "Drone1", "status": "Active", "battery": 10}
-    property var droneObject2: { "name": "Drone2", "status": "Active", "battery": 10}
-
-
+    // Storing the full list of drones allows filtering
+    property var fullDroneList: []
 
     RowLayout {
         anchors.fill: parent
@@ -145,12 +141,14 @@ Rectangle {
                 }
             }
 
-            /*
-              TODO:
-                    Search Bar goes HERE
-                    It needs to be able to quickly go through our list of current fleet drones
-                    Then filter and show ONLY that one
-            */
+            // Search Bar filters displayed drones in real time
+            TextField {
+                id: searchField
+                placeholderText: "Search by drone name"
+                Layout.fillWidth: true
+                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                onTextChanged: filterDroneList(text)
+            }
 
             // Drone list view
             ListView {
@@ -217,27 +215,28 @@ Rectangle {
                             spacing: 2
 
                             Text {
-                                text: name
+                                text: model.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
-                                text: status
+                                text: model.status
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
 
                         Text {
-                            text: battery + "%"
-                            color: battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
-                                                  battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
+                            text: model.battery + "%"
+                            color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
+                                                        model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
                                                                  GcsStyle.PanelStyle.batteryLowColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                         }
                     }
                 }
             }
+
             // Fire view (placeholder)
             Rectangle {
                 id: fireView
@@ -257,14 +256,29 @@ Rectangle {
         }
     }
 
-    // In the future in function might pull from a C++ file of the active drones.
+    // Function to populate the ListModel with the full list of drones (fetched from main.qml)
     function populateListModel(droneList) {
-        droneList.forEach(drone => {
-                              droneListModel.append({ name: drone.name,
-                                                        status: drone.status,
-                                                        battery: drone.battery
-                                                    }
-                                                    )
-                          })
+        fullDroneList = droneList
+        updateDroneListModel(fullDroneList) // Initially display all drones
+    }
+
+    // Function to update the displayed ListModel based on a filtered list
+    function updateDroneListModel(filteredList) {
+        droneListModel.clear()
+        filteredList.forEach(drone => {
+            droneListModel.append({ name: drone.name, status: drone.status, battery: drone.battery })
+        })
+    }
+
+    // Function to filter drones by search text
+    function filterDroneList(searchText) {
+        if (searchText === "") {
+            // Display all drones if search text is empty
+            updateDroneListModel(fullDroneList)
+        } else {
+            // Filter and display drones matching search text
+            var filteredList = fullDroneList.filter(drone => drone.name.toLowerCase().includes(searchText.toLowerCase()))
+            updateDroneListModel(filteredList)
+        }
     }
 }

@@ -1,7 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import "coordinates.js" as Coordinates
-
+import QtQuick.Controls
+import Qt.labs.platform
 /*
   Our entry point for UI/GUI
   Displays all UI Components here
@@ -12,6 +13,26 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
+
+    // Menu bar for the top of the application to display various features and actions
+    MenuBar {
+        id: menuBar
+        Menu {
+            id: gcsMenu
+            // title of the menu bar
+            title: qsTr("GCS")
+            // first button tab of the menu bar allows you to open the manage drone panel
+            // this button is attached to the manage drone window.qml
+            MenuItem {
+                text: qsTr("Manage Drone")
+                onTriggered: {
+                    var component = Qt.createComponent("manageDroneWindow.qml")
+                    var window = component.createObject(null)
+                    window.show()
+                }
+            }
+        }
+    }
 
     // These are our components that sit on top of our Window object
     QmlMap {
@@ -46,7 +67,6 @@ Window {
             margins: 10
         }
     }
-
 
     /*
       Connections is how we connect our QML and QML together
