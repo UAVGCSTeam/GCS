@@ -27,8 +27,16 @@ Window {
                 text: qsTr("Manage Drone")
                 onTriggered: {
                     var component = Qt.createComponent("manageDroneWindow.qml")
-                    var window = component.createObject(null)
-                    window.show()
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating object:", component.errorString());
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString());
+                    }
                 }
             }
         }
