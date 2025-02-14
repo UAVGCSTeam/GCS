@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "mapcontroller.h"
+#include "backend/dbmanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +12,22 @@ int main(int argc, char *argv[])
      * We want to use QQmlApplicationEngine as it provides more resources for our use case
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
     */
+
+    /* TODO: Intialize Database
+     *  1. Check if there's existing Database
+     *  1a. If there's exisiting database, connect to it
+     *  1b. If Not Create a database
+    */
+
+    // 1. Check if there's existing Database
+    // Initialize Database
+    DBManager DBManager("data/gcs.db");
+    if (!DBManager.isOpen()) {
+        qCritical() << "Error: Could not open database.";
+        return -1;
+    }
+    qDebug() << "Database initialized successfully.";
+
 
     QQmlApplicationEngine engine;
 
