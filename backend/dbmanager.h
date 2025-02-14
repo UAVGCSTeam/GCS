@@ -15,7 +15,7 @@ class DBManager
 {
 public:
     // Constructor
-    explicit DBManager(const QString& path = "data/gcs.db");
+    explicit DBManager(const QString& path);
 
     // Destructor
     ~DBManager();

@@ -21,11 +21,13 @@ int main(int argc, char *argv[])
 
     // 1. Check if there's existing Database
     // Initialize Database
-    DBManager DBManager("data/gcs.db");
-    if (!DBManager.isOpen()) {
+    DBManager gcs_DBManager("data/gcs.db");
+    if (!gcs_DBManager.isOpen()) {
         qCritical() << "Error: Could not open database.";
         return -1;
     }
+
+    gcs_DBManager.initDB();
     qDebug() << "Database initialized successfully.";
 
 

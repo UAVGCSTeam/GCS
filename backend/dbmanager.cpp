@@ -7,10 +7,6 @@
 
 DBManager::DBManager(const QString& path) {
     gcs_db_connection = QSqlDatabase::addDatabase("QSQLITE");
-    // Tell Qt to connect to SQL Database, Sqlite
-    //gcs_db_connection.setDatabaseName("gcs.db");
-
-    gcs_db_connection.setDatabaseName(QCoreApplication::applicationDirPath() + "/data/gcs.db");
 
     // Ensure 'data/' directory exists
     QDir dataDir(QCoreApplication::applicationDirPath() + "/data");
@@ -18,14 +14,16 @@ DBManager::DBManager(const QString& path) {
         dataDir.mkpath(".");
     }
 
+    // Set database file path
     QString dbPath = dataDir.filePath("gcs.db");
     gcs_db_connection.setDatabaseName(dbPath);
 
-    if (gcs_db_connection.open()) {
-        qDebug() << "Database connected at:" << dbPath;
-    } else {
+    if (!gcs_db_connection.open()) {
         qCritical() << "Database connection failed:" << gcs_db_connection.lastError().text();
+        return;
     }
+
+    qDebug() << "Database connected at:" << dbPath;
 }
 
 // Destructor: Close database connection
@@ -42,27 +40,44 @@ bool DBManager::initDB() {
         qCritical() << "Database is not open!";
         return false;
     }
+
     QSqlQuery query;
-    query.exec("PRAGMA foreign_keys = ON;");  // Ensure FK constraints are enforced
-    // TODO: check this
-    return createTable();
+    if (!query.exec("PRAGMA foreign_keys = ON;")) {
+        qCritical() << "Failed to enable foreign key constraints:" << query.lastError().text();
+        return false;
+    }
+
+    if (!createTable()) {
+        qCritical() << "Table creation failed!";
+        return false;
+    }
+
+    return true;
 }
 
-// Create Table (Ensures Drone Table Exists)
+
 bool DBManager::createTable() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot create table.";
         return false;
     }
 
+    // Check if the table already exists
+    QSqlQuery checkTableQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='drones';");
+    if (checkTableQuery.next()) {
+        qDebug() << "Drones table already exists.";
+        return true;
+    }
+
+    // Create the table if it does not exist
     QSqlQuery query;
     QString createTableQuery = R"(
         CREATE TABLE IF NOT EXISTS drones (
             drone_id INTEGER PRIMARY KEY AUTOINCREMENT,
             drone_name TEXT NOT NULL,
             drone_type TEXT,
-            xbee_id TEXT UNIQUE,
-            xbee_address TEXT UNIQUE
+            xbee_id TEXT UNIQUE NOT NULL,
+            xbee_address TEXT UNIQUE NOT NULL
         );
     )";
 
@@ -71,51 +86,22 @@ bool DBManager::createTable() {
         return false;
     }
 
-    qDebug() << "Drones table checked/created successfully.";
+    qDebug() << "Drones table created successfully.";
     return true;
 }
 
 
-// Add a New Drone Entry
-bool DBManager::addDrone(const QString& name) {
-    if (!gcs_db_connection.isOpen()) return false;
 
-    QSqlQuery query;
-    query.prepare("INSERT INTO drones (name) VALUES (:name)");
-    query.bindValue(":name", name);
+bool DBManager::isOpen() const {
+    QString dbPath = gcs_db_connection.databaseName();
+    QFile dbFile(dbPath);
 
-    if (!query.exec()) {
-        qCritical() << "Add drone failed:" << query.lastError().text();
+    if (!dbFile.exists()) {
+        qCritical() << "Database file does not exist at:" << dbPath;
         return false;
     }
 
-    qDebug() << "Drone added successfully:" << name;
-    return true;
+    return gcs_db_connection.isOpen();
 }
 
-// Delete a Drone Entry
-bool DBManager::deleteDrone(const QString& name) {
-    if (!gcs_db_connection.isOpen()) return false;
 
-    QSqlQuery query;
-    query.prepare("DELETE FROM drones WHERE name = :name");
-    query.bindValue(":name", name);
-
-    if (!query.exec()) {
-        qCritical() << "Delete drone failed:" << query.lastError().text();
-        return false;
-    }
-
-    qDebug() << "Drone deleted successfully:" << name;
-    return true;
-}
-
-// Print All Drones in Database
-void DBManager::printDroneList() const {
-    if (!gcs_db_connection.isOpen()) return;
-
-    QSqlQuery query("SELECT id, name FROM drones");
-    while (query.next()) {
-        qDebug() << "ID:" << query.value(0).toInt() << "Name:" << query.value(1).toString();
-    }
-}
