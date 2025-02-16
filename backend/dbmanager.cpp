@@ -48,21 +48,15 @@ bool DBManager::initDB() {
         qCritical() << "Table creation failed!";
         return false;
     }
-    return createDroneTable();
+    return true; // Only return true if table creation succeeded
 }
+
 
 
 bool DBManager::createDroneTable() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot create table.";
         return false;
-    }
-
-    // Check if the table already exists
-    QSqlQuery checkTableQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='drones';");
-    if (checkTableQuery.next()) {
-        qDebug() << "Drones table already exists.";
-        return true;
     }
 
     // Create the table if it does not exist

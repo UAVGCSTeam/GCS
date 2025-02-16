@@ -3,7 +3,7 @@
 #include <QQmlContext>
 #include "mapcontroller.h"
 #include "filehandler.h"
-
+#include "backend/dbmanager.h"
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -12,6 +12,11 @@ int main(int argc, char *argv[])
      * We want to use QQmlApplicationEngine as it provides more resources for our use case
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
     */
+
+    // If the database doesn't exist, it will create the database. The following code intializes the drones Table.
+    DBManager gcs_db_manager; 
+    qDebug() << "Database initialized successfully.";
+
 
     QQmlApplicationEngine engine;
 
