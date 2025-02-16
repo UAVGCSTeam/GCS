@@ -58,7 +58,8 @@ Window {
 
        /* Display input fields for drone object
         Current: Drone Name, Status, Battery @ Connor
-        New: Drone Name, ID, Xbee ID, Type @ Brandon
+        New: Drone Name, Drone Type*, Xbee ID, Type @ Brandon
+        Drone ID will seen somewhere else
       */
 
     Column {
@@ -79,10 +80,10 @@ Window {
             width: parent.width
         }
 
-        // Drone ID
+        // Drone Type
         TextField {
-            id: droneID
-            placeholderText: "Drone ID"
+            id: droneType
+            placeholderText: "Drone Type"
             width: parent.width
         }
 
@@ -93,10 +94,10 @@ Window {
             width: parent.width
         }
 
-        // Drone Onboard Xbee ID
+        // Drone Onboard Xbee Address
         TextField {
-            id: droneType
-            placeholderText: "Drone Type"
+            id: droneXbeeAddr
+            placeholderText: "Drone Xbee Address"
             width: parent.width
         }
 
@@ -119,9 +120,9 @@ Window {
                     
                     // Brandon V Note: this would record the information in the console instead of on the UI itself
                     console.log("Drone name: "+ droneName.text)
-                    console.log("Drone ID: "+ droneID.text)
+                    console.log("Drone ID: "+ droneType.text)
                     console.log("Drone Xbee ID: "+ droneXbeeID.text)
-                    console.log("Drone Type: "+ droneType.text)
+                    console.log("Drone Type: "+ droneXbeeAddr.text)
                 }
             }
         }
