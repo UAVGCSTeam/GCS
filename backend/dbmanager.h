@@ -22,19 +22,15 @@ public:
      *
      * Issuses: data is stored in the whatever build Qt runs the application on. [Currently on debug]
      */
-    explicit DBManager(const QString& dbname);
-
-    // Destructor
-    ~DBManager();
-
+    static DBManager& getInstance();  // Singleton for one persistent connection
     // Set Booleans as SQL operations should signify sucess or failure in it's access.
 
     // Connections
     bool initDB();
     bool isOpen() const;
-    bool createDroneTable();
 
     // QUERY
+    // Name is the only default value. Everything else could be empty, therefore defaults to emptyString.
     bool addDrone(const QString& name, const QString& type = QString(),
                   const QString& xbeeId = QString(), const QString& xbeeAddress = QString());
 
@@ -42,7 +38,16 @@ public:
     void printDroneList() const;
 
 private:
+    DBManager();  // Private constructor to prevent multiple instances
+    ~DBManager();
     QSqlDatabase gcs_db_connection;
+
+    bool createDroneTable();
+
+    // Disallow copy/move
+    DBManager(const DBManager&) = delete;
+    DBManager& operator=(const DBManager&) = delete;
+
 };
 
 #endif // DBMANAGER_H

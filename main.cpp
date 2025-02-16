@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include "mapcontroller.h"
 #include "backend/dbmanager.h"
+#include "dronecontroller.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,19 +14,9 @@ int main(int argc, char *argv[])
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
     */
 
-    // TODO: Intialize Database
-
-    // 1. Create a connection to the Database. If there's exisiting database, connect to it
-    DBManager gcs_DBManager("gcs.db");
-
-    // Since SQLite actually will always open a new db if it can't connect to it, this code is redudant.
-    if (!gcs_DBManager.isOpen()) {
-        qCritical() << "Error: Could not open database.";
-        return -1;
-    }
 
     // If the database doesn't exist, it will create the database. The following code intializes the drones Table.
-    gcs_DBManager.initDB();
+    DBManager::getInstance().initDB();
     qDebug() << "Database initialized successfully.";
 
 
@@ -34,6 +25,9 @@ int main(int argc, char *argv[])
     // Create and register MapController as an object that the cpp can use
     MapController mapController;
     engine.rootContext()->setContextProperty("mapController", &mapController);
+
+    DroneController droneController;
+    engine.rootContext()->setContextProperty("droneController", &droneController);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*

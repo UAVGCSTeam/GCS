@@ -96,15 +96,16 @@ Window {
             width: parent.width
 
             onClicked: {
-                // Dummy submission logic used
-                // Checks can be added here or for each input field for actually checking the logic in submission to match the field needs
-                var submissionSuccessful = false; // Change to false/true to test the error popup
+                //var submissionSuccessful = false; // Change to false/true to test the error popup
 
-                if (!submissionSuccessful) {
-                    errorPopup.open();
-                } else {
-                    // Process the submission normally. Logic/method for actually adding drones goes here
+                if (droneNameField.text.length > 0) {
+                    droneController.saveDrone(droneNameField.text);
+
+                     //submissionSuccessful = true; // Change to false/true to test the error popup
                     console.log("Drone added successfully!");
+                    }
+                else {
+                    errorPopup.open();
                 }
             }
         }
