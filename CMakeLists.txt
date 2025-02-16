@@ -26,6 +26,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         QtMap.qrc
         main.cpp
         mapcontroller.h mapcontroller.cpp
+        droneclass.h droneclass.cpp
 
 
     )
