@@ -56,6 +56,12 @@ Window {
         }
     }
 
+       /* Display input fields for drone object
+        Current: Drone Name, Status, Battery @ Connor
+        New: Drone Name, Drone Type*, Xbee ID, Type @ Brandon
+        Drone ID will seen somewhere else
+      */
+
     Column {
         anchors.fill: parent
         anchors.margins: 20
@@ -74,25 +80,32 @@ Window {
             width: parent.width
         }
 
-        // Drone Status Input
+        // Drone Type
         TextField {
-            id: droneStatusField
-            placeholderText: "Drone Status"
+            id: droneType
+            placeholderText: "Drone Type"
             width: parent.width
         }
 
-        // Drone Battery Level Input
+        // Drone Onboard Xbee ID
         TextField {
-            id: droneBatteryField
-            placeholderText: "Battery Level (%)"
+            id: droneXbeeID
+            placeholderText: "Drone Xbee ID"
             width: parent.width
-            inputMethodHints: Qt.ImhDigitsOnly
         }
+
+        // Drone Onboard Xbee Address
+        TextField {
+            id: droneXbeeAddr
+            placeholderText: "Drone Xbee Address"
+            width: parent.width
+        }
+
 
         // Submit Button
         Button {
             id: submitButton
-            text: "Submit Drone"
+            text: "Add Drone"
             width: parent.width
 
             onClicked: {
@@ -104,9 +117,33 @@ Window {
                     errorPopup.open();
                 } else {
                     // Process the submission normally. Logic/method for actually adding drones goes here
-                    console.log("Drone added successfully!");
+                    
+                    // Brandon V Note: this would record the information in the console instead of on the UI itself
+                    console.log("Drone name: "+ droneName.text)
+                    console.log("Drone ID: "+ droneType.text)
+                    console.log("Drone Xbee ID: "+ droneXbeeID.text)
+                    console.log("Drone Type: "+ droneXbeeAddr.text)
                 }
             }
         }
+
+        // Import drone button
+        Button {
+            text: "Import Drone"
+            width: parent.width
+
+            //**TO-DO**: add onClicked command for imported drone (task #52)
+            // Option to have error input if drone is not imported correctly
+            onClicked: {
+                console.log("Drone imported successfully")
+            }
+        }
+  
     }
+
+    /* BrandonV
+    TODO: After clicking "add drone", (1) link input fields with database &
+    (2) have new drone appear on DroneStatusPanel
+        (user should be able to interact with it like the other drones)
+    */
 }
