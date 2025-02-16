@@ -45,7 +45,7 @@ public:
     bool addDrone(const QString& name, const QString& type = QString(),
                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool deleteDrone(int drone_id);
-    void printDroneList();
+    void printDroneList(); // essentially Reading the drone, has some basecode 
 
 private:
     QSqlDatabase gcs_db_connection;
