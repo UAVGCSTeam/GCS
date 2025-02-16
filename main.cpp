@@ -13,20 +13,18 @@ int main(int argc, char *argv[])
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
     */
 
-    /* TODO: Intialize Database
-     *  1. Check if there's existing Database
-     *  1a. If there's exisiting database, connect to it
-     *  1b. If Not Create a database
-    */
+    // TODO: Intialize Database
 
-    // 1. Check if there's existing Database
-    // Initialize Database
-    DBManager gcs_DBManager("data/gcs.db");
+    // 1. Create a connection to the Database. If there's exisiting database, connect to it
+    DBManager gcs_DBManager("gcs.db");
+
+    // Since SQLite actually will always open a new db if it can't connect to it, this code is redudant.
     if (!gcs_DBManager.isOpen()) {
         qCritical() << "Error: Could not open database.";
         return -1;
     }
 
+    // If the database doesn't exist, it will create the database. The following code intializes the drones Table.
     gcs_DBManager.initDB();
     qDebug() << "Database initialized successfully.";
 

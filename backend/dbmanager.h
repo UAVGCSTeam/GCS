@@ -15,7 +15,14 @@ class DBManager
 {
 public:
     // Constructor
-    explicit DBManager(const QString& path);
+    /* Informal Comment, not usual format for comments
+     * Input: database file name
+     * DBManager recieves DB file name and determines
+     * where to store the file, explicitly being a data file.
+     *
+     * Issuses: data is stored in the whatever build Qt runs the application on. [Currently on debug]
+     */
+    explicit DBManager(const QString& dbname);
 
     // Destructor
     ~DBManager();
@@ -24,7 +31,7 @@ public:
 
     bool initDB();
     bool isOpen() const;
-    bool createTable();
+    bool createDroneTable();
     bool addDrone(const QString& name);
     bool deleteDrone(const QString& name);
     void printDroneList() const;

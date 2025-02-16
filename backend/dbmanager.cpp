@@ -5,17 +5,19 @@
 #include <QSqlError>
 #include <QDir>
 
-DBManager::DBManager(const QString& path) {
-    gcs_db_connection = QSqlDatabase::addDatabase("QSQLITE");
+DBManager::DBManager(const QString& dbname) {
+    gcs_db_connection = QSqlDatabase::addDatabase("QSQLITE"); // Signals for Qt that the DB will be in SQLite
 
-    // Ensure 'data/' directory exists
+    // Set database file path
+    QString dbPath = dbname;
+
+    // Store dbname in 'data/' directory.
     QDir dataDir(QCoreApplication::applicationDirPath() + "/data");
     if (!dataDir.exists()) {
         dataDir.mkpath(".");
-    }
+    } // Create "data/" folder if it doesn’t exist
+     dbPath = dataDir.filePath(dbname);  // Store inside "data/"
 
-    // Set database file path
-    QString dbPath = dataDir.filePath("gcs.db");
     gcs_db_connection.setDatabaseName(dbPath);
 
     if (!gcs_db_connection.open()) {
@@ -41,13 +43,7 @@ bool DBManager::initDB() {
         return false;
     }
 
-    QSqlQuery query;
-    if (!query.exec("PRAGMA foreign_keys = ON;")) {
-        qCritical() << "Failed to enable foreign key constraints:" << query.lastError().text();
-        return false;
-    }
-
-    if (!createTable()) {
+    if (!createDroneTable()) {
         qCritical() << "Table creation failed!";
         return false;
     }
@@ -56,7 +52,7 @@ bool DBManager::initDB() {
 }
 
 
-bool DBManager::createTable() {
+bool DBManager::createDroneTable() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot create table.";
         return false;
