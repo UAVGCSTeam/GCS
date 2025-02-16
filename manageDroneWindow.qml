@@ -96,11 +96,48 @@ Window {
         }
     }
 
-       /* Display input fields for drone object
-        Current: Drone Name, Status, Battery @ Connor
-        New: Drone Name, Drone Type*, Xbee ID, Type @ Brandon
-        Drone ID will seen somewhere else
-      */
+    // Custom xbee connection initialized popup using Popup
+    Popup {
+        id: connectionInitializationPopup
+        modal: true
+        focus: true
+        width: 300
+        height: 150
+        // Center the popup
+        x: (manageDroneWindow.width - width) / 2
+        y: (manageDroneWindow.height - height) / 2
+
+        background: Rectangle {
+            color: "#f8d7da"
+            border.color: "#f5c6cb"
+            radius: 10
+        }
+
+        Column {
+            anchors.fill: parent
+            anchors.margins: 20
+            spacing: 10
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+
+            // Error message text displayed
+            Text {
+                id: connectionInitializationMessage
+                text: "xbee Connection Initialized."
+                wrapMode: Text.WordWrap
+                // Width is parent's width minus margins
+                width: parent.width - 20
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 12
+                color: "#721c24"
+            }
+
+            Button {
+                text: "OK"
+                onClicked: connectionInitializationPopup.close()
+            }
+        }
+    }
 
     Column {
         anchors.fill: parent
