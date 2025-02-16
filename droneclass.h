@@ -10,7 +10,7 @@ class DroneClass : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged FINAL)
-    Q_PROPERTY(double batteryLevel READ getBattery WRITE setBattery NOTIFY batteryChanged FINAL)
+    Q_PROPERTY(double batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged FINAL)
     Q_PROPERTY(QString role READ getRole WRITE setRole NOTIFY roleChanged FINAL)
     Q_PROPERTY(QVector3D position READ getPosition WRITE setPosition NOTIFY positionChanged FINAL)
     Q_PROPERTY(QVector3D velocity READ getVelocity WRITE setVelocity NOTIFY velocityChanged FINAL)
