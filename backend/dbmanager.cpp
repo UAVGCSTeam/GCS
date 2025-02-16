@@ -1,6 +1,6 @@
 #include "dbmanager.h"
 
-#include <QSqlQuery>
+#include <QSqlQuery> // wow queueries yay!!!
 #include <QCoreApplication>
 #include <QSqlError>
 #include <QDir>
@@ -72,8 +72,8 @@ bool DBManager::createDroneTable() {
             drone_id INTEGER PRIMARY KEY AUTOINCREMENT,
             drone_name TEXT NOT NULL,
             drone_type TEXT,
-            xbee_id TEXT UNIQUE NOT NULL,
-            xbee_address TEXT UNIQUE NOT NULL
+            xbee_id TEXT UNIQUE,
+            xbee_address TEXT UNIQUE
         );
     )";
 
@@ -99,5 +99,34 @@ bool DBManager::isOpen() const {
 
     return gcs_db_connection.isOpen();
 }
+
+// CRUD ME
+
+bool DBManager::addDrone(const QString& name, const QString& type, const QString& xbeeId, const QString& xbeeAddress) {
+    if (!gcs_db_connection.isOpen()) {
+        qCritical() << "Database is not open! Cannot add drone.";
+        return false;
+    }
+
+    QSqlQuery query;
+    query.prepare(R"(
+        INSERT INTO drones (drone_name, drone_type, xbee_id, xbee_address)
+        VALUES (:name, :type, :xbeeId, :xbeeAddress);
+    )");
+
+    query.bindValue(":name", name);
+    query.bindValue(":type", type.isEmpty() ? QVariant(QString()) : type);
+    query.bindValue(":xbeeId", xbeeId.isEmpty() ? QVariant(QString()) : xbeeId);
+    query.bindValue(":xbeeAddress", xbeeAddress.isEmpty() ? QVariant(QString()) : xbeeAddress);
+
+    if (!query.exec()) {
+        qCritical() << "Failed to add drone:" << query.lastError().text();
+        return false;
+    }
+
+    qDebug() << "Drone added successfully: " << name;
+    return true;
+}
+
 
 

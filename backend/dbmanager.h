@@ -8,8 +8,8 @@
  * @author Gian David Marquez
  */
 
-#include <QString>
-#include <QSqlDatabase>
+#include <QString> // Mostly to avoid having to bind stuff on database, mostly cause all the examples are using QString
+#include <QSqlDatabase> // Connection Stuff
 
 class DBManager
 {
@@ -29,10 +29,15 @@ public:
 
     // Set Booleans as SQL operations should signify sucess or failure in it's access.
 
+    // Connections
     bool initDB();
     bool isOpen() const;
     bool createDroneTable();
-    bool addDrone(const QString& name);
+
+    // QUERY
+    bool addDrone(const QString& name, const QString& type = QString(),
+                  const QString& xbeeId = QString(), const QString& xbeeAddress = QString());
+
     bool deleteDrone(const QString& name);
     void printDroneList() const;
 
