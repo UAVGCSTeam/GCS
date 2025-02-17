@@ -27,6 +27,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         main.cpp
         mapcontroller.h mapcontroller.cpp
         droneclass.h droneclass.cpp
+        filehandler.h
 
 
     )

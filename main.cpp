@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "mapcontroller.h"
+#include "filehandler.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,6 +18,9 @@ int main(int argc, char *argv[])
     // Create and register MapController as an object that the cpp can use
     MapController mapController;
     engine.rootContext()->setContextProperty("mapController", &mapController);
+
+    // Register the FileHandler class so that it can be used in QML
+    qmlRegisterType<FileHandler>("com.example.filehandler", 1, 0, "FileHandler");
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*
