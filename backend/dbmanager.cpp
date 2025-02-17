@@ -24,7 +24,6 @@ DBManager::DBManager(QObject *parent) : QObject(parent) {
         // this is lowkey impossible
     } else {
         qDebug() << "Database connected at:" << dbPath;
-        initDB();
     }
 }
 
@@ -38,17 +37,14 @@ DBManager::~DBManager() {
 }
 
 // Initialize Database (Check if DB exists, create if not)
-bool DBManager::initDB() {
+void DBManager::initDB() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open!";
-        return false;
     }
 
     if (!createDroneTable()) {
         qCritical() << "Table creation failed!";
-        return false;
     }
-    return true; // Only return true if table creation succeeded
 }
 
 
@@ -88,31 +84,54 @@ bool DBManager::isOpen() const {
 
 // CRUD ME
 
-bool DBManager::addDrone(const QString& name, const QString& type, const QString& xbeeId, const QString& xbeeAddress) {
+bool DBManager::createDrone(const QString& droneName, const QString& droneType, const QString& xbeeID, const QString& xbeeAddress) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot add drone.";
         return false;
     }
+    QSqlQuery checkDupQuery;
+    QSqlQuery insertQuery;
 
-    QSqlQuery query;
-    query.prepare(R"(
-        INSERT INTO drones (drone_name, drone_type, xbee_id, xbee_address)
-        VALUES (:name, :type, :xbeeId, :xbeeAddress);
+
+    // Step 1: Check if a drone with the same XBee ID or Address already exists
+    checkDupQuery.prepare(R"(
+        SELECT COUNT(*) FROM drones WHERE xbee_id = :xbeeID OR xbee_address = :xbeeAddress;
     )");
 
-    query.bindValue(":name", name);
-    query.bindValue(":type", type.isEmpty() ? QVariant(QString()) : type);
-    query.bindValue(":xbeeId", xbeeId.isEmpty() ? QVariant(QString()) : xbeeId);
-    query.bindValue(":xbeeAddress", xbeeAddress.isEmpty() ? QVariant(QString()) : xbeeAddress);
+    checkDupQuery.bindValue(":xbeeID", xbeeID);
+    checkDupQuery.bindValue(":xbeeAddress", xbeeAddress);
 
-    if (!query.exec()) {
-        qCritical() << "Failed to add drone:" << query.lastError().text();
+    if (!checkDupQuery.exec()) {
+        qCritical() << "Error checking for existing drone:" << checkDupQuery.lastError().text();
         return false;
     }
 
-    qDebug() << "Drone added successfully: " << name;
+    checkDupQuery.next();
+    if (checkDupQuery.value(0).toInt() > 0) {
+        qCritical() << "Drone already exists with the same XBee ID or Address.";
+        return false;
+    }
+
+    // Insert new drone after duplicate checking
+    insertQuery.prepare(R"(
+        INSERT INTO drones (drone_name, drone_type, xbee_id, xbee_address)
+        VALUES (:droneName, :droneType, :xbeeID, :xbeeAddress);
+    )");
+
+    insertQuery.bindValue(":droneName", droneName);
+    insertQuery.bindValue(":droneType", droneType.isEmpty() ? QVariant(QString()) : droneType);
+    insertQuery.bindValue(":xbeeID", xbeeID.isEmpty() ? QVariant(QString()) : xbeeID);
+    insertQuery.bindValue(":xbeeAddress", xbeeAddress.isEmpty() ? QVariant(QString()) : xbeeAddress);
+
+    if (!insertQuery.exec()) {
+        qCritical() << "Failed to add drone:" << insertQuery.lastError().text();
+        return false;
+    }
+
+    qDebug() << "Drone added successfully: " << droneName;
     return true;
 }
+
 
 bool DBManager::deleteDrone(int id) {
     if (!gcs_db_connection.isOpen()) {
@@ -133,6 +152,100 @@ bool DBManager::deleteDrone(int id) {
     return true;
 }
 
+bool DBManager::editDrone(int droneID, const QString& droneName, const QString& droneType,
+                          const QString& xbeeID, const QString& xbeeAddress) {
+    if (!gcs_db_connection.isOpen()) {
+        qCritical() << "Database is not open! Cannot edit drone.";
+        return false;
+    }
+
+    if (droneID <= 0) {
+        qWarning() << "Invalid drone ID: " << droneID;
+        return false;
+    }
+
+    QString updateQuery = "UPDATE drones SET ";
+    QVector<QPair<QString, QVariant>> values;
+
+    if (!droneName.isEmpty()) {
+        updateQuery += "drone_name = :droneName, ";
+        values.append({"droneName", droneName});
+    }
+    if (!droneType.isEmpty()) {
+        updateQuery += "drone_type = :droneType, ";
+        values.append({"droneType", droneType});
+    }
+    if (!xbeeID.isEmpty()) {
+        // Check if xbeeID is already assigned to another drone before updating
+        QSqlQuery checkQuery(gcs_db_connection);
+        checkQuery.prepare("SELECT drone_id FROM drones WHERE xbee_id = :xbeeID AND drone_id != :droneID");
+        checkQuery.bindValue(":xbeeID", xbeeID);
+        checkQuery.bindValue(":droneID", droneID);
+
+        if (!checkQuery.exec()) {
+            qCritical() << "Error checking for duplicate XBee ID:" << checkQuery.lastError().text();
+            return false;
+        }
+
+        if (checkQuery.next()) {
+            qWarning() << "XBee ID already exists for another drone. Cannot update.";
+            return false;
+        }
+
+        updateQuery += "xbee_id = :xbeeID, ";
+        values.append({"xbeeID", xbeeID});
+    }
+    if (!xbeeAddress.isEmpty()) {
+        // Check if xbeeAddress is already assigned to another drone before updating
+        QSqlQuery checkQuery(gcs_db_connection);
+        checkQuery.prepare("SELECT drone_id FROM drones WHERE xbee_address = :xbeeAddress AND drone_id != :droneID");
+        checkQuery.bindValue(":xbeeAddress", xbeeAddress);
+        checkQuery.bindValue(":droneID", droneID);
+
+        if (!checkQuery.exec()) {
+            qCritical() << "Error checking for duplicate XBee Address:" << checkQuery.lastError().text();
+            return false;
+        }
+
+        if (checkQuery.next()) {
+            qWarning() << "XBee Address already exists for another drone. Cannot update.";
+            return false;
+        }
+
+        updateQuery += "xbee_address = :xbeeAddress, ";
+        values.append({"xbeeAddress", xbeeAddress});
+    }
+
+    // If no values to update, return false
+    if (values.isEmpty()) {
+        qWarning() << "No fields provided for update!";
+        return false;
+    }
+
+    // Remove last comma and add WHERE clause
+    updateQuery.chop(2);  // Removes the trailing comma and space
+    updateQuery += " WHERE drone_id = :droneID";
+
+    QSqlQuery query(gcs_db_connection);
+    query.prepare(updateQuery);
+    query.bindValue(":droneID", droneID);
+
+    for (const auto &pair : values) {
+        query.bindValue(":" + pair.first, pair.second);
+    }
+
+    if (!query.exec()) {
+        qCritical() << "Failed to edit drone:" << query.lastError().text();
+        return false;
+    }
+
+    qDebug() << "Drone updated successfully: ID " << droneID;
+    return true;
+}
+
+
+// Testing funtion, to print on console
+// Shows how to query to fetch all drones, useful for drone list
 void DBManager::printDroneList() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot fetch drones.";

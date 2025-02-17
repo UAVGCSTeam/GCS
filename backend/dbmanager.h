@@ -40,17 +40,22 @@ public:
 
     // Connections
     bool isOpen() const;
+    void initDB(); // Intialize database
+
 
     // CRUD
-    bool addDrone(const QString& name, const QString& type = QString(),
+    // QString() is a default value of an empty string that's passable.
+    // A person can create a drone with just the droneName defined.
+    bool createDrone(const QString& droneName, const QString& droneType = QString(),
                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
-    bool deleteDrone(int drone_id);
+    bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneType = QString(),
+                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
+    bool deleteDrone(int droneID);
     void printDroneList(); // essentially Reading the drone, has some basecode 
 
 private:
     QSqlDatabase gcs_db_connection;
     bool createDroneTable();
-    bool initDB(); // Intialize database
 
 };
 

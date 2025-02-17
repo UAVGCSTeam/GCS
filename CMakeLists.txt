@@ -26,9 +26,16 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         QtMap.qrc
         main.cpp
         mapcontroller.h mapcontroller.cpp
+<<<<<<< HEAD
         droneclass.h droneclass.cpp
         filehandler.h filehandler.cpp
         backend/dbmanager.h backend/dbmanager.cpp
+=======
+        backend/dbmanager.h backend/dbmanager.cpp
+        droneclass.h droneclass.cpp
+
+
+>>>>>>> ca5e694 (dblite CRUD)
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GCS APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
