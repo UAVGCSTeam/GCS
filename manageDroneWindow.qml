@@ -97,6 +97,9 @@ Window {
     }
 
     // Custom xbee connection initialized popup using Popup
+    // Implementation not done yet. Need to wait for xbee implementation since that has an object
+    // which contains a call back function that will allow us to identify when connection has been
+    // made
     Popup {
         id: connectionInitializationPopup
         modal: true
