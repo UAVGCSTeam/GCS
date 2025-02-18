@@ -17,14 +17,19 @@ Window {
     // Menu bar for the top of the application to display various features and actions
     MenuBar {
         id: menuBar
+
+        // GCS Menu with two items:
+        // 1. "Add New Drone" that opens the manage drone window.
+        // 2. "Command Menu" that shows a submenu with the 4 command options.
         Menu {
             id: gcsMenu
-            // title of the menu bar
             title: qsTr("GCS")
             // first button tab of the menu bar allows you to open the manage drone panel
             // this button is attached to the manage drone window.qml
+
+            // "Add New Drone" menu item
             MenuItem {
-                text: qsTr("Manage Drone")
+                text: qsTr("Add New Drone")
                 onTriggered: {
                     var component = Qt.createComponent("manageDroneWindow.qml")
                     if (component.status === Component.Ready) {
@@ -39,8 +44,46 @@ Window {
                     }
                 }
             }
+
+            // "Command Menu" submenu item:
+            // WORK IN PROGRESS
+            MenuItem {
+                text: qsTr("Command Menu")
+                onHovered: commandMenu.open()
+            }
+        }
+
+        Menu {
+            id: commandMenu
+            title: qsTr("Command Menu")
+
+            MenuItem {
+                text: qsTr("ARM")
+                onTriggered: {
+                    console.log("ARM command triggered");
+                }
+            }
+            MenuItem {
+                text: qsTr("Take-off")
+                onTriggered: {
+                    console.log("Take-off command triggered");
+                }
+            }
+            MenuItem {
+                text: qsTr("Coordinate Navigation")
+                onTriggered: {
+                    console.log("Coordinate Navigation command triggered");
+                }
+            }
+            MenuItem {
+                text: qsTr("Go Home Landing")
+                onTriggered: {
+                    console.log("Go Home Landing command triggered");
+                }
+            }
         }
     }
+
 
     // These are our components that sit on top of our Window object
     QmlMap {
