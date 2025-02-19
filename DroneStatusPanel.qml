@@ -98,7 +98,7 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, telemetryData)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, position, velocity)
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
