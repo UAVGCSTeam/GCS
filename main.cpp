@@ -4,6 +4,7 @@
 #include "mapcontroller.h"
 #include "filehandler.h"
 #include "backend/dbmanager.h"
+#include "dronecontroller.h"
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -29,8 +30,9 @@ int main(int argc, char *argv[])
     // Register the FileHandler class so that it can be used in QML
     qmlRegisterType<FileHandler>("com.gcs.filehandler", 1, 0, "FileHandler");
     //DroneController droneController(gcs_db_manager);
+    DroneController droneController(gcs_db_manager);
     // Expose to QML
-    //engine.rootContext()->setContextProperty("droneController", &droneController);
+    engine.rootContext()->setContextProperty("droneController", &droneController);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*

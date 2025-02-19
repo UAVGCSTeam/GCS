@@ -33,6 +33,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 =======
         backend/dbmanager.h backend/dbmanager.cpp
         droneclass.h droneclass.cpp
+        dronecontroller.h dronecontroller.cpp
+        dronemanager.h dronemanager.cpp
 
 
 >>>>>>> ca5e694 (dblite CRUD)
