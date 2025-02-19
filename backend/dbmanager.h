@@ -48,13 +48,9 @@ public:
     // A person can create a drone with just the droneName defined.
     bool createDrone(const QString& droneName, const QString& droneType = QString(),
                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
-<<<<<<< HEAD
     bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneType = QString(),
                    const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool deleteDrone(int droneID);
-=======
-    bool deleteDrone(int drone_id);
->>>>>>> 77e9894 (Added qml logic for DB)
     void printDroneList(); // essentially Reading the drone, has some basecode 
 
 private:
