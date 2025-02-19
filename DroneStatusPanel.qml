@@ -98,15 +98,24 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, telemetryData)
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
-    function populateActiveDroneModel(name, status, battery) {
+    function populateActiveDroneModel(name, status, battery, position, velocity) {
         activeDroneModel.clear()
+
         activeDroneModel.append({ name: name,
                                     status: status,
-                                    battery: battery
+                                    battery: battery,
+                                    lattitude: position.y(),
+                                    longitude: position.x(),
+                                    altitude: position.z(),
+                                    velocity: velocity,
+                                    airspeed: Math.sqrt(
+                                                velocity.x() * velocity.x() +
+                                                velocity.y() * velocity.y() +
+                                                velocity.z() * velocity.z())
                                 })
     }
 }
