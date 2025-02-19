@@ -3,7 +3,7 @@ import QtQuick.Window 2.15
 import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
-import com.example.filehandler
+import com.gcs.filehandler
 
 // This is the ui/qml file that corresponds to the manage drone window popout.
 // This will allow one to add and delete drones from the database and what the application will process

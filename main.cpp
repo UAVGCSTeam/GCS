@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("mapController", &mapController);
 
     // Register the FileHandler class so that it can be used in QML
-    qmlRegisterType<FileHandler>("com.example.filehandler", 1, 0, "FileHandler");
+    qmlRegisterType<FileHandler>("com.gcs.filehandler", 1, 0, "FileHandler");
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*
