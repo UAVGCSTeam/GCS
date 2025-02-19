@@ -3,6 +3,7 @@ import QtQuick.Window 2.15
 import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
+import com.gcs.filehandler
 
 // This is the ui/qml file that corresponds to the manage drone window popout.
 // This will allow one to add and delete drones from the database and what the application will process
@@ -12,6 +13,45 @@ Window {
     width: 400
     height: 300
     title: qsTr("Manage Drones")
+
+    FileHandler {
+        id: fileHandler
+    }
+
+    // Function to read and parse the JSON file
+    function loadJson(fileUrl) {
+        var filePath = fileUrl.toString().replace("file://", "");
+        console.log("Loading JSON from:", filePath);
+
+        // Use fileHandler to read the file
+        var fileContent = fileHandler.readFile(filePath);
+        console.log("File content read:", fileContent);
+
+        if (fileContent.length === 0) {
+            console.log("Failed to read JSON file or file is empty.");
+            return;
+        }
+
+        try {
+            // Attempt to parse the JSON
+            var jsonData = JSON.parse(fileContent);
+            console.log("Parsed JSON:", JSON.stringify(jsonData, null, 2));
+
+            // Check if the drones array exists and iterate over it
+            if (jsonData.drones) {
+                for (var i = 0; i < jsonData.drones.length; i++) {
+                    console.log("Drone Name: " + (jsonData.drones[i].name || "Unknown"));
+                    console.log("Drone ID: " + (jsonData.drones[i].id || "N/A"));
+                    console.log("Drone Xbee ID: " + (jsonData.drones[i].address || "N/A"));
+                    console.log("Drone Type: " + (jsonData.drones[i].role || "N/A"));
+                }
+            } else {
+                console.log("No drones found in the JSON data.");
+            }
+        } catch (e) {
+            console.log("Error parsing JSON:", e);
+        }
+    }
 
     // Custom error popup using Popup
     Popup {
@@ -129,13 +169,20 @@ Window {
 
         // Import drone button
         Button {
-            text: "Import Drone"
+            text: "Import Drone JSON"
             width: parent.width
+            onClicked: fileDialog.open()
+        }
 
-            //**TO-DO**: add onClicked command for imported drone (task #52)
-            // Option to have error input if drone is not imported correctly
-            onClicked: {
-                console.log("Drone imported successfully")
+        // File dialog to allow users to select a JSON file
+        FileDialog {
+            id: fileDialog
+            title: "Select a JSON file"
+            fileMode: FileDialog.OpenFile
+            nameFilters: ["JSON Files (*.json)", "All Files (*)"]
+            onAccepted: {
+                console.log("Selected file:", fileDialog.file)
+                loadJson(fileDialog.file)
             }
         }
   
