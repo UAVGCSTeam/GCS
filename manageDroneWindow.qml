@@ -152,17 +152,21 @@ Window {
                 // Dummy submission logic used
                 // Checks can be added here or for each input field for actually checking the logic in submission to match the field needs
                 var submissionSuccessful = false; // Change to false/true to test the error popup
-
-                if (!submissionSuccessful) {
-                    errorPopup.open();
-                } else {
-                    // Process the submission normally. Logic/method for actually adding drones goes here
-                    
+                // Change this for dummy text input check, Name of Field is the only required item.
+                if (droneNameField.text.length > 0) {
                     // Brandon V Note: this would record the information in the console instead of on the UI itself
-                    console.log("Drone name: "+ droneName.text)
+                    console.log("Drone name: "+ droneNameField.text)
                     console.log("Drone ID: "+ droneType.text)
                     console.log("Drone Xbee ID: "+ droneXbeeID.text)
                     console.log("Drone Type: "+ droneXbeeAddr.text)
+                //direct DB
+                //onClicked: addDrone(droneNameField.text, droneType.text, droneXbeeID.text, droneXbeeAddr.text) // this is directly from the db.manager
+                //UI Controller
+                //perhaps onClicked should be QML stuff?
+                    onClicked:   droneController.saveDrone(droneNameField.text, droneType.text, droneXbeeID.text, droneXbeeAddr.text);
+                }
+                else {
+                    errorPopup.open();
                 }
             }
         }
