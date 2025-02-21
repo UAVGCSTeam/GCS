@@ -90,6 +90,26 @@ Rectangle {
                                                                  GcsStyle.PanelStyle.batteryLowColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
+                        Text {
+                            text: "Lattitude: " + lattitude
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
+                        Text {
+                            text: "Longitude: " + longitude
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
+                        Text {
+                            text: "Altitude: " + altitude
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
+                        Text {
+                            text: "Airspeed: " + airspeed
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
                     }
                 }
             }
@@ -98,24 +118,20 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, position, velocity)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed)
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
-    function populateActiveDroneModel(name, status, battery, position, velocity) {
+    function populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed) {
         activeDroneModel.clear()
 
         activeDroneModel.append({ name: name,
                                     status: status,
                                     battery: battery,
-                                    lattitude: position.y(),
-                                    longitude: position.x(),
-                                    altitude: position.z(),
-                                    velocity: velocity,
-                                    airspeed: Math.sqrt(
-                                                velocity.x() * velocity.x() +
-                                                velocity.y() * velocity.y() +
-                                                velocity.z() * velocity.z())
+                                    lattitude: lattitude,
+                                    longitude: longitude,
+                                    altitude: altitude,
+                                    airspeed: airspeed
                                 })
     }
 }
