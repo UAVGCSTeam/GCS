@@ -158,6 +158,7 @@ Window {
             id: droneNameField
             placeholderText: "Drone Name"
             width: parent.width
+            color: GcsStyle.PanelStyle.primaryColor
         }
 
         // Drone Type
@@ -165,6 +166,7 @@ Window {
             id: droneType
             placeholderText: "Drone Type"
             width: parent.width
+            color: GcsStyle.PanelStyle.primaryColor
         }
 
         // Drone Onboard Xbee ID
@@ -172,6 +174,7 @@ Window {
             id: droneXbeeID
             placeholderText: "Drone Xbee ID"
             width: parent.width
+            color: GcsStyle.PanelStyle.primaryColor
         }
 
         // Drone Onboard Xbee Address
@@ -179,6 +182,7 @@ Window {
             id: droneXbeeAddr
             placeholderText: "Drone Xbee Address"
             width: parent.width
+            color: GcsStyle.PanelStyle.primaryColor
         }
 
 
@@ -187,6 +191,10 @@ Window {
             id: submitButton
             text: "Add Drone"
             width: parent.width
+            contentItem: Text {
+                text: submitButton.text
+                color: GcsStyle.PanelStyle.primaryColor
+            }
 
             onClicked: {
                 // Dummy submission logic used
@@ -213,9 +221,14 @@ Window {
 
         // Import drone button
         Button {
+            id: importDroneButton
             text: "Import Drone JSON"
             width: parent.width
             onClicked: fileDialog.open()
+            contentItem: Text {
+                text: importDroneButton.text
+                color: GcsStyle.PanelStyle.primaryColor
+            }
         }
 
         // File dialog to allow users to select a JSON file
