@@ -236,7 +236,25 @@ Rectangle {
                     }
                 }
             }
-
+            // Add Drone Button
+            Button {
+                text: "Add Drone"
+                Layout.fillWidth: true
+                Layout.margins: GcsStyle.PanelStyle.defaultMargin
+                onClicked: {
+                    var component = Qt.createComponent("manageDroneWindow.qml")
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating object:", component.errorString());
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString());
+                    }
+                }
+            }
             // Fire view (placeholder)
             Rectangle {
                 id: fireView
