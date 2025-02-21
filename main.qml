@@ -134,6 +134,8 @@ Window {
             }
         }
     }
+
+    // Creates pop-up for Delete drone command
     Popup {
             id: deleteDroneWindow
             modal: true
@@ -157,7 +159,7 @@ Window {
                     width: parent.width - 20
                     horizontalAlignment: Text.AlignHCenter
                     font.pointSize: 12
-                    color: GcsStyle.PanelStyle.primaryColor
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                 }
 
                 Button {
@@ -199,6 +201,7 @@ Window {
                 Text {
                     id: confirmWindowText
                     text: "Drone successfully deleted!"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                 }
 
                 Button {
