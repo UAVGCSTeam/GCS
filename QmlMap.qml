@@ -79,9 +79,9 @@ Item
                 anchorPoint.y: markerImage.height
                 sourceItem: Image {
                     id: markerImage
-                    source: "qrc:/resources/mappin.svg"  // Make sure this path is correct, currently in the CMake as this path
-                    width: 15
-                    height: 40
+                    source: "qrc:/resources/droneMapIconSVG.svg"  // Make sure this path is correct, currently in the CMake as this path
+                    width: 100
+                    height: 100
                 }
             }
         }
