@@ -10,6 +10,7 @@ class DroneClass : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged FINAL)
+    Q_PROPERTY(QString xbeeAddress READ getXbeeAddress WRITE setXbeeAddress NOTIFY xbeeAddressChanged FINAL)
     Q_PROPERTY(double batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged FINAL)
     Q_PROPERTY(QString role READ getRole WRITE setRole NOTIFY roleChanged FINAL)
     Q_PROPERTY(QVector3D position READ getPosition WRITE setPosition NOTIFY positionChanged FINAL)
@@ -31,12 +32,15 @@ public:
     */
     explicit DroneClass(QObject *parent = nullptr);
     DroneClass(const QString &input_name,
-              const QString &input_role,
-              QObject *parent = nullptr
+               const QString &input_role,
+               const QString &input_xbeeAddress,
+               QObject *parent = nullptr
               );
 
     QString getName() const { return m_name; };
     void setName(const QString &inputName);
+    QString getXbeeAddress() const { return m_xbeeAddress; };
+    void setXbeeAddress(const QString &inputXbeeAddress);
     QString getRole() const {return m_role; };
     void setRole(const QString &inputRole);
     double getBatteryLevel() const { return m_batteryLevel; };
@@ -56,6 +60,7 @@ public:
 
 signals:
     void nameChanged();
+    void xbeeAddressChanged();
     void roleChanged();
     void batteryChanged();
     void positionChanged();
@@ -64,6 +69,7 @@ signals:
 
 private:
     QString m_name;
+    QString m_xbeeAddress;
     QString m_role;
     double m_batteryLevel;
     QVector3D m_position;
