@@ -65,8 +65,9 @@ Window {
         y: (manageDroneWindow.height - height) / 2
 
         background: Rectangle {
-            color: "#f8d7da"
-            border.color: "#f5c6cb"
+            // If we define error-specific stylized properties in the panel style it will be easy to implement here:
+            color: "#f8d7da"  // or: GcsStyle.errorBackgroundColor
+            border.color: "#f5c6cb"  // or: GcsStyle.errorBorderColor
             radius: 10
         }
 
@@ -242,7 +243,6 @@ Window {
                 loadJson(fileDialog.file)
             }
         }
-  
     }
 
     /* BrandonV
