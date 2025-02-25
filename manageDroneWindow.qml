@@ -211,7 +211,7 @@ Window {
                 //onClicked: addDrone(droneNameField.text, droneType.text, droneXbeeID.text, droneXbeeAddr.text) // this is directly from the db.manager
                 //UI Controller
                 //perhaps onClicked should be QML stuff?
-                    onClicked:   droneController.saveDrone(droneNameField.text, droneType.text, droneXbeeID.text, droneXbeeAddr.text);
+                    onClicked: droneController.saveDrone(droneNameField.text, droneType.text, droneXbeeID.text, droneXbeeAddr.text);
                 }
                 else {
                     errorPopup.open();
