@@ -3,10 +3,14 @@
 #include <QString>
 #include <cmath>
 
-DroneClass::DroneClass(QObject *parent) :
+DroneClass::DroneClass(const QString &input_name,
+                       const QString &input_role,
+                       const QString &input_xbeeAddress,
+                       QObject *parent) :
     QObject(parent)
-    , m_name("")
-    , m_role("")
+    , m_name(input_name)
+    , m_xbeeAddress(input_xbeeAddress)
+    , m_role(input_role)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_lattitude(-1) //temporary
@@ -22,6 +26,12 @@ void DroneClass::setName(const QString &inputName){
     if (m_name != inputName){
         m_name = inputName;
         emit nameChanged();
+    }
+}
+void DroneClass::setXbeeAddress(const QString &inputXbeeAddress){
+    if (m_xbeeAddress != inputXbeeAddress){
+        m_xbeeAddress = inputXbeeAddress;
+        emit xbeeAddressChanged();
     }
 }
 void DroneClass::setRole(const QString &inputRole){

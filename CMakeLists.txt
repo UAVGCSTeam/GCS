@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 6.7.3 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core Sql)
 
 set(PROJECT_SOURCES
 
@@ -26,9 +26,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         QtMap.qrc
         main.cpp
         mapcontroller.h mapcontroller.cpp
+        filehandler.h filehandler.cpp
+        backend/dbmanager.h backend/dbmanager.cpp
         droneclass.h droneclass.cpp
-
-
+        dronecontroller.h dronecontroller.cpp
+        dronemanager.h dronemanager.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GCS APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -52,7 +54,8 @@ target_link_libraries(GCS PRIVATE
 Qt${QT_VERSION_MAJOR}::Widgets
 Qt${QT_VERSION_MAJOR}::Quick
 Qt${QT_VERSION_MAJOR}::QuickWidgets
-Qt${QT_VERSION_MAJOR}::Core)
+Qt${QT_VERSION_MAJOR}::Core
+Qt${QT_VERSION_MAJOR}::Sql)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
