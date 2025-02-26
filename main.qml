@@ -3,6 +3,7 @@ import QtQuick.Window 2.15
 import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
+import "qrc:/gcsStyle" as GcsStyle
 
 /*
   Our entry point for UI/GUI
@@ -124,9 +125,94 @@ Window {
                     }
                 }
             }
+
+            MenuItem {
+                text: qsTr("Delete Drone")
+                onTriggered: {
+                    deleteDroneWindow.open();
+                }
+            }
         }
     }
 
+    // Creates pop-up for Delete drone command
+    Popup {
+            id: deleteDroneWindow
+            modal: true
+            focus: true
+            width: 200
+            height: 200
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+
+                // Display confirmation message
+                Text {
+                    id: confirmMessage
+                    text: "Are you sure you want to delete this drone?"
+                    wrapMode: Text.WordWrap
+                    // Width is parent's width minus margins
+                    width: parent.width - 20
+                    horizontalAlignment: Text.AlignHCenter
+                    font.pointSize: 12
+                    color: GcsStyle.PanelStyle.textPrimaryColor
+                }
+
+                Button {
+                    text: "No"
+                    width: parent.width
+                    onClicked: {
+                        deleteDroneWindow.close()
+                    }
+                }
+
+                Button {
+                    text: "Yes"
+                    width: parent.width
+                    onClicked: {
+                        deleteDroneWindow.close()
+                        confirmWindow.open()
+                    }
+                }
+            }
+        }
+           /* Display input fields for drone object
+            Current: Drone Name, Status, Battery @ Connor
+            New: Drone Name, Drone Type*, Xbee ID, Type @ Brandon
+            Drone ID will seen somewhere else
+          */
+
+        Popup {
+            id: confirmWindow
+            modal: true
+            focus: true
+            width: 200
+            height: 200
+            Column {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 10
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                Text {
+                    id: confirmWindowText
+                    text: "Drone successfully deleted!"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
+                }
+
+                Button {
+                    text: "Ok"
+                    width: parent.width
+                    onClicked: {
+                        confirmWindow.close();
+                    }
+                }
+            }
+        }
 
     // These are our components that sit on top of our Window object
     QmlMap {
