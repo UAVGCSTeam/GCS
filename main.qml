@@ -3,12 +3,14 @@ import QtQuick.Window 2.15
 import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
+
 /*
   Our entry point for UI/GUI
   Displays all UI Components here
 */
 
 Window {
+    id: mainWindow
     width: 1280
     height: 720
     visible: true
@@ -25,7 +27,7 @@ Window {
             id: gcsMenu
             title: qsTr("GCS")
             // first button tab of the menu bar allows you to open the manage drone panel
-            // this button is attached to the manage drone window.qml
+            // this button is attached to the manageDroneWindow.qml
 
             // "Add New Drone" menu item
             MenuItem {
@@ -44,13 +46,6 @@ Window {
                     }
                 }
             }
-
-            // "Command Menu" submenu item:
-            // WORK IN PROGRESS
-            MenuItem {
-                text: qsTr("Command Menu")
-                onHovered: commandMenu.open()
-            }
         }
 
         Menu {
@@ -58,27 +53,75 @@ Window {
             title: qsTr("Command Menu")
 
             MenuItem {
+                id: armMenuItem
                 text: qsTr("ARM")
                 onTriggered: {
-                    console.log("ARM command triggered");
+                    // Load and show armWindow.qml
+                    var component = Qt.createComponent("armWindow.qml")
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating ARM window:", component.errorString())
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString())
+                    }
                 }
             }
             MenuItem {
+                id: takeOffMenuItem
                 text: qsTr("Take-off")
                 onTriggered: {
-                    console.log("Take-off command triggered");
+                    // Load and show takeOffWindow.qml
+                    var component = Qt.createComponent("takeOffWindow.qml")
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating Take-off window:", component.errorString())
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString())
+                    }
                 }
             }
             MenuItem {
+                id: coordinateNavMenuItem
                 text: qsTr("Coordinate Navigation")
                 onTriggered: {
-                    console.log("Coordinate Navigation command triggered");
+                    // Load and show coordinateNavigationWindow.qml
+                    var component = Qt.createComponent("coordinateNavigationWindow.qml")
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating Coordinate Navigation window:", component.errorString())
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString())
+                    }
                 }
             }
             MenuItem {
+                id: goHomeLandingMenuItem
                 text: qsTr("Go Home Landing")
                 onTriggered: {
-                    console.log("Go Home Landing command triggered");
+                    // Load and show goHomeLandingWindow.qml
+                    var component = Qt.createComponent("goHomeLandingWindow.qml")
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating Go Home Landing window:", component.errorString())
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString())
+                    }
                 }
             }
         }
@@ -148,7 +191,7 @@ Window {
         const response = [
                            {name: "Drone 1", status: "Flying", battery: 10},
                            {name: "Drone 2", status: "Idle", battery: 54},
-                           {name: "Drone 3", status: "Stationy", battery: 70},
+                           {name: "Drone 3", status: "Stationary", battery: 70},
                            {name: "Drone 4", status: "Dead", battery: 0},
                            {name: "Drone 5", status: "Flying", battery: 90},
                            {name: "Drone 6", status: "Ready", battery: 100}
