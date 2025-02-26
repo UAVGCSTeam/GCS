@@ -3,6 +3,23 @@
 #include <QString>
 #include <cmath>
 
+DroneClass::DroneClass(QObject *parent) :
+    QObject(parent)
+    , m_name("")
+    , m_xbeeAddress("")
+    , m_role("")
+    , m_batteryLevel(-1)
+    , m_position(QVector3D(-1, -1, -1))
+    , m_lattitude(-1) //temporary
+    , m_longitude(-1) //temporary
+    , m_altitude(-1)  //temporary
+    , m_velocity(QVector3D(-1, -1, -1))
+    , m_airspeed(-1)  //temporary
+    , m_orientation(QVector3D(-1, -1, -1))
+{
+
+}
+
 DroneClass::DroneClass(const QString &input_name,
                        const QString &input_role,
                        const QString &input_xbeeAddress,
