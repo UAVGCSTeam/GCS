@@ -103,10 +103,18 @@ Rectangle {
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
     function populateActiveDroneModel(name, status, battery) {
-        activeDroneModel.clear()
-        activeDroneModel.append({ name: name,
-                                    status: status,
-                                    battery: battery
-                                })
+        if (activeDroneModel.count > 0 && activeDroneModel.get(0).name === name) {
+            // If the same drone is clicked again, toggle visibility
+            mainPanel.visible = !mainPanel.visible;
+        } else {
+            // Update model and ensure the panel is visible
+            activeDroneModel.clear();
+            activeDroneModel.append({
+                name: name,
+                status: status,
+                battery: battery
+            });
+            mainPanel.visible = true;
+        }
     }
 }
