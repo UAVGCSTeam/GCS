@@ -2,8 +2,11 @@
 #define DRONECONTROLLER_H
 
 #include <QObject>
+#include <QList>
 #include "backend/dbmanager.h"
 #include "droneclass.h"
+#include <QSharedPointer>
+// #include "drone.h"
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
@@ -36,6 +39,7 @@ signals:
 
 private:
     DBManager &dbManager;
+    static QList<QSharedPointer<DroneClass>> droneList;
     //DroneClass &droneClass;
 
 };
