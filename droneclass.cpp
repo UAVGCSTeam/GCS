@@ -40,22 +40,6 @@ DroneClass::DroneClass(const QString &input_name,
 
 }
 
-DroneClass::DroneClass(const QString &input_name,
-                       const QString &input_role,
-                       const QString &input_xbeeAddress,
-                       QObject *parent) :
-    QObject(parent)
-    , m_name(input_name)
-    , m_xbeeAddress(input_xbeeAddress)
-    , m_role(input_role)
-    , m_batteryLevel(-1)
-    , m_position(QVector3D(-1, -1, -1))
-    , m_velocity(QVector3D(-1, -1, -1))
-    , m_orientation(QVector3D(-1, -1, -1))
-{
-
-}
-
 void DroneClass::setName(const QString &inputName){
     if (m_name != inputName){
         m_name = inputName;
