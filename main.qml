@@ -275,12 +275,12 @@ Window {
 
     function fetch() {
         const response = [
-                           {name: "Drone 1", status: "Flying", battery: 10},
-                           {name: "Drone 2", status: "Idle", battery: 54},
-                           {name: "Drone 3", status: "Stationary", battery: 70},
-                           {name: "Drone 4", status: "Dead", battery: 0},
-                           {name: "Drone 5", status: "Flying", battery: 90},
-                           {name: "Drone 6", status: "Ready", battery: 100}
+                           {name: "Drone 1", status: "Flying", battery: 10, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
+                           {name: "Drone 2", status: "Idle", battery: 54, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
+                           {name: "Drone 3", status: "Stationy", battery: 70, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
+                           {name: "Drone 4", status: "Dead", battery: 0, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
+                           {name: "Drone 5", status: "Flying", battery: 90, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
+                           {name: "Drone 6", status: "Ready", battery: 100, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45}
                           ]
         droneTrackingPanel.populateListModel(response)
     }
