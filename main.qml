@@ -22,7 +22,7 @@ Window {
         id: menuBar
 
         // GCS Menu with two items:
-        // 1. "Add New Drone" that opens the manage drone window.
+        // 1. "Manage Drones" that opens the manage drone window.
         // 2. "Command Menu" that shows a submenu with the 4 command options.
         Menu {
             id: gcsMenu
@@ -30,9 +30,9 @@ Window {
             // first button tab of the menu bar allows you to open the manage drone panel
             // this button is attached to the manageDroneWindow.qml
 
-            // "Add New Drone" menu item
+            // "Manage Drones" menu item
             MenuItem {
-                text: qsTr("Add New Drone")
+                text: qsTr("Manage Drones")
                 onTriggered: {
                     var component = Qt.createComponent("manageDroneWindow.qml")
                     if (component.status === Component.Ready) {
