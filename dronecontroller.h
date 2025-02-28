@@ -6,6 +6,8 @@
 #include "backend/dbmanager.h"
 #include "droneclass.h"
 #include <QSharedPointer>
+#include <array>
+using namespace std;
 // #include "drone.h"
 
 /*
@@ -33,6 +35,7 @@ public:
 
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    std::array<int,3> fetchPosition(const QVector3D &position);
 
 signals:
     void droneAdded();

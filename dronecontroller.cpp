@@ -1,5 +1,7 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
+#include <array>
+using namespace std;
 #include <QDebug>
 // #include "drone.h"
 
@@ -49,6 +51,16 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     droneClass.setName(input_name);
     droneClass.setRole(input_type);
     */
+}
+
+std::array<int, 3> DroneController::fetchPosition(const QVector3D &positionVector) {
+    std::array<int, 3> positionArr;
+
+    positionArr[0] = positionVector.y();
+    positionArr[1] = positionVector.x();
+    positionArr[2] = positionVector.z();
+
+    return positionArr;
 }
 
 // DroneClass DroneController::getDroneByName(const QString &input_name){
