@@ -28,7 +28,7 @@ Window {
     }
 
     Component.onCompleted: {
-        try {
+        try { //TODO: Gian, so I can return a list of drones.
             const drones = droneController.getDrones()  // or whatever the actual method name is GIAN PLEASE MAKE (maybe not in droneController)
             console.log("Fetched drones:", drones)
 

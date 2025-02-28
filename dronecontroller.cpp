@@ -55,3 +55,8 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
 
 // }
 
+void DroneController::getDrones() {
+    // check if drone can be seen on print line
+    dbManager.printDroneList();
+}
+

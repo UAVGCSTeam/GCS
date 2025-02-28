@@ -31,8 +31,14 @@ public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
 
+// slots are just C++ functions
+// THE COOL PART ABOUT IT IS IT CAN BE INVOKED BY ANY CLASS
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+
+    // test function, get a list of drones from an action like: adding a drone, deleting a drone, etc.
+    void getDrones();
+
 
 signals:
     void droneAdded();
