@@ -105,11 +105,6 @@ Rectangle {
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
-                        Text {
-                            text: "Airspeed: " + airspeed
-                            color: GcsStyle.PanelStyle.textPrimaryColor
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                        }
                     }
                 }
             }
@@ -118,20 +113,21 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery)
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
-    function populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed) {
+    function populateActiveDroneModel(name, status, battery) {
         activeDroneModel.clear()
+        var positionArr = droneController.fetchPosition(0)
 
+        console.log("In QML position x: " + positionArr);
         activeDroneModel.append({ name: name,
                                     status: status,
                                     battery: battery,
-                                    lattitude: lattitude,
-                                    longitude: longitude,
-                                    altitude: altitude,
-                                    airspeed: airspeed
+                                    lattitude: positionArr.x,
+                                    longitude: positionArr.y,
+                                    altitude: positionArr.z
                                 })
     }
 }

@@ -17,7 +17,7 @@ Rectangle {
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
-    signal updateSelectedDroneSignal(string name, string status, string battery, vector3d position, string airspeed)
+    signal updateSelectedDroneSignal(string name, string status, string battery)
 
     // Storing the full list of drones allows filtering
     property var fullDroneList: []
@@ -193,7 +193,7 @@ Rectangle {
                         onClicked: {
                             // ideally this would capture the clicked drone as an OBJECT, not individual properties
                             // passActiveDrone(model.name, model.status, model.battery)
-                            updateSelectedDroneSignal(model.name, model.status, model.battery, model.position, model.airspeed)
+                            updateSelectedDroneSignal(model.name, model.status, model.battery)
                         }
                     }
 
@@ -284,11 +284,7 @@ Rectangle {
     function updateDroneListModel(filteredList) {
         droneListModel.clear()
         filteredList.forEach(drone => {
-            var positionArr = droneController.fetchPosition(drone.position);
-
-            droneListModel.append({ name: drone.name, status: drone.status, battery: drone.battery,
-                                    lattitude: positionArr[0], longitude: positionArr[1], altitude: positionArr[2],
-                                    airspeed: drone.airspeed})
+            droneListModel.append({ name: drone.name, status: drone.status, battery: drone.battery})
         })
     }
 

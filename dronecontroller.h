@@ -35,7 +35,7 @@ public:
 
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
-    std::array<int,3> fetchPosition(const QVector3D &position);
+    QVector3D fetchPosition(int droneIndex);
 
 signals:
     void droneAdded();

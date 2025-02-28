@@ -53,14 +53,9 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     */
 }
 
-std::array<int, 3> DroneController::fetchPosition(const QVector3D &positionVector) {
-    std::array<int, 3> positionArr;
-
-    positionArr[0] = positionVector.y();
-    positionArr[1] = positionVector.x();
-    positionArr[2] = positionVector.z();
-
-    return positionArr;
+QVector3D DroneController::fetchPosition(int droneIndex) {
+    QSharedPointer<DroneClass> tempPtr = droneList.at(droneIndex);
+    return tempPtr->getPosition();
 }
 
 // DroneClass DroneController::getDroneByName(const QString &input_name){
