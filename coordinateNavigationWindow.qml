@@ -1,8 +1,11 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
-//import "qrc://gcsStyle/panelStyle.qml" as GcsStyle
-import "qrc:/gcsStyle" as GcsStyle // can change current layout colors if needed to fit panelStyle
+import "coordinates.js" as Coordinates
+import QtQuick.Controls
+import Qt.labs.platform
+import com.gcs.filehandler
+import QtQuick.Controls.Basic 2.15
+import "qrc://gcsStyle/panelStyle.qml" as GcsStyle
 
 Window {
     id: coordinateNavigationWindow
@@ -10,59 +13,49 @@ Window {
     height: 300
     title: qsTr("Coordinate Navigation Command")
 
-    Rectangle {
+    Column {
         id: coordinateNavBackground
         anchors.fill: parent
-        color: GcsStyle.PanelStyle.primaryColor
-        Column {
-            anchors.fill: parent
-            anchors.margins: 20
-            spacing: 10
+        anchors.margins: 20
+        spacing: 10
 
-            Text {
-                text: "Enter Coordinates"
-                font.pixelSize: 20
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: GcsStyle.PanelStyle.textOnPrimaryColor
+        // Title
+        Text {
+            text: "Enter Coordinates"
+            font.pixelSize: 20
+            color: "#000000"
+        }
+
+        // Coordinate Input Fields
+        TextField {
+            id: longitudeField
+            placeholderText: "Enter Longitude"
+            width: parent.width
+            height: 30
+            color: "#000000"
+        }
+
+        TextField {
+            id: latitudeField
+            placeholderText: "Enter Latitude"
+            width: parent.width
+            height: 30
+            color: "#000000"
+        }
+
+        // Submit Button
+        Button {
+            id: submitButton
+            width: parent.width
+            height: 30
+            background: Rectangle {
+                radius: 4
+                color: submitButton.pressed ? "#e0e0e0" : submitButton.hovered ? "#f0f0f0" : "#f5f5f5"
+                border.color: "#e0e0e0"
+                border.width: 1
             }
-
-            // Coordinate Input
-            TextField {
-                id: longitudeField
-                placeholderText: "Enter Longitude"
-                width: parent.width
-                color: GcsStyle.PanelStyle.textOnPrimaryColor
-            }
-
-            TextField {
-                id: latitudeField
-                placeholderText: "Enter Latitude"
-                width: parent.width
-                color: GcsStyle.PanelStyle.textOnPrimaryColor
-            }
-
-             /* Not sure if submit button needs to be redeclared?
-                Might be easier if it can be referenced
-            */
-            Button {
-                id: submitButton
-                text: "Submit"
-                width: parent.width
-                // Background color theme retrieved from manageDroneWindow
-                background: Rectangle {
-                    color: submitButton.pressed ? "#e0e0e0" : parent.hovered ? "#f0f0f0" : "#f5f5f5"
-                    radius: 4
-                    border.color: "#e0e0e0"
-                    border.width: 1
-                }
-
-                contentItem: Text {
-                    text: submitButton.text
-                    color: GcsStyle.PanelStyle.textOnPrimaryColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-            }
-                //TODO: Confirm drone flies to submitted coordinates (future task)
+            MouseArea {
+                anchors.fill: parent
                 onClicked: {
                     console.log("Longitude: " + longitudeField.text +
                                 "\nLatitude: " + latitudeField.text)
@@ -70,27 +63,39 @@ Window {
                 }
             }
 
-            Button {
-                id: cancelButton
-                text: "Cancel"
-                width: parent.width
+            Text {
+                anchors.centerIn: parent
+                text: "Submit"
+                color: "#000000"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
 
-                // Background color theme retrieved from manageDroneWindow
-                background: Rectangle {
-                    color: cancelButton.pressed ? "#e0e0e0" : parent.hovered ? "#f0f0f0" : "#f5f5f5"
-                    radius: 4
-                    border.color: "#e0e0e0"
-                    border.width: 1
-                }
-                contentItem: Text {
-                    text: cancelButton.text
-                    color: GcsStyle.PanelStyle.textOnPrimaryColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
+        // Cancel Button
+        Button {
+            id: cancelButton
+            width: parent.width
+            height: 30
+            background: Rectangle {
+                radius: 4
+                color: cancelButton.pressed ? "#e0e0e0" : cancelButton.hovered ? "#f0f0f0" : "#f5f5f5"
+                border.color: "#e0e0e0"
+                border.width: 1
+            }
+
+            MouseArea {
+                anchors.fill: parent
                 onClicked: {
                     coordinateNavigationWindow.close();
                 }
+            }
+
+            contentItem: Text {
+                text: "Cancel"
+                color: "#000000"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
             }
         }
     }
