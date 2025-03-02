@@ -1,7 +1,6 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
-#include <array>
-using namespace std;
+#include <cmath>
 #include <QDebug>
 // #include "drone.h"
 
@@ -56,6 +55,20 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
 QVector3D DroneController::fetchPosition(int droneIndex) {
     QSharedPointer<DroneClass> tempPtr = droneList.at(droneIndex);
     return tempPtr->getPosition();
+}
+
+QVector3D DroneController::fetchVelocity(int droneIndex) {
+    QSharedPointer<DroneClass> tempPtr = droneList.at(droneIndex);
+    return tempPtr->getVelocity();
+}
+
+double DroneController::getAirspeed(int droneIndex) {
+    QSharedPointer<DroneClass> tempPtr = droneList.at(droneIndex);
+    return std::sqrt(
+        tempPtr->getVelocity().x() * tempPtr->getVelocity().x() +
+        tempPtr->getVelocity().y() * tempPtr->getVelocity().y() +
+        tempPtr->getVelocity().z() * tempPtr->getVelocity().z()
+        );
 }
 
 // DroneClass DroneController::getDroneByName(const QString &input_name){

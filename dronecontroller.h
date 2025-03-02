@@ -36,6 +36,8 @@ public:
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
     QVector3D fetchPosition(int droneIndex);
+    QVector3D fetchVelocity(int droneIndex);
+    double getAirspeed(int droneIndex);
 
 signals:
     void droneAdded();

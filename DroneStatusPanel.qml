@@ -105,6 +105,19 @@ Rectangle {
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
+                        Text {
+                            text: "Velocity: ["
+                                  + velocityX.toFixed(2) + ", "
+                                  + velocityY.toFixed(2) + ", "
+                                  + velocityZ.toFixed(2) + "]"
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
+                        Text {
+                            text: "Airspeed: " + airSpeed
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
                     }
                 }
             }
@@ -119,15 +132,21 @@ Rectangle {
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
     function populateActiveDroneModel(name, status, battery) {
         activeDroneModel.clear()
-        var positionArr = droneController.fetchPosition(0)
+        var position = droneController.fetchPosition(0)
+        var velocity = droneController.fetchVelocity(0)
 
-        console.log("In QML position x: " + positionArr);
+
+        console.log("In QML position x: " + position);
         activeDroneModel.append({ name: name,
                                     status: status,
                                     battery: battery,
-                                    lattitude: positionArr.x,
-                                    longitude: positionArr.y,
-                                    altitude: positionArr.z
+                                    lattitude: position.x,
+                                    longitude: position.y,
+                                    altitude: position.z,
+                                    velocityX: velocity.x,
+                                    velocityY: velocity.y,
+                                    velocityZ: velocity.z,
+                                    airSpeed: droneController.getAirspeed(0)
                                 })
     }
 }

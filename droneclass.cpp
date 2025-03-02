@@ -9,8 +9,8 @@ DroneClass::DroneClass(QObject *parent) :
     , m_xbeeAddress("")
     , m_role("")
     , m_batteryLevel(-1)
-    , m_position(QVector3D(34, -117, 25))
-    , m_velocity(QVector3D(-1, -1, -1))
+    , m_position(QVector3D(34, -117, 25)) //temporarily set to readable data
+    , m_velocity(QVector3D(4.5, -3.7, 4.1)) //temporarily set to readable data
     , m_orientation(QVector3D(-1, -1, -1))
 {
 
@@ -25,8 +25,8 @@ DroneClass::DroneClass(const QString &input_name,
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_batteryLevel(-1)
-    , m_position(QVector3D(34, -117, 25))
-    , m_velocity(QVector3D(-1, -1, -1))
+    , m_position(QVector3D(34, -117, 25)) //temporarily set to readable data
+    , m_velocity(QVector3D(4.5, -3.7, 4.1)) //temporarily set to readable data
     , m_orientation(QVector3D(-1, -1, -1))
 {
 
