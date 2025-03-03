@@ -42,6 +42,7 @@ public slots:
 
 signals:
     void droneAdded();
+    void dronesUpdated(); // UI should listen to this
 
 private:
     DBManager &dbManager;
