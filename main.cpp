@@ -1,3 +1,5 @@
+#include "pybind11/embed.h"
+
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -5,6 +7,9 @@
 #include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
+
+namespace py = pybind11;
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -13,6 +18,7 @@ int main(int argc, char *argv[])
      * We want to use QQmlApplicationEngine as it provides more resources for our use case
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
     */
+    pybind11::scoped_interpreter guard{};
 
     // If the database doesn't exist, it will create the database. The following code intializes the drones Table.
     DBManager gcs_db_manager;

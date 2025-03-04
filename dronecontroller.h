@@ -1,5 +1,6 @@
 #ifndef DRONECONTROLLER_H
 #define DRONECONTROLLER_H
+// #include <pybind11/embed.h>
 
 #include <QObject>
 #include <QList>
@@ -30,6 +31,9 @@ class DroneController : public QObject {
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
+    void updateDronePosition(std::string droneID, float x, float y, float z);
+    void static testing();
+    // void connectXbee()
 
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
@@ -40,6 +44,7 @@ signals:
 private:
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
+    // QSharedPointer<pybind11::module> xbeeModule;
     //DroneClass &droneClass;
 
 };

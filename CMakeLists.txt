@@ -11,6 +11,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 6.7.3 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core Sql)
+# find_package(Python3 REQUIRED)
+# find_package(pybind11 REQUIRED)
+
 
 set(PROJECT_SOURCES
 
@@ -31,6 +34,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         droneclass.h droneclass.cpp
         dronecontroller.h dronecontroller.cpp
         dronemanager.h dronemanager.cpp
+        xbeeFunctions.py
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GCS APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -56,6 +61,12 @@ Qt${QT_VERSION_MAJOR}::Quick
 Qt${QT_VERSION_MAJOR}::QuickWidgets
 Qt${QT_VERSION_MAJOR}::Core
 Qt${QT_VERSION_MAJOR}::Sql)
+
+# find_package(Python3 REQUIRED)
+# include_directories(${Python3_INCLUDE_DIRS} ${pybind11_INCLUDE_DIRS})
+add_subdirectory(extern/pybind11)
+# add_library(my_module MODULE dronecontroller.cpp)
+target_link_libraries(GCS PRIVATE pybind11::module)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
