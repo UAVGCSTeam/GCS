@@ -131,22 +131,28 @@ Rectangle {
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
     function populateActiveDroneModel(name, status, battery) {
-        activeDroneModel.clear()
-        var position = droneController.fetchPosition(0)
-        var velocity = droneController.fetchVelocity(0)
+        if (activeDroneModel.count > 0 && activeDroneModel.get(0).name === name) {
+            // If the same drone is clicked again, toggle visibility
+            mainPanel.visible = !mainPanel.visible;
+        } else {
+            activeDroneModel.clear()
+            var position = droneController.fetchPosition(0)
+            var velocity = droneController.fetchVelocity(0)
 
 
-        console.log("In QML position x: " + position);
-        activeDroneModel.append({ name: name,
-                                    status: status,
-                                    battery: battery,
-                                    lattitude: position.x,
-                                    longitude: position.y,
-                                    altitude: position.z,
-                                    velocityX: velocity.x,
-                                    velocityY: velocity.y,
-                                    velocityZ: velocity.z,
-                                    airSpeed: droneController.getAirspeed(0)
-                                })
+            console.log("In QML position x: " + position);
+            activeDroneModel.append({ name: name,
+                                        status: status,
+                                        battery: battery,
+                                        lattitude: position.x,
+                                        longitude: position.y,
+                                        altitude: position.z,
+                                        velocityX: velocity.x,
+                                        velocityY: velocity.y,
+                                        velocityZ: velocity.z,
+                                        airSpeed: droneController.getAirspeed(0)
+                                    })
+            mainPanel.visible = true;
+        }
     }
 }
