@@ -33,9 +33,11 @@ public:
 
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    void deleteDrone(const QString &name);
 
 signals:
     void droneAdded();
+    void droneDeleted();
 
 private:
     DBManager &dbManager;

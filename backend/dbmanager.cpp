@@ -133,7 +133,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneType, 
 }
 
 
-bool DBManager::deleteDrone(int id) {
+bool DBManager::deleteDrone(const QString& droneName) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot delete drone.";
         return false;

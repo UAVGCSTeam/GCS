@@ -32,7 +32,7 @@ Window {
             placeholderText: "Enter Longitude"
             width: parent.width
             height: 30
-            color: GcsStyle.panelStyle.textPrimaryColor
+            color: "#000000"
         }
 
         TextField {
