@@ -39,19 +39,12 @@ public:
               );
 
     QString getName() const { return m_name; };
-    void setName(const QString &inputName);
     QString getXbeeAddress() const { return m_xbeeAddress; };
-    void setXbeeAddress(const QString &inputXbeeAddress);
     QString getRole() const {return m_role; };
-    void setRole(const QString &inputRole);
     double getBatteryLevel() const { return m_batteryLevel; };
-    void setBatteryLevel(double batteryLevel);
     QVector3D getPosition() const { return m_position; };
-    void setPosition(const QVector3D &pos);
     QVector3D getVelocity() const { return m_velocity; };
-    void setVelocity(const QVector3D &vel);
     QVector3D getOrientation() const { return m_orientation; };
-    void setOrientation(const QVector3D &ori);
 
     // QINVOKEABLE allows functions to be called in QML files
     Q_INVOKABLE void setPosition(float x, float y, float z);
@@ -67,6 +60,15 @@ signals:
     void positionChanged();
     void velocityChanged();
     void orientationChanged();
+
+public slots:
+    void setName(const QString &inputName);
+    void setXbeeAddress(const QString &inputXbeeAddress);
+    void setRole(const QString &inputRole);
+    void setBatteryLevel(double batteryLevel);
+    void setPosition(const QVector3D &pos);
+    void setVelocity(const QVector3D &vel);
+    void setOrientation(const QVector3D &ori);
 
 private:
     QString m_name;

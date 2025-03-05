@@ -31,6 +31,7 @@ DroneClass::DroneClass(const QString &input_name,
 {
 
 }
+
 void DroneClass::setName(const QString &inputName){
     if (m_name != inputName){
         m_name = inputName;
