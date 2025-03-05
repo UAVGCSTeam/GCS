@@ -229,7 +229,6 @@ Window {
             margins: 10
         }
     }
-
     DroneStatusPanel {
         id: droneStatusPanel
         anchors {
@@ -237,8 +236,8 @@ Window {
             right: parent.right
             margins: 10
         }
+        visible: false
     }
-
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
