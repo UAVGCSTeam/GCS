@@ -7,6 +7,10 @@
         <file>DroneTrackingPanel.qml</file>
         <file>DroneStatusPanel.qml</file>
         <file>manageDroneWindow.qml</file>
+        <file>armWindow.qml</file>
+        <file>coordinateNavigationWindow.qml</file>
+        <file>goHomeLandingWindow.qml</file>
+        <file>takeOffWindow.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>
@@ -14,6 +18,7 @@
         <file>droneStatusSVG.svg</file>
         <file>droneSVG.svg</file>
         <file>fireSVG.svg</file>
+        <file>droneMapIconSVG.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
