@@ -109,11 +109,13 @@ Rectangle {
         } else {
             // Update model and ensure the panel is visible
             activeDroneModel.clear();
-            activeDroneModel.append({
-                name: name,
-                status: status,
-                battery: battery
-            });
+            activeDroneModel.append({name: name,
+                                        status: status,
+                                        battery: battery,
+                                        lattitude: lattitude,
+                                        longitude: longitude,
+                                        altitude: altitude,
+                                        airspeed: airspeed            });
             mainPanel.visible = true;
         }
     }
