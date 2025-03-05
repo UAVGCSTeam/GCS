@@ -24,7 +24,7 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
         return;
     }
 
-    // Add Drone to Databae
+    // Add Drone to Database
     if (dbManager.createDrone(input_name, input_type, input_type, input_xbeeAddress)) {
         qDebug() << "Drone created on DB successfully!";
     } else {
@@ -49,6 +49,17 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     droneClass.setName(input_name);
     droneClass.setRole(input_type);
     */
+}
+
+void DroneController::deleteDrone(const QString &input_name) {
+    if (input_name.isEmpty()) {
+        qWarning() << "Missing required name field";
+        return;
+    }
+    if (dbManager.deleteDrone(input_name)) {
+        qDebug() << "Drone deleted successfully!";
+    }
+
 }
 
 // DroneClass DroneController::getDroneByName(const QString &input_name){
