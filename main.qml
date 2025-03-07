@@ -274,8 +274,8 @@ Window {
     }
 
     function fetch() {
-        /*var drones = droneController.getDroneList();
-        droneTrackingPanel.populateListModel(drones);*/
+        var drones = droneController.getDroneList();
+        droneTrackingPanel.populateListModel(drones);
         // uncomment these for populating the list based on the database
 
         /*const response = [

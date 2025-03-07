@@ -13,7 +13,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         QString name = record["drone_name"].toString();
         QString type = record["drone_type"].toString();
         QString xbeeAddress = record["xbee_address"].toString();
-        // Should? hopefully work with other fields like xbee_id or drone_id if needed
+        // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
         droneList.push_back(QSharedPointer<DroneClass>::create(name, type, xbeeAddress));
     }
@@ -29,7 +29,16 @@ QVariantList DroneController::getDroneList() const {
         droneMap["name"] = drone->getName();
         droneMap["type"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
-        // Add additional fields as needed.
+        // Adds placeholder values for status and battery and leave other fields blank
+        droneMap["status"] = "Not Connected"; // or "Pending" or another placeholder
+        droneMap["battery"] = "NA"; // static placeholder battery percent
+
+        // uncomment to leave blank (not needed)
+        /*droneMap["lattitude"] = ""; // leave as blank or add a default value
+        droneMap["longitude"] = "";
+        droneMap["altitude"] = "";
+        droneMap["airspeed"] = "";*/
+
         list.append(droneMap);
     }
     return list;
