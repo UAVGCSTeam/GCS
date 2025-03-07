@@ -106,7 +106,15 @@ Rectangle {
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
                         Text {
-                            text: "Airspeed: " + airspeed
+                            text: "Velocity: ["
+                                  + velocityX.toFixed(2) + ", "
+                                  + velocityY.toFixed(2) + ", "
+                                  + velocityZ.toFixed(2) + "]"
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                        }
+                        Text {
+                            text: "Airspeed: " + airSpeed
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
@@ -118,24 +126,32 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery)
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
-    function populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed) {
+    function populateActiveDroneModel(name, status, battery) {
         if (activeDroneModel.count > 0 && activeDroneModel.get(0).name === name) {
             // If the same drone is clicked again, toggle visibility
             mainPanel.visible = !mainPanel.visible;
         } else {
-            // Update model and ensure the panel is visible
-            activeDroneModel.clear();
-            activeDroneModel.append({name: name,
+            activeDroneModel.clear()
+            var position = droneController.fetchPosition(0)
+            var velocity = droneController.fetchVelocity(0)
+
+
+            console.log("In QML position x: " + position);
+            activeDroneModel.append({ name: name,
                                         status: status,
                                         battery: battery,
-                                        lattitude: lattitude,
-                                        longitude: longitude,
-                                        altitude: altitude,
-                                        airspeed: airspeed            });
+                                        lattitude: position.x,
+                                        longitude: position.y,
+                                        altitude: position.z,
+                                        velocityX: velocity.x,
+                                        velocityY: velocity.y,
+                                        velocityZ: velocity.z,
+                                        airSpeed: droneController.getAirspeed(0)
+                                    })
             mainPanel.visible = true;
         }
     }

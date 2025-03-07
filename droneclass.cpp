@@ -9,12 +9,8 @@ DroneClass::DroneClass(QObject *parent) :
     , m_xbeeAddress("")
     , m_role("")
     , m_batteryLevel(-1)
-    , m_position(QVector3D(-1, -1, -1))
-    , m_lattitude(-1) //temporary
-    , m_longitude(-1) //temporary
-    , m_altitude(-1)  //temporary
-    , m_velocity(QVector3D(-1, -1, -1))
-    , m_airspeed(-1)  //temporary
+    , m_position(QVector3D(34, -117, 25)) //temporarily set to readable data
+    , m_velocity(QVector3D(4.5, -3.7, 4.1)) //temporarily set to readable data
     , m_orientation(QVector3D(-1, -1, -1))
 {
 
@@ -29,12 +25,8 @@ DroneClass::DroneClass(const QString &input_name,
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_batteryLevel(-1)
-    , m_position(QVector3D(-1, -1, -1))
-    , m_lattitude(-1) //temporary
-    , m_longitude(-1) //temporary
-    , m_altitude(-1)  //temporary
-    , m_velocity(QVector3D(-1, -1, -1))
-    , m_airspeed(-1)  //temporary
+    , m_position(QVector3D(34, -117, 25)) //temporarily set to readable data
+    , m_velocity(QVector3D(4.5, -3.7, 4.1)) //temporarily set to readable data
     , m_orientation(QVector3D(-1, -1, -1))
 {
 
@@ -70,6 +62,7 @@ void DroneClass::setPosition(const QVector3D &pos){
         emit positionChanged();
     }
 }
+
 //temporary
 void DroneClass::setLattitude(const double lat) {
     if (m_lattitude != lat) {
@@ -91,17 +84,11 @@ void DroneClass::setAltitude(const double alt) {
         emit altitudeChanged();
     }
 }
+
 void DroneClass::setVelocity(const QVector3D &vel){
     if (m_velocity != vel){
         m_velocity = vel;
         emit velocityChanged();
-    }
-}
-//temporary
-void DroneClass::setAirspeed(const double air) {
-    if (m_airspeed != air) {
-        m_airspeed = air;
-        emit airspeedChanged();
     }
 }
 void DroneClass::setOrientation(const QVector3D &ori){
