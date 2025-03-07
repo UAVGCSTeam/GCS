@@ -62,6 +62,29 @@ void DroneClass::setPosition(const QVector3D &pos){
         emit positionChanged();
     }
 }
+
+//temporary
+void DroneClass::setLattitude(const double lat) {
+    if (m_lattitude != lat) {
+        m_lattitude = lat;
+        emit lattitudeChanged();
+    }
+}
+//temporary
+void DroneClass::setLongitude(const double longitude) {
+    if (m_longitude != longitude) {
+        m_longitude = longitude;
+        emit longitudeChanged();
+    }
+}
+//temporary
+void DroneClass::setAltitude(const double alt) {
+    if (m_altitude != alt) {
+        m_altitude = alt;
+        emit altitudeChanged();
+    }
+}
+
 void DroneClass::setVelocity(const QVector3D &vel){
     if (m_velocity != vel){
         m_velocity = vel;

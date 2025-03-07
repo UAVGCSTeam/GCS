@@ -74,7 +74,7 @@ Item
             model: ListModel { id: markersModel }
             delegate: MapQuickItem
             {
-                coordinate: QtPositioning.coordinate(latitude, longitude)
+                coordinate: QtPositioning.coordinate(model.latitude, model.longitude)
                 anchorPoint.x: markerImage.width / 2
                 anchorPoint.y: markerImage.height
                 sourceItem: Image {
@@ -106,4 +106,15 @@ Item
             }
         }
     }
+    Component.onCompleted: {
+            let drones = mapController.getAllDrones();
+            markersModel.clear();
+            for (let i = 0; i < drones.length; i++) {
+                markersModel.append({
+                    "name": drones[i].name,
+                    "latitude": drones[i].latitude,
+                    "longitude": drones[i].longitude
+                });
+            }
+        }
 }
