@@ -6,7 +6,43 @@
 QList<QSharedPointer<DroneClass>> DroneController::droneList;  // Define the static variable
 
 DroneController::DroneController(DBManager &db, QObject *parent)
-    : QObject(parent), dbManager(db) {}
+    : QObject(parent), dbManager(db) {
+    // function loads all drones from the database on startup
+    QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
+    for (const QVariantMap &record : droneRecords) {
+        QString name = record["drone_name"].toString();
+        QString type = record["drone_type"].toString();
+        QString xbeeAddress = record["xbee_address"].toString();
+        // Should? work with other fields like xbee_id or drone_id if needed
+        // existing table can have added columns for the lati and longi stuff and input here
+        droneList.push_back(QSharedPointer<DroneClass>::create(name, type, xbeeAddress));
+    }
+    qDebug() << "Loaded" << droneList.size() << "drones from the database.";
+}
+
+// method so QML can retrieve the drone list.
+QVariantList DroneController::getDroneList() const {
+    QVariantList list;
+    for (const QSharedPointer<DroneClass> &drone : droneList) {
+        QVariantMap droneMap;
+        // these method calls have to match our DroneClass interface
+        droneMap["name"] = drone->getName();
+        droneMap["type"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        droneMap["xbeeAddress"] = drone->getXbeeAddress();
+        // Adds placeholder values for status and battery and leave other fields blank
+        droneMap["status"] = "Not Connected"; // or "Pending" or another placeholder
+        droneMap["battery"] = "NA"; // static placeholder battery percent
+
+        // uncomment to leave blank (not needed)
+        /*droneMap["lattitude"] = ""; // leave as blank or add a default value
+        droneMap["longitude"] = "";
+        droneMap["altitude"] = "";
+        droneMap["airspeed"] = "";*/
+
+        list.append(droneMap);
+    }
+    return list;
+}
 
 // Steps in saving a drone.
 /* User Clicks button to save drone information
