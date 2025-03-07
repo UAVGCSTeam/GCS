@@ -80,7 +80,7 @@ void DroneClass::setLattitude(const double lat) {
 //temporary
 void DroneClass::setLongitude(const double longitude) {
     if (m_longitude != longitude) {
-        m_longitude = longitude;
+        m_lattitude = longitude;
         emit longitudeChanged();
     }
 }
