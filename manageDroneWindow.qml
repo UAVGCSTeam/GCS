@@ -351,6 +351,7 @@ Window {
                     }
                     onClicked: {
                         // We are going to NEED to put more input validation
+                        // TODO: add input validation for same name droneNames.
                         if (droneNameField.text.length > 0) {
                             // Add to list model first
                             droneModel.append({

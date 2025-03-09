@@ -56,6 +56,8 @@ public:
 private:
     QSqlDatabase gcs_db_connection;
     bool createDroneTable();
+    // private function to check if drone pre-exists, using name.
+    bool checkIfDroneExists(const QString& droneName);
 
 };
 
