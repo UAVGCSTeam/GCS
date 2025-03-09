@@ -33,9 +33,16 @@ public:
 
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    void deleteDrone(const QString &name);
+    void deleteALlDrones_UI();
+
+// Declaration for retrieving the drone list
+public:
+    Q_INVOKABLE QVariantList getDroneList() const;
 
 signals:
     void droneAdded();
+    void droneDeleted();
 
 private:
     DBManager &dbManager;

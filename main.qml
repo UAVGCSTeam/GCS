@@ -127,9 +127,9 @@ Window {
             }
 
             MenuItem {
-                text: qsTr("Delete Drone")
+                text: qsTr("Delete All Drones")
                 onTriggered: {
-                    deleteDroneWindow.open();
+                    deleteAllDronesWindow.open();
                 }
             }
         }
@@ -137,7 +137,7 @@ Window {
 
     // Creates pop-up for Delete drone command
     Popup {
-            id: deleteDroneWindow
+            id: deleteAllDronesWindow
             modal: true
             focus: true
             width: 200
@@ -153,7 +153,7 @@ Window {
                 // Display confirmation message
                 Text {
                     id: confirmMessage
-                    text: "Are you sure you want to delete this drone?"
+                    text: "Are you sure you want to delete ALL drones?"
                     wrapMode: Text.WordWrap
                     // Width is parent's width minus margins
                     width: parent.width - 20
@@ -166,7 +166,7 @@ Window {
                     text: "No"
                     width: parent.width
                     onClicked: {
-                        deleteDroneWindow.close()
+                        deleteAllDronesWindow.close()
                     }
                 }
 
@@ -174,7 +174,8 @@ Window {
                     text: "Yes"
                     width: parent.width
                     onClicked: {
-                        deleteDroneWindow.close()
+                        droneController.deleteALlDrones_UI()
+                        deleteAllDronesWindow.close()
                         confirmWindow.open()
                     }
                 }
@@ -273,7 +274,11 @@ Window {
     }
 
     function fetch() {
-        const response = [
+        var drones = droneController.getDroneList();
+        droneTrackingPanel.populateListModel(drones);
+        // uncomment these for populating the list based on the database
+
+        /*const response = [
                            {name: "Drone 1", status: "Flying", battery: 10, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
                            {name: "Drone 2", status: "Idle", battery: 54, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
                            {name: "Drone 3", status: "Stationy", battery: 70, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
@@ -281,6 +286,7 @@ Window {
                            {name: "Drone 5", status: "Flying", battery: 90, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
                            {name: "Drone 6", status: "Ready", battery: 100, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45}
                           ]
-        droneTrackingPanel.populateListModel(response)
+        droneTrackingPanel.populateListModel(response)*/
+        // uncomment these for the original static response
     }
 }
