@@ -34,6 +34,10 @@ public:
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
 
+// Declaration for retrieving the drone list
+public:
+    Q_INVOKABLE QVariantList getDroneList() const;
+
 signals:
     void droneAdded();
 

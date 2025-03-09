@@ -305,4 +305,27 @@ bool DBManager::createInitialDrones() {
     return true;
 }
 
+// NEW: Method to fetch all drones from the database
+QList<QVariantMap> DBManager::fetchAllDrones() {
+    QList<QVariantMap> drones;
+    if (!gcs_db_connection.isOpen()) {
+        qCritical() << "Database is not open! Cannot fetch drones.";
+        return drones;
+    }
 
+    QSqlQuery query(gcs_db_connection);
+    if(query.exec("SELECT drone_id, drone_name, drone_type, xbee_id, xbee_address FROM drones")) {
+        while(query.next()) {
+            QVariantMap drone;
+            drone["drone_id"]    = query.value("drone_id").toInt();
+            drone["drone_name"]  = query.value("drone_name").toString();
+            drone["drone_type"]  = query.value("drone_type").toString();
+            drone["xbee_id"]     = query.value("xbee_id").toString();
+            drone["xbee_address"]= query.value("xbee_address").toString();
+            drones.append(drone);
+        }
+    } else {
+        qCritical() << "Failed to fetch drones:" << query.lastError().text();
+    }
+    return drones;
+}
