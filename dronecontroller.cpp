@@ -146,6 +146,15 @@ void DroneController::deleteALlDrones_UI() {
         qWarning() << "Failed to delete all drones.";
     }
 }
+QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) {
+    for (const auto &drone : droneList) {
+        if (drone->getName() == name) {
+            return drone;
+        }
+    }
+    return QSharedPointer<DroneClass>();  // Return null pointer if not found
+
+}
 
 bool DroneController::initXbeeSharedMemory() {
     // Try to attach to existing shared memory created by Python
