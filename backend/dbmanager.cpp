@@ -45,6 +45,10 @@ void DBManager::initDB() {
     if (!createDroneTable()) {
         qCritical() << "Table creation failed!";
     }
+
+    if (!createInitialDrones()) {
+        qWarning() << "Failed to create initial drones.";
+    }
 }
 
 
@@ -253,3 +257,52 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
     query.next();
     return query.value(0).toInt() > 0; // Returns true if at least one matching drone exists
 }
+
+bool DBManager::createInitialDrones() {
+    if (!gcs_db_connection.isOpen()) {
+        qCritical() << "Database is not open! Cannot insert initial drones.";
+        return false;
+    }
+
+    // Check if drones already exist to avoid duplicates
+    if (checkIfDroneExists("Firehawk") || checkIfDroneExists("Octoquad")) {
+        qDebug() << "Initial drones not created: table already contains drones.";
+        return false;
+    }
+    // Insert first drone
+    QSqlQuery insertQuery(gcs_db_connection);
+    insertQuery.prepare(R"(
+        INSERT INTO drones (drone_name, drone_role, xbee_id, xbee_address)
+        VALUES (:droneName, :droneRole, :xbeeID, :xbeeAddress);
+    )");
+
+    insertQuery.bindValue(":droneName", "Firehawk");
+    insertQuery.bindValue(":droneRole", "Suppression");
+    insertQuery.bindValue(":xbeeID", "A");
+    insertQuery.bindValue(":xbeeAddress", "13A20041D365C4");
+
+    if (!insertQuery.exec()) {
+        qCritical() << "Failed to insert Firehawk:" << insertQuery.lastError().text();
+        return false;
+    } else {
+        qDebug() << "Firehawk inserted successfully.";
+    }
+
+    // Insert second drone
+    insertQuery.bindValue(":droneName", "Octoquad");
+    insertQuery.bindValue(":droneRole", "Detection");
+    insertQuery.bindValue(":xbeeID", "C");
+    insertQuery.bindValue(":xbeeAddress", "0013A200422F2FDF");
+
+    if (!insertQuery.exec()) {
+        qCritical() << "Failed to insert Octoquad:" << insertQuery.lastError().text();
+        return false;
+    } else {
+        qDebug() << "Octoquad inserted successfully.";
+    }
+
+    qDebug() << "Both initial drones created successfully.";
+    return true;
+}
+
+

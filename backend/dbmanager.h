@@ -58,6 +58,7 @@ private:
     bool createDroneTable();
     // private function to check if drone pre-exists, using name.
     bool checkIfDroneExists(const QString& droneName);
+    bool createInitialDrones();
 
 };
 
