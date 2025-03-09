@@ -26,8 +26,12 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    // Method to start the XBee Python script
+    bool startXbeeProcess();
+
 private:
     Ui::MainWindow *ui;
+    QProcess *pythonProcess;
 
 signals:
     // QVariant is a datatype that translates typical C types <-> Q types
