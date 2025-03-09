@@ -33,6 +33,7 @@ public:
 
 public slots:
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    void deleteDrone(const QString &name);
 
 // Declaration for retrieving the drone list
 public:
@@ -40,6 +41,7 @@ public:
 
 signals:
     void droneAdded();
+    void droneDeleted();
 
 private:
     DBManager &dbManager;
