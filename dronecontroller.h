@@ -37,9 +37,6 @@ public:
     // Initialize shared memory for XBee communication
     bool initXbeeSharedMemory();
 
-    // Send command to a specific drone via XBee
-    Q_INVOKABLE void sendCommandToDrone(const QString &droneName, const QString &command);
-
     // Get latest recieved XBee data
     QString getLatestXbeeData();
 
