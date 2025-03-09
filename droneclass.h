@@ -50,6 +50,9 @@ public:
                QObject *parent = nullptr
                );
 
+    // For handling the shared memory communication between the python and each INDIVIDUAL drone
+    void processXbeeMessage(const QString &message);
+
     QString getName() const { return m_name; };
     void setName(const QString &inputName);
     QString getXbeeAddress() const { return m_xbeeAddress; };

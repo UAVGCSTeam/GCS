@@ -1,6 +1,11 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
 #include <QDebug>
+
+#include <QSharedMemory>
+#include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
 // #include "drone.h"
 
 QList<QSharedPointer<DroneClass>> DroneController::droneList;  // Define the static variable
@@ -45,6 +50,13 @@ QVariantList DroneController::getDroneList() const {
         list.append(droneMap);
     }
     return list;
+}
+
+DroneController::~DroneController() {
+    // Cleans up
+    if(xbeeSharedMemory.isAttached()) {
+        xbeeSharedMemory.detach();
+    }
 }
 
 // Steps in saving a drone.
@@ -134,6 +146,56 @@ void DroneController::deleteALlDrones_UI() {
         qWarning() << "Failed to delete all drones.";
     }
 }
+
+bool DroneController::initXbeeSharedMemory() {
+    // Try to attach to existing shared memory created by Python
+    // The PYTHON creates the shared space
+    if (!xbeeSharedMemory.attach()) {
+        qWarning() << "Failed to attach to shared memory:" << xbeeSharedMemory.errorString();
+        qDebug() << "Waiting for Python script to create shared memory...";
+        return false;
+    }
+
+    // Start the timer to check for data
+    xbeeDataTimer.start(50); // Check every 50ms
+    return true;
+}
+
+QString DroneController::getLatestXbeeData() {
+    QString result;
+    if (xbeeSharedMemory.lock()) {
+        result = QString::fromUtf8(static_cast<char*>(xbeeSharedMemory.data()));
+        xbeeSharedMemory.unlock();
+    } else {
+        qWarning() << "Failed to lock shared memory for reading";
+    }
+    return result;
+}
+
+void DroneController::processXbeeData() {
+    QString data = getLatestXbeeData();
+    if (data.isEmpty()) return;
+
+    // Try to parse as JSON
+    QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8());
+    if (doc.isNull()) return;
+
+    QJsonObject obj = doc.object();
+    if (obj["type"] == "xbee_data") {
+        QString droneName = obj["drone"].toString();
+        QString message = obj["message"].toString();
+
+        QSharedPointer<DroneClass> drone = getDroneByName(droneName);
+        if (!drone.isNull()) {
+            // Update drone state based on XBee data
+            drone->processXbeeMessage(message);
+
+            // Emit signal that drone state has changed
+            emit droneStateChanged(droneName);
+        }
+    }
+}
+
 // DroneClass DroneController::getDroneByName(const QString &input_name){
 
 // }
