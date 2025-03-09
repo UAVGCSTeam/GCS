@@ -27,7 +27,8 @@ QVariantList DroneController::getDroneList() const {
         QVariantMap droneMap;
         // these method calls have to match our DroneClass interface
         droneMap["name"] = drone->getName();
-        droneMap["type"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+      //      droneMap["xbeeID"] = drone->get();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = "Not Connected"; // or "Pending" or another placeholder
