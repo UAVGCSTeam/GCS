@@ -105,6 +105,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole, 
     )");
 
     insertQuery.bindValue(":droneName", droneName);
+    // this allows empty values to be set as null, meaning empty values can be entered like: ""
     insertQuery.bindValue(":droneRole", droneRole.isEmpty() ? QVariant(QString()) : droneRole);
     insertQuery.bindValue(":xbeeID", xbeeID.isEmpty() ? QVariant(QString()) : xbeeID);
     insertQuery.bindValue(":xbeeAddress", xbeeAddress.isEmpty() ? QVariant(QString()) : xbeeAddress);
