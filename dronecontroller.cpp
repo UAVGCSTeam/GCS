@@ -89,8 +89,7 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
 
 void DroneController::deleteDrone(const QString &input_name) {
     if (input_name.isEmpty()) {
-        qWarning() << "Missing required name field";
-        return;
+        qWarning() << "Drone Controller: Name not passed by UI.";
     }
     if (dbManager.deleteDrone(input_name)) {
         qDebug() << "Drone deleted successfully!";
@@ -98,6 +97,18 @@ void DroneController::deleteDrone(const QString &input_name) {
 
 }
 
+// if we're being honest the slots being called by any function is in my head and i cant figure out if i need something rn
+void DroneController::deleteALlDrones_UI() {
+    if (dbManager.deleteAllDrones()) {
+        droneList.clear(); // also delete drones in C++ memory
+
+        qDebug() << "droneController: All drones deleted successfully!";
+
+        //emit droneDeleted();
+    } else {
+        qWarning() << "Failed to delete all drones.";
+    }
+}
 // DroneClass DroneController::getDroneByName(const QString &input_name){
 
 // }

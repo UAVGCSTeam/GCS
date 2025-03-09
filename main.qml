@@ -127,9 +127,9 @@ Window {
             }
 
             MenuItem {
-                text: qsTr("Delete Drone")
+                text: qsTr("Delete All Drones")
                 onTriggered: {
-                    deleteDroneWindow.open();
+                    deleteAllDronesWindow.open();
                 }
             }
         }
@@ -137,7 +137,7 @@ Window {
 
     // Creates pop-up for Delete drone command
     Popup {
-            id: deleteDroneWindow
+            id: deleteAllDronesWindow
             modal: true
             focus: true
             width: 200
@@ -153,7 +153,7 @@ Window {
                 // Display confirmation message
                 Text {
                     id: confirmMessage
-                    text: "Are you sure you want to delete this drone?"
+                    text: "Are you sure you want to delete ALL drones?"
                     wrapMode: Text.WordWrap
                     // Width is parent's width minus margins
                     width: parent.width - 20
@@ -166,7 +166,7 @@ Window {
                     text: "No"
                     width: parent.width
                     onClicked: {
-                        deleteDroneWindow.close()
+                        deleteAllDronesWindow.close()
                     }
                 }
 
@@ -174,7 +174,8 @@ Window {
                     text: "Yes"
                     width: parent.width
                     onClicked: {
-                        deleteDroneWindow.close()
+                        droneController.deleteALlDrones_UI()
+                        deleteAllDronesWindow.close()
                         confirmWindow.open()
                     }
                 }
