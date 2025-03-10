@@ -160,6 +160,14 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) 
 }
 
 bool DroneController::initXbeeSharedMemory() {
+#ifdef Q_OS_WIN
+    // On Windows, use a specific named shared memory
+    xbeeSharedMemory.setKey("Local\\XbeeSharedMemory");
+#else
+    // On Unix/macOS, use the key as before
+    xbeeSharedMemory.setKey("XbeeSharedMemory");
+#endif
+
     // Try to attach to existing shared memory created by Python
     if (!xbeeSharedMemory.attach()) {
         qWarning() << "Failed to attach to shared memory:" << xbeeSharedMemory.errorString();
