@@ -1,6 +1,9 @@
 # Ignore build directory
 /build/
 
+# Ignore venv
+venv/
+
 # Ignore CMake generated files
 CMakeLists.txt.user
 CMakeCache.txt
