@@ -37,8 +37,9 @@ public:
     // Initialize shared memory for XBee communication
     bool initXbeeSharedMemory();
 
-    // Get latest recieved XBee data
-    QString getLatestXbeeData();
+    void startXbeeMonitoring();
+
+    bool isXbeeConnected() const { return xbeeSharedMemory.isAttached(); }
 
 public slots:
     void updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
@@ -53,12 +54,14 @@ public:
 
 private slots:
     void processXbeeData();
+    void tryConnectToSharedMemory();
 
 signals:
     void droneAdded();
     void droneUpdated();
     void droneDeleted();
     void droneStateChanged(const QString &droneName);
+    void xbeeConnectionChanged(bool connected);
 
 private:
     DBManager &dbManager;
@@ -66,11 +69,18 @@ private:
     //DroneClass &droneClass;
 
     // Shared memory for XBee Communication
-    QSharedMemory xbeeSharedMemory;
+    QSharedMemory xbeeSharedMemory{"XbeeSharedMemory"};
     QTimer xbeeDataTimer;
+    QTimer reconnectTimer;
 
     // Method to find drone by name
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
+
+    // Get latest data from shared memory
+    QString getLatestXbeeData();
+
+    // Method to find drone by XBee address
+    QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
 };
 
 

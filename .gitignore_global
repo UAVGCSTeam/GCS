@@ -1,0 +1,45 @@
+# Ignore build directory
+/build/
+
+# Ignore venv
+venv/
+
+# Ignore CMake generated files
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Ignore Qt Creator specific files
+*.user
+*.autosave
+
+# Ignore compiled object files and libraries
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.dll
+*.dylib
+
+# Ignore executables
+*.exe
+*.out
+*.app
+
+# Ignore Qt generated files
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore other common build directories
+/debug/
+/release/
