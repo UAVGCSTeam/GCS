@@ -25,23 +25,34 @@
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
+
+// DroneController is responsible for managing drones within the system
 class DroneController : public QObject {
     Q_OBJECT
 public:
-    // idk how to pass the parent function
+    // Constructor that initializes the DroneController with database manager.
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
+    // Prints Drone vector for debugging
+    void debugPrintDrones() const;
 
 public slots:
+    // Saves drone to database
     void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    // Adds drone to Vector list
+    void addDrone(DroneClass* drone);
+
+    // Creates a new drone instance and adds it to the system.
+    void createDrone(const QString &input_name);
+    QVariantList getAllDrones() const;
 
 signals:
+    // Signal emmited to QML when new drone is added
     void droneAdded();
 
 private:
     DBManager &dbManager;
-    static QList<QSharedPointer<DroneClass>> droneList;
-    //DroneClass &droneClass;
-
+    // List of all drones managed by this controller.
+    static QVector<DroneClass*> droneList;
 };
 
 
