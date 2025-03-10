@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import platform
+import traceback
 
 # Get the directory where this script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,4 +29,11 @@ subprocess.check_call(pip_cmd)
 
 # Run the XBee handler using the virtual environment's Python
 print("Starting XBee handler...")
-subprocess.check_call([python_executable, xbee_handler])
+try:
+    subprocess.check_call([python_executable, xbee_handler])
+    print("XBee handler completed successfully")
+except subprocess.CalledProcessError as e:
+    print(f"XBee handler failed with exit code: {e.returncode}")
+except Exception as e:
+    print(f"Error running XBee handler: {type(e).__name__}: {e}")
+    traceback.print_exc()

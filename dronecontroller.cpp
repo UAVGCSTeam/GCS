@@ -162,7 +162,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) 
 bool DroneController::initXbeeSharedMemory() {
 #ifdef Q_OS_WIN
     // On Windows, use a specific named shared memory
-    xbeeSharedMemory.setKey("Local\\XbeeSharedMemory");
+    xbeeSharedMemory.setKey("XbeeSharedMemory");
 #else
     // On Unix/macOS, use the key as before
     xbeeSharedMemory.setKey("XbeeSharedMemory");
