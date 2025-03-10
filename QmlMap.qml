@@ -8,7 +8,6 @@ Item
 
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
-    // Current map "types", dont have real control over map type in osm. Will keep for when we change map provider, just plug in.
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },
@@ -19,23 +18,16 @@ Item
     Plugin {
         id: mapPlugin
         name: "osm"
-        // This refers to map type 'here' provides different map views as opposed to google maps and especially osm
-        // We will want to change to here in the future, but it requires a paid API key and Token
-        // name: "here"
-        // PluginParameter { name: "here.app_id"; value: "GCS" }
-        // PluginParameter { name: "here.token"; value: "sgISOwxxqF1JeBFaXKRbkHSsfHxsxWITKXCqeCkLP0A" }
     }
 
     Map
     {
-        // Create actual Map Component
-        // Reference id, not file name
         id:mapview
         anchors.fill: parent
         plugin: mapPlugin
         center: QtPositioning.coordinate(latitude,longitude)
         zoomLevel: 18
-        // Handles clicking and dragging and zoom
+
         PinchHandler
         {
             target: null
@@ -70,7 +62,6 @@ Item
         }
         MapItemView
         {
-            // Create list for all pins (Will be used to track drones later with some optimization)
             model: ListModel { id: markersModel }
             delegate: MapQuickItem
             {
@@ -79,7 +70,7 @@ Item
                 anchorPoint.y: markerImage.height
                 sourceItem: Image {
                     id: markerImage
-                    source: "qrc:/resources/droneMapIconSVG.svg"  // Make sure this path is correct, currently in the CMake as this path
+                    source: "qrc:/resources/droneMapIconSVG.svg"
                     width: 100
                     height: 100
                 }
@@ -87,27 +78,10 @@ Item
         }
     }
 
-    /*
-      These are our QML declarations of these functions, they occur once the signal is emitted from our cpp files.
-      They listen for emit and then take the data that is emitted and uses it
-    */
     Connections {
-        target: mapController
-        function onCenterPositionChanged(lat, lon) {
-            mapview.center = QtPositioning.coordinate(lat, lon)
-        }
-        function onLocationMarked(lat, lon) {
-            markersModel.append({"latitude": lat, "longitude": lon})
-        }
-        function onMapTypeChanged(index) {
-            if (index < mapview.supportedMapTypes.length) {
-                // Sets current maptype
-                mapview.activeMapType = mapview.supportedMapTypes[index]
-            }
-        }
-    }
-    Component.onCompleted: {
-            let drones = mapController.getAllDrones();
+        target: droneController
+        function onDroneAdded() {
+            let drones = droneController.getAllDrones();
             markersModel.clear();
             for (let i = 0; i < drones.length; i++) {
                 markersModel.append({
@@ -117,4 +91,32 @@ Item
                 });
             }
         }
+    }
+
+    Connections {
+        target: mapController
+        function onCenterPositionChanged(lat, lon) {
+            mapview.center = QtPositioning.coordinate(lat, lon);
+        }
+        function onLocationMarked(lat, lon) {
+            markersModel.append({"latitude": lat, "longitude": lon});
+        }
+        function onMapTypeChanged(index) {
+            if (index < mapview.supportedMapTypes.length) {
+                mapview.activeMapType = mapview.supportedMapTypes[index];
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        let drones = droneController.getAllDrones();
+        markersModel.clear();
+        for (let i = 0; i < drones.length; i++) {
+            markersModel.append({
+                "name": drones[i].name,
+                "latitude": drones[i].latitude,
+                "longitude": drones[i].longitude
+            });
+        }
+    }
 }
