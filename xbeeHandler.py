@@ -18,18 +18,19 @@ if platform.system() == "Windows":
                 self.name = name
                 self.size = size
                 self.file_path = os.path.join(tempfile.gettempdir(), name)
+                print(f"Creating Windows shared memory at: {self.file_path}")
                 self.file = open(self.file_path, 'wb+')
                 self.file.write(b'\0' * size)
                 self.file.flush()
                 self.mmap = mmap.mmap(self.file.fileno(), size)
-                print(f"Created Windows shared memory at: {self.file_path}")
+                print(f"Windows shared memory created successfully")
 
             def write(self, data):
                 self.mmap.seek(0)
                 self.mmap.write(data)
                 self.mmap.flush()
-    except ImportError:
-        print("On Windows, you need to run: pip install mmap")
+    except ImportError as e:
+        print(f"Error importing Windows modules: {e}")
         sys.exit(1)
 else:
     try:
@@ -49,52 +50,28 @@ except ImportError:
 SHARED_MEMORY_NAME = "XbeeSharedMemory"
 SHARED_MEMORY_SIZE = 4096
 
-# Function to get the same key that Qt uses for shared memory
+# Function to get the same key that Qt uses for shared memory (for Unix systems)
 def get_qt_shared_memory_key(name):
     hash_value = 0
     for char in name:
         hash_value = (hash_value * 31 + ord(char)) & 0x7FFFFFFF
     return hash_value
 
-# Create the shared memory segment that Qt will attach to
-memory_key = get_qt_shared_memory_key(SHARED_MEMORY_NAME)
-
 # Create platform-specific shared memory
 if platform.system() == "Windows":
-    shared_memory = SharedMemory(SHARED_MEMORY_NAME, 0, SHARED_MEMORY_SIZE)
+    try:
+        shared_memory = SharedMemory(SHARED_MEMORY_NAME, 0, SHARED_MEMORY_SIZE)
+    except Exception as e:
+        print(f"Failed to create Windows shared memory: {e}")
+        sys.exit(1)
 else:
     try:
+        memory_key = get_qt_shared_memory_key(SHARED_MEMORY_NAME)
         shared_memory = sysv_ipc.SharedMemory(memory_key, sysv_ipc.IPC_CREAT, size=SHARED_MEMORY_SIZE)
         print(f"Created shared memory with key: {memory_key} (hex: 0x{memory_key:X})")
     except Exception as e:
         print(f"Failed to create shared memory: {e}")
         sys.exit(1)
-
-
-
-
-
-# HERE HERE HERE
-# Connect to XBee device
-try:
-    # Use different serial port naming based on platform
-    if platform.system() == "Windows":
-        port = "COM3"  # Default Windows COM port - adjust as needed
-    else:
-        port = "/dev/ttyUSB0"  # Default Linux/Mac port
-
-    print(f"Trying to connect to XBee on port: {port}")
-    xbee = XBeeDevice(port, 9600)
-    xbee.open()
-    print("XBee device connected successfully")
-except Exception as e:
-    print(f"Failed to connect to XBee device: {e}")
-    sys.exit(1)
-# HERE HERE HERE
-
-
-
-
 
 # Function to write to shared memory
 def write_to_shared_memory(data):
@@ -102,6 +79,9 @@ def write_to_shared_memory(data):
         data = json.dumps(data)
     if isinstance(data, str):
         data = data.encode('utf-8')
+        # Ensure it's padded to avoid partial reads
+        if len(data) < SHARED_MEMORY_SIZE:
+            data = data + b'\0' * (SHARED_MEMORY_SIZE - len(data))
     try:
         shared_memory.write(data)
     except Exception as e:
@@ -122,8 +102,33 @@ def heartbeat_thread():
         time.sleep(5)  # Send heartbeat every 5 seconds
 
 # Start heartbeat thread
-heartbeat = threading.Thread(target=heartbeat_thread, daemon=True)
-heartbeat.start()
+heart_thread = threading.Thread(target=heartbeat_thread, daemon=True)
+heart_thread.start()
+
+
+
+# HERE HERE HERE
+# Connect to XBee device
+try:
+    # Use different serial port naming based on platform
+    if platform.system() == "Windows":
+        port = "COM3"  # Default Windows COM port - adjust as needed
+    else:
+        port = "/dev/ttyUSB0"  # Default Linux/Mac port
+
+    print(f"Trying to connect to XBee on port: {port}")
+    xbee = XBeeDevice(port, 9600)
+    xbee.open()
+    print("XBee device connected successfully")
+except Exception as e:
+    print(f"Failed to connect to XBee device: {e}")
+    print(f"Make sure the XBee is connected and the port is correct.")
+    print(f"For Windows, check Device Manager to find the correct COM port.")
+    print(f"For Mac, use a port like /dev/tty.usbserial-*")
+    sys.exit(1)  # Exit with error
+# HERE HERE HERE
+
+
 
 # Drone address mapping
 drone_name_map = {
@@ -132,8 +137,9 @@ drone_name_map = {
     # Add your real drone XBee addresses here
 }
 
-# Main XBee communication loop
-print("Listening for XBee messages...")
+# Main communication loop
+print("Starting communication loop...")
+
 while True:
     try:
         # Check for incoming XBee messages
