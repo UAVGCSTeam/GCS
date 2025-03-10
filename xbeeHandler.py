@@ -109,8 +109,6 @@ heart_thread.start()
 
 # HERE HERE HERE
 # Connect to XBee device
-# Connect to XBee device
-xbee = None
 try:
     # Use different serial port naming based on platform
     if platform.system() == "Windows":
@@ -127,8 +125,7 @@ except Exception as e:
     print(f"Make sure the XBee is connected and the port is correct.")
     print(f"For Windows, check Device Manager to find the correct COM port.")
     print(f"For Mac, use a port like /dev/tty.usbserial-*")
-    print("Will continue without XBee device and generate test data")
-    xbee = None  # Make sure xbee is None if connection failed
+    sys.exit(1)  # Exit with error
 # HERE HERE HERE
 
 
@@ -142,55 +139,30 @@ drone_name_map = {
 
 # Main communication loop
 print("Starting communication loop...")
-last_time = 0
 
 while True:
     try:
-        if xbee is None:
-            # No real XBee, so generate test data periodically
-            current_time = time.time()
-            if current_time - last_time >= 2:  # Every 2 seconds
-                # Create a test message
-                test_message = {
-                    'type': 'xbee_data',
-                    'drone': 'TestDrone',
-                    'address': '0013A20012345678',
-                    'message': (
-                        f"ICAO: A\n"
-                        f"Lattitude: 34.059084\n"
-                        f"Longitude: -117.820535\n"
-                        f"Altitude: 0.056\n"
-                        f"Velocity: [0.0, 0.0, 0.0]\n"
-                        f"Airspeed: 0.05573\n"
-                        f"Battery Level: 0.117"
-                    ),
-                    'timestamp': current_time
-                }
-                write_to_shared_memory(test_message)
-                print("Sent test data to shared memory")
-                last_time = current_time
-        else:
-            # Check for incoming XBee messages
-            xbee_message = xbee.read_data(timeout=100)
-            if xbee_message:
-                sender = str(xbee_message.remote_device.get_64bit_addr())
-                message = xbee_message.data.decode('utf-8')
+        # Check for incoming XBee messages
+        xbee_message = xbee.read_data(timeout=100)
+        if xbee_message:
+            sender = str(xbee_message.remote_device.get_64bit_addr())
+            message = xbee_message.data.decode('utf-8')
 
-                print(f"Received from {sender}: {message}")
+            print(f"Received from {sender}: {message}")
 
-                # Look up which drone this belongs to based on XBee address
-                drone_name = drone_name_map.get(sender, "Unknown")
+            # Look up which drone this belongs to based on XBee address
+            drone_name = drone_name_map.get(sender, "Unknown")
 
-                # Send to Qt via shared memory
-                data = {
-                    'type': 'xbee_data',
-                    'drone': drone_name,
-                    'address': sender,
-                    'message': message,
-                    'timestamp': time.time()
-                }
-                write_to_shared_memory(data)
-                print(f"Sent data to shared memory for drone: {drone_name}")
+            # Send to Qt via shared memory
+            data = {
+                'type': 'xbee_data',
+                'drone': drone_name,
+                'address': sender,
+                'message': message,
+                'timestamp': time.time()
+            }
+            write_to_shared_memory(data)
+            print(f"Sent data to shared memory for drone: {drone_name}")
     except Exception as e:
         print(f"Error in main loop: {e}")
 
