@@ -79,11 +79,18 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) 
 
 bool DroneController::initXbeeSharedMemory() {
 #ifdef Q_OS_WIN
-    // On Windows, use a specific named shared memory
-    xbeeSharedMemory.setKey("Local\\XbeeSharedMemory");
-#else
-    // On Unix/macOS, use the key as before
+    // On Windows, use the name directly
     xbeeSharedMemory.setKey("XbeeSharedMemory");
+#else
+    // On macOS, calculate the numeric key the same way Python does
+    QString name = "XbeeSharedMemory";
+    int key = 0;
+    for (QChar c : name) {
+        key = (key * 31 + c.unicode()) & 0x7FFFFFFF;
+    }
+    // Convert int to QString for setKey
+    xbeeSharedMemory.setKey(QString::number(key));
+    qDebug() << "Using shared memory key:" << key << "(hex: 0x" << QString::number(key, 16) << ")";
 #endif
 
     // Try to attach to existing shared memory created by Python
@@ -98,10 +105,8 @@ void DroneController::tryConnectToSharedMemory() {
     if (initXbeeSharedMemory()) {
         qDebug() << "Successfully connected to XBee shared memory";
         reconnectTimer.stop();  // Stop trying to reconnect
-
         // Start timer to check for XBee data
         xbeeDataTimer.start(50);  // Check every 50ms
-
         emit xbeeConnectionChanged(true);
     }
 }
