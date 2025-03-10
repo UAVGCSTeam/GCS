@@ -3,7 +3,45 @@ import sys
 import time
 import json
 import sysv_ipc
+import platform
 from digi.xbee.devices import XBeeDevice
+import threading
+
+# Platform-specific imports
+if platform.system() == "Windows":
+    # On Windows, use a different shared memory implementation
+    try:
+        import mmap
+        import tempfile
+        import os
+        import struct
+
+        # Windows shared memory implementation
+        class SharedMemory:
+            def __init__(self, name, flags, size):
+                self.name = name
+                self.size = size
+                self.file_path = os.path.join(tempfile.gettempdir(), name)
+                self.file = open(self.file_path, 'wb+')
+                self.file.write(b'\0' * size)
+                self.file.flush()
+                self.mmap = mmap.mmap(self.file.fileno(), size)
+
+            def write(self, data):
+                self.mmap.seek(0)
+                self.mmap.write(data)
+                self.mmap.flush()
+
+    except ImportError:
+        print("On Windows, you need to run: pip install mmap")
+        sys.exit(1)
+else:
+    # On Unix-like systems, use sysv_ipc
+    try:
+        import sysv_ipc
+    except ImportError:
+        print("On Unix/macOS, you need to run: pip install sysv_ipc")
+        sys.exit(1)
 
 # Shared memory name - must match what's used in Qt
 SHARED_MEMORY_NAME = "XbeeSharedMemory"
@@ -64,6 +102,22 @@ def write_to_shared_memory(data):
         shared_memory.write(data)
     except Exception as e:
         print(f"Error writing to shared memory: {e}")
+
+def heartbeat_thread():
+    while True:
+        try:
+            heartbeat_data = {
+                'type': 'heartbeat',
+                'timestamp': time.time()
+            }
+            write_to_shared_memory(heartbeat_data)
+            print("Sent heartbeat")
+        except Exception as e:
+            print(f"Error sending heartbeat: {e}")
+        time.sleep(5)  # Send heartbeat every 5 seconds
+
+heartbeat_thread = threading.Thread(target=heartbeat_thread, daemon=True)
+heartbeat_thread.start()
 
 # Main XBee communication loop
 print("Listening for XBee messages...")

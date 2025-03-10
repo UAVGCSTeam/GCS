@@ -21,9 +21,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Start the Python Xbee Process
     if (startXbeeProcess()) {
-        qDebug() << "XBee Python script started successfully";
-    } else {
-        qWarning() << "Failed to start XBee Python script";
+        xbeeStatusLabel->setText("XBee: Starting...");
+        xbeeStatusLabel->setStyleSheet("color: orange;");
+        // Initialize XBee monitoring in DroneController
+        // This assumes DroneController is already created and available
+        QTimer::singleShot(1000, [this]() {
+            // This call should be adapted to how you access your DroneController
+            // droneController->startXbeeMonitoring();
+        });
     }
 }
 
@@ -56,15 +61,23 @@ bool MainWindow::startXbeeProcess()
     });
 
     connect(pythonProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [](int exitCode, QProcess::ExitStatus exitStatus) {
+            this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 qDebug() << "Python process finished with code" << exitCode;
+                xbeeStatusLabel->setText("XBee: Disconnected");
+                xbeeStatusLabel->setStyleSheet("color: red;");
             });
 
     // Set the working directory to where the script is located
     pythonProcess->setWorkingDirectory(QCoreApplication::applicationDirPath());
 
-    // Start the Python script
-    pythonProcess->start("python", QStringList() << "xbeeFunctions.py");
+    QStringList args;
+    args << "xbeeHandler.py";
+
+#ifdef QT_DEBUG
+    args << "--simulate";  // Use simulation mode in debug builds IMPLEMENT THIS
+#endif
+
+    pythonProcess->start("python", args);
 
     // Wait for it to start
     if (!pythonProcess->waitForStarted(5000)) {

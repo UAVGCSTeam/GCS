@@ -1,0 +1,4 @@
+sysv_ipc
+digi-xbee
+# Add other dependencies as needed
+# this is for automatically creating and connecting the venv required to connect xbee

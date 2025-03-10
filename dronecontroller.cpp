@@ -13,8 +13,9 @@ QList<QSharedPointer<DroneClass>> DroneController::droneList;  // Define the sta
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db), xbeeSharedMemory("XbeeSharedMemory") {
 
-    // Set up timer to check for XBee data
+    // Set up timer connections but don't start yet
     connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
+    connect(&reconnectTimer, &QTimer::timeout, this, &DroneController::tryConnectToSharedMemory);
 }
 
 DroneController::~DroneController() {
@@ -78,16 +79,23 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) 
 
 bool DroneController::initXbeeSharedMemory() {
     // Try to attach to existing shared memory created by Python
-    // The PYTHON creates the shared space
     if (!xbeeSharedMemory.attach()) {
         qWarning() << "Failed to attach to shared memory:" << xbeeSharedMemory.errorString();
-        qDebug() << "Waiting for Python script to create shared memory...";
         return false;
     }
-
-    // Start the timer to check for data
-    xbeeDataTimer.start(50); // Check every 50ms
     return true;
+}
+
+void DroneController::tryConnectToSharedMemory() {
+    if (initXbeeSharedMemory()) {
+        qDebug() << "Successfully connected to XBee shared memory";
+        reconnectTimer.stop();  // Stop trying to reconnect
+
+        // Start timer to check for XBee data
+        xbeeDataTimer.start(50);  // Check every 50ms
+
+        emit xbeeConnectionChanged(true);
+    }
 }
 
 QString DroneController::getLatestXbeeData() {
@@ -110,19 +118,57 @@ void DroneController::processXbeeData() {
     if (doc.isNull()) return;
 
     QJsonObject obj = doc.object();
+
+    // Handle heartbeat messages
+    if (obj["type"] == "heartbeat") {
+        qDebug() << "Received heartbeat from Python script";
+        emit xbeeConnectionChanged(true);
+        return;
+    }
+
+    // Handle drone data messages
     if (obj["type"] == "xbee_data") {
         QString droneName = obj["drone"].toString();
+        QString address = obj["address"].toString();
         QString message = obj["message"].toString();
 
-        QSharedPointer<DroneClass> drone = getDroneByName(droneName);
+        // First try to find drone by XBee address
+        QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(address);
+
         if (!drone.isNull()) {
             // Update drone state based on XBee data
             drone->processXbeeMessage(message);
 
             // Emit signal that drone state has changed
-            emit droneStateChanged(droneName);
+            emit droneStateChanged(drone->getName());
+        } else {
+            qDebug() << "Received data for unknown drone at address:" << address;
         }
     }
+}
+
+void DroneController::startXbeeMonitoring() {
+    // Try to connect immediately
+    if (initXbeeSharedMemory()) {
+        qDebug() << "Successfully connected to XBee shared memory";
+        xbeeDataTimer.start(50);  // Check every 50ms
+        emit xbeeConnectionChanged(true);
+    } else {
+        qDebug() << "Waiting for XBee shared memory to be created...";
+        emit xbeeConnectionChanged(false);
+
+        // Start reconnect timer
+        reconnectTimer.start(1000);  // Try every second
+    }
+}
+
+QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString &address) {
+    for (const auto &drone : droneList) {
+        if (drone->getXbeeAddress() == address) {
+            return drone;
+        }
+    }
+    return QSharedPointer<DroneClass>();  // Return null pointer if not found
 }
 
 // DroneClass DroneController::getDroneByName(const QString &input_name){
