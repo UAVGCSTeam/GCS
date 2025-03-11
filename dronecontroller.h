@@ -40,6 +40,7 @@ public:
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool updateDrone(const QString& oldXbeeId, const QString& name, const QString& type, const QString& xbeeId, const QString& xbeeAddress);
     Q_INVOKABLE bool deleteDrone(const QString& xbeeId);
+    Q_INVOKABLE bool isSimulationMode() const;
 
 public slots:
     void updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
@@ -77,6 +78,9 @@ private:
     QString getLatestXbeeData();
     // Method to find drone by XBee address
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
+
+    QString getDataFilePath();
+    QString getConfigFilePath() const;
 };
 
 
