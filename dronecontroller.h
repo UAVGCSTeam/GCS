@@ -6,6 +6,8 @@
 #include "backend/dbmanager.h"
 #include "droneclass.h"
 #include <QSharedPointer>
+#include <QSharedMemory>
+#include <QTimer>
 // #include "drone.h"
 
 /*
@@ -30,25 +32,53 @@ class DroneController : public QObject {
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
+    ~DroneController();
+
+    // Initialize shared memory for XBee communication
+    bool checkDataFileExists();
+    void startXbeeMonitoring();
+    Q_INVOKABLE QVariantList getDrones() const;
+    Q_INVOKABLE bool updateDrone(const QString& oldXbeeId, const QString& name, const QString& type, const QString& xbeeId, const QString& xbeeAddress);
+    Q_INVOKABLE bool deleteDrone(const QString& xbeeId);
+    Q_INVOKABLE bool isSimulationMode() const;
 
 public slots:
+    // Process data recieved from XBee via shared memory
     void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
     void deleteDrone(const QString &name);
-    void deleteALlDrones_UI();
+    void deleteAllDrones_UI();
 
 // Declaration for retrieving the drone list
 public:
     Q_INVOKABLE QVariantList getDroneList() const;
 
+private slots:
+    void processXbeeData();
+    void tryConnectToDataFile();
+
 signals:
     void droneAdded();
+    void droneStateChanged(const QString &droneName);
+    void xbeeConnectionChanged(bool connected);
+    void dronesChanged();
     void droneDeleted();
 
 private:
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
     //DroneClass &droneClass;
+    // Timers for data polling
+    QTimer xbeeDataTimer;
+    QTimer reconnectTimer;
+    // Method to find drone by name
+    QSharedPointer<DroneClass> getDroneByName(const QString &name);
+    // Get latest data from file
+    QString getLatestXbeeData();
+    // Method to find drone by XBee address
+    QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
 
+    QString getDataFilePath();
+    QString getConfigFilePath() const;
 };
 
 

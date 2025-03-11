@@ -4,9 +4,6 @@
 # Ignore venv
 venv/
 
-# Ignore log files
-*.log
-
 # Ignore CMake generated files
 CMakeLists.txt.user
 CMakeCache.txt
