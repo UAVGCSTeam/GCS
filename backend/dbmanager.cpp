@@ -84,14 +84,15 @@ bool DBManager::isOpen() const {
 
 // CRUD ME
 
-bool DBManager::createDrone(const QString& droneName, const QString& droneType, const QString& xbeeID, const QString& xbeeAddress) {
+bool DBManager::createDrone(const QString& droneName, const QString& droneType,
+                            const QString& xbeeID, const QString& xbeeAddress,
+                            int* newDroneId) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot add drone.";
         return false;
     }
     QSqlQuery checkDupQuery;
     QSqlQuery insertQuery;
-
 
     // Step 1: Check if a drone with the same XBee ID or Address already exists
     checkDupQuery.prepare(R"(
@@ -126,6 +127,12 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneType, 
     if (!insertQuery.exec()) {
         qCritical() << "Failed to add drone:" << insertQuery.lastError().text();
         return false;
+    }
+
+    // If the newDroneId pointer is provided, set the last inserted ID
+    if (newDroneId != nullptr) {
+        *newDroneId = insertQuery.lastInsertId().toInt();
+        qDebug() << "New drone ID:" << *newDroneId;
     }
 
     qDebug() << "Drone added successfully: " << droneName;

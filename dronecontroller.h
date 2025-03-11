@@ -35,11 +35,11 @@ public:
     ~DroneController();
 
     // Initialize shared memory for XBee communication
-    bool initXbeeSharedMemory();
-
+    bool checkDataFileExists();
     void startXbeeMonitoring();
-
-    bool isXbeeConnected() const { return xbeeSharedMemory.isAttached(); }
+    Q_INVOKABLE QVariantList getDrones() const;
+    Q_INVOKABLE bool updateDrone(const QString& oldXbeeId, const QString& name, const QString& type, const QString& xbeeId, const QString& xbeeAddress);
+    Q_INVOKABLE bool deleteDrone(const QString& xbeeId);
 
 public slots:
     // Process data recieved from XBee via shared memory
@@ -47,29 +47,25 @@ public slots:
 
 private slots:
     void processXbeeData();
-    void tryConnectToSharedMemory();
+    void tryConnectToDataFile();
 
 signals:
     void droneAdded();
     void droneStateChanged(const QString &droneName);
     void xbeeConnectionChanged(bool connected);
+    void dronesChanged();
 
 private:
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
     //DroneClass &droneClass;
-
-    // Shared memory for XBee Communication
-    QSharedMemory xbeeSharedMemory{"XbeeSharedMemory"};
+    // Timers for data polling
     QTimer xbeeDataTimer;
     QTimer reconnectTimer;
-
     // Method to find drone by name
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
-
-    // Get latest data from shared memory
+    // Get latest data from file
     QString getLatestXbeeData();
-
     // Method to find drone by XBee address
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
 };
