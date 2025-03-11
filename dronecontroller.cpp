@@ -9,11 +9,15 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QTextStream>
-
-// #include "drone.h"
+#include <QStandardPaths>
 
 // DATA PATH
-#define DATA_FILE_PATH "/tmp/xbee_data.json"
+#ifdef _WIN32
+// Try both the original path and the user's temp directory
+#define DEFAULT_DATA_FILE_PATH "C:/tmp/xbee_data.json"  // Windows path
+#else
+#define DEFAULT_DATA_FILE_PATH "/tmp/xbee_data.json"  // Unix/Mac path
+#endif
 
 QList<QSharedPointer<DroneClass>> DroneController::droneList;  // Define the static variable
 
@@ -33,6 +37,38 @@ DroneController::~DroneController() {
     if (reconnectTimer.isActive()) {
         reconnectTimer.stop();
     }
+}
+
+// Get the correct file path to check
+QString DroneController::getDataFilePath() {
+    // Try standard temp path first (more reliable across systems)
+    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QString tempFilePath = tempPath + "/xbee_tmp/xbee_data.json";
+
+    QFile tempFile(tempFilePath);
+    if (tempFile.exists()) {
+        qDebug() << "Using temp path:" << tempFilePath;
+        return tempFilePath;
+    }
+
+    // Fall back to default paths
+    QFile file(DEFAULT_DATA_FILE_PATH);
+    if (file.exists()) {
+        return DEFAULT_DATA_FILE_PATH;
+    }
+
+#ifdef _WIN32
+    // Additional Windows fallback
+    QString fallbackPath = tempPath + "/xbee_data.json";
+    QFile fallbackFile(fallbackPath);
+    if (fallbackFile.exists()) {
+        qDebug() << "Using fallback path:" << fallbackPath;
+        return fallbackPath;
+    }
+#endif
+
+    // Return the default path if nothing else found
+    return DEFAULT_DATA_FILE_PATH;
 }
 
 // Steps in saving a drone.
@@ -97,6 +133,51 @@ bool DroneController::updateDrone(const QString& oldXbeeId, const QString& name,
     return false;
 }
 
+bool DroneController::isSimulationMode() const {
+    QString configPath = getConfigFilePath();
+    QFile configFile(configPath);
+
+    if (configFile.exists() && configFile.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(configFile.readAll());
+        QJsonObject obj = doc.object();
+        bool simMode = obj["simulation_mode"].toBool();
+        configFile.close();
+        qDebug() << "Reading simulation mode from config:" << simMode;
+        return simMode;
+    }
+
+    qDebug() << "Could not find config file at:" << configPath;
+    qDebug() << "Defaulting to simulation mode";
+
+    // Default to simulation mode if can't read config
+    return true;
+}
+
+QString DroneController::getConfigFilePath() const {
+    QString configPath;
+
+#ifdef _WIN32
+    // Windows: User's AppData folder
+    configPath = QDir::homePath() + "/AppData/Local/GCS";
+#elif defined(__APPLE__)
+    // macOS
+    configPath = QDir::homePath() + "/Library/Application Support/GCS";
+#else
+    // Linux and other Unix systems
+    configPath = QDir::homePath() + "/.config/gcs";
+#endif
+
+    // Make sure the directory exists
+    QDir dir(configPath);
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    configPath += "/xbee_config.json";
+    qDebug() << "Config file path:" << configPath;
+    return configPath;
+}
+
 bool DroneController::deleteDrone(const QString& xbeeId) {
     // Find the drone in droneList by xbeeId
     for (int i = 0; i < droneList.size(); ++i) {
@@ -145,12 +226,13 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
 
 // Check if the data file exists
 bool DroneController::checkDataFileExists() {
-    QFile file(DATA_FILE_PATH);
+    QString filePath = getDataFilePath();
+    QFile file(filePath);
     if (file.exists()) {
-        qDebug() << "Found XBee data file at:" << DATA_FILE_PATH;
+        qDebug() << "Found XBee data file at:" << filePath;
         return true;
     } else {
-        qDebug() << "XBee data file not found at:" << DATA_FILE_PATH;
+        qDebug() << "XBee data file not found at:" << filePath;
         return false;
     }
 }
@@ -169,7 +251,8 @@ void DroneController::tryConnectToDataFile() {
 
 QString DroneController::getLatestXbeeData() {
     QString result;
-    QFile file(DATA_FILE_PATH);
+    QString filePath = getDataFilePath();
+    QFile file(filePath);
 
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         result = QString::fromUtf8(file.readAll());

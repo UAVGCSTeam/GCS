@@ -19,7 +19,9 @@ Window {
     // Property to track the currently selected drone
     property int selectedDroneIndex: -1
     // Properties for simulation mode and connection status
-    property bool simulationMode: false
+    property bool simulationMode: typeof droneController !== "undefined" &&
+                                 typeof droneController.isSimulationMode === "function" ?
+                                 droneController.isSimulationMode() : false
     property bool xbeeConnected: false
     property string simulationStatusText: simulationMode ? "SIMULATION MODE" : (xbeeConnected ? "CONNECTED" : "DISCONNECTED")
 
@@ -94,6 +96,13 @@ Window {
 
     Component.onCompleted: {
         try {
+            // Initialize simulation mode from controller if available
+            if (typeof droneController !== "undefined" &&
+                typeof droneController.isSimulationMode === "function") {
+                simulationMode = droneController.isSimulationMode();
+                console.log("Initialized simulation mode:", simulationMode);
+            }
+
             console.log("Loading drones from database...");
 
             // Use the sync function instead of manual model updates
@@ -1009,17 +1018,18 @@ Window {
                 height: 20  // Small height or use Layout.fillHeight: true if using ColumnLayout
             }
 
+
         Row {
             width: parent.width
             anchors.right: parent.right
             layoutDirection: Qt.RightToLeft
             spacing: 10
 
-            // Button to start XBee monitoring
+            // Button to start XBee monitoring - only visible in real hardware mode
             Button {
                 id: xbeeConnectButton
                 text: xbeeConnected ? "Reconnect XBee" : "Connect XBee"
-                visible: !simulationMode  // Only show when not in simulation mode
+                visible: !simulationMode  // Only show when NOT in simulation mode
 
                 background: Rectangle {
                     color: xbeeConnected ? "#4CAF50" : "#e0e0e0"
@@ -1036,57 +1046,28 @@ Window {
                 }
 
                 onClicked: {
-                    // Call the C++ method to start monitoring
                     if (typeof droneController.startXbeeMonitoring === 'function') {
                         droneController.startXbeeMonitoring();
                         connectionInitializationMessage.text = "XBee Connection Initialized.";
                         connectionInitializationPopup.open();
-                    } else {
-                        console.log("Note: startXbeeMonitoring function not available");
-                        // The XBee connection may already be working based on your logs
                     }
                 }
             }
 
-            // Toggle button for simulation mode
-            Button {
-                id: simulationToggle
-                text: simulationMode ? "Exit Simulation Mode" : "Enter Simulation Mode"
+            // Simulation mode label - only visible in simulation mode
+            Rectangle {
+                visible: simulationMode  // Only show when IN simulation mode
+                height: xbeeConnectButton.height
+                width: simulationModeLabel.width + 20
+                radius: 4
+                color: "#FFC107"
+                border.color: "#FFA000"
 
-                background: Rectangle {
-                    color: simulationMode ? "#FFC107" : "#e0e0e0"
-                    radius: 4
-                    border.color: simulationMode ? "#FFA000" : "#cccccc"
-                    border.width: 1
-                }
-
-                contentItem: Text {
-                    text: simulationToggle.text
-                    color: simulationMode ? "#000000" : GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                onClicked: {
-                    simulationMode = !simulationMode;
-
-                    if (simulationMode) {
-                        // Entering simulation mode
-                        if (droneModel.count === 0) {
-                            addSimulationDrones();
-
-                            // Show success popup
-                            successMessage.text = "Simulation mode activated with test drones";
-                            successPopup.open();
-                        }
-                    } else {
-                        // Exiting simulation mode
-                        clearSimulationDrones();
-
-                        // Show success popup
-                        successMessage.text = "Exited simulation mode";
-                        successPopup.open();
-                    }
+                Text {
+                    id: simulationModeLabel
+                    text: "Simulation Mode Active"
+                    anchors.centerIn: parent
+                    color: "#000000"
                 }
             }
         }

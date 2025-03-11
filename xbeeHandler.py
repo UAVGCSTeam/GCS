@@ -11,7 +11,38 @@ import os
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='XBee communication handler')
 parser.add_argument('--simulate', action='store_true', help='Run in simulation mode without real XBee hardware')
+parser.add_argument('--tmp-dir', help='Specify a custom directory for the temp file')
 args = parser.parse_args()
+
+# Define the data file path in a location both processes can access
+if args.tmp_dir:
+    # Use provided temp directory
+    os.makedirs(args.tmp_dir, exist_ok=True)
+    DATA_FILE_PATH = os.path.join(args.tmp_dir, "xbee_data.json")
+    print(f"Using custom temp directory: {args.tmp_dir}")
+elif platform.system() == "Windows":
+    # Use user's temp directory as primary location (more reliable)
+    temp_dir = os.environ.get('TEMP')
+    if temp_dir:
+        xbee_tmp_dir = os.path.join(temp_dir, 'xbee_tmp')
+        os.makedirs(xbee_tmp_dir, exist_ok=True)
+        DATA_FILE_PATH = os.path.join(xbee_tmp_dir, "xbee_data.json")
+        print(f"Using Windows temp directory: {DATA_FILE_PATH}")
+    else:
+        # Fallback
+        DATA_FILE_PATH = "C:/tmp/xbee_data.json"
+        os.makedirs("C:/tmp", exist_ok=True)
+else:
+    # Unix systems
+    DATA_FILE_PATH = "/tmp/xbee_data.json"
+
+# Make sure the directory exists
+try:
+    os.makedirs(os.path.dirname(DATA_FILE_PATH), exist_ok=True)
+    print(f"Using data file path: {DATA_FILE_PATH}")
+except Exception as e:
+    print(f"Error creating directory: {e}")
+    print(f"Will attempt to continue...")
 
 # Determine if we should run in simulation mode
 simulation_mode = args.simulate
@@ -22,9 +53,6 @@ try:
 except ImportError:
     print("Failed to import digi.xbee.devices. Run: pip install digi-xbee")
     sys.exit(1)
-
-# Define the data file path in a location both processes can access
-DATA_FILE_PATH = "/tmp/xbee_data.json"
 
 # Function to write data to file
 def write_to_file(data):
@@ -112,6 +140,7 @@ drone_name_map = {
     "0013A20012345678": "Drone1",
     "0013A20087654321": "Drone2"
     # Add your real drone XBee addresses here
+    # SHOULD put fake drones for testing - also update in the manageDroneWindow, the simulation drones that get added to match
 }
 
 # Main communication loop
