@@ -124,7 +124,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole, 
 }
 
 
-bool DBManager::deleteDrone(const QString& droneName) {
+bool DBManager::deleteDrone(const QString& xbeeId) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot delete drone.";
         return false;
@@ -133,15 +133,15 @@ bool DBManager::deleteDrone(const QString& droneName) {
     // tbh i dont know the differnece between conneting and not connecting if it's already within the funciton
     // TODO: figure that out...
     QSqlQuery deleteByNameQuery;
-    deleteByNameQuery.prepare("DELETE FROM drones WHERE drone_name = :droneName");
-    deleteByNameQuery.bindValue(":droneName", droneName);
+    deleteByNameQuery.prepare("DELETE FROM drones WHERE xbee_id = :xbeeID");
+    deleteByNameQuery.bindValue(":xbeeID", xbeeId);
 
     // excecutes anyways, if some doesn't returns failure condition
     if (!deleteByNameQuery.exec()) {
         qCritical() << "Failed to delte the drone: " << deleteByNameQuery.lastError().text();
         return false;
     }
-    qDebug() << "DB: Drone Deleted sucessfully: " << droneName;
+    qDebug() << "DB: Drone Deleted sucessfully: " << xbeeId;
     return true;
 }
 

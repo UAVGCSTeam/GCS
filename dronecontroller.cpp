@@ -73,6 +73,7 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     // Now we are going to create a shared pointer across qt for the drone class object with inputs of name, type, and xbee address
     droneList.push_back(QSharedPointer<DroneClass>::create(input_name, input_role, input_xbeeID, input_xbeeAddress));
 
+    emit droneAdded();
     // This is an example of how we would access the last drone object of the list as a pointer to memory
     // QSharedPointer<DroneClass> tempPtr = droneList.last();
 
@@ -90,14 +91,35 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     */
 }
 
-void DroneController::deleteDrone(const QString &input_name) {
-    if (input_name.isEmpty()) {
-        qWarning() << "Drone Controller: Name not passed by UI.";
+void DroneController::updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress) {
+    // Find the drone in our list by its xbeeID (im assuming is unique)
+    for (int i = 0; i < droneList.size(); i++) {
+        if (droneList[i]->getXbeeID() == oldXbeeId) {
+            droneList[i]->setName(name);
+            droneList[i]->setRole(role);
+            droneList[i]->setXbeeID(xbeeId);
+            droneList[i]->setXbeeAddress(xbeeAddress);
+            qDebug() << "Drone updated in memory:" << name;
+            emit droneUpdated();
+            break;
+        }
     }
-    if (dbManager.deleteDrone(input_name)) {
-        qDebug() << "Drone deleted successfully!";
-    }
+}
 
+void DroneController::deleteDrone(const QString &input_xbeeId) {
+    if (input_xbeeId.isEmpty()) {
+        qWarning() << "Drone Controller: xbeeId not passed by UI.";
+    }
+    if (dbManager.deleteDrone(input_xbeeId)) {
+        for (int i = 0; i < droneList.size(); i++) {
+            if (droneList[i]->getXbeeID() == input_xbeeId) {
+                droneList.removeAt(i);
+                break;
+            }
+        }
+    }
+    qDebug() << "Drone deleted successfully!";
+    emit droneDeleted();
 }
 
 // if we're being honest the slots being called by any function is in my head and i cant figure out if i need something rn

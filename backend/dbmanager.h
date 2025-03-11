@@ -50,7 +50,7 @@ public:
                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneType = QString(),
                    const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
-    bool deleteDrone(const QString& droneName);
+    bool deleteDrone(const QString& xbeeId);
     bool deleteAllDrones();
     void printDroneList(); // essentially Reading the drone, has some basecode
 

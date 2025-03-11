@@ -815,4 +815,20 @@ Window {
             }
         }
     }
+    Connections {
+        target: droneController
+        // on receiving an emitted signal the connections refresh the droneModel ListModel using the updated drone list
+        onDroneAdded: {
+            var drones = droneController.getDroneList();
+            droneTrackingPanel.populateListModel(drones);
+        }
+        onDroneUpdated: {
+            var drones = droneController.getDroneList();
+            droneTrackingPanel.populateListModel(drones);
+        }
+        onDroneDeleted: {
+            var drones = droneController.getDroneList();
+            droneTrackingPanel.populateListModel(drones);
+        }
+    }
 }
