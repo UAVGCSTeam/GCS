@@ -41,10 +41,15 @@ pip_cmd = [python_executable, "-m", "pip", "install", "-r", requirements_file]
 subprocess.check_call(pip_cmd)
 
 # Load or create configuration
+print(f"Loading configuration from: {config_file}")
 try:
     with open(config_file, 'r') as f:
-        config = json.loads(f.read())
-except (FileNotFoundError, json.JSONDecodeError):
+        config_content = f.read().strip()
+        print(f"Raw config content: {config_content}")
+        config = json.loads(config_content)
+        print(f"Parsed config: {config}")
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    print(f"Error loading config: {e}")
     # Default configuration
     config = {
         "simulation_mode": True,
@@ -54,9 +59,21 @@ except (FileNotFoundError, json.JSONDecodeError):
         f.write(json.dumps(config, indent=2))
     print(f"Created default configuration file: {config_file}")
 
-# Determine if we should run in simulation mode
-sim_flag = "--simulate" if config["simulation_mode"] else ""
-port_arg = f"--port={config['port']}" if not config["simulation_mode"] else ""
+# Build command with appropriate arguments
+xbee_args = [python_executable, xbee_handler]
+
+# Only add --simulate flag if simulation_mode is True
+if config.get("simulation_mode", True):
+    xbee_args.append("--simulate")
+    print("Adding --simulate flag (simulation mode is enabled)")
+else:
+    print("Not adding --simulate flag (simulation mode is disabled)")
+
+    # Only add port if we're not in simulation mode
+    if "port" in config:
+        port_arg = f"--port={config['port']}"
+        xbee_args.append(port_arg)
+        print(f"Adding port argument: {port_arg}")
 
 # Create temp directory for XBee data
 if platform.system() == "Windows":
@@ -67,41 +84,52 @@ if platform.system() == "Windows":
         print(f"Using temp directory: {tmp_dir}")
     except Exception as e:
         print(f"Warning: Could not create temp directory: {e}")
-        tmp_dir = None
+        # Even on error, try to use this path
+        tmp_dir = os.path.join(os.environ.get('TEMP', ''), 'xbee_tmp')
 else:
     # For Unix systems, we'll use the default /tmp
     tmp_dir = None
 
-# Build command with appropriate arguments
-xbee_args = [python_executable, xbee_handler]
-if sim_flag:
-    xbee_args.append(sim_flag)
-if port_arg:
-    xbee_args.append(port_arg)
+# Add tmp_dir if it exists
 if tmp_dir:
     xbee_args.extend(["--tmp-dir", tmp_dir])
+    print(f"Adding tmp-dir argument: {tmp_dir}")
+
+# Print the final command
+print("Full command:", " ".join(xbee_args))
 
 # Run the XBee handler using the virtual environment's Python
-print("Starting XBee handler...")
-print(f"Mode: {'Simulation' if config['simulation_mode'] else 'Real hardware'}")
-if not config["simulation_mode"]:
+print("\nStarting XBee handler...")
+print(f"Mode: {'Simulation' if config.get('simulation_mode', True) else 'Real hardware'}")
+if not config.get("simulation_mode", True) and "port" in config:
     print(f"Port: {config['port']}")
 
 try:
     # Create log file for redirecting output
     log_path = os.path.join(script_dir, "xbee_handler.log")
-    log_file = open(log_path, "w")
 
-    # Start process in background
-    process = subprocess.Popen(
-        xbee_args,
-        stdout=log_file,
-        stderr=log_file,
-        # Don't use shell=True as it can cause permission issues on Windows
-        shell=False,
-        # Make the process a new process group to avoid it being killed when the parent exits
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if platform.system() == "Windows" else 0
-    )
+    # For initial debugging, let's not redirect output so we can see what's happening
+    debug_mode = True  # Set to False when everything is working
+
+    if debug_mode:
+        # Run process without redirecting output
+        process = subprocess.Popen(
+            xbee_args,
+            # Don't use shell=True as it can cause permission issues on Windows
+            shell=False,
+            # Make the process a new process group to avoid it being killed when the parent exits
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if platform.system() == "Windows" else 0
+        )
+    else:
+        # Normal operation with logging
+        log_file = open(log_path, "w")
+        process = subprocess.Popen(
+            xbee_args,
+            stdout=log_file,
+            stderr=log_file,
+            shell=False,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if platform.system() == "Windows" else 0
+        )
 
     # Wait a moment to make sure it starts successfully
     time.sleep(2)
@@ -109,7 +137,8 @@ try:
     # Check if process is still running
     if process.poll() is None:
         print(f"XBee Python script started successfully (PID: {process.pid})")
-        print(f"Output is being logged to: {log_path}")
+        if not debug_mode:
+            print(f"Output is being logged to: {log_path}")
         print(f"To toggle between simulation and real hardware, edit {config_file}")
     else:
         print("XBee handler failed to start. Check the log file for details.")

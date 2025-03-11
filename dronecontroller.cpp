@@ -41,30 +41,38 @@ DroneController::~DroneController() {
 
 // Get the correct file path to check
 QString DroneController::getDataFilePath() {
-    // Try standard temp path first (more reliable across systems)
+    // On Windows, always check user's TEMP folder first
+#ifdef _WIN32
     QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
     QString tempFilePath = tempPath + "/xbee_tmp/xbee_data.json";
 
     QFile tempFile(tempFilePath);
     if (tempFile.exists()) {
-        qDebug() << "Using temp path:" << tempFilePath;
+        qDebug() << "Using Windows temp path:" << tempFilePath;
         return tempFilePath;
     }
 
-    // Fall back to default paths
+    // Log the paths we're checking to aid debugging
+    qDebug() << "Checked for XBee data file at:" << tempFilePath << "(not found)";
+#endif
+
+    // Original fallback paths
     QFile file(DEFAULT_DATA_FILE_PATH);
     if (file.exists()) {
+        qDebug() << "Using default path:" << DEFAULT_DATA_FILE_PATH;
         return DEFAULT_DATA_FILE_PATH;
     }
+    qDebug() << "Checked for XBee data file at:" << DEFAULT_DATA_FILE_PATH << "(not found)";
 
 #ifdef _WIN32
-    // Additional Windows fallback
+    // Additional Windows fallbacks
     QString fallbackPath = tempPath + "/xbee_data.json";
     QFile fallbackFile(fallbackPath);
     if (fallbackFile.exists()) {
         qDebug() << "Using fallback path:" << fallbackPath;
         return fallbackPath;
     }
+    qDebug() << "Checked for XBee data file at:" << fallbackPath << "(not found)";
 #endif
 
     // Return the default path if nothing else found
@@ -317,7 +325,15 @@ void DroneController::processXbeeData() {
     // Handle heartbeat messages
     if (obj["type"] == "heartbeat") {
         qDebug() << "Received heartbeat from Python script";
-        emit xbeeConnectionChanged(true);
+
+        // Check for connection status in heartbeat
+        if (obj.contains("status")) {
+            QString status = obj["status"].toString();
+            qDebug() << "XBee connection status:" << status;
+            emit xbeeConnectionChanged(status == "connected");
+        } else {
+            emit xbeeConnectionChanged(true);
+        }
         return;
     }
 
