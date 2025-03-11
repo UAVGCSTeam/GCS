@@ -1,43 +1,20 @@
+#!/usr/bin/env python3
 # This Python file uses the following encoding: utf-8
 import sys
 import time
 import json
 import platform
 import threading
+import argparse
+import os
 
-# Platform-specific shared memory implementation
-if platform.system() == "Windows":
-    try:
-        import mmap
-        import tempfile
-        import os
+# Parse command line arguments
+parser = argparse.ArgumentParser(description='XBee communication handler')
+parser.add_argument('--simulate', action='store_true', help='Run in simulation mode without real XBee hardware')
+args = parser.parse_args()
 
-        # Windows shared memory implementation
-        class SharedMemory:
-            def __init__(self, name, flags, size):
-                self.name = name
-                self.size = size
-                self.file_path = os.path.join(tempfile.gettempdir(), name)
-                print(f"Creating Windows shared memory at: {self.file_path}")
-                self.file = open(self.file_path, 'wb+')
-                self.file.write(b'\0' * size)
-                self.file.flush()
-                self.mmap = mmap.mmap(self.file.fileno(), size)
-                print(f"Windows shared memory created successfully")
-
-            def write(self, data):
-                self.mmap.seek(0)
-                self.mmap.write(data)
-                self.mmap.flush()
-    except ImportError as e:
-        print(f"Error importing Windows modules: {e}")
-        sys.exit(1)
-else:
-    try:
-        import sysv_ipc
-    except ImportError:
-        print("On Unix/macOS, you need to run: pip install sysv_ipc")
-        sys.exit(1)
+# Determine if we should run in simulation mode
+simulation_mode = args.simulate
 
 # Try to import XBee library
 try:
@@ -46,46 +23,20 @@ except ImportError:
     print("Failed to import digi.xbee.devices. Run: pip install digi-xbee")
     sys.exit(1)
 
-# Shared memory name - must match what's used in Qt
-SHARED_MEMORY_NAME = "XbeeSharedMemory"
-SHARED_MEMORY_SIZE = 4096
+# Define the data file path in a location both processes can access
+DATA_FILE_PATH = "/tmp/xbee_data.json"
 
-# Function to get the same key that Qt uses for shared memory (for Unix systems)
-def get_qt_shared_memory_key(name):
-    hash_value = 0
-    for char in name:
-        hash_value = (hash_value * 31 + ord(char)) & 0x7FFFFFFF
-    return hash_value
-
-# Create platform-specific shared memory
-if platform.system() == "Windows":
-    try:
-        shared_memory = SharedMemory(SHARED_MEMORY_NAME, 0, SHARED_MEMORY_SIZE)
-    except Exception as e:
-        print(f"Failed to create Windows shared memory: {e}")
-        sys.exit(1)
-else:
-    try:
-        memory_key = get_qt_shared_memory_key(SHARED_MEMORY_NAME)
-        shared_memory = sysv_ipc.SharedMemory(memory_key, sysv_ipc.IPC_CREAT, size=SHARED_MEMORY_SIZE)
-        print(f"Created shared memory with key: {memory_key} (hex: 0x{memory_key:X})")
-    except Exception as e:
-        print(f"Failed to create shared memory: {e}")
-        sys.exit(1)
-
-# Function to write to shared memory
-def write_to_shared_memory(data):
+# Function to write data to file
+def write_to_file(data):
     if isinstance(data, dict):
         data = json.dumps(data)
-    if isinstance(data, str):
-        data = data.encode('utf-8')
-        # Ensure it's padded to avoid partial reads
-        if len(data) < SHARED_MEMORY_SIZE:
-            data = data + b'\0' * (SHARED_MEMORY_SIZE - len(data))
+
     try:
-        shared_memory.write(data)
+        with open(DATA_FILE_PATH, 'w') as f:
+            f.write(data)
+        print(f"Wrote data to file")
     except Exception as e:
-        print(f"Error writing to shared memory: {e}")
+        print(f"Error writing to file: {e}")
 
 # Heartbeat thread to let Qt know we're alive
 def heartbeat_thread():
@@ -95,7 +46,7 @@ def heartbeat_thread():
                 'type': 'heartbeat',
                 'timestamp': time.time()
             }
-            write_to_shared_memory(heartbeat_data)
+            write_to_file(heartbeat_data)
             print("Sent heartbeat")
         except Exception as e:
             print(f"Error sending heartbeat: {e}")
@@ -105,30 +56,56 @@ def heartbeat_thread():
 heart_thread = threading.Thread(target=heartbeat_thread, daemon=True)
 heart_thread.start()
 
+def generate_simulated_data():
+    import random
 
+    # Pick a random drone from our mapping
+    address = random.choice(list(drone_name_map.keys()))
+    drone_name = drone_name_map[address]
 
-# HERE HERE HERE
+    # Generate random but realistic looking data
+    lat = 34.05 + (random.random() - 0.5) * 0.01
+    lon = -117.82 + (random.random() - 0.5) * 0.01
+    alt = 0.05 + random.random() * 0.1
+    vx = (random.random() - 0.5) * 0.2
+    vy = (random.random() - 0.5) * 0.2
+    vz = (random.random() - 0.5) * 0.1
+    airspeed = random.random() * 0.1
+    battery = 0.1 + random.random() * 0.9
+
+    message = f"ICAO: A\n"
+    message += f"Lattitude: {lat}\n"
+    message += f"Longitude: {lon}\n"
+    message += f"Altitude: {alt}\n"
+    message += f"Velocity: [{vx}, {vy}, {vz}]\n"
+    message += f"Airspeed: {airspeed:.5f}\n"
+    message += f"Battery Level: {battery:.3f}"
+
+    return address, drone_name, message
+
 # Connect to XBee device
-try:
-    # Use different serial port naming based on platform
-    if platform.system() == "Windows":
-        port = "COM3"  # Default Windows COM port - adjust as needed
-    else:
-        port = "/dev/ttyUSB0"  # Default Linux/Mac port
+xbee = None
+if not simulation_mode:
+    try:
+        # Use different serial port naming based on platform
+        if platform.system() == "Windows":
+            port = "COM3"  # Default Windows COM port - adjust as needed
+        else:
+            port = "/dev/ttyUSB0"  # Default Linux/Mac port
 
-    print(f"Trying to connect to XBee on port: {port}")
-    xbee = XBeeDevice(port, 9600)
-    xbee.open()
-    print("XBee device connected successfully")
-except Exception as e:
-    print(f"Failed to connect to XBee device: {e}")
-    print(f"Make sure the XBee is connected and the port is correct.")
-    print(f"For Windows, check Device Manager to find the correct COM port.")
-    print(f"For Mac, use a port like /dev/tty.usbserial-*")
-    sys.exit(1)  # Exit with error
-# HERE HERE HERE
-
-
+        print(f"Trying to connect to XBee on port: {port}")
+        xbee = XBeeDevice(port, 9600)
+        xbee.open()
+        print("XBee device connected successfully")
+    except Exception as e:
+        print(f"Failed to connect to XBee device: {e}")
+        print(f"Make sure the XBee is connected and the port is correct.")
+        print(f"For Windows, check Device Manager to find the correct COM port.")
+        print(f"For Mac, use a port like /dev/tty.usbserial-*")
+        print("Falling back to simulation mode")
+        simulation_mode = True
+else:
+    print("Running in simulation mode - no XBee hardware required")
 
 # Drone address mapping
 drone_name_map = {
@@ -139,31 +116,53 @@ drone_name_map = {
 
 # Main communication loop
 print("Starting communication loop...")
+last_sim_time = 0
 
 while True:
     try:
-        # Check for incoming XBee messages
-        xbee_message = xbee.read_data(timeout=100)
-        if xbee_message:
-            sender = str(xbee_message.remote_device.get_64bit_addr())
-            message = xbee_message.data.decode('utf-8')
+        if simulation_mode:
+            # Send simulated data every 2 seconds
+            current_time = time.time()
+            if current_time - last_sim_time >= 2:  # Every 2 seconds
+                address, drone_name, message = generate_simulated_data()
+                print(f"Generated simulated data for drone: {drone_name}")
+                print(message)
 
-            print(f"Received from {sender}: {message}")
+                data = {
+                    'type': 'xbee_data',
+                    'drone': drone_name,
+                    'address': address,
+                    'message': message,
+                    'timestamp': time.time()
+                }
+                write_to_file(data)
+                print(f"Sent simulated data to file for drone: {drone_name}")
+                last_sim_time = current_time
+        else:
+            # Your existing XBee code for real devices
+            xbee_message = xbee.read_data(timeout=100)
+            if xbee_message:
+                # Process real XBee message
+                sender = str(xbee_message.remote_device.get_64bit_addr())
+                message = xbee_message.data.decode('utf-8')
 
-            # Look up which drone this belongs to based on XBee address
-            drone_name = drone_name_map.get(sender, "Unknown")
+                print(f"Received from {sender}: {message}")
 
-            # Send to Qt via shared memory
-            data = {
-                'type': 'xbee_data',
-                'drone': drone_name,
-                'address': sender,
-                'message': message,
-                'timestamp': time.time()
-            }
-            write_to_shared_memory(data)
-            print(f"Sent data to shared memory for drone: {drone_name}")
+                # Look up which drone this belongs to based on XBee address
+                drone_name = drone_name_map.get(sender, "Unknown")
+
+                # Send to Qt via file
+                data = {
+                    'type': 'xbee_data',
+                    'drone': drone_name,
+                    'address': sender,
+                    'message': message,
+                    'timestamp': time.time()
+                }
+                write_to_file(data)
+                print(f"Sent real data to file for drone: {drone_name}")
     except Exception as e:
         print(f"Error in main loop: {e}")
+        pass
 
     time.sleep(0.01)  # Small sleep to prevent CPU hogging

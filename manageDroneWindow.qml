@@ -13,11 +13,15 @@ import QtQuick.Controls.Basic 2.15
 Window {
     id: manageDroneWindow
     width: 1050 // Perfect length, not sure why but the boxes get mis aligned. Maybe right padding; too tired to worry about
-    height: 500
+    height: 600
     title: qsTr("Manage Drones")
 
     // Property to track the currently selected drone
     property int selectedDroneIndex: -1
+    // Properties for simulation mode and connection status
+    property bool simulationMode: false
+    property bool xbeeConnected: false
+    property string simulationStatusText: simulationMode ? "SIMULATION MODE" : (xbeeConnected ? "CONNECTED" : "DISCONNECTED")
 
     ListModel {
         id: droneModel
@@ -27,8 +31,70 @@ Window {
         id: fileHandler
     }
 
+    Connections {
+        target: droneController
+
+        function onDronesChanged() {
+            console.log("dronesChanged signal received in QML");
+
+            // Store the currently selected drone address if any
+            var selectedDroneAddr = "";
+            if (selectedDroneIndex >= 0 && selectedDroneIndex < droneModel.count) {
+                selectedDroneAddr = droneModel.get(selectedDroneIndex).xbeeAddress;
+            }
+
+            // Reload drones from database
+            const drones = droneController.getDrones();
+            console.log("Fetched drones after change:", JSON.stringify(drones));
+
+            // Track the index of the previously selected drone
+            var newSelectedIndex = -1;
+
+            if (drones && drones.length > 0) {
+                for (var i = 0; i < drones.length; i++) {
+                    var drone = drones[i];
+                    console.log("Appending drone to model:", JSON.stringify(drone));
+
+                    droneModel.append({
+                        "name": drone.name || "",
+                        "type": drone.type || "",
+                        "xbeeId": drone.xbeeId || "",
+                        "xbeeAddress": drone.xbeeAddress || ""
+                    });
+
+                    // If this is the previously selected drone, note its new index
+                    if (selectedDroneAddr && drone.xbeeAddress === selectedDroneAddr) {
+                        newSelectedIndex = i;
+                    }
+                }
+                console.log("Model count after reload:", droneModel.count);
+
+                // Update the selected index
+                selectedDroneIndex = newSelectedIndex;
+
+                // If there's still a selection, repopulate the fields
+                if (selectedDroneIndex >= 0) {
+                    populateFieldsWithSelectedDrone();
+                }
+            } else {
+                console.log("No drones found after change signal");
+            }
+
+            // These three ensure the manage window works
+            droneListView.forceLayout();
+            droneListView.positionViewAtBeginning();
+            droneListView.forceLayout();
+        }
+
+        function onXbeeConnectionChanged(connected) {
+            console.log("XBee connection status changed:", connected);
+            xbeeConnected = connected;
+        }
+    }
+
     Component.onCompleted: {
         try {
+<<<<<<< HEAD
             const drones = droneController.getDroneList() // or whatever the actual method name is GIAN PLEASE MAKE (maybe not in droneController)
             // debug
             console.log("Fetched drones:", drones)
@@ -44,9 +110,138 @@ Window {
                      "xbeeAddress": drone.xbeeAddress || ""
                  })
                })
+=======
+            console.log("Loading drones from database...");
+
+            // Use the sync function instead of manual model updates
+            syncModelWithDatabase();
+
+            // Check if we have any drones at all
+            if (droneModel.count === 0 && simulationMode) {
+                console.log("No drones found, adding simulation drones");
+                // Add simulation drones
+                addSimulationDrones();
+            }
+
+            // Check for XBee monitoring function
+            if (!simulationMode) {
+                if (typeof droneController.startXbeeMonitoring === 'function') {
+                    console.log("Starting XBee monitoring");
+                    droneController.startXbeeMonitoring();
+                } else {
+                    console.log("startXbeeMonitoring function not available");
+                    // Create a dummy property or function to avoid future errors
+                    if (typeof droneController.startXbeeMonitoring === 'undefined') {
+                        droneController.startXbeeMonitoring = function() {
+                            console.log("Dummy XBee monitoring function called");
+                            // You might want to signal connection status here
+                            xbeeConnected = false;
+                        };
+                    }
+                }
+>>>>>>> 24d6d9c (PLEASE GOD HELP ME)
             }
         } catch (error) {
-            console.error("Error fetching drones:", error)
+            console.error("Error in Component.onCompleted:", error);
+        }
+    }
+
+    // Function to sync the model with database
+    function syncModelWithDatabase() {
+        console.log("Syncing model with database...");
+
+        // Clear the current model
+        droneModel.clear();
+
+        // Fetch latest data from database
+        const drones = droneController.getDrones();
+        console.log("Fetched drones:", JSON.stringify(drones));
+
+        // Add each drone to the model
+        if (drones && drones.length > 0) {
+            for (var i = 0; i < drones.length; i++) {
+                var drone = drones[i];
+                console.log("Processing drone:", JSON.stringify(drone));
+
+                droneModel.append({
+                    "name": drone.name || "",
+                    "type": drone.type || "",
+                    "xbeeId": drone.xbeeId || "",
+                    "xbeeAddress": drone.xbeeAddress || ""
+                });
+            }
+            console.log("Model updated with", droneModel.count, "drones from database");
+        } else {
+            console.log("No drones found in database");
+        }
+
+        // Force layout update
+        droneListView.forceLayout();
+        droneListView.positionViewAtBeginning();
+        droneListView.forceLayout();
+    }
+
+    // Adds simulated drone
+    function addSimulationDrones() {
+        const simulationDrones = [
+            {
+                "name": "Scout1",
+                "type": "Scout",
+                "xbeeId": "SIM001",
+                "xbeeAddress": "0013A20012345678"
+            },
+            {
+                "name": "Cargo2",
+                "type": "Carrier",
+                "xbeeId": "SIM002",
+                "xbeeAddress": "0013A20087654321"
+            }
+        ];
+
+        simulationDrones.forEach(drone => {
+            droneModel.append(drone);
+
+            // Optionally save to database
+            try {
+                droneController.saveDrone(
+                    drone.name,
+                    drone.type,
+                    drone.xbeeId,
+                    drone.xbeeAddress
+                );
+            } catch (e) {
+                console.log("Error saving simulation drone:", e);
+            }
+        });
+
+        console.log("Added simulation drones, model count:", droneModel.count);
+    }
+
+    // Clears simulated drones
+    function clearSimulationDrones() {
+        if (simulationMode) {
+            // Store addresses of all SIM drones to delete
+            let simDroneAddresses = [];
+
+            // Find drones with SIM prefix in xbeeId
+            for (let i = droneModel.count - 1; i >= 0; i--) {
+                if (droneModel.get(i).xbeeId.startsWith("SIM")) {
+                    simDroneAddresses.push(droneModel.get(i).xbeeAddress);
+                }
+            }
+
+            // Delete each simulation drone from database
+            simDroneAddresses.forEach(address => {
+                try {
+                    droneController.deleteDrone(address);
+                    console.log("Deleted simulation drone with address:", address);
+                } catch (e) {
+                    console.log("Error removing simulation drone from database:", e);
+                }
+            });
+
+            // Sync model with database after all deletions
+            syncModelWithDatabase();
         }
     }
 
@@ -234,6 +429,28 @@ Window {
         }
     }
 
+    // Status indicator at the top
+    Rectangle {
+        id: statusIndicator
+        color: simulationMode ? "#FFF3CD" : (xbeeConnected ? "#D4EDDA" : "#F8D7DA")  // Yellow for sim, green for connected, red for disconnected
+        border.color: simulationMode ? "#FFECB5" : (xbeeConnected ? "#C3E6CB" : "#F5C6CB")
+        border.width: 1
+        radius: 4
+        height: statusText.height + 10
+        width: statusText.width + 20
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 10
+
+        Text {
+            id: statusText
+            text: simulationStatusText
+            font.bold: true
+            color: simulationMode ? "#856404" : (xbeeConnected ? "#155724" : "#721C24")  // Text color matching the background theme
+            anchors.centerIn: parent
+        }
+    }
+
     Column {
         id: mainColumn
         anchors.fill: parent
@@ -354,6 +571,7 @@ Window {
                     }
                     onClicked: {
                         // We are going to NEED to put more input validation
+<<<<<<< HEAD
                         // TODO: add input validation for same name droneNames.
                         if (droneNameField.text.length > 0) {
                             // Add to list model first
@@ -375,18 +593,37 @@ Window {
                             try {
                                 droneController.saveDrone(droneNameField.text, droneRole.text,
                                                           droneXbeeID.text, droneXbeeAddr.text);
+=======
+                        // Validate input - we need at least a name
+                        if (droneNameField.text.length > 0) {
+                            try {
+                                // We no longer manually add to the model
+                                // Instead, we rely on the dronesChanged signal to update the UI
+                                droneController.saveDrone(
+                                    droneNameField.text,
+                                    droneType.text,
+                                    droneXbeeID.text,
+                                    droneXbeeAddr.text
+                                );
+
+                                // Update the model from database
+                                syncModelWithDatabase();
+
+                                // Show success message
+>>>>>>> 24d6d9c (PLEASE GOD HELP ME)
                                 successMessage.text = "Drone added successfully!";
                                 successPopup.open();
 
+                                // Clear fields
+                                clearFields();
                             } catch (error) {
                                 console.error("Failed to save to database:", error);
-                                // Note: We're not showing error popup here since we at least added to the list
-                                // Could be worth to add robust error pop ups for this input validation
+                                errorMessage.text = "Failed to add drone: " + error;
+                                errorPopup.open();
                             }
-
-                            // Clear the input fields
-                            clearFields();
                         } else {
+                            // Show error for missing name
+                            errorMessage.text = "Drone name is required!";
                             errorPopup.open();
                         }
                     }
@@ -418,9 +655,10 @@ Window {
 
                     onClicked: {
                         if (selectedDroneIndex >= 0 && droneNameField.text.length > 0) {
-                            var oldXbeeId = droneModel.get(selectedDroneIndex).xbeeId;
+                            var oldXbeeAddress = droneModel.get(selectedDroneIndex).xbeeAddress;
 
                             // Update the item in the model
+<<<<<<< HEAD
                             droneModel.set(selectedDroneIndex, {
                                                "name": droneNameField.text,
                                                "role": droneRole.text,
@@ -433,18 +671,25 @@ Window {
                                 // UPDATE TO BE THE ACTUAL METHOD
                                 droneController.updateDrone(oldXbeeId, droneNameField.text,
                                                             droneRole.text, droneXbeeID.text, droneXbeeAddr.text);
+=======
+                            try {
+                                droneController.updateDrone(oldXbeeAddress, droneNameField.text,
+                                                          droneType.text, droneXbeeID.text, droneXbeeAddr.text);
+                                // Update model from database
+                                syncModelWithDatabase();
+
+>>>>>>> 24d6d9c (PLEASE GOD HELP ME)
                                 successMessage.text = "Drone updated successfully!";
                                 successPopup.open();
+                                clearFields();
                             } catch (error) {
                                 console.error("Failed to update in database:", error);
+                                errorMessage.text = "Failed to update drone: " + error;
+                                errorPopup.open();
                             }
-
-                            // Clear the input fields and selection
-                            clearFields();
                         }
                     }
                 }
-
                 // Delete Button - Only enabled when a drone is selected
                 Button {
                     id: deleteButton
@@ -473,22 +718,22 @@ Window {
 
                     onClicked: {
                         if (selectedDroneIndex >= 0) {
-                            var xbeeId = droneModel.get(selectedDroneIndex).xbeeId;
-
-                            // Remove from model
-                            droneModel.remove(selectedDroneIndex);
+                            var xbeeAddress = droneModel.get(selectedDroneIndex).xbeeAddress;
 
                             // Remove from database
                             try {
-                                droneController.deleteDrone(xbeeId);
+                                droneController.deleteDrone(xbeeAddress);
+                                // Update model from database
+                                syncModelWithDatabase();
+
                                 successMessage.text = "Drone deleted successfully!";
                                 successPopup.open();
+                                clearFields();
                             } catch (error) {
                                 console.error("Failed to delete from database:", error);
+                                errorMessage.text = "Failed to delete drone: " + error;
+                                errorPopup.open();
                             }
-
-                            // Clear the input fields and selection
-                            clearFields();
                         }
                     }
                 }
@@ -604,6 +849,8 @@ Window {
                 model: droneModel
                 anchors.left: parent.left
                 anchors.right: parent.right
+
+                ScrollBar.vertical: ScrollBar {}
 
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
@@ -788,20 +1035,6 @@ Window {
                 }
             }
 
-            // For if there are no drones
-            Item {
-                width: parent.width
-                height: 100
-                visible: droneModel.count === 0  // Only shows when no drones exist
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "No drones added yet. Add your first drone above."
-                    color: "#888888"
-                    font.italic: true
-                }
-            }
-
             // File dialog to allow users to select a JSON file
             FileDialog {
                 id: fileDialog
@@ -811,6 +1044,106 @@ Window {
                 onAccepted: {
                     console.log("Selected file:", fileDialog.file)
                     loadJson(fileDialog.file)
+                }
+            }
+        }
+
+        Item {
+            width: parent.width
+            height: 100
+            visible: droneModel.count === 0  // Only shows when no drones exist
+
+            Text {
+                anchors.centerIn: parent
+                text: "No drones added yet. Add your first drone above."
+                color: "#888888"
+                font.italic: true
+            }
+        }
+
+        Item {
+                width: parent.width
+                height: 20  // Small height or use Layout.fillHeight: true if using ColumnLayout
+            }
+
+        Row {
+            width: parent.width
+            anchors.right: parent.right
+            layoutDirection: Qt.RightToLeft
+            spacing: 10
+
+            // Button to start XBee monitoring
+            Button {
+                id: xbeeConnectButton
+                text: xbeeConnected ? "Reconnect XBee" : "Connect XBee"
+                visible: !simulationMode  // Only show when not in simulation mode
+
+                background: Rectangle {
+                    color: xbeeConnected ? "#4CAF50" : "#e0e0e0"
+                    radius: 4
+                    border.color: xbeeConnected ? "#388E3C" : "#cccccc"
+                    border.width: 1
+                }
+
+                contentItem: Text {
+                    text: xbeeConnectButton.text
+                    color: xbeeConnected ? "#FFFFFF" : GcsStyle.PanelStyle.textPrimaryColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                onClicked: {
+                    // Call the C++ method to start monitoring
+                    if (typeof droneController.startXbeeMonitoring === 'function') {
+                        droneController.startXbeeMonitoring();
+                        connectionInitializationMessage.text = "XBee Connection Initialized.";
+                        connectionInitializationPopup.open();
+                    } else {
+                        console.log("Note: startXbeeMonitoring function not available");
+                        // The XBee connection may already be working based on your logs
+                    }
+                }
+            }
+
+            // Toggle button for simulation mode
+            Button {
+                id: simulationToggle
+                text: simulationMode ? "Exit Simulation Mode" : "Enter Simulation Mode"
+
+                background: Rectangle {
+                    color: simulationMode ? "#FFC107" : "#e0e0e0"
+                    radius: 4
+                    border.color: simulationMode ? "#FFA000" : "#cccccc"
+                    border.width: 1
+                }
+
+                contentItem: Text {
+                    text: simulationToggle.text
+                    color: simulationMode ? "#000000" : GcsStyle.PanelStyle.textPrimaryColor
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                onClicked: {
+                    simulationMode = !simulationMode;
+
+                    if (simulationMode) {
+                        // Entering simulation mode
+                        if (droneModel.count === 0) {
+                            addSimulationDrones();
+
+                            // Show success popup
+                            successMessage.text = "Simulation mode activated with test drones";
+                            successPopup.open();
+                        }
+                    } else {
+                        // Exiting simulation mode
+                        clearSimulationDrones();
+
+                        // Show success popup
+                        successMessage.text = "Exited simulation mode";
+                        successPopup.open();
+                    }
                 }
             }
         }
