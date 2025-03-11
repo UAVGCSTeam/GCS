@@ -11,11 +11,13 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
     for (const QVariantMap &record : droneRecords) {
         QString name = record["drone_name"].toString();
-        QString type = record["drone_type"].toString();
+        QString role = record["drone_role"].toString();
+        QString xbeeID = record["xbee_id"].toString();
         QString xbeeAddress = record["xbee_address"].toString();
         // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
-        droneList.push_back(QSharedPointer<DroneClass>::create(name, type, xbeeAddress));
+        // TODO: Change this, add xbee id?
+        droneList.push_back(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress));
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
 }
@@ -27,7 +29,8 @@ QVariantList DroneController::getDroneList() const {
         QVariantMap droneMap;
         // these method calls have to match our DroneClass interface
         droneMap["name"] = drone->getName();
-        droneMap["type"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        droneMap["xbeeId"] = drone->getXbeeID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = "Not Connected"; // or "Pending" or another placeholder
@@ -54,21 +57,21 @@ QVariantList DroneController::getDroneList() const {
  *
  * Viewable Drone
  */
-void DroneController::saveDrone(const QString &input_name, const QString &input_type, const QString &input_xbeeID, const QString &input_xbeeAddress) {
+void DroneController::saveDrone(const QString &input_name, const QString &input_role, const QString &input_xbeeID, const QString &input_xbeeAddress) {
     if (input_name.isEmpty()) {
         qWarning() << "Missing required name field!";
         return;
     }
 
     // Add Drone to Database
-    if (dbManager.createDrone(input_name, input_type, input_type, input_xbeeAddress)) {
+    if (dbManager.createDrone(input_name, input_role, input_xbeeID, input_xbeeAddress)) {
         qDebug() << "Drone created on DB successfully!";
     } else {
         qWarning() << "Failed to save drone.";
     }
 
     // Now we are going to create a shared pointer across qt for the drone class object with inputs of name, type, and xbee address
-    droneList.push_back(QSharedPointer<DroneClass>::create(input_name, input_type, input_xbeeAddress));
+    droneList.push_back(QSharedPointer<DroneClass>::create(input_name, input_role, input_xbeeID, input_xbeeAddress));
 
     // This is an example of how we would access the last drone object of the list as a pointer to memory
     // QSharedPointer<DroneClass> tempPtr = droneList.last();

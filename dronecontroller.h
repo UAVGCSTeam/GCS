@@ -32,7 +32,7 @@ public:
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
 
 public slots:
-    void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
     void deleteDrone(const QString &name);
     void deleteALlDrones_UI();
 

@@ -29,14 +29,17 @@ Window {
 
     Component.onCompleted: {
         try {
-            const drones = droneController.getDrones()  // or whatever the actual method name is GIAN PLEASE MAKE (maybe not in droneController)
+            const drones = droneController.getDroneList() // or whatever the actual method name is GIAN PLEASE MAKE (maybe not in droneController)
+            // debug
             console.log("Fetched drones:", drones)
-
-            if (drones && Array.isArray(drones)) {
+            console.log("Length:", drones.length)
+            console.log("Fetched drones:", JSON.stringify(drones));
+            // change if statement logic
+            if (drones.length > 0 ) {
                 drones.forEach(drone => {
                    droneModel.append({
                      "name": drone.name || "",
-                     "type": drone.type || "",
+                     "role": drone.role || "",
                      "xbeeId": drone.xbeeId || "",
                      "xbeeAddress": drone.xbeeAddress || ""
                  })
@@ -72,7 +75,7 @@ Window {
                     console.log("Drone Name: " + (jsonData.drones[i].name || "Unknown"));
                     console.log("Drone ID: " + (jsonData.drones[i].id || "N/A"));
                     console.log("Drone Xbee ID: " + (jsonData.drones[i].address || "N/A"));
-                    console.log("Drone Type: " + (jsonData.drones[i].role || "N/A"));
+                    console.log("Drone Role: " + (jsonData.drones[i].role || "N/A"));
                 }
             } else {
                 console.log("No drones found in the JSON data.");
@@ -87,7 +90,7 @@ Window {
         if (selectedDroneIndex >= 0 && selectedDroneIndex < droneModel.count) {
             var selectedDrone = droneModel.get(selectedDroneIndex);
             droneNameField.text = selectedDrone.name;
-            droneType.text = selectedDrone.type;
+            droneRole.text = selectedDrone.role;
             droneXbeeID.text = selectedDrone.xbeeId;
             droneXbeeAddr.text = selectedDrone.xbeeAddress;
         }
@@ -96,7 +99,7 @@ Window {
     // Function to clear input fields
     function clearFields() {
         droneNameField.text = "";
-        droneType.text = "";
+        droneRole.text = "";
         droneXbeeID.text = "";
         droneXbeeAddr.text = "";
         selectedDroneIndex = -1;
@@ -272,8 +275,8 @@ Window {
                 }
 
                 TextField {
-                    id: droneType
-                    placeholderText: "Drone Type"
+                    id: droneRole
+                    placeholderText: "Drone Role"
                     placeholderTextColor: GcsStyle.PanelStyle.textPrimaryColor
                     width: (parent.width - 30) * 0.15
 
@@ -356,7 +359,7 @@ Window {
                             // Add to list model first
                             droneModel.append({
                                                   "name": droneNameField.text,
-                                                  "type": droneType.text,
+                                                  "role": droneRole.text,
                                                   "xbeeId": droneXbeeID.text,
                                                   "xbeeAddress": droneXbeeAddr.text
                                               });
@@ -364,13 +367,13 @@ Window {
                             // Log to console
                             console.log("Added drone to list:")
                             console.log("Drone name: " + droneNameField.text)
-                            console.log("Drone Type: " + droneType.text)
+                            console.log("Drone role: " + droneRole.text)
                             console.log("Drone Xbee ID: " + droneXbeeID.text)
                             console.log("Drone Xbee Address: " + droneXbeeAddr.text)
 
                             // Try to save to database (keep this for later, for when all database methods are added)
                             try {
-                                droneController.saveDrone(droneNameField.text, droneType.text,
+                                droneController.saveDrone(droneNameField.text, droneRole.text,
                                                           droneXbeeID.text, droneXbeeAddr.text);
                                 successMessage.text = "Drone added successfully!";
                                 successPopup.open();
@@ -420,7 +423,7 @@ Window {
                             // Update the item in the model
                             droneModel.set(selectedDroneIndex, {
                                                "name": droneNameField.text,
-                                               "type": droneType.text,
+                                               "role": droneRole.text,
                                                "xbeeId": droneXbeeID.text,
                                                "xbeeAddress": droneXbeeAddr.text
                                            });
@@ -429,7 +432,7 @@ Window {
                             try {
                                 // UPDATE TO BE THE ACTUAL METHOD
                                 droneController.updateDrone(oldXbeeId, droneNameField.text,
-                                                            droneType.text, droneXbeeID.text, droneXbeeAddr.text);
+                                                            droneRole.text, droneXbeeID.text, droneXbeeAddr.text);
                                 successMessage.text = "Drone updated successfully!";
                                 successPopup.open();
                             } catch (error) {
@@ -565,7 +568,7 @@ Window {
                         color: "#e8e8e8"
                         Text {
                             anchors.centerIn: parent
-                            text: "Type"
+                            text: "Role"
                             font.bold: true
                         }
                     }
@@ -689,7 +692,7 @@ Window {
                             }
                         }
 
-                        // Type cell
+                        // Role cell
                         Rectangle {
                             width: parent.width * 0.15
                             height: parent.height
@@ -698,7 +701,7 @@ Window {
                             border.color: "#e0e0e0"
 
                             Text {
-                                text: type
+                                text: role
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.left: parent.left
