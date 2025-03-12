@@ -194,6 +194,7 @@ Rectangle {
                             // ideally this would capture the clicked drone as an OBJECT, not individual properties
                             // passActiveDrone(model.name, model.status, model.battery)
                             updateSelectedDroneSignal(model.name, model.status, model.battery)
+                            droneController.updateSelectedDrone(model.name)
                         }
                     }
 

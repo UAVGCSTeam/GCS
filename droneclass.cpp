@@ -3,6 +3,8 @@
 #include <QString>
 #include <cmath>
 
+static QString selectedDroneName;
+
 DroneClass::DroneClass(QObject *parent) :
     QObject(parent)
     , m_name("")
@@ -35,67 +37,83 @@ DroneClass::DroneClass(const QString &input_name,
 void DroneClass::setName(const QString &inputName){
     if (m_name != inputName){
         m_name = inputName;
-        emit nameChanged();
+        if (this->getName() == selectedDroneName) {
+            emit nameChanged();
+        }
     }
 }
 void DroneClass::setXbeeAddress(const QString &inputXbeeAddress){
     if (m_xbeeAddress != inputXbeeAddress){
         m_xbeeAddress = inputXbeeAddress;
-        emit xbeeAddressChanged();
+        if (this->getName() == selectedDroneName) {
+            emit xbeeAddressChanged();
+        }
     }
 }
 void DroneClass::setRole(const QString &inputRole){
     if (m_role != inputRole){
         m_role = inputRole;
-        emit roleChanged();
+        if (this->getName() == selectedDroneName) {
+            emit roleChanged();
+        }
     }
 }
 void DroneClass::setBatteryLevel(double inputBatteryLevel){
     if (m_batteryLevel != inputBatteryLevel){
         m_batteryLevel = inputBatteryLevel;
-        emit batteryChanged();
+        if (this->getName() == selectedDroneName) {
+            emit batteryChanged();
+        }
     }
 }
 void DroneClass::setPosition(const QVector3D &pos){
     if (m_position != pos){
         m_position = pos;
-        emit positionChanged();
+        if (this->getName() == selectedDroneName) {
+            emit positionChanged();
+        }
     }
 }
 
 //temporary
-void DroneClass::setLattitude(const double lat) {
+void DroneClass::setLattitude(const double &lat) {
     if (m_lattitude != lat) {
         m_lattitude = lat;
-        emit lattitudeChanged();
+        if (this->getName() == selectedDroneName) {
+            emit lattitudeChanged();
+        }
     }
 }
 //temporary
-void DroneClass::setLongitude(const double longitude) {
-    if (m_longitude != longitude) {
-        m_longitude = longitude;
-        emit longitudeChanged();
-    }
-}
-//temporary
-void DroneClass::setAltitude(const double alt) {
-    if (m_altitude != alt) {
-        m_altitude = alt;
-        emit altitudeChanged();
+void DroneClass::setLongitude(const double &lon) {
+    if (m_longitude != lon) {
+        m_longitude = lon;
+        if (this->getName() == selectedDroneName) {
+            emit longitudeChanged();
+        }
     }
 }
 
 void DroneClass::setVelocity(const QVector3D &vel){
     if (m_velocity != vel){
         m_velocity = vel;
-        emit velocityChanged();
+        if (this->getName() == selectedDroneName) {
+            emit velocityChanged();
+        }
     }
 }
 void DroneClass::setOrientation(const QVector3D &ori){
     if (m_orientation != ori){
         m_orientation = ori;
-        emit orientationChanged();
+        if (this->getName() == selectedDroneName) {
+            emit orientationChanged();
+        }
     }
+}
+
+// Static variable to keep track which drone is selected
+void updateSelectedDroneName(QString droneName) {
+    selectedDroneName = droneName;
 }
 
 void DroneClass::setPosition(float x, float y, float z)

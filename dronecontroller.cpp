@@ -35,8 +35,19 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     // Now we are going to create a shared pointer across qt for the drone class object with inputs of name, type, and xbee address
     droneList.push_back(QSharedPointer<DroneClass>::create(input_name, input_type, input_xbeeAddress));
 
-    // This is an example of how we would access the last drone object of the list as a pointer to memory
-    // QSharedPointer<DroneClass> tempPtr = droneList.last();
+    // This is an example of how we would access the last drone object of the list as a pointer to memory/*
+    QSharedPointer<DroneClass> tempPtr = droneList.last();
+
+    connect(tempPtr.data(), &DroneClass::nameChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::xbeeAddressChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::roleChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::batteryChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::positionChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::lattitudeChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::longitudeChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::velocityChanged, this, &DroneController::updateSelectedDrone);
+    connect(tempPtr.data(), &DroneClass::orientationChanged, this, &DroneController::updateSelectedDrone);
+
 
     // this is an example of using the list plus the object above use the methods and get information
     // qDebug() << "HIPEFULLY SOMETHIGBN :D" << droneList.data();
@@ -71,6 +82,9 @@ double DroneController::getAirspeed(int droneIndex) {
         );
 }
 
+void DroneController::updateSelectedDrone() {
+    emit variableChanged();
+}
 // DroneClass DroneController::getDroneByName(const QString &input_name){
 
 // }

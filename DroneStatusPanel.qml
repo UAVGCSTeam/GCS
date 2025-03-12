@@ -129,6 +129,11 @@ Rectangle {
         onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery)
     }
 
+    Connections {
+        target: droneController
+        onVariableChanged: populateActiveDroneModel(name, status, battery)
+    }
+
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
     function populateActiveDroneModel(name, status, battery) {
         if (activeDroneModel.count > 0 && activeDroneModel.get(0).name === name) {

@@ -38,9 +38,11 @@ public slots:
     QVector3D fetchPosition(int droneIndex);
     QVector3D fetchVelocity(int droneIndex);
     double getAirspeed(int droneIndex);
+    void updateSelectedDrone();
 
 signals:
     void droneAdded();
+    void variableChanged();
 
 private:
     DBManager &dbManager;

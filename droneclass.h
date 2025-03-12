@@ -15,6 +15,8 @@ class DroneClass : public QObject
     Q_PROPERTY(double batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged FINAL)
     Q_PROPERTY(QString role READ getRole WRITE setRole NOTIFY roleChanged FINAL)
     Q_PROPERTY(QVector3D position READ getPosition WRITE setPosition NOTIFY positionChanged FINAL)
+    Q_PROPERTY(double lattitude READ getLattitude WRITE setLattitude NOTIFY lattitudeChanged FINAL)
+    Q_PROPERTY(double longitude READ getLongitude WRITE setLongitude NOTIFY lattitudeChanged FINAL)
     Q_PROPERTY(QVector3D velocity READ getVelocity WRITE setVelocity NOTIFY velocityChanged FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation WRITE setOrientation NOTIFY orientationChanged FINAL)
 
@@ -43,6 +45,8 @@ public:
     QString getRole() const {return m_role; };
     double getBatteryLevel() const { return m_batteryLevel; };
     QVector3D getPosition() const { return m_position; };
+    double getLattitude() const {return m_lattitude; };
+    double getLongitude() const {return m_longitude; };
     QVector3D getVelocity() const { return m_velocity; };
     QVector3D getOrientation() const { return m_orientation; };
 
@@ -58,6 +62,8 @@ signals:
     void roleChanged();
     void batteryChanged();
     void positionChanged();
+    void lattitudeChanged();
+    void longitudeChanged();
     void velocityChanged();
     void orientationChanged();
 
@@ -67,6 +73,8 @@ public slots:
     void setRole(const QString &inputRole);
     void setBatteryLevel(double batteryLevel);
     void setPosition(const QVector3D &pos);
+    void setLattitude(const double &lat);
+    void setLongitude(const double &lon);
     void setVelocity(const QVector3D &vel);
     void setOrientation(const QVector3D &ori);
 
@@ -76,9 +84,10 @@ private:
     QString m_role;
     double m_batteryLevel;
     QVector3D m_position;
+    double m_lattitude;
+    double m_longitude;
     QVector3D m_velocity;
     QVector3D m_orientation;
-
 };
 
 #endif // DroneClass_H
