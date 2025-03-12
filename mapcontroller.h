@@ -5,7 +5,6 @@
 #include <QVariant>
 #include <QPair>
 #include <QVector>
-#include "droneclass.h"
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
@@ -26,17 +25,12 @@ class MapController : public QObject
 
 public:
     explicit MapController(QObject *parent = nullptr);
-    // Q_INVOKABLE void debugPrintDrones() const;
-    Q_INVOKABLE void createDrone(const QString &input_name);
-
 
 public slots:
     void setCenterPosition(const QVariant &lat, const QVariant &lon);
     void setLocationMarking(const QVariant &lat, const QVariant &lon);
     void changeMapType(int typeIndex);
 
-    Q_INVOKABLE void addDrone(DroneClass* drone);
-    Q_INVOKABLE QVariantList getAllDrones() const;
 signals:
     void centerPositionChanged(const QVariant &lat, const QVariant &lon);
     void locationMarked(const QVariant &lat, const QVariant &lon);
@@ -47,8 +41,6 @@ private:
     QVector<QPair<double, double>> m_markers;
     int m_currentMapType;
     int m_supportedMapTypesCount;
-
-    QVector<DroneClass*> m_drones;
 
     void updateCenter(const QPair<double, double> &center);
     void addMarker(const QPair<double, double> &position);
