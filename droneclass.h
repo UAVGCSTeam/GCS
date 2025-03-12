@@ -19,6 +19,7 @@ class DroneClass : public QObject
     Q_PROPERTY(double longitude READ getLongitude WRITE setLongitude NOTIFY lattitudeChanged FINAL)
     Q_PROPERTY(QVector3D velocity READ getVelocity WRITE setVelocity NOTIFY velocityChanged FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation WRITE setOrientation NOTIFY orientationChanged FINAL)
+    Q_PROPERTY(QString selectedName READ getSelectedDroneName WRITE updateSelectedDroneName NOTIFY selectedDroneNameChanged FINAL)
 
 public:
     // When an object is created in Qt, you can define its parent
@@ -50,6 +51,8 @@ public:
     QVector3D getVelocity() const { return m_velocity; };
     QVector3D getOrientation() const { return m_orientation; };
 
+    static QString getSelectedDroneName() { return selectedDroneName; };
+
     // QINVOKEABLE allows functions to be called in QML files
     Q_INVOKABLE void setPosition(float x, float y, float z);
     Q_INVOKABLE void setVelocity(float x, float y, float z);
@@ -66,6 +69,7 @@ signals:
     void longitudeChanged();
     void velocityChanged();
     void orientationChanged();
+    void selectedDroneNameChanged();
 
 public slots:
     void setName(const QString &inputName);
@@ -77,6 +81,7 @@ public slots:
     void setLongitude(const double &lon);
     void setVelocity(const QVector3D &vel);
     void setOrientation(const QVector3D &ori);
+    void updateSelectedDroneName(QString &selectedName);
 
 private:
     QString m_name;
@@ -88,6 +93,8 @@ private:
     double m_longitude;
     QVector3D m_velocity;
     QVector3D m_orientation;
+
+    static QString selectedDroneName;
 };
 
 #endif // DroneClass_H

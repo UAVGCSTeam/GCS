@@ -129,6 +129,7 @@ Rectangle {
         onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery)
     }
 
+    // Whenever a variable is updated, reappend all data in panel
     Connections {
         target: droneController
         onVariableChanged: populateActiveDroneModel(name, status, battery)

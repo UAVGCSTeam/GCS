@@ -38,15 +38,18 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
     // This is an example of how we would access the last drone object of the list as a pointer to memory/*
     QSharedPointer<DroneClass> tempPtr = droneList.last();
 
-    connect(tempPtr.data(), &DroneClass::nameChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::xbeeAddressChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::roleChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::batteryChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::positionChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::lattitudeChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::longitudeChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::velocityChanged, this, &DroneController::updateSelectedDrone);
-    connect(tempPtr.data(), &DroneClass::orientationChanged, this, &DroneController::updateSelectedDrone);
+
+    // Use separate signals in case we want to switch to updating each variable individually later on. If we decide not to,
+    // this could all be one connect with all setters using the same signal.
+    connect(tempPtr.data(), &DroneClass::nameChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::xbeeAddressChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::roleChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::batteryChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::positionChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::lattitudeChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::longitudeChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::velocityChanged, this, &DroneController::updateSelectedDroneData);
+    connect(tempPtr.data(), &DroneClass::orientationChanged, this, &DroneController::updateSelectedDroneData);
 
 
     // this is an example of using the list plus the object above use the methods and get information
@@ -82,7 +85,15 @@ double DroneController::getAirspeed(int droneIndex) {
         );
 }
 
-void DroneController::updateSelectedDrone() {
+// Connects to DroneTrackingPanel. Will be called when another drone is clicked on
+void DroneController::updateSelectedDrone(QString droneName) {
+    // since static variable, drone id doesn't matter
+    QSharedPointer<DroneClass> tempPtr = droneList.at(0);
+    tempPtr->updateSelectedDroneName(droneName);
+}
+
+// called by droneclass setters to emit signal. This signal is caught by DroneStatusPanel which repopulates the panel
+void DroneController::updateSelectedDroneData() {
     emit variableChanged();
 }
 // DroneClass DroneController::getDroneByName(const QString &input_name){

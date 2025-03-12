@@ -3,7 +3,8 @@
 #include <QString>
 #include <cmath>
 
-static QString selectedDroneName;
+// Static variable to keep track of which drone is selected
+QString DroneClass::selectedDroneName = "";
 
 DroneClass::DroneClass(QObject *parent) :
     QObject(parent)
@@ -112,8 +113,11 @@ void DroneClass::setOrientation(const QVector3D &ori){
 }
 
 // Static variable to keep track which drone is selected
-void updateSelectedDroneName(QString droneName) {
-    selectedDroneName = droneName;
+void DroneClass::updateSelectedDroneName(QString &droneName) {
+    if (selectedDroneName != droneName) {
+        selectedDroneName = droneName;
+        emit selectedDroneNameChanged();
+    }
 }
 
 void DroneClass::setPosition(float x, float y, float z)
