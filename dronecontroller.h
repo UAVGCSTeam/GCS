@@ -41,6 +41,7 @@ public:
     Q_INVOKABLE bool isSimulationMode() const;
 
 public slots:
+    void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
     void updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
     void deleteDrone(const QString &xbeeId);
     void deleteALlDrones_UI();
@@ -49,7 +50,6 @@ public slots:
 public:
     Q_INVOKABLE QVariantList getDroneList() const;
     // Process data recieved from XBee via shared memory
-    void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
 
 private slots:
     void processXbeeData();

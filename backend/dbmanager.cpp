@@ -119,7 +119,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
     // Insert new drone after duplicate checking
     insertQuery.prepare(R"(
         INSERT INTO drones (drone_name, drone_role, xbee_id, xbee_address)
-        VALUES (:droneName, :droneRole, :xbeeID, :xbeeAddress);
+        VALUES (:droneName, :dronerole, :xbeeID, :xbeeAddress);
     )");
 
     insertQuery.bindValue(":droneName", droneName);
@@ -255,7 +255,7 @@ void DBManager::printDroneList() {
         qCritical() << "Database is not open! Cannot fetch drones.";
     }
 
-    QSqlQuery query("SELECT drone_id, drone_name, drone_Role, xbee_id, xbee_address FROM drones", gcs_db_connection);
+    QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, xbee_address FROM drones", gcs_db_connection);
 
     qDebug() << "---- Drone List ----";
     bool hasData = false;

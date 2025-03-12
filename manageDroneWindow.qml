@@ -52,6 +52,8 @@ Window {
             // Track the index of the previously selected drone
             var newSelectedIndex = -1;
 
+            droneModel.clear();
+
             if (drones && drones.length > 0) {
                 for (var i = 0; i < drones.length; i++) {
                     var drone = drones[i];
@@ -594,23 +596,23 @@ Window {
                                 syncModelWithDatabase();
 
                                 // Show success message
-                            successMessage.text = "Drone added successfully!";
-                            successPopup.open();
+                                successMessage.text = "Drone added successfully!";
+                                successPopup.open();
 
-                            // Clear fields
-                            clearFields();
-                        } catch (error) {
-                            console.error("Failed to save to database:", error);
-                            errorMessage.text = "Failed to add drone: " + error;
+                                // Clear fields
+                                clearFields();
+                            } catch (error) {
+                                console.error("Failed to save to database:", error);
+                                errorMessage.text = "Failed to add drone: " + error;
+                                errorPopup.open();
+                            }
+                        } else {
+                            // Show error for missing name
+                            errorMessage.text = "Drone name is required!";
                             errorPopup.open();
                         }
-                    } else {
-                        // Show error for missing name
-                        errorMessage.text = "Drone name is required!";
-                        errorPopup.open();
                     }
                 }
-            }
 
                 // Update Button - Only enabled when a drone is selected
                 Button {
@@ -1085,22 +1087,6 @@ Window {
                     color: "#000000"
                 }
             }
-        }
-    }
-    Connections {
-        target: droneController
-        // on receiving an emitted signal the connections refresh the droneModel ListModel using the updated drone list
-        onDroneAdded: {
-            var drones = droneController.getDroneList();
-            droneTrackingPanel.populateListModel(drones);
-        }
-        onDroneUpdated: {
-            var drones = droneController.getDroneList();
-            droneTrackingPanel.populateListModel(drones);
-        }
-        onDroneDeleted: {
-            var drones = droneController.getDroneList();
-            droneTrackingPanel.populateListModel(drones);
         }
     }
 }
