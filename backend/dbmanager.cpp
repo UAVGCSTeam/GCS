@@ -119,7 +119,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
     // Insert new drone after duplicate checking
     insertQuery.prepare(R"(
         INSERT INTO drones (drone_name, drone_role, xbee_id, xbee_address)
-        VALUES (:droneName, :dronerole, :xbeeID, :xbeeAddress);
+        VALUES (:droneName, :droneRole, :xbeeID, :xbeeAddress);
     )");
 
     insertQuery.bindValue(":droneName", droneName);
