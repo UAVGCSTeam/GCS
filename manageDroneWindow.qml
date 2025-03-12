@@ -98,53 +98,64 @@ Window {
 
     Component.onCompleted: {
         try {
-            const drones = droneController.getDroneList() // or whatever the actual method name is GIAN PLEASE MAKE (maybe not in droneController)
-            // debug
-            console.log("Fetched drones:", drones)
-            console.log("Length:", drones.length)
-            console.log("Fetched drones:", JSON.stringify(drones));
-            // change if statement logic
-            if (drones.length > 0) {
-                drones.forEach(drone => {
-                   droneModel.append({
-                     "name": drone.name || "",
-                     "role": drone.role || "",
-                     "xbeeId": drone.xbeeId || "",
-                     "xbeeAddress": drone.xbeeAddress || ""
-                   })
-                })
-            }
-
-            // Initialize simulation mode from controller if available
+            // Initialize simulation mode first, so we know how to proceed
             if (typeof droneController !== "undefined" &&
                 typeof droneController.isSimulationMode === "function") {
                 simulationMode = droneController.isSimulationMode();
                 console.log("Initialized simulation mode:", simulationMode);
             }
-            console.log("Loading drones from database...");
 
-            // Use the sync function instead of manual model updates
-            syncModelWithDatabase();
+            // Different handling for simulation vs normal mode
+            if (simulationMode) {
+                console.log("Simulation mode detected - setting up simulation environment");
 
-            // Check if we have any drones at all
-            if (droneModel.count === 0 && simulationMode) {
-                console.log("No drones found, adding simulation drones");
-                // Add simulation drones
-                addSimulationDrones();
-            }
+                // Delete all existing drones to start clean
+                droneController.deleteALlDrones_UI();
 
-            // Check for XBee monitoring function
-            if (!simulationMode) {
+                // Use a timer to wait for deletion to complete
+                let timer = Qt.createQmlObject("import QtQuick; Timer {}", this);
+                timer.interval = 500;
+                timer.repeat = false;
+                timer.triggered.connect(function() {
+                    // Add simulation drones
+                    addSimulationDrones();
+
+                    // Start XBee monitoring for simulation
+                    if (typeof droneController.startXbeeMonitoring === 'function') {
+                        console.log("Starting XBee monitoring for simulation");
+                        droneController.startXbeeMonitoring();
+                    }
+                });
+                timer.start();
+            } else {
+                // Normal mode - load drones from database
+                const drones = droneController.getDroneList()
+                console.log("Fetched drones:", drones.length, "drones");
+
+                if (drones.length > 0) {
+                    drones.forEach(drone => {
+                        droneModel.append({
+                            "name": drone.name || "",
+                            "role": drone.role || "",
+                            "xbeeId": drone.xbeeId || "",
+                            "xbeeAddress": drone.xbeeAddress || ""
+                        });
+                    });
+                }
+
+                // Use the sync function for normal operation
+                syncModelWithDatabase();
+
+                // Start XBee monitoring for real hardware
                 if (typeof droneController.startXbeeMonitoring === 'function') {
-                    console.log("Starting XBee monitoring");
+                    console.log("Starting XBee monitoring for real hardware");
                     droneController.startXbeeMonitoring();
                 } else {
                     console.log("startXbeeMonitoring function not available");
-                    // Create a dummy property or function to avoid future errors
+                    // Create a dummy function to avoid errors
                     if (typeof droneController.startXbeeMonitoring === 'undefined') {
                         droneController.startXbeeMonitoring = function() {
                             console.log("Dummy XBee monitoring function called");
-                            // You might want to signal connection status here
                             xbeeConnected = false;
                         };
                     }
@@ -192,23 +203,26 @@ Window {
 
     // Adds simulated drone
     function addSimulationDrones() {
+        console.log("Adding simulation drones...");
+
         const simulationDrones = [
             {
-                "name": "Scout1",
+                "name": "Drone1",
                 "role": "Scout",
                 "xbeeId": "SIM001",
                 "xbeeAddress": "0013A20012345678"
             },
             {
-                "name": "Cargo2",
+                "name": "Drone2",
                 "role": "Carrier",
                 "xbeeId": "SIM002",
                 "xbeeAddress": "0013A20087654321"
             }
         ];
 
+        clearSimulationDrones();
+
         simulationDrones.forEach(drone => {
-            droneModel.append(drone);
 
             // Optionally save to database
             try {
@@ -223,6 +237,7 @@ Window {
             }
         });
 
+        syncModelWithDatabase();
         console.log("Added simulation drones, model count:", droneModel.count);
     }
 

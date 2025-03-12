@@ -144,25 +144,23 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
 }
 
 
-bool DBManager::deleteDrone(const QString& xbeeId) {
+bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot delete drone.";
         return false;
     }
 
-    // tbh i dont know the differnece between conneting and not connecting if it's already within the funciton
-    // TODO: figure that out...
-    QSqlQuery deleteByNameQuery;
-    deleteByNameQuery.prepare("DELETE FROM drones WHERE xbee_id = :xbeeID");
-    deleteByNameQuery.bindValue(":xbeeID", xbeeId);
+    QSqlQuery deleteQuery;
+    deleteQuery.prepare("DELETE FROM drones WHERE xbee_id = :identifier OR xbee_address = :identifier");
+    deleteQuery.bindValue(":identifier", xbeeIdOrAddress);
 
-    // excecutes anyways, if some doesn't returns failure condition
-    if (!deleteByNameQuery.exec()) {
-        qCritical() << "Failed to delte the drone: " << deleteByNameQuery.lastError().text();
+    if (!deleteQuery.exec()) {
+        qCritical() << "Failed to delete the drone: " << deleteQuery.lastError().text();
         return false;
     }
-    qDebug() << "DB: Drone Deleted sucessfully: " << xbeeId;
-    return true;
+
+    qDebug() << "DB: Drone deleted successfully: " << xbeeIdOrAddress;
+    return deleteQuery.numRowsAffected() > 0; // Return true if any rows were affected
 }
 
 bool DBManager::deleteAllDrones() {
@@ -297,6 +295,8 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
     return query.value(0).toInt() > 0; // Returns true if at least one matching drone exists
 }
 
+
+// Lets use this function to have "default" drones. This only happens if not in Simulation mode.
 bool DBManager::createInitialDrones() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot insert initial drones.";

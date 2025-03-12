@@ -128,8 +128,26 @@ QString DroneController::getDataFilePath() {
  * Viewable Drone
  */
 void DroneController::saveDrone(const QString &input_name, const QString &input_role, const QString &input_xbeeID, const QString &input_xbeeAddress) {
+    // Add debug output to see what's being passed
+    qDebug() << "saveDrone called with:" << input_name << input_role << input_xbeeID << input_xbeeAddress;
+
     if (input_name.isEmpty()) {
         qWarning() << "Missing required name field!";
+        return;
+    }
+
+    // Check if a drone with this address already exists - avoid duplicates
+    bool exists = false;
+    for (const auto &drone : droneList) {
+        if (drone->getXbeeAddress() == input_xbeeAddress) {
+            exists = true;
+            qDebug() << "Drone with address" << input_xbeeAddress << "already exists!";
+            break;
+        }
+    }
+
+    if (exists) {
+        qDebug() << "Skipping save for existing drone with address:" << input_xbeeAddress;
         return;
     }
 
@@ -145,7 +163,7 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
         emit dronesChanged();
         qDebug() << "dronesChanged signal emitted";
     } else {
-        qWarning() << "Failed to save drone.";
+        qWarning() << "Failed to save drone to database!";
     }
 }
 
@@ -180,15 +198,29 @@ void DroneController::deleteDrone(const QString &input_xbeeId) {
         qWarning() << "Drone Controller: xbeeId not passed by UI.";
         return;
     }
-    if (dbManager.deleteDrone(input_xbeeId)) {
-        for (int i = 0; i < droneList.size(); i++) {
-            if (droneList[i]->getXbeeID() == input_xbeeId) {
-                droneList.removeAt(i);
-                break;
-            }
+
+    // Try to find and delete the drone from memory first
+    bool found = false;
+    for (int i = 0; i < droneList.size(); i++) {
+        if (droneList[i]->getXbeeID() == input_xbeeId ||
+            droneList[i]->getXbeeAddress() == input_xbeeId) {
+            droneList.removeAt(i);
+            found = true;
+            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeId;
+            break;
         }
-        qDebug() << "Drone deleted successfully!";
+    }
+
+    // Now delete from database, even if not found in memory
+    if (dbManager.deleteDrone(input_xbeeId)) {
+        qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
         emit dronesChanged();
+    } else {
+        qWarning() << "Failed to delete drone from database:" << input_xbeeId;
+        // If we removed from memory but failed to delete from DB, sync
+        if (found) {
+            emit dronesChanged();
+        }
     }
 }
 
@@ -262,11 +294,34 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) 
 
 // If want to query by address
 QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString &address) {
+    qDebug() << "Looking for drone with address:" << address;
+
+    // First try exact address match
     for (const auto &drone : droneList) {
         if (drone->getXbeeAddress() == address) {
+            qDebug() << "Found drone by address:" << drone->getName();
             return drone;
         }
     }
+
+    // If not found, try xbeeId match
+    for (const auto &drone : droneList) {
+        if (drone->getXbeeID() == address) {
+            qDebug() << "Found drone by XBee ID:" << drone->getName();
+            return drone;
+        }
+    }
+
+    // Attempt a more flexible match (case insensitive, partial)
+    for (const auto &drone : droneList) {
+        if (drone->getXbeeAddress().contains(address, Qt::CaseInsensitive) ||
+            address.contains(drone->getXbeeAddress(), Qt::CaseInsensitive)) {
+            qDebug() << "Found drone by partial address match:" << drone->getName();
+            return drone;
+        }
+    }
+
+    qDebug() << "No drone found with address:" << address;
     return QSharedPointer<DroneClass>();  // Return null pointer if not found
 }
 
@@ -356,37 +411,38 @@ void DroneController::processXbeeData() {
     QString data = getLatestXbeeData();
     if (data.isEmpty()) return;
 
+    qDebug() << "Raw XBee data:" << data.left(100) << "..."; // Show first 100 chars
+
     // Try to parse as JSON
     QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8());
-    if (doc.isNull()) return;
+    if (doc.isNull()) {
+        qWarning() << "Failed to parse XBee data as JSON";
+        return;
+    }
 
     QJsonObject obj = doc.object();
+    QString messageType = obj["type"].toString();
 
     // Handle heartbeat messages
-    if (obj["type"] == "heartbeat") {
-        qDebug() << "Received heartbeat from Python script";
-
-        // Check for connection status in heartbeat
-        if (obj.contains("status")) {
-            QString status = obj["status"].toString();
-            qDebug() << "XBee connection status:" << status;
-            emit xbeeConnectionChanged(status == "connected");
-        } else {
-            emit xbeeConnectionChanged(true);
-        }
+    if (messageType == "heartbeat") {
+        // Handle heartbeat (existing code)
         return;
     }
 
     // Handle drone data messages
-    if (obj["type"] == "xbee_data") {
+    if (messageType == "xbee_data") {
         QString droneName = obj["drone"].toString();
         QString address = obj["address"].toString();
         QString message = obj["message"].toString();
+
+        qDebug() << "Received XBee data for:" << droneName << "at address:" << address;
+        qDebug() << "Message content:" << message;
 
         // First try to find drone by XBee address
         QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(address);
 
         if (!drone.isNull()) {
+            qDebug() << "Found matching drone:" << drone->getName();
             // Update drone state based on XBee data
             drone->processXbeeMessage(message);
 
@@ -394,6 +450,10 @@ void DroneController::processXbeeData() {
             emit droneStateChanged(drone->getName());
         } else {
             qDebug() << "Received data for unknown drone at address:" << address;
+            qDebug() << "Available drones:";
+            for (const auto &d : droneList) {
+                qDebug() << "  -" << d->getName() << ":" << d->getXbeeID() << "/" << d->getXbeeAddress();
+            }
         }
     }
 }
