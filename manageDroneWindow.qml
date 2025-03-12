@@ -59,7 +59,7 @@ Window {
 
                     droneModel.append({
                         "name": drone.name || "",
-                        "type": drone.type || "",
+                        "role": drone.role || "",
                         "xbeeId": drone.xbeeId || "",
                         "xbeeAddress": drone.xbeeAddress || ""
                     });
@@ -96,33 +96,29 @@ Window {
 
     Component.onCompleted: {
         try {
-<<<<<<< HEAD
-<<<<<<< HEAD
             const drones = droneController.getDroneList() // or whatever the actual method name is GIAN PLEASE MAKE (maybe not in droneController)
             // debug
             console.log("Fetched drones:", drones)
             console.log("Length:", drones.length)
             console.log("Fetched drones:", JSON.stringify(drones));
             // change if statement logic
-            if (drones.length > 0 ) {
+            if (drones.length > 0) {
                 drones.forEach(drone => {
                    droneModel.append({
                      "name": drone.name || "",
                      "role": drone.role || "",
                      "xbeeId": drone.xbeeId || "",
                      "xbeeAddress": drone.xbeeAddress || ""
-                 })
-               })
-=======
-=======
+                   })
+                })
+            }
+
             // Initialize simulation mode from controller if available
             if (typeof droneController !== "undefined" &&
                 typeof droneController.isSimulationMode === "function") {
                 simulationMode = droneController.isSimulationMode();
                 console.log("Initialized simulation mode:", simulationMode);
             }
-
->>>>>>> dcd326a (Fixed windows compatibility)
             console.log("Loading drones from database...");
 
             // Use the sync function instead of manual model updates
@@ -151,7 +147,6 @@ Window {
                         };
                     }
                 }
->>>>>>> 24d6d9c (PLEASE GOD HELP ME)
             }
         } catch (error) {
             console.error("Error in Component.onCompleted:", error);
@@ -177,7 +172,7 @@ Window {
 
                 droneModel.append({
                     "name": drone.name || "",
-                    "type": drone.type || "",
+                    "role": drone.role || "",
                     "xbeeId": drone.xbeeId || "",
                     "xbeeAddress": drone.xbeeAddress || ""
                 });
@@ -198,13 +193,13 @@ Window {
         const simulationDrones = [
             {
                 "name": "Scout1",
-                "type": "Scout",
+                "role": "Scout",
                 "xbeeId": "SIM001",
                 "xbeeAddress": "0013A20012345678"
             },
             {
                 "name": "Cargo2",
-                "type": "Carrier",
+                "role": "Carrier",
                 "xbeeId": "SIM002",
                 "xbeeAddress": "0013A20087654321"
             }
@@ -217,7 +212,7 @@ Window {
             try {
                 droneController.saveDrone(
                     drone.name,
-                    drone.type,
+                    drone.role,
                     drone.xbeeId,
                     drone.xbeeAddress
                 );
@@ -583,29 +578,6 @@ Window {
                     }
                     onClicked: {
                         // We are going to NEED to put more input validation
-<<<<<<< HEAD
-                        // TODO: add input validation for same name droneNames.
-                        if (droneNameField.text.length > 0) {
-                            // Add to list model first
-                            droneModel.append({
-                                                  "name": droneNameField.text,
-                                                  "role": droneRole.text,
-                                                  "xbeeId": droneXbeeID.text,
-                                                  "xbeeAddress": droneXbeeAddr.text
-                                              });
-
-                            // Log to console
-                            console.log("Added drone to list:")
-                            console.log("Drone name: " + droneNameField.text)
-                            console.log("Drone role: " + droneRole.text)
-                            console.log("Drone Xbee ID: " + droneXbeeID.text)
-                            console.log("Drone Xbee Address: " + droneXbeeAddr.text)
-
-                            // Try to save to database (keep this for later, for when all database methods are added)
-                            try {
-                                droneController.saveDrone(droneNameField.text, droneRole.text,
-                                                          droneXbeeID.text, droneXbeeAddr.text);
-=======
                         // Validate input - we need at least a name
                         if (droneNameField.text.length > 0) {
                             try {
@@ -613,7 +585,7 @@ Window {
                                 // Instead, we rely on the dronesChanged signal to update the UI
                                 droneController.saveDrone(
                                     droneNameField.text,
-                                    droneType.text,
+                                    droneRole.text,
                                     droneXbeeID.text,
                                     droneXbeeAddr.text
                                 );
@@ -622,24 +594,23 @@ Window {
                                 syncModelWithDatabase();
 
                                 // Show success message
->>>>>>> 24d6d9c (PLEASE GOD HELP ME)
-                                successMessage.text = "Drone added successfully!";
-                                successPopup.open();
+                            successMessage.text = "Drone added successfully!";
+                            successPopup.open();
 
-                                // Clear fields
-                                clearFields();
-                            } catch (error) {
-                                console.error("Failed to save to database:", error);
-                                errorMessage.text = "Failed to add drone: " + error;
-                                errorPopup.open();
-                            }
-                        } else {
-                            // Show error for missing name
-                            errorMessage.text = "Drone name is required!";
+                            // Clear fields
+                            clearFields();
+                        } catch (error) {
+                            console.error("Failed to save to database:", error);
+                            errorMessage.text = "Failed to add drone: " + error;
                             errorPopup.open();
                         }
+                    } else {
+                        // Show error for missing name
+                        errorMessage.text = "Drone name is required!";
+                        errorPopup.open();
                     }
                 }
+            }
 
                 // Update Button - Only enabled when a drone is selected
                 Button {
@@ -670,27 +641,11 @@ Window {
                             var oldXbeeAddress = droneModel.get(selectedDroneIndex).xbeeAddress;
 
                             // Update the item in the model
-<<<<<<< HEAD
-                            droneModel.set(selectedDroneIndex, {
-                                               "name": droneNameField.text,
-                                               "role": droneRole.text,
-                                               "xbeeId": droneXbeeID.text,
-                                               "xbeeAddress": droneXbeeAddr.text
-                                           });
-
-                            // Update in database
-                            try {
-                                // UPDATE TO BE THE ACTUAL METHOD
-                                droneController.updateDrone(oldXbeeId, droneNameField.text,
-                                                            droneRole.text, droneXbeeID.text, droneXbeeAddr.text);
-=======
-                            try {
-                                droneController.updateDrone(oldXbeeAddress, droneNameField.text,
-                                                          droneType.text, droneXbeeID.text, droneXbeeAddr.text);
-                                // Update model from database
-                                syncModelWithDatabase();
-
->>>>>>> 24d6d9c (PLEASE GOD HELP ME)
+                                try {
+                                    droneController.updateDrone(oldXbeeAddress, droneNameField.text,
+                                                             droneRole.text, droneXbeeID.text, droneXbeeAddr.text);
+                                    // Update model from database
+                                    syncModelWithDatabase();
                                 successMessage.text = "Drone updated successfully!";
                                 successPopup.open();
                                 clearFields();

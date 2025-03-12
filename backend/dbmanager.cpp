@@ -87,27 +87,16 @@ bool DBManager::isOpen() const {
 }
 
 // CRUD ME
-
-<<<<<<< HEAD
-bool DBManager::createDrone(const QString& droneName, const QString& droneRole, const QString& xbeeID, const QString& xbeeAddress) {
-=======
-bool DBManager::createDrone(const QString& droneName, const QString& droneType,
+bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
                             const QString& xbeeID, const QString& xbeeAddress,
                             int* newDroneId) {
->>>>>>> 24d6d9c (PLEASE GOD HELP ME)
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot add drone.";
         return false;
     }
+    QSqlQuery checkDupQuery;
     QSqlQuery insertQuery;
 
-<<<<<<< HEAD
-
-    // Step 1: Check if a drone with the same name exists
-    if (checkIfDroneExists(droneName)) {
-        qCritical() << "A drone with the name " << droneName << " already exists!";
-        return false; // if drone returns true, throw false
-=======
     // Step 1: Check if a drone with the same XBee ID or Address already exists
     checkDupQuery.prepare(R"(
         SELECT COUNT(*) FROM drones WHERE xbee_id = :xbeeID OR xbee_address = :xbeeAddress;
@@ -125,7 +114,6 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneType,
     if (checkDupQuery.value(0).toInt() > 0) {
         qCritical() << "Drone already exists with the same XBee ID or Address.";
         return false;
->>>>>>> 24d6d9c (PLEASE GOD HELP ME)
     }
 
     // Insert new drone after duplicate checking

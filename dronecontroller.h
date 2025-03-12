@@ -38,8 +38,6 @@ public:
     bool checkDataFileExists();
     void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
-    Q_INVOKABLE bool updateDrone(const QString& oldXbeeId, const QString& name, const QString& type, const QString& xbeeId, const QString& xbeeAddress);
-    Q_INVOKABLE bool deleteDrone(const QString& xbeeId);
     Q_INVOKABLE bool isSimulationMode() const;
 
 public slots:
