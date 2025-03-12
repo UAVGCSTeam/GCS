@@ -6,6 +6,8 @@
 #include "backend/dbmanager.h"
 #include "droneclass.h"
 #include <QSharedPointer>
+#include <QSharedMemory>
+#include <QTimer>
 // #include "drone.h"
 
 /*
@@ -30,6 +32,13 @@ class DroneController : public QObject {
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
+    ~DroneController();
+
+    // Initialize shared memory for XBee communication
+    bool checkDataFileExists();
+    void startXbeeMonitoring();
+    Q_INVOKABLE QVariantList getDrones() const;
+    Q_INVOKABLE bool isSimulationMode() const;
 
 public slots:
     void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
@@ -40,17 +49,36 @@ public slots:
 // Declaration for retrieving the drone list
 public:
     Q_INVOKABLE QVariantList getDroneList() const;
+    // Process data recieved from XBee via shared memory
+
+private slots:
+    void processXbeeData();
+    void tryConnectToDataFile();
 
 signals:
     void droneAdded();
     void droneUpdated();
     void droneDeleted();
+    void droneStateChanged(const QString &droneName);
+    void xbeeConnectionChanged(bool connected);
+    void dronesChanged();
 
 private:
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
     //DroneClass &droneClass;
+    // Timers for data polling
+    QTimer xbeeDataTimer;
+    QTimer reconnectTimer;
+    // Method to find drone by name
+    QSharedPointer<DroneClass> getDroneByName(const QString &name);
+    // Get latest data from file
+    QString getLatestXbeeData();
+    // Method to find drone by XBee address
+    QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
 
+    QString getDataFilePath();
+    QString getConfigFilePath() const;
 };
 
 

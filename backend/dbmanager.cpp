@@ -87,19 +87,33 @@ bool DBManager::isOpen() const {
 }
 
 // CRUD ME
-
-bool DBManager::createDrone(const QString& droneName, const QString& droneRole, const QString& xbeeID, const QString& xbeeAddress) {
+bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
+                            const QString& xbeeID, const QString& xbeeAddress,
+                            int* newDroneId) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot add drone.";
         return false;
     }
+    QSqlQuery checkDupQuery;
     QSqlQuery insertQuery;
 
+    // Step 1: Check if a drone with the same XBee ID or Address already exists
+    checkDupQuery.prepare(R"(
+        SELECT COUNT(*) FROM drones WHERE xbee_id = :xbeeID OR xbee_address = :xbeeAddress;
+    )");
 
-    // Step 1: Check if a drone with the same name exists
-    if (checkIfDroneExists(droneName)) {
-        qCritical() << "A drone with the name " << droneName << " already exists!";
-        return false; // if drone returns true, throw false
+    checkDupQuery.bindValue(":xbeeID", xbeeID);
+    checkDupQuery.bindValue(":xbeeAddress", xbeeAddress);
+
+    if (!checkDupQuery.exec()) {
+        qCritical() << "Error checking for existing drone:" << checkDupQuery.lastError().text();
+        return false;
+    }
+
+    checkDupQuery.next();
+    if (checkDupQuery.value(0).toInt() > 0) {
+        qCritical() << "Drone already exists with the same XBee ID or Address.";
+        return false;
     }
 
     // Insert new drone after duplicate checking
@@ -119,30 +133,34 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole, 
         return false;
     }
 
+    // If the newDroneId pointer is provided, set the last inserted ID
+    if (newDroneId != nullptr) {
+        *newDroneId = insertQuery.lastInsertId().toInt();
+        qDebug() << "New drone ID:" << *newDroneId;
+    }
+
     qDebug() << "Drone added successfully: " << droneName;
     return true;
 }
 
 
-bool DBManager::deleteDrone(const QString& xbeeId) {
+bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot delete drone.";
         return false;
     }
 
-    // tbh i dont know the differnece between conneting and not connecting if it's already within the funciton
-    // TODO: figure that out...
-    QSqlQuery deleteByNameQuery;
-    deleteByNameQuery.prepare("DELETE FROM drones WHERE xbee_id = :xbeeID");
-    deleteByNameQuery.bindValue(":xbeeID", xbeeId);
+    QSqlQuery deleteQuery;
+    deleteQuery.prepare("DELETE FROM drones WHERE xbee_id = :identifier OR xbee_address = :identifier");
+    deleteQuery.bindValue(":identifier", xbeeIdOrAddress);
 
-    // excecutes anyways, if some doesn't returns failure condition
-    if (!deleteByNameQuery.exec()) {
-        qCritical() << "Failed to delte the drone: " << deleteByNameQuery.lastError().text();
+    if (!deleteQuery.exec()) {
+        qCritical() << "Failed to delete the drone: " << deleteQuery.lastError().text();
         return false;
     }
-    qDebug() << "DB: Drone Deleted sucessfully: " << xbeeId;
-    return true;
+
+    qDebug() << "DB: Drone deleted successfully: " << xbeeIdOrAddress;
+    return deleteQuery.numRowsAffected() > 0; // Return true if any rows were affected
 }
 
 bool DBManager::deleteAllDrones() {
@@ -235,7 +253,7 @@ void DBManager::printDroneList() {
         qCritical() << "Database is not open! Cannot fetch drones.";
     }
 
-    QSqlQuery query("SELECT drone_id, drone_name, drone_Role, xbee_id, xbee_address FROM drones", gcs_db_connection);
+    QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, xbee_address FROM drones", gcs_db_connection);
 
     qDebug() << "---- Drone List ----";
     bool hasData = false;
@@ -277,6 +295,8 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
     return query.value(0).toInt() > 0; // Returns true if at least one matching drone exists
 }
 
+
+// Lets use this function to have "default" drones. This only happens if not in Simulation mode.
 bool DBManager::createInitialDrones() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "Database is not open! Cannot insert initial drones.";

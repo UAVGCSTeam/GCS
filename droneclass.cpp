@@ -1,6 +1,7 @@
 #include "droneclass.h"
 
 #include <QString>
+#include <QDebug>
 #include <cmath>
 
 DroneClass::DroneClass(QObject *parent) :
@@ -9,26 +10,6 @@ DroneClass::DroneClass(QObject *parent) :
     , m_xbeeAddress("")
     , m_role("")
     , m_xbeeID("")
-    , m_batteryLevel(-1)
-    , m_position(QVector3D(-1, -1, -1))
-    , m_lattitude(-1) //temporary
-    , m_longitude(-1) //temporary
-    , m_altitude(-1)  //temporary
-    , m_velocity(QVector3D(-1, -1, -1))
-    , m_airspeed(-1)  //temporary
-    , m_orientation(QVector3D(-1, -1, -1))
-{
-
-}
-
-DroneClass::DroneClass(const QString &input_name,
-                       const QString &input_role,
-                       const QString &input_xbeeAddress,
-                       QObject *parent) :
-    QObject(parent)
-    , m_name(input_name)
-    , m_xbeeAddress(input_xbeeAddress)
-    , m_role(input_role)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_lattitude(-1) //temporary
@@ -60,7 +41,67 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)  //temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
-// idk what this is
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+}
+void DroneClass::processXbeeMessage(const QString &message) {
+    qDebug() << "Drone" << m_name << "received message:" << message;
+
+    // Split the message by newlines to get each data field
+    QStringList lines = message.split('\n');
+
+    for (const QString &lineRaw : lines) {
+        QString line = lineRaw.trimmed();
+
+        if (line.startsWith("ICAO:")) {
+            // Process ICAO identifier if needed
+            QString icao = line.mid(5).trimmed();
+            qDebug() << "ICAO:" << icao;
+        }
+        else if (line.startsWith("Lattitude:")) {
+            double latitude = line.mid(10).trimmed().toDouble();
+            setLattitude(latitude);
+            qDebug() << "Updated lattitude:" << latitude;
+        }
+        else if (line.startsWith("Longitude:")) {
+            double longitude = line.mid(10).trimmed().toDouble();
+            setLongitude(longitude);
+            qDebug() << "Updated longitude:" << longitude;
+        }
+        else if (line.startsWith("Altitude:")) {
+            double altitude = line.mid(9).trimmed().toDouble();
+            setAltitude(altitude);
+            qDebug() << "Updated altitude:" << altitude;
+        }
+        else if (line.startsWith("Velocity:")) {
+            QString velocityStr = line.mid(9).trimmed();
+
+            // Parse the [x, y, z] format
+            if (velocityStr.startsWith("[") && velocityStr.endsWith("]")) {
+                velocityStr = velocityStr.mid(1, velocityStr.length() - 2);
+                QStringList velComponents = velocityStr.split(",");
+                if (velComponents.size() >= 3) {
+                    float vx = velComponents[0].trimmed().toFloat();
+                    float vy = velComponents[1].trimmed().toFloat();
+                    float vz = velComponents[2].trimmed().toFloat();
+                    setVelocity(vx, vy, vz);
+                    qDebug() << "Updated velocity:" << vx << vy << vz;
+                }
+            }
+        }
+        else if (line.startsWith("Airspeed:")) {
+            double airspeed = line.mid(9).trimmed().toDouble();
+            setAirspeed(airspeed);
+            qDebug() << "Updated airspeed:" << airspeed;
+        }
+        else if (line.startsWith("Battery Level:")) {
+            double batteryLevel = line.mid(14).trimmed().toDouble();
+            setBatteryLevel(batteryLevel);
+            qDebug() << "Updated battery level:" << batteryLevel;
+        }
+    }
+
+    // After updating individual coordinates, also update the position vector
+    setPosition(m_longitude, m_lattitude, m_altitude);
 }
 
 void DroneClass::setName(const QString &inputName){

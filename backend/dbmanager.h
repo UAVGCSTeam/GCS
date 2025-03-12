@@ -46,10 +46,11 @@ public:
     // CRUD
     // QString() is a default value of an empty string that's passable.
     // A person can create a drone with just the droneName defined.
-    bool createDrone(const QString& droneName, const QString& droneType = QString(),
-                  const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
-    bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneType = QString(),
-                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
+    bool createDrone(const QString& droneName, const QString& droneRole,
+                     const QString& xbeeID, const QString& xbeeAddress,
+                     int* newDroneId = nullptr);
+    bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneRole = QString(),
+                    const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool deleteDrone(const QString& xbeeId);
     bool deleteAllDrones();
     void printDroneList(); // essentially Reading the drone, has some basecode
