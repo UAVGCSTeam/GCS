@@ -8,6 +8,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_name("")
     , m_xbeeAddress("")
     , m_role("")
+    , m_xbeeID("")
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_lattitude(-1) //temporary
@@ -40,6 +41,28 @@ DroneClass::DroneClass(const QString &input_name,
 
 }
 
+DroneClass::DroneClass(const QString &input_name,
+                       const QString &input_role,
+                       const QString &input_xbeeID,
+                       const QString &input_xbeeAddress,
+                       QObject *parent) :
+    QObject(parent)
+    , m_name(input_name)
+    , m_xbeeAddress(input_xbeeAddress)
+    , m_xbeeID(input_xbeeID)
+    , m_role(input_role)
+    , m_batteryLevel(-1)
+    , m_position(QVector3D(-1, -1, -1))
+    , m_lattitude(-1) //temporary
+    , m_longitude(-1) //temporary
+    , m_altitude(-1)  //temporary
+    , m_velocity(QVector3D(-1, -1, -1))
+    , m_airspeed(-1)  //temporary
+    , m_orientation(QVector3D(-1, -1, -1))
+{
+// idk what this is
+}
+
 void DroneClass::setName(const QString &inputName){
     if (m_name != inputName){
         m_name = inputName;
@@ -56,6 +79,12 @@ void DroneClass::setRole(const QString &inputRole){
     if (m_role != inputRole){
         m_role = inputRole;
         emit roleChanged();
+    }
+}
+void DroneClass::setXbeeID(const QString &inputXbeeID){
+    if (m_xbeeID != inputXbeeID){
+        m_xbeeID = inputXbeeID;
+        emit xbeeIDChanged();
     }
 }
 void DroneClass::setBatteryLevel(double inputBatteryLevel){

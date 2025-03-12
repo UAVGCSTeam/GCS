@@ -50,12 +50,19 @@ public:
                   const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneType = QString(),
                    const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
-    bool deleteDrone(int droneID);
-    void printDroneList(); // essentially Reading the drone, has some basecode 
+    bool deleteDrone(const QString& xbeeId);
+    bool deleteAllDrones();
+    void printDroneList(); // essentially Reading the drone, has some basecode
+
+    // Declaration to fetch all drone records from the database
+    QList<QVariantMap> fetchAllDrones();
 
 private:
     QSqlDatabase gcs_db_connection;
     bool createDroneTable();
+    // private function to check if drone pre-exists, using name.
+    bool checkIfDroneExists(const QString& droneName);
+    bool createInitialDrones();
 
 };
 

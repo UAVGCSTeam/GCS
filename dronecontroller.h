@@ -32,10 +32,19 @@ public:
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
 
 public slots:
-    void saveDrone(const QString &name, const QString &type, const QString &xbeeId, const QString &xbeeAddress);
+    void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
+    void updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
+    void deleteDrone(const QString &xbeeId);
+    void deleteALlDrones_UI();
+
+// Declaration for retrieving the drone list
+public:
+    Q_INVOKABLE QVariantList getDroneList() const;
 
 signals:
     void droneAdded();
+    void droneUpdated();
+    void droneDeleted();
 
 private:
     DBManager &dbManager;
