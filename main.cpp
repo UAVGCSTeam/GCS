@@ -35,7 +35,7 @@ QProcess* startXbeeProcess() {
         // The top paths are in the BUILD directory
         // For testing purposes, just put your direct path
         // HERE
-        "/Users/brandon/Desktop/Programming/GCS/setup_and_run_xbee.py"
+        "/GCS_Codes/qtGCS/GCS/GCS/setup_and_run_xbee.py"
         // HERE
     };
 
