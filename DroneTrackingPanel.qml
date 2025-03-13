@@ -17,10 +17,21 @@ Rectangle {
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
-    signal updateSelectedDroneSignal(string name, string status, string battery, string lattitude, string longitude, string altitude, string airspeed)
+    signal updateSelectedDroneSignal(string name, string status, string battery, string latitude, string longitude, string altitude, string airspeed)
 
     // Storing the full list of drones allows filtering
     property var fullDroneList: []
+
+    Connections {
+        target: droneController
+
+        function onDroneStateChanged(droneName) {
+            // Update the full drone list with latest data
+            var updatedDrones = droneController.getAllDrones();
+            fullDroneList = updatedDrones;
+            updateDroneListModel(fullDroneList);
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -183,7 +194,7 @@ Rectangle {
                 model: droneListModel
 
                 delegate: Rectangle {
-                    width: parent.width
+                    width: parent ? parent.width : 0
                     height: GcsStyle.PanelStyle.listItemHeight
                     color: index % 2 == 0 ? GcsStyle.PanelStyle.listItemEvenColor : GcsStyle.PanelStyle.listItemOddColor
 
@@ -193,7 +204,7 @@ Rectangle {
                         onClicked: {
                             // ideally this would capture the clicked drone as an OBJECT, not individual properties
                             // passActiveDrone(model.name, model.status, model.battery)
-                            updateSelectedDroneSignal(model.name, model.status, model.battery, model.lattitude, model.longitude, model.altitude, model.airspeed)
+                            updateSelectedDroneSignal(model.name, model.status, model.battery, model.latitude, model.longitude, model.altitude, model.airspeed)
                         }
                     }
 
@@ -227,7 +238,7 @@ Rectangle {
                         }
 
                         Text {
-                            text: model.battery + "%"
+                            text: model.battery
                             color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
                                                         model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
                                                                  GcsStyle.PanelStyle.batteryLowColor
@@ -285,7 +296,7 @@ Rectangle {
         droneListModel.clear()
         filteredList.forEach(drone => {
             droneListModel.append({ name: drone.name, status: drone.status, battery: drone.battery,
-                                    lattitude: drone.lattitude, longitude: drone.longitude, altitude: drone.altitude,
+                                    latitude: drone.latitude, longitude: drone.longitude, altitude: drone.altitude,
                                     airspeed: drone.airspeed})
         })
     }

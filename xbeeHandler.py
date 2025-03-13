@@ -113,22 +113,36 @@ def generate_simulated_data():
     address = random.choice(list(drone_name_map.keys()))
     drone_name = drone_name_map[address]
 
+    # Cal Poly Pomona coordinates
+    cpp_lat = 34.0559
+    cpp_lon = -117.8205
+
     # Generate random but realistic looking data
-    lat = 34.05 + (random.random() - 0.5) * 0.01
-    lon = -117.82 + (random.random() - 0.5) * 0.01
-    alt = 0.05 + random.random() * 0.1
-    vx = (random.random() - 0.5) * 0.2
-    vy = (random.random() - 0.5) * 0.2
-    vz = (random.random() - 0.5) * 0.1
-    airspeed = random.random() * 0.1
-    battery = 0.1 + random.random() * 0.9
+    # Within roughly 1-2 km of campus
+    lat = cpp_lat + (random.random() - 0.5) * 0.02
+    lon = cpp_lon + (random.random() - 0.5) * 0.02
+
+    # More realistic altitude values (30-150 meters above ground)
+    alt = 30 + random.random() * 120
+
+    # Realistic velocity components (in m/s, typical drone speeds)
+    vx = (random.random() - 0.5) * 8  # -4 to 4 m/s
+    vy = (random.random() - 0.5) * 8  # -4 to 4 m/s
+    vz = (random.random() - 0.5) * 2  # -1 to 1 m/s (vertical speed is typically lower)
+
+    # Realistic airspeed for a drone (3-12 m/s)
+    airspeed = 3 + random.random() * 9
+
+    # Battery percentage (20-100%)
+    battery = 3 + random.random() * 0.8
 
     message = f"ICAO: A\n"
-    message += f"Lattitude: {lat}\n"
+    # Note: I fixed the spelling to "Latitude" here to match your corrected code
+    message += f"Latitude: {lat}\n"
     message += f"Longitude: {lon}\n"
     message += f"Altitude: {alt}\n"
     message += f"Velocity: [{vx}, {vy}, {vz}]\n"
-    message += f"Airspeed: {airspeed:.5f}\n"
+    message += f"Airspeed: {airspeed:.2f}\n"
     message += f"Battery Level: {battery:.3f}"
 
     return address, drone_name, message
