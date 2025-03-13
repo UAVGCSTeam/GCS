@@ -344,7 +344,7 @@ bool DBManager::createInitialDrones() {
     return true;
 }
 
-// NEW: Method to fetch all drones from the database
+// NEW: Method to fetch all drones from the database for initial startup and helper function
 QList<QVariantMap> DBManager::fetchAllDrones() {
     QList<QVariantMap> drones;
     if (!gcs_db_connection.isOpen()) {
@@ -368,3 +368,4 @@ QList<QVariantMap> DBManager::fetchAllDrones() {
     }
     return drones;
 }
+

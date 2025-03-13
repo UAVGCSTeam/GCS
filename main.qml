@@ -273,8 +273,38 @@ Window {
         fetch();
     }
 
+    Connections {
+        target: droneController
+
+        function onDroneStateChanged(droneName) {
+            // Refresh the displayed list
+            fetch();
+
+            // If this is the currently selected drone, update its panel too
+            if (droneStatusPanel.visible) {
+                // Find the updated drone
+                var drones = droneController.getAllDrones();
+                for (var i = 0; i < drones.length; i++) {
+                    if (drones[i].name === droneName) {
+                        // Update the status panel
+                        droneTrackingPanel.updateSelectedDroneSignal(
+                            drones[i].name,
+                            drones[i].status,
+                            drones[i].battery,
+                            drones[i].latitude,
+                            drones[i].longitude,
+                            drones[i].altitude,
+                            drones[i].airspeed
+                        );
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     function fetch() {
-        var drones = droneController.getDroneList();
+        var drones = droneController.getAllDrones();
         droneTrackingPanel.populateListModel(drones);
         // uncomment these for populating the list based on the database
 

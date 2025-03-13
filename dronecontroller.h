@@ -50,6 +50,7 @@ public slots:
 public:
     Q_INVOKABLE QVariantList getDroneList() const;
     // Process data recieved from XBee via shared memory
+    Q_INVOKABLE QVariantList getAllDrones() const;
 
 private slots:
     void processXbeeData();

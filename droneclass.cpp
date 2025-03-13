@@ -12,7 +12,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_xbeeID("")
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
-    , m_lattitude(-1) //temporary
+    , m_latitude(-1) //temporary
     , m_longitude(-1) //temporary
     , m_altitude(-1)  //temporary
     , m_velocity(QVector3D(-1, -1, -1))
@@ -34,7 +34,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_role(input_role)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
-    , m_lattitude(-1) //temporary
+    , m_latitude(-1) //temporary
     , m_longitude(-1) //temporary
     , m_altitude(-1)  //temporary
     , m_velocity(QVector3D(-1, -1, -1))
@@ -57,10 +57,15 @@ void DroneClass::processXbeeMessage(const QString &message) {
             QString icao = line.mid(5).trimmed();
             qDebug() << "ICAO:" << icao;
         }
-        else if (line.startsWith("Lattitude:")) {
-            double latitude = line.mid(10).trimmed().toDouble();
-            setLattitude(latitude);
-            qDebug() << "Updated lattitude:" << latitude;
+        // Bc we have a misspelling somewhere or something idk, just look for both ig
+        else if (line.startsWith("Latitude:") || line.startsWith("Lattitude:")) {
+            // Handle both spellings
+            QString valueStr = line.contains("Lattitude:") ?
+                                   line.mid(11).trimmed() : // for Lattitude:
+                                   line.mid(10).trimmed();  // for Latitude:
+            double latitude = valueStr.toDouble();
+            setLatitude(latitude);
+            qDebug() << "Updated latitude:" << latitude;
         }
         else if (line.startsWith("Longitude:")) {
             double longitude = line.mid(10).trimmed().toDouble();
@@ -101,7 +106,7 @@ void DroneClass::processXbeeMessage(const QString &message) {
     }
 
     // After updating individual coordinates, also update the position vector
-    setPosition(m_longitude, m_lattitude, m_altitude);
+    setPosition(m_longitude, m_latitude, m_altitude);
 }
 
 void DroneClass::setName(const QString &inputName){
@@ -141,10 +146,10 @@ void DroneClass::setPosition(const QVector3D &pos){
     }
 }
 //temporary
-void DroneClass::setLattitude(const double lat) {
-    if (m_lattitude != lat) {
-        m_lattitude = lat;
-        emit lattitudeChanged();
+void DroneClass::setLatitude(const double lat) {
+    if (m_latitude != lat) {
+        m_latitude = lat;
+        emit latitudeChanged();
     }
 }
 //temporary

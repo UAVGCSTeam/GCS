@@ -11,6 +11,7 @@
         <file>coordinateNavigationWindow.qml</file>
         <file>goHomeLandingWindow.qml</file>
         <file>takeOffWindow.qml</file>
+        <file>DroneLabelComponent.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>

@@ -243,7 +243,7 @@ Window {
 
     // Clears simulated drones
     function clearSimulationDrones() {
-        if (simulationMode) {
+        if (simulationMode && droneModel.count > 0) {
             // Store addresses of all SIM drones to delete
             let simDroneAddresses = [];
 
