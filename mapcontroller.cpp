@@ -1,4 +1,6 @@
 #include "mapcontroller.h"
+#include "droneclass.h"
+
 
 /*
  * Used to emit signals to our QML functions.
