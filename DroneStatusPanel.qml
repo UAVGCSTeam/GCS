@@ -91,7 +91,7 @@ Rectangle {
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
                         Text {
-                            text: "Lattitude: " + lattitude
+                            text: "Latitude: " + latitude
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
@@ -118,11 +118,11 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
-    function populateActiveDroneModel(name, status, battery, lattitude, longitude, altitude, airspeed) {
+    function populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed) {
         if (activeDroneModel.count > 0 && activeDroneModel.get(0).name === name) {
             // If the same drone is clicked again, toggle visibility
             mainPanel.visible = !mainPanel.visible;
@@ -132,7 +132,7 @@ Rectangle {
             activeDroneModel.append({name: name,
                                         status: status,
                                         battery: battery,
-                                        lattitude: lattitude,
+                                        latitude: latitude,
                                         longitude: longitude,
                                         altitude: altitude,
                                         airspeed: airspeed            });
