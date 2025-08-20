@@ -135,8 +135,8 @@ def generate_simulated_data():
 
 # Drone address mapping
 drone_name_map = {
-    "0013A20012345678": "Drone1",
-    "0013A20087654321": "Drone2"
+    "0013A20041D365C4": "testDrone", # Drone A
+    "0013A20041D35C83": "testDrone2" # Drone B
     # Add your real drone XBee addresses here
     # SHOULD put fake drones for testing - also update in the manageDroneWindow, the simulation drones that get added to match
 }
