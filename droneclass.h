@@ -14,6 +14,7 @@ class DroneClass : public QObject
     Q_PROPERTY(QString xbeeAddress READ getXbeeAddress WRITE setXbeeAddress NOTIFY xbeeAddressChanged FINAL)
     Q_PROPERTY(double batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged FINAL)
     Q_PROPERTY(QString role READ getRole WRITE setRole NOTIFY roleChanged FINAL)
+    Q_PROPERTY(QString xbeeID READ getXbeeID WRITE setXbeeID NOTIFY xbeeIDChanged FINAL)
     Q_PROPERTY(QVector3D position READ getPosition WRITE setPosition NOTIFY positionChanged FINAL)
     Q_PROPERTY(double lattitude READ getLattitude WRITE setLattitude NOTIFY lattitudeChanged FINAL)  //temporary
     Q_PROPERTY(double longitude READ getLongitude WRITE setLongitude NOTIFY longitudeChanged FINAL)  //temporary
@@ -41,6 +42,16 @@ public:
                const QString &input_xbeeAddress,
                QObject *parent = nullptr
               );
+    // overload function to createXBee-ID
+    DroneClass(const QString &input_name,
+               const QString &input_role,
+               const QString &input_xbeeID,
+               const QString &input_xbeeAddress,
+               QObject *parent = nullptr
+               );
+
+    // For handling the shared memory communication between the python and each INDIVIDUAL drone
+    void processXbeeMessage(const QString &message);
 
     QString getName() const { return m_name; };
     void setName(const QString &inputName);
@@ -48,6 +59,8 @@ public:
     void setXbeeAddress(const QString &inputXbeeAddress);
     QString getRole() const {return m_role; };
     void setRole(const QString &inputRole);
+    QString getXbeeID() const {return m_xbeeID; };
+    void setXbeeID(const QString &inputXbeeID);
     double getBatteryLevel() const { return m_batteryLevel; };
     void setBatteryLevel(double batteryLevel);
     QVector3D getPosition() const { return m_position; };
@@ -75,6 +88,7 @@ signals:
     void nameChanged();
     void xbeeAddressChanged();
     void roleChanged();
+    void xbeeIDChanged();
     void batteryChanged();
     void positionChanged();
     void lattitudeChanged();  //temporary
@@ -88,6 +102,7 @@ private:
     QString m_name;
     QString m_xbeeAddress;
     QString m_role;
+    QString m_xbeeID;
     double m_batteryLevel;
     QVector3D m_position;
     double m_lattitude;  //temporary

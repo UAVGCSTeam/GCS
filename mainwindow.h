@@ -6,6 +6,7 @@
 #include <QtQuick>
 #include <QVariant>
 #include <QQuickWidget>
+#include <QProcess>
 
 /*
  * Provides the functions and constructors for our mainwindow object
@@ -26,8 +27,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    // Method to start the XBee Python script
+    bool startXbeeProcess();
+
 private:
     Ui::MainWindow *ui;
+    QProcess *pythonProcess;
+    QLabel *xbeeStatusLabel;
 
 signals:
     // QVariant is a datatype that translates typical C types <-> Q types
