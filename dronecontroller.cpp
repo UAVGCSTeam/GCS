@@ -127,100 +127,80 @@ QString DroneController::getDataFilePath() {
  *
  * Viewable Drone
  */
-void DroneController::saveDrone(const QString &input_name, const QString &input_role, const QString &input_xbeeID, const QString &input_xbeeAddress) {
-    // Add debug output to see what's being passed
-    qDebug() << "saveDrone called with:" << input_name << input_role << input_xbeeID << input_xbeeAddress;
+void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
+    if (!drone) return;
 
-    if (input_name.isEmpty()) {
-        qWarning() << "Missing required name field!";
-        return;
-    }
-
-    // Check if a drone with this address already exists - avoid duplicates
-    bool exists = false;
-    for (const auto &drone : droneList) {
-        if (drone->getXbeeAddress() == input_xbeeAddress) {
-            exists = true;
-            qDebug() << "Drone with address" << input_xbeeAddress << "already exists!";
-            break;
+    // Avoid duplicates
+    for (const auto &d : droneList) {
+        if (d->getXbeeAddress() == drone->getXbeeAddress()) {
+            qDebug() << "Drone already exists with address:" << drone->getXbeeAddress();
+            return;
         }
     }
 
-    if (exists) {
-        qDebug() << "Skipping save for existing drone with address:" << input_xbeeAddress;
-        return;
-    }
-
-    // Add Drone to Database
     int newDroneId = -1;
-    if (dbManager.createDrone(input_name, input_role, input_xbeeID, input_xbeeAddress, &newDroneId)) {
-        qDebug() << "Drone created in DB successfully with ID:" << newDroneId;
-
-        // Add to the in-memory list
-        droneList.push_back(QSharedPointer<DroneClass>::create(input_name, input_role, input_xbeeID, input_xbeeAddress));
-
-        qDebug() << "About to emit dronesChanged signal after adding drone";
+    if (dbManager.createDrone(drone->getName(), drone->getRole(),
+                              drone->getXbeeID(), drone->getXbeeAddress(),
+                              &newDroneId)) {
+        droneList.push_back(drone);
+        emit droneAdded(drone);
         emit dronesChanged();
-        qDebug() << "dronesChanged signal emitted";
+        qDebug() << "Drone saved:" << drone->getName();
     } else {
-        qWarning() << "Failed to save drone to database!";
+        qWarning() << "Failed to save drone to DB:" << drone->getName();
     }
 }
 
-void DroneController::updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress) {
-    // Find the drone in our list by its xbeeID (im assuming is unique)
-    for (int i = 0; i < droneList.size(); i++) {
-        if (droneList[i]->getXbeeID() == oldXbeeId) {
-            droneList[i]->setName(name);
-            droneList[i]->setRole(role);
-            droneList[i]->setXbeeID(xbeeId);
-            droneList[i]->setXbeeAddress(xbeeAddress);
-            qDebug() << "Drone updated in memory:" << name;
+void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone) {
+    if (!drone) return;
 
-            // Update in database
+    for (int i = 0; i < droneList.size(); ++i) {
+        if (droneList[i]->getXbeeID() == drone->getXbeeID()) {
+            // Update in-memory
+            droneList[i]->setName(drone->getName());
+            droneList[i]->setRole(drone->getRole());
+            droneList[i]->setXbeeID(drone->getXbeeID());
+            droneList[i]->setXbeeAddress(drone->getXbeeAddress());
+
+            // Update database
             QSqlQuery query;
             query.prepare("SELECT drone_id FROM drones WHERE xbee_id = :xbeeId");
-            query.bindValue(":xbeeId", oldXbeeId);
-
+            query.bindValue(":xbeeId", drone->getXbeeID());
             if (query.exec() && query.next()) {
                 int droneId = query.value(0).toInt();
-                dbManager.editDrone(droneId, name, role, xbeeId, xbeeAddress);
+                dbManager.editDrone(droneId,
+                                    drone->getName(),
+                                    drone->getRole(),
+                                    drone->getXbeeID(),
+                                    drone->getXbeeAddress());
             }
 
+            emit droneUpdated(drone);
             emit dronesChanged();
+            qDebug() << "Drone updated:" << drone->getName();
             break;
         }
     }
 }
 
-void DroneController::deleteDrone(const QString &input_xbeeId) {
-    if (input_xbeeId.isEmpty()) {
-        qWarning() << "Drone Controller: xbeeId not passed by UI.";
-        return;
-    }
+void DroneController::deleteDrone(const QSharedPointer<DroneClass> &drone) {
+    if (!drone) return;
 
-    // Try to find and delete the drone from memory first
-    bool found = false;
-    for (int i = 0; i < droneList.size(); i++) {
-        if (droneList[i]->getXbeeID() == input_xbeeId ||
-            droneList[i]->getXbeeAddress() == input_xbeeId) {
+    // Remove from memory
+    for (int i = 0; i < droneList.size(); ++i) {
+        if (droneList[i]->getXbeeID() == drone->getXbeeID()) {
             droneList.removeAt(i);
-            found = true;
-            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeId;
             break;
         }
     }
 
-    // Now delete from database, even if not found in memory
-    if (dbManager.deleteDrone(input_xbeeId)) {
-        qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
+    // Remove from DB
+    if (dbManager.deleteDrone(drone->getXbeeID())) {
+        emit droneDeleted(drone);
         emit dronesChanged();
+        qDebug() << "Drone deleted:" << drone->getName();
     } else {
-        qWarning() << "Failed to delete drone from database:" << input_xbeeId;
-        // If we removed from memory but failed to delete from DB, sync
-        if (found) {
-            emit dronesChanged();
-        }
+        qWarning() << "Failed to delete drone from DB:" << drone->getName();
     }
 }
 

@@ -41,9 +41,9 @@ public:
     Q_INVOKABLE bool isSimulationMode() const;
 
 public slots:
-    void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
-    void updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
-    void deleteDrone(const QString &xbeeId);
+    void saveDrone(const QSharedPointer<DroneClass> &drone);
+    void updateDrone(const QSharedPointer<DroneClass> &drone);
+    void deleteDrone(const QSharedPointer<DroneClass> &drone);
     void deleteALlDrones_UI();
 
 // Declaration for retrieving the drone list
@@ -57,9 +57,9 @@ private slots:
     void tryConnectToDataFile();
 
 signals:
-    void droneAdded();
-    void droneUpdated();
-    void droneDeleted();
+    void droneAdded(const QSharedPointer<DroneClass> &drone);
+    void droneUpdated(const QSharedPointer<DroneClass> &drone);
+    void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const QString &droneName);
     void xbeeConnectionChanged(bool connected);
     void dronesChanged();
