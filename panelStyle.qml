@@ -29,6 +29,9 @@ QtObject {
     readonly property int buttonRadius: 8
     readonly property color buttonColor: "transparent"
     readonly property color buttonActiveColor: "#4B88A2"
+    readonly property color buttonHoverColor: "#e6f0ff"
+    readonly property color buttonPressedColor: "#cfe0ff"
+    readonly property color buttonBorderColor: "#c8c8c8"
 
     // List view properties
     readonly property color listItemEvenColor: secondaryColor
