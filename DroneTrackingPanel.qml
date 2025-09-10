@@ -17,7 +17,6 @@ Rectangle {
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
-    signal updateSelectedDroneSignal(string name, string status, string battery, string latitude, string longitude, string altitude, string airspeed)
     signal droneClicked(var drone)
 
     // Storing the full list of drones allows filtering
