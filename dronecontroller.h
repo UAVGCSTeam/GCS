@@ -39,6 +39,7 @@ public:
     void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool isSimulationMode() const;
+    Q_INVOKABLE DroneClass* getDrone(int index) const;
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);

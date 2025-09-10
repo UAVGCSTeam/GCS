@@ -417,6 +417,15 @@ QVariantList DroneController::getAllDrones() const {
     return result;
 }
 
+DroneClass* DroneController::getDrone(int index) const {
+    if (index < 0 || index >= droneList.size()) {
+        qWarning() << "getDrone: index out of range" << index;
+        return nullptr;
+    }
+    // QSharedPointer::data() gives you the raw pointer, ownership stays with the list
+    return droneList.at(index).data();
+}
+
 void DroneController::processXbeeData() {
     QString data = getLatestXbeeData();
     if (data.isEmpty()) return;

@@ -246,6 +246,18 @@ Window {
             left: parent.left
             margins: 10
         }
+        onDroneClicked: {
+                console.log("Clicked drone:", drone.name)
+                droneStatusPanel.populateActiveDroneModel(
+                    drone.name,
+                    drone.status,
+                    drone.battery,
+                    drone.latitude,
+                    drone.longitude,
+                    drone.altitude,
+                    drone.airspeed
+                )
+            }
     }
 
     /*
