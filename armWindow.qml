@@ -8,6 +8,7 @@ Window {
     width: 400
     height: 300
     title: qsTr("ARM Command")
+    // This is Bryce doing stuff
 
     Rectangle {
         id: armBackground
