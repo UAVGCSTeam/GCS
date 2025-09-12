@@ -295,7 +295,7 @@ Rectangle {
     function updateDroneListModel(filteredList) {
         droneListModel.clear()
         filteredList.forEach(drone => {
-            droneListModel.append({ name: drone.name, status: drone.status, battery: drone.battery,
+            droneListModel.append({ name: drone.name, status: drone.status,/* role: drone.role,*/ battery: drone.battery,
                                     latitude: drone.latitude, longitude: drone.longitude, altitude: drone.altitude,
                                     airspeed: drone.airspeed})
         })
