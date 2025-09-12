@@ -6,11 +6,10 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    width: 300
-    height: 600
+    width: 200
+    height:400
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
-
 
     RowLayout {
         anchors.fill: parent
@@ -23,18 +22,18 @@ Rectangle {
             spacing: 0
 
             // Header
-            Rectangle {
+            /*Rectangle {
                 Layout.fillWidth: true
-                height: GcsStyle.PanelStyle.headerHeight
+                height:GcsStyle.PanelStyle.headerHeight
                 color: GcsStyle.PanelStyle.primaryColor
-                radius: GcsStyle.PanelStyle.cornerRadius
+                radius:GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
                 Rectangle {
-                    anchors.left: parent.left
+                    anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     width: parent.width
-                    height: parent.height / 2
+                    height: parent.height /2
                     color: parent.color
                 }
 
@@ -49,7 +48,7 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
-            }
+            }*/
 
             ListModel {
                 id: activeDroneModel
@@ -74,42 +73,49 @@ Rectangle {
                         spacing: 20
 
                         Text {
-                            text: name
+                            text: "Role: TBD" //name
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
                         Text {
-                            text: status
+                            text:"Status: " + status
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
-                        Text {
+                        /*Text {
                             text: battery + "%"
                             color: battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
                                                   battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
                                                                  GcsStyle.PanelStyle.batteryLowColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                        }
+                        }*/
                         Text {
-                            text: "Latitude: " + latitude
+                            text: "Lati: " + latitude
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
                         Text {
-                            text: "Longitude: " + longitude
+                            text: "Longi: " + longitude
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
                         Text {
-                            text: "Altitude: " + altitude
+                            text: "Alti: " + altitude
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
-                        Text {
+                        Button {
+                            text: "Waypoint"
+                            width: parent.width
+                            onClicked: {
+                                //deleteAllDronesWindow.close()
+                            }
+                        }
+                        /*Text {
                             text: "Airspeed: " + airspeed
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                        }
+                        }*/
                     }
                 }
             }

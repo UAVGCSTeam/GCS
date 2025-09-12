@@ -233,7 +233,7 @@ Window {
     DroneStatusPanel {
         id: droneStatusPanel
         anchors {
-            top: parent.top
+            bottom: parent.bottom
             right: parent.right
             margins: 10
         }
