@@ -7,7 +7,7 @@ import "qrc:/gcsStyle" as GcsStyle
 Rectangle {
     id: mainPanel
     width: 300
-    height: 600
+    height: 450
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
@@ -113,8 +113,41 @@ Rectangle {
                     }
                 }
             }
+
+            Rectangle {
+                id: commandWaypoint
+                Layout.fillWidth: true
+                height: 50
+                radius: GcsStyle.PanelStyle.cornerRadius
+                border.color: GcsStyle.PanelStyle.dividerColor
+                anchors.margins: GcsStyle.PanelStyle.defaultMargin
+                Layout.bottomMargin: 30
+
+                Button {
+                    id: goWaypoint
+                    text: qsTr("Waypoint")
+                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                    anchors.fill: parent
+
+                    onClicked: {
+                        wayPointPanel.visible = true
+                    }
+                }
+            }
         }
     }
+
+    // Rectangle {
+    //     id: wayPointPanel
+    //     width: 300
+    //     visible: false
+    //     height: 300
+    //     color: GcsStyle.PanelStyle.primaryColor
+    //     radius: GcsStyle.PanelStyle.cornerRadius
+    //     anchors.right: parent.right
+    //     anchors.bottom: parent.bottom
+    //     anchors.margins : 20
+    // }
 
     Connections {
         target: droneTrackingPanel

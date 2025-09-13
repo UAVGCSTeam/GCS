@@ -247,6 +247,16 @@ Window {
             margins: 10
         }
     }
+    WaypointPanel {
+        id: wayPointPanel
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+            margins: 10
+        }
+        visible: false
+    }
 
     /*
       Connections is how we connect our QML and QML together
