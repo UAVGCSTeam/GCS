@@ -130,6 +130,11 @@ QString DroneController::getDataFilePath() {
 void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
     if (!drone) return;
 
+    qDebug() << "saveDrone called with:" << drone->getName()
+             << drone->getRole()
+             << drone->getXbeeID()
+             << drone->getXbeeAddress();
+
     // Avoid duplicates
     for (const auto &d : droneList) {
         if (d->getXbeeAddress() == drone->getXbeeAddress()) {
@@ -138,13 +143,20 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
         }
     }
 
+    // Add Drone to Database
     int newDroneId = -1;
     if (dbManager.createDrone(drone->getName(), drone->getRole(),
                               drone->getXbeeID(), drone->getXbeeAddress(),
                               &newDroneId)) {
+        qDebug() << "Drone created in DB successfully with ID:" << newDroneId;
+
+        // Add to the in-memory list
         droneList.push_back(drone);
+
+        qDebug() << "About to emit dronesChanged signal after adding drone";
         emit droneAdded(drone);
         emit dronesChanged();
+        qDebug() << "dronesChanged signal emitted";
         qDebug() << "Drone saved:" << drone->getName();
     } else {
         qWarning() << "Failed to save drone to DB:" << drone->getName();
@@ -152,6 +164,7 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
 }
 
 void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone) {
+    // Find the drone in our list by its xbeeID (im assuming is unique)
     if (!drone) return;
 
     for (int i = 0; i < droneList.size(); ++i) {
