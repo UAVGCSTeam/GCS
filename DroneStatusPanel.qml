@@ -121,21 +121,26 @@ Rectangle {
         onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
     }
 
+    property var activeDrone: null
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
-    function populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed) {
-        if (activeDroneModel.count > 0 && activeDroneModel.get(0).name === name) {
-            // If the same drone is clicked again, toggle visibility
+    function populateActiveDroneModel(drone) {
+        if (!drone) return;
+
+        // If the same drone is clicked again, toggle visibility
+        if (activeDrone && activeDrone.name === drone.name) {
             mainPanel.visible = !mainPanel.visible;
         } else {
+            activeDrone = drone; // store reference to currently active drone
+
             // Update model and ensure the panel is visible
             activeDroneModel.clear();
-            activeDroneModel.append({name: name,
-                                        status: status,
-                                        battery: battery,
-                                        latitude: latitude,
-                                        longitude: longitude,
-                                        altitude: altitude,
-                                        airspeed: airspeed            });
+            activeDroneModel.append({name: drone.name,
+                                        status: drone.status,
+                                        battery: drone.battery,
+                                        latitude: drone.latitude,
+                                        longitude: drone.longitude,
+                                        altitude: drone.altitude,
+                                        airspeed: drone.airspeed            });
             mainPanel.visible = true;
         }
     }

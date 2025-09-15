@@ -249,15 +249,7 @@ Window {
         onDroneClicked: {
                 console.log("Clicked drone:", drone.name)
                 // change so that none of these need to be called, instead call the for the object
-                droneStatusPanel.populateActiveDroneModel(
-                    drone.name,
-                    drone.status,
-                    drone.battery,
-                    drone.latitude,
-                    drone.longitude,
-                    drone.altitude,
-                    drone.airspeed
-                )
+                droneStatusPanel.populateActiveDroneModel(drone)
             }
     }
 
