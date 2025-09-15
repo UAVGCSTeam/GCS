@@ -118,7 +118,7 @@ Rectangle {
 
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
+        onUpdateSelectedDroneSignal: populateActiveDroneModel(drone)
     }
 
     property var activeDrone: null
