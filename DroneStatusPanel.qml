@@ -130,28 +130,27 @@ Rectangle {
                     anchors.fill: parent
 
                     onClicked: {
-                        wayPointPanel.visible = true
+                        if (activeDroneModel.count > 0) {
+                                waypointPanel.droneName = activeDroneModel.get(0).name
+                                waypointPanel.droneLatitude = activeDroneModel.get(0).latitude
+                                waypointPanel.droneLongitude = activeDroneModel.get(0).longitude
+                            }
+                        waypointPanel.visible = true
                     }
                 }
             }
         }
     }
 
-    // Rectangle {
-    //     id: wayPointPanel
-    //     width: 300
-    //     visible: false
-    //     height: 300
-    //     color: GcsStyle.PanelStyle.primaryColor
-    //     radius: GcsStyle.PanelStyle.cornerRadius
-    //     anchors.right: parent.right
-    //     anchors.bottom: parent.bottom
-    //     anchors.margins : 20
-    // }
-
     Connections {
         target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
+        onUpdateSelectedDroneSignal:
+        {
+            populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
+            waypointPanel.droneName = name //name,longitude,latitude that will passed to waypoint panel
+            waypointPanel.droneLatitude = latitude
+            waypointPanel.droneLongitude = longitude
+        }
     }
 
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)

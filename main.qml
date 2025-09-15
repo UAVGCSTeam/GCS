@@ -248,7 +248,7 @@ Window {
         }
     }
     WaypointPanel {
-        id: wayPointPanel
+        id: waypointPanel
         anchors {
             bottom: parent.bottom
             left: parent.left
