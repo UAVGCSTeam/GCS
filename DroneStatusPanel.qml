@@ -116,10 +116,6 @@ Rectangle {
         }
     }
 
-    Connections {
-        target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(drone)
-    }
 
     property var activeDrone: null
     // In this future this would be updated by a pointer: (drone1 -> activeDrone)
