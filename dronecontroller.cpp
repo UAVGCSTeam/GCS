@@ -196,24 +196,22 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone) {
     }
 }
 
-void DroneController::deleteDrone(const QSharedPointer<DroneClass> &drone) {
-    if (!drone) return;
-
-    // Remove from memory
-    for (int i = 0; i < droneList.size(); ++i) {
-        if (droneList[i]->getXbeeID() == drone->getXbeeID()) {
-            droneList.removeAt(i);
-            break;
-        }
+void DroneController::deleteDrone(const QString &input_xbeeId) {
+    if (input_xbeeId.isEmpty()) {
+        qWarning() << "Drone Controller: xbeeId not passed by UI.";
+        return;
     }
 
-    // Remove from DB
-    if (dbManager.deleteDrone(drone->getXbeeID())) {
-        emit droneDeleted(drone);
-        emit dronesChanged();
-        qDebug() << "Drone deleted:" << drone->getName();
-    } else {
-        qWarning() << "Failed to delete drone from DB:" << drone->getName();
+    // Try to find and delete the drone from memory first
+    bool found = false;
+    for (int i = 0; i < droneList.size(); i++) {
+        if (droneList[i]->getXbeeID() == input_xbeeId ||
+            droneList[i]->getXbeeAddress() == input_xbeeId) {
+            droneList.removeAt(i);
+            found = true;
+            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeId;
+            break;
+        }
     }
 }
 
