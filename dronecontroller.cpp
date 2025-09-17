@@ -127,6 +127,22 @@ QString DroneController::getDataFilePath() {
  *
  * Viewable Drone
  */
+
+// new function so the QML can create a drone using strings
+void DroneController::createDrone(const QString &name,
+                                  const QString &role,
+                                  const QString &xbeeId,
+                                  const QString &xbeeAddress)
+{
+    auto drone = QSharedPointer<DroneClass>::create();
+    drone->setName(name);
+    drone->setRole(role);
+    drone->setXbeeID(xbeeId);
+    drone->setXbeeAddress(xbeeAddress);
+
+    saveDrone(drone); // call the internal method
+}
+
 void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
     if (!drone) return;
 

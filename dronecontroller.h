@@ -43,6 +43,11 @@ public:
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
+    void createDrone(const QString &name,
+                                 const QString &role,
+                                 const QString &xbeeId,
+                                 const QString &xbeeAddress
+                     );
     void updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
