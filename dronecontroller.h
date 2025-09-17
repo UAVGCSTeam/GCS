@@ -44,7 +44,7 @@ public:
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
     void updateDrone(const QSharedPointer<DroneClass> &drone);
-    void deleteDrone(const QSharedPointer<DroneClass> &drone);
+    void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
 
 // Declaration for retrieving the drone list
