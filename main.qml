@@ -291,15 +291,7 @@ Window {
                 for (var i = 0; i < drones.length; i++) {
                     if (drones[i].name === droneName) {
                         // Update the status panel
-                        droneTrackingPanel.updateSelectedDroneSignal(
-                            drones[i].name,
-                            drones[i].status,
-                            drones[i].battery,
-                            drones[i].latitude,
-                            drones[i].longitude,
-                            drones[i].altitude,
-                            drones[i].airspeed
-                        );
+                        droneStatusPanel.populateActiveDroneModel(drones[i]);
                         break;
                     }
                 }
