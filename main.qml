@@ -248,7 +248,16 @@ Window {
         }
         onDroneClicked: {
                 console.log("Clicked drone:", drone.name)
-                droneStatusPanel.populateActiveDroneModel(drone)
+                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
+                    // Toggle the visability of the status panel if same drone is clicked
+                    droneStatusPanel.visible = !droneStatusPanel.visible
+                } else {
+                    // update status panel with new info
+                    droneStatusPanel.populateActiveDroneModel(drone)
+
+                    // Ensure panel is visible for a new drone
+                    droneStatusPanel.visible = true
+                }
             }
     }
 

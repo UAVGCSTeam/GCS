@@ -122,22 +122,16 @@ Rectangle {
     function populateActiveDroneModel(drone) {
         if (!drone) return;
 
-        // If the same drone is clicked again, toggle visibility
-        if (activeDrone && activeDrone.name === drone.name) {
-            mainPanel.visible = !mainPanel.visible;
-        } else {
-            activeDrone = drone; // store reference to currently active drone
+        activeDrone = drone; // store reference to currently active drone
 
-            // Update model and ensure the panel is visible
-            activeDroneModel.clear();
-            activeDroneModel.append({name: drone.name,
-                                        status: drone.status,
-                                        battery: drone.battery,
-                                        latitude: drone.latitude,
-                                        longitude: drone.longitude,
-                                        altitude: drone.altitude,
-                                        airspeed: drone.airspeed            });
-            mainPanel.visible = true;
-        }
+        // Update model
+        activeDroneModel.clear();
+        activeDroneModel.append({name: drone.name,
+                                    status: drone.status,
+                                    battery: drone.battery,
+                                    latitude: drone.latitude,
+                                    longitude: drone.longitude,
+                                    altitude: drone.altitude,
+                                    airspeed: drone.airspeed            });
     }
 }
