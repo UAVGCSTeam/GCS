@@ -233,12 +233,22 @@ Window {
     DroneStatusPanel {
         id: droneStatusPanel
         anchors {
+            top: parent.top
+            right: parent.right
+            margins: 10
+        }
+        visible: false
+    }
+    WaypointPanel {
+        id: waypointPanel
+        anchors {
             bottom: parent.bottom
             right: parent.right
             margins: 10
         }
         visible: false
     }
+
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {

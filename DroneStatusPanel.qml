@@ -108,9 +108,25 @@ Rectangle {
                             text: "Waypoint"
                             width: parent.width
                             onClicked: {
-                                //deleteAllDronesWindow.close()
+                                WaypointPanel.open()
                             }
                         }
+
+                        Popup{
+                            id: waypointPanel
+                            x: parent.width / 2 - width / 2
+                            y: parent.height / 2 - height / 2
+                            width: 250
+                            height: 200
+
+                            Rectangle{
+                                anchors.fill: parent
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                radius: 10
+                                border.color: "gray"
+                            }
+                        }
+
                         /*Text {
                             text: "Airspeed: " + airspeed
                             color: GcsStyle.PanelStyle.textPrimaryColor
