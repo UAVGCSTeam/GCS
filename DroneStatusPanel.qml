@@ -118,7 +118,7 @@ Rectangle {
 
 
     property var activeDrone: null
-    // In this future this would be updated by a pointer: (drone1 -> activeDrone)
+
     function populateActiveDroneModel(drone) {
         if (!drone) return;
 
