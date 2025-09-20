@@ -10,7 +10,7 @@ Rectangle {
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
-
+    property string selectedDroneModel: ""
 
     RowLayout {
         anchors.fill: parent
@@ -110,11 +110,72 @@ Rectangle {
                             color: GcsStyle.PanelStyle.textPrimaryColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                         }
+
+                        // Add Waypoint Button and popup
+                        Button {
+                            text: "Waypoint"
+                            Layout.fillWidth: true
+                            Layout.margins: GcsStyle.PanelStyle.defaultMargin
+                            onClicked: {
+                                mainPanel.selectedDroneModel = name
+                                waypointWindow.visible = true
+                            }
+                        }
                     }
                 }
             }
         }
     }
+    Rectangle {
+        id: waypointWindow
+        width: 300
+        height: 350
+        visible: false
+
+        anchors.top: mainPanel.bottom
+        anchors. topMargin: 60
+        color: GcsStyle.PanelStyle.primaryColor
+        radius: GcsStyle.PanelStyle.cornerRadius
+
+        ColumnLayout {
+            anchors.fill: parent
+            Layout.fillWidth: true
+            anchors.margins: 20
+            spacing: 20
+
+            //Layout.alignment: Qt.AlignTop
+            //spacing: 10
+            //width: parent.width
+
+            Text {
+                text: "Waypoint for " + mainPanel.selectedDroneModel
+                color: GcsStyle.PanelStyle.textOnPrimaryColor
+                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+            }
+
+            TextField {
+                id: latitude
+                anchors.centerIn: parent
+                width: 260
+                placeholderText: "latitude"
+
+                onAccepted: {
+                    console.log("Latitude: ",latitude.text)
+                }
+            }
+            TextField {
+                id: longitude
+                anchors.centerIn: parent
+                width: 260
+                placeholderText: "longitude"
+
+                onAccepted: {
+                    console.log("Longitude: ",longitude.text)
+                }
+            }
+        }
+    }
+
 
     Connections {
         target: droneTrackingPanel
@@ -140,3 +201,4 @@ Rectangle {
         }
     }
 }
+
