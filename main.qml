@@ -246,6 +246,19 @@ Window {
             left: parent.left
             margins: 10
         }
+        onDroneClicked: {
+                console.log("Clicked drone:", drone.name)
+                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
+                    // Toggle the visability of the status panel if same drone is clicked
+                    droneStatusPanel.visible = !droneStatusPanel.visible
+                } else {
+                    // update status panel with new info
+                    droneStatusPanel.populateActiveDroneModel(drone)
+
+                    // Ensure panel is visible for a new drone
+                    droneStatusPanel.visible = true
+                }
+            }
     }
 
     /*
@@ -287,15 +300,7 @@ Window {
                 for (var i = 0; i < drones.length; i++) {
                     if (drones[i].name === droneName) {
                         // Update the status panel
-                        droneTrackingPanel.updateSelectedDroneSignal(
-                            drones[i].name,
-                            drones[i].status,
-                            drones[i].battery,
-                            drones[i].latitude,
-                            drones[i].longitude,
-                            drones[i].altitude,
-                            drones[i].airspeed
-                        );
+                        droneStatusPanel.populateActiveDroneModel(drones[i]);
                         break;
                     }
                 }
