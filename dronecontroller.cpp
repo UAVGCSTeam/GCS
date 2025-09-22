@@ -161,16 +161,18 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
 
     // Add Drone to Database
     int newDroneId = -1;
-    if (dbManager.createDrone(drone->getName(), drone->getRole(),
-                              drone->getXbeeID(), drone->getXbeeAddress(),
+    if (dbManager.createDrone(drone->getName(), 
+                              drone->getRole(),
+                              drone->getXbeeID(), 
+                              drone->getXbeeAddress(),
                               &newDroneId)) {
         qDebug() << "Drone created in DB successfully with ID:" << newDroneId;
 
         // Add to the in-memory list
         droneList.push_back(drone);
 
-        qDebug() << "About to emit dronesChanged signal after adding drone";
-        emit droneAdded(drone);
+        qDebug() << "About to emit dronesChanged and droneAdded signals after adding drone";
+        emit droneAdded(drone); // right now this is not being used anywhere
         emit dronesChanged();
         qDebug() << "dronesChanged signal emitted";
         qDebug() << "Drone saved:" << drone->getName();
@@ -227,6 +229,18 @@ void DroneController::deleteDrone(const QString &input_xbeeId) {
             found = true;
             qDebug() << "Removed drone from memory with ID/address:" << input_xbeeId;
             break;
+        }
+    }
+
+    // Now delete from database, even if not found in memory
+    if (dbManager.deleteDrone(input_xbeeId)) {
+        qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
+        emit dronesChanged();
+    } else {
+        qWarning() << "Failed to delete drone from database:" << input_xbeeId;
+        // If we removed from memory but failed to delete from DB, sync
+        if (found) {
+            emit dronesChanged();
         }
     }
 }
