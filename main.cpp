@@ -127,6 +127,11 @@ int main(int argc, char *argv[])
     // Register the FileHandler class so that it can be used in QML
     qmlRegisterType<FileHandler>("com.gcs.filehandler", 1, 0, "FileHandler");
 
+    // Register droneclass to QML
+    qmlRegisterUncreatableType<DroneClass>(
+        "com.gcs.dronecontroller", 1, 0, "DroneClass",
+        "DroneClass cannot be created from QML");
+
     // Expose dronecontroller to QML
     qmlRegisterType<DroneController>("com.gcs.dronecontroller", 1, 0, "DroneController");
     DroneController droneController(gcs_db_manager);
