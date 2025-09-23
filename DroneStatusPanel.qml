@@ -113,6 +113,21 @@ Rectangle {
                     }
                 }
             }
+            // Emergency Buttons (currently have no actual function on click)
+            Button {
+                text: "Emergency Shutdown"
+                Layout.fillWidth: true
+                Layout.margins: GcsStyle.PanelStyle.defaultMargin
+                onClicked: {
+                }
+            }
+            Button {
+                text: "Emergency Land"
+                Layout.fillWidth: true
+                Layout.margins: GcsStyle.PanelStyle.defaultMargin
+                onClicked: {
+                }
+            }
         }
     }
 
