@@ -1,4 +1,4 @@
-#include "XbeeMavlinkLink.h"
+#include "xbeeMavlinkLink.h"
 
 XbeeMavlinkLink::XbeeMavLinklink(QSerialPort* p, QObject* parent): QObject(parent), port_(p) {
     connect(port_, &QserialPort::readyRead, this, &XbeeMavlinkLink::onReadyRead);
