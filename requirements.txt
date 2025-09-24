@@ -1,5 +1,7 @@
 pywin32; platform_system == "Windows"
 sysv_ipc; platform_system != "Windows"
 digi-xbee
+# Official MAVLink Python implementation used to build MAVLink messages
+pymavlink
 # Add other dependencies as needed
 # this is for automatically creating and connecting the venv required to connect xbee

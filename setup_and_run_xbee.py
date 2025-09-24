@@ -53,7 +53,8 @@ except (FileNotFoundError, json.JSONDecodeError) as e:
     # Default configuration
     config = {
         "simulation_mode": True,
-        "port": "COM3" if platform.system() == "Windows" else "/dev/ttyUSB0"
+        "port": "COM3" if platform.system() == "Windows" else "/dev/ttyUSB0",
+        "default_target_xbee_address": ""  # optional default for send when UI omits address
     }
     with open(config_file, 'w') as f:
         f.write(json.dumps(config, indent=2))

@@ -4,6 +4,7 @@ import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
 import "qrc:/gcsStyle" as GcsStyle
+import com.gcs.dronecontroller 1.0
 
 /*
   Our entry point for UI/GUI
@@ -57,7 +58,6 @@ Window {
                 id: armMenuItem
                 text: qsTr("ARM")
                 onTriggered: {
-                    // Load and show armWindow.qml
                     var component = Qt.createComponent("armWindow.qml")
                     if (component.status === Component.Ready) {
                         var window = component.createObject(null)

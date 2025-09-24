@@ -10,6 +10,7 @@
 #include <QCoreApplication>
 #include <QTextStream>
 #include <QStandardPaths>
+#include <QDateTime>
 
 // DATA PATH
 #ifdef _WIN32
@@ -282,6 +283,18 @@ QString DroneController::getConfigFilePath() const {
     return configPath;
 }
 
+// Build the path for command file that C++ writes and Python reads
+QString DroneController::getCommandFilePath() {
+#ifdef _WIN32
+    // Match the temp directory used by setup_and_run_xbee.py (TEMP/xbee_tmp)
+    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    QString cmdPath = tempPath + "/xbee_tmp/xbee_command.json";
+    return cmdPath;
+#else
+    return QString("/tmp/xbee_command.json");
+#endif
+}
+
 // If want to query by name
 QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name) {
     for (const auto &drone : droneList) {
@@ -502,4 +515,62 @@ void DroneController::startXbeeMonitoring() {
         // Start reconnect timer
         reconnectTimer.start(1000);  // Try every second
     }
+}
+
+// Send an ARM/DISARM command request by writing a JSON command file for the Python XBee handler to pick up.
+// Returns true if the command was written successfully.
+bool DroneController::sendArmCommand(const QString &droneName, const QString &xbeeAddress, bool arm) {
+    // Find drone either by address or by name, if possible, so we can log useful info
+    QSharedPointer<DroneClass> targetDrone;
+    if (!xbeeAddress.isEmpty()) {
+        targetDrone = getDroneByXbeeAddress(xbeeAddress);
+    }
+    if (targetDrone.isNull() && !droneName.isEmpty()) {
+        targetDrone = getDroneByName(droneName);
+    }
+
+    QString resolvedName = targetDrone.isNull() ? droneName : targetDrone->getName();
+    QString resolvedAddress = targetDrone.isNull() ? xbeeAddress : targetDrone->getXbeeAddress();
+
+    // Allow empty address; Python side may provide a default target from config
+    if (resolvedAddress.isEmpty()) {
+        qWarning() << "sendArmCommand: No XBee address provided or found for drone" << resolvedName << "; using Python default target if configured";
+    }
+
+    // Compose command JSON
+    QJsonObject cmdObj;
+    cmdObj["type"] = QStringLiteral("command");
+    cmdObj["command"] = QStringLiteral("arm");
+    cmdObj["arm"] = arm;
+    cmdObj["target_drone_name"] = resolvedName;
+    if (!resolvedAddress.isEmpty()) {
+        cmdObj["target_xbee_address"] = resolvedAddress;
+    }
+    cmdObj["timestamp"] = static_cast<double>(QDateTime::currentSecsSinceEpoch());
+
+    QJsonDocument doc(cmdObj);
+
+    // Write to the command file path expected by Python handler
+    QString cmdPath = getCommandFilePath();
+    QFile file(cmdPath);
+
+    // Ensure directory exists
+    QFileInfo fi(cmdPath);
+    QDir dir = fi.dir();
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+        qWarning() << "sendArmCommand: Failed to open command file for writing:" << file.errorString() << cmdPath;
+        return false;
+    }
+
+    file.write(doc.toJson(QJsonDocument::Compact));
+    file.close();
+
+    qDebug() << "sendArmCommand: Wrote ARM command for drone" << resolvedName
+             << "(address:" << resolvedAddress << ") arm=" << arm << "to" << cmdPath;
+
+    return true;
 }

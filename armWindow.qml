@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
 import "qrc://gcsStyle/panelStyle.qml" as GcsStyle
+import com.gcs.dronecontroller 1.0
 
 Window {
     id: armWindow
@@ -19,7 +20,11 @@ Window {
             id: armButton
             text: qsTr("ARM")
             anchors.centerIn: parent
-            onClicked: console.log("ARM window button clicked")
+            onClicked: {
+                // Fire ARM with defaults (Python may use configured default target)
+                const ok = droneController.sendArmCommand("Drone1", "", true)
+                console.log("ARM window button clicked, command sent:", ok)
+            }
         }
     }
 }

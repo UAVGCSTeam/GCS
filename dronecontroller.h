@@ -51,6 +51,8 @@ public:
     Q_INVOKABLE QVariantList getDroneList() const;
     // Process data recieved from XBee via shared memory
     Q_INVOKABLE QVariantList getAllDrones() const;
+    // UI-callable method to send an ARM/DISARM command to a specific drone via XBee
+    Q_INVOKABLE bool sendArmCommand(const QString &droneName, const QString &xbeeAddress, bool arm);
 
 private slots:
     void processXbeeData();
@@ -80,6 +82,7 @@ private:
 
     QString getDataFilePath();
     QString getConfigFilePath() const;
+    QString getCommandFilePath();
 };
 
 

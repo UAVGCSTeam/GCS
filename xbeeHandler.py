@@ -7,6 +7,7 @@ import platform
 import threading
 import argparse
 import os
+from typing import Optional
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='XBee communication handler')
@@ -69,9 +70,16 @@ else:
 
 # Try to import XBee library
 try:
-    from digi.xbee.devices import XBeeDevice
+    from digi.xbee.devices import XBeeDevice, RemoteXBeeDevice, XBee64BitAddress
 except ImportError:
     print("Failed to import digi.xbee.devices. Run: pip install digi-xbee")
+    sys.exit(1)
+
+# Import MAVLink (official pymavlink)
+try:
+    from pymavlink.dialects.v20 import common as mavlink
+except Exception as e:
+    print(f"Failed to import pymavlink: {e}. Run: pip install pymavlink")
     sys.exit(1)
 
 # Function to write data to file
@@ -97,7 +105,7 @@ def heartbeat_thread():
                 'timestamp': time.time()
             }
             write_to_file(heartbeat_data)
-            print(f"Sent heartbeat with status: {status}")
+#         print(f"Sent heartbeat with status: {status}")
         except Exception as e:
             print(f"Error sending heartbeat: {e}")
         time.sleep(5)
@@ -186,31 +194,129 @@ if not simulation_mode:
 else:
     print("Running in simulation mode - no XBee hardware required")
 
+# Creates command file path (same temp dir base as data file)
+COMMAND_FILE_PATH = os.path.join(os.path.dirname(DATA_FILE_PATH), "xbee_command.json")
+
+# Build a MAVLink ARM command as bytes
+def build_mavlink_arm_packet(arm: bool) -> bytes:
+    # Create MAVLink instance for message construction only (no automatic I/O)
+    mav = mavlink.MAVLink(None)
+    mav.srcSystem = 255  # GCS system id
+    mav.srcComponent = 190  # GCS component id (MAV_COMP_ID_MISSIONPLANNER)
+
+    # Use MAV_CMD_COMPONENT_ARM_DISARM in a COMMAND_LONG message
+    # Param1: 1.0 to arm, 0.0 to disarm
+    # Other params are 0 for default
+    msg = mav.command_long_encode(
+        target_system=1,                              # Drone system id, 1 for autopilot
+        target_component=0,
+        command=mavlink.MAV_CMD_COMPONENT_ARM_DISARM, # Specific command type
+        confirmation=0,                               # No confirmation needed
+        param1=1.0 if arm else 0.0,                   # 1.0 = ARM, 0.0 = DISARM
+        param2=0,                                     # Unused
+        param3=0,                                     # Unused
+        param4=0,                                     # Unused
+        param5=0,                                     # Unused
+        param6=0,                                     # Unused
+        param7=0                                      # Unused
+    )
+    # Converts message object into raw
+    return msg.pack(mav)
+
+def read_command_file_once() -> Optional[dict]:
+    try:
+        # Check if command file exists
+        if not os.path.exists(COMMAND_FILE_PATH):
+            return None
+        # Read and parse the command file
+        with open(COMMAND_FILE_PATH, 'r') as f:
+            raw = f.read().strip()
+            if not raw:
+                return None
+            # Parse the JSON data
+            return json.loads(raw)
+    # Return None if there's an error
+    except Exception as e:
+        print(f"Error reading command file: {e}")
+        return None
+
+# Clears the command file for after processing
+def clear_command_file():
+    try:
+        # Write empty string to clear the file
+        with open(COMMAND_FILE_PATH, 'w') as f:
+            f.write("")
+    except Exception as e:
+        print(f"Error clearing command file: {e}")
+
+
+def try_send_mavlink_command(cmd: dict):
+    global xbee
+    # Check if XBee is connected
+    if xbee is None or not xbee.is_open():
+        print("XBee not connected; cannot send command yet")
+        return
+    # Check if command is valid
+    if not cmd or cmd.get('type') != 'command' or cmd.get('command') != 'arm':
+        return
+    # Extract command parameters
+    arm = bool(cmd.get('arm', True))
+    target_addr = cmd.get('target_xbee_address')
+    target_name = cmd.get('target_drone_name', '')
+
+    if not target_addr:
+        print("Command missing target_xbee_address; skipping")
+        return
+
+    try:
+        # Build MAVLink message packet bytes
+        payload = build_mavlink_arm_packet(arm)
+
+        # Creates reference to target XBee device
+        remote = RemoteXBeeDevice(xbee, XBee64BitAddress.from_hex_string(target_addr))
+
+        # Send raw bytes over the XBee to the remote
+        xbee.send_data(remote, payload)
+
+        print(f"Sent MAVLink ARM command to {target_name or target_addr}: arm={arm}")
+    except Exception as e:
+        print(f"Failed to send MAVLink ARM command: {e}")
+
 # Main communication loop
 print("Starting communication loop...")
 last_sim_time = 0
 last_connection_attempt = 0
+last_processed_command_timestamp = 0  # Track last processed command to avoid duplicates
 
 while True:
     try:
         if simulation_mode:
             # Send simulated data every 2 seconds
-            current_time = time.time()
-            if current_time - last_sim_time >= 2:  # Every 2 seconds
-                address, drone_name, message = generate_simulated_data()
-                print(f"Generated simulated data for drone: {drone_name}")
-                print(message)
+            # COMMENTED OUT FOR ARM COMMAND TESTING
+            # current_time = time.time()
+            # if current_time - last_sim_time >= 2:  # Every 2 seconds
+            #     address, drone_name, message = generate_simulated_data()
+            #     print(f"Generated simulated data for drone: {drone_name}")
+            #     print(message)
 
-                data = {
-                    'type': 'xbee_data',
-                    'drone': drone_name,
-                    'address': address,
-                    'message': message,
-                    'timestamp': time.time()
-                }
-                write_to_file(data)
-                print(f"Sent simulated data to file for drone: {drone_name}")
-                last_sim_time = current_time
+            #     data = {
+            #         'type': 'xbee_data',
+            #         'drone': drone_name,
+            #         'address': address,
+            #         'message': message,
+            #         'timestamp': time.time()
+            #     }
+            #     write_to_file(data)
+            #     print(f"Sent simulated data to file for drone: {drone_name}")
+            #     last_sim_time = current_time
+            
+            # Check for ARM commands even in simulation mode
+            current_time = time.time()
+            cmd = read_command_file_once()
+            if cmd and cmd.get('timestamp', 0) > last_processed_command_timestamp:
+                print(f"SIMULATION MODE: Received command but not sending (no XBee): {cmd}")
+                last_processed_command_timestamp = cmd.get('timestamp', 0)
+                # clear_command_file()  # COMMENTED OUT FOR TESTING - file will persist
         else:
             # Real hardware mode
             current_time = time.time()
@@ -243,27 +349,25 @@ while True:
             else:
                 # If we have a connection, read data
                 try:
-                    xbee_message = xbee.read_data(timeout=100)
+                    # 1) Check for incoming data
+                    xbee_message = xbee.read_data(timeout=20)
                     if xbee_message:
-                        # Process real XBee message
-                        sender = str(xbee_message.remote_device.get_64bit_addr())
-                        message = xbee_message.data.decode('utf-8')
+                        try:
+                            sender = str(xbee_message.remote_device.get_64bit_addr())
+                            # Try decode as utf-8 for logging; raw MAVLink may not be utf-8
+                            try:
+                                message_text = xbee_message.data.decode('utf-8', errors='ignore')
+                            except Exception:
+                                message_text = str(xbee_message.data)
+                            print(f"Received from {sender}: {message_text}")
+                        except Exception as ie:
+                            print(f"Error parsing incoming XBee data: {ie}")
 
-                        print(f"Received from {sender}: {message}")
-
-                        # Look up which drone this belongs to based on XBee address
-                        drone_name = drone_name_map.get(sender, "Unknown")
-
-                        # Send to Qt via file
-                        data = {
-                            'type': 'xbee_data',
-                            'drone': drone_name,
-                            'address': sender,
-                            'message': message,
-                            'timestamp': time.time()
-                        }
-                        write_to_file(data)
-                        print(f"Sent real data to file for drone: {drone_name}")
+                    # 2) Check for outbound command
+                    cmd = read_command_file_once()
+                    if cmd:
+                        try_send_mavlink_command(cmd)
+                        clear_command_file()
                 except Exception as e:
                     print(f"Error reading data: {e}")
                     # Close connection if there was an error
