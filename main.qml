@@ -32,7 +32,7 @@ Window {
 
             // "Manage Drones" menu item
             MenuItem {
-                text: qsTr("Manage Drones")
+                text: qsTr("Manage Drones") // look here
                 onTriggered: {
                     var component = Qt.createComponent("manageDroneWindow.qml")
                     if (component.status === Component.Ready) {
@@ -246,6 +246,16 @@ Window {
             left: parent.left
             margins: 10
         }
+    }
+
+    TelemetryPanel {
+        id: telemetryPanel
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+            margins: 10
+        }
+        visible: false
     }
 
     /*
