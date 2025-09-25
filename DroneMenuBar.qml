@@ -11,28 +11,39 @@ import "qrc:/gcsStyle" as GcsStyle
  * 2. "Command Menu" that shows a submenu with the 4 command options.
  */
 
+// TODO:    The sizing and spacing for all the elements should be dynamic: 
+//          Meaning changing the text of a button will change the width as well. 
+
+// TODO:    It's worth a shot looking into making the menus dynamic as a WHOLE.
+//          If we're given a json of --> "Commands": {"Take Off", "Arm Drone"}
+//          Maybe not that simple, but the idea is that we don't have to hard
+//          code each command into this file. Because each command does a similar 
+//          thing, we just need to iterate through that list of commands and display them.
+
 Rectangle {
     id: menuBar
-    height: 40
+    height: 30 // This height of the entire menu bar controls the height of 
+                // all the menu bar buttons. 
     color: "transparent"
     // Colors sourced from theme
     property color baseColor: GcsStyle.PanelStyle.primaryColor
     property color borderClr: GcsStyle.PanelStyle.buttonBorderColor
     property color hoverClr: GcsStyle.PanelStyle.buttonHoverColor
     property color pressedClr: GcsStyle.PanelStyle.buttonPressedColor
+    radius: GcsStyle.PanelStyle.cornerRadius - 3
 
     Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         anchors.margins: 0
-        spacing: 15
+        spacing: 5
 
         // "GCS" Menu Button 
         Rectangle {
             id: gcsMenuButton
-            height: 35
+            height: parent.parent.height
             width: 90
-            radius: GcsStyle.PanelStyle.cornerRadius
+            radius: parent.parent.radius
             // Button color state logic for hovering/pressing
             color: pressed ? pressedClr :
                    hovered ? hoverClr :
@@ -82,9 +93,9 @@ Rectangle {
         // Command Menu Button
         Rectangle {
             id: commandMenuButton
-            height: 35
+            height: parent.parent.height
             width: 135
-            radius: GcsStyle.PanelStyle.cornerRadius
+            radius: parent.parent.radius
             // Button color state logic for hovering/pressing
             color: pressed ? pressedClr :
                    hovered ? hoverClr :

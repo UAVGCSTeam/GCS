@@ -40,6 +40,7 @@ QtObject {
 
     // Margin and spacing
     readonly property int defaultMargin: 10
+    readonly property int applicationBorderMargin: 8
     readonly property int defaultSpacing: 10
     readonly property int leftButtonSpacing: 0
     readonly property double iconRightMargin: 7.8
