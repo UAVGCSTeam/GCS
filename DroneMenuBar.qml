@@ -19,7 +19,7 @@ import "qrc:/gcsStyle" as GcsStyle
 //          Maybe not that simple, but the idea is that we don't have to hard
 //          code each command into this file. Because each command does a similar 
 //          thing, we just need to iterate through that list of commands and display them.
-
+ 
 Rectangle {
     id: menuBar
     height: 30 // This height of the entire menu bar controls the height of 
@@ -31,6 +31,8 @@ Rectangle {
     property color hoverClr: GcsStyle.PanelStyle.buttonHoverColor
     property color pressedClr: GcsStyle.PanelStyle.buttonPressedColor
     radius: GcsStyle.PanelStyle.cornerRadius - 3
+        // This radius of the ENTIRE menu bar controls the radius of 
+        // all the menu bar buttons
 
     Row {
         anchors.left: parent.left
