@@ -85,6 +85,8 @@ Item {
                 }
             }
         }
+        onZoomLevelChanged: updateScaleBar()
+        onCenterChanged: updateScaleBar()
     }
 
     // Scale Indicator
@@ -106,7 +108,7 @@ Item {
             x: 10
             height: 2
             width: 100   // will update dynamically
-            color: "white"
+            color: "black"
         }
 
         // Left bracket
@@ -115,7 +117,7 @@ Item {
             anchors.verticalCenter: scaleBarLine.verticalCenter
             width: 2
             height: 10
-            color: "white"
+            color: "black"
         }
 
         // Right bracket
@@ -124,7 +126,7 @@ Item {
             anchors.verticalCenter: scaleBarLine.verticalCenter
             width: 2
             height: 10
-            color: "white"
+            color: "black"
         }
 
         Text {
@@ -132,11 +134,18 @@ Item {
             anchors.verticalCenter: scaleBarLine.verticalCenter
             anchors.left: scaleBarLine.right
             anchors.leftMargin: 5
-            color: "white"
+            color: "black"
             font.pixelSize: 14
             text: ""  // will dynamically update
         }
     }
+
+    // Dynamically updates scale bar when zoom level is changed
+    function updateScaleBar() {
+        // set fixed pixel length
+        var pixelLength = 100;
+    }
+
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
