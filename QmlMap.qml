@@ -133,10 +133,9 @@ Item {
             anchors.leftMargin: 5
             color: "white"
             font.pixelSize: 14
-            text: ""  // dynamically updated
+            text: ""  // will dynamically update
         }
     }
-
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
