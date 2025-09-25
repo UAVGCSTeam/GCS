@@ -32,7 +32,7 @@ Rectangle {
             id: gcsMenuButton
             height: 35
             width: 90
-            radius: 15 // Gives rounded edges
+            radius: GcsStyle.PanelStyle.cornerRadius
             // Button color state logic for hovering/pressing
             color: pressed ? pressedClr :
                    hovered ? hoverClr :
@@ -68,15 +68,15 @@ Rectangle {
             }
 
             // Shadow effect
-            Rectangle {
-                x: gcsMenuButton.x + 2
-                y: gcsMenuButton.y + 2
-                width: gcsMenuButton.width
-                height: gcsMenuButton.height
-                color: "#30000000"
-                radius: gcsMenuButton.radius
-                z: -1
-            }
+            // Rectangle {
+            //     x: gcsMenuButton.x + 2
+            //     y: gcsMenuButton.y + 2
+            //     width: gcsMenuButton.width
+            //     height: gcsMenuButton.height
+            //     color: "#30000000"
+            //     radius: parent.radius
+            //     z: -1
+            // }
         }
 
         // Command Menu Button
@@ -84,7 +84,7 @@ Rectangle {
             id: commandMenuButton
             height: 35
             width: 135
-            radius: 15 // Gives rounded edges
+            radius: GcsStyle.PanelStyle.cornerRadius
             // Button color state logic for hovering/pressing
             color: pressed ? pressedClr :
                    hovered ? hoverClr :
@@ -120,16 +120,16 @@ Rectangle {
             }
 
             // Shadow effect
-            Rectangle {
-                anchors.fill: parent
-                anchors.leftMargin: 2
-                anchors.topMargin: 2
-                anchors.rightMargin: -2
-                anchors.bottomMargin: -2
-                color: "#30000000"
-                radius: parent.radius
-                z: -1
-            }
+            // Rectangle {
+            //     anchors.fill: parent
+            //     anchors.leftMargin: 2
+            //     anchors.topMargin: 2
+            //     anchors.rightMargin: -2
+            //     anchors.bottomMargin: -2
+            //     color: "#30000000"
+            //     radius: parent.radius
+            //     z: -1
+            // }
         }
     }
 
