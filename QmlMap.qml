@@ -96,7 +96,7 @@ Item {
             left: parent.left
             bottom: parent.bottom
             leftMargin: 10
-            bottomMargin: 40
+            bottomMargin: 20
         }
         width: 160
         height: 30
@@ -144,6 +144,33 @@ Item {
     function updateScaleBar() {
         // set fixed pixel length
         var pixelLength = 100;
+
+        // Map two points on the same horizontal line
+        var coord1 = mapview.toCoordinate(Qt.point(0, mapview.height - 50))
+        var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
+
+        var distance = coord1.distanceTo(coord2)
+
+        // get the distance in a nice value
+        var niceDistance = getNiceDistance(distance)
+        var scaleWidth = pixelLength * niceDistance / distance
+
+        scaleBarLine.width = scaleWidth
+
+        if (niceDistance >= 1000)
+            scaleText.text = (niceDistance / 1000).toFixed(0) + " km"
+        else
+            scaleText.text = Math.round(niceDistance) + " m"
+    }
+
+    // helper to round distances to multiples of 1, 2, 5 *10^n
+    function getNiceDistance(d){
+        var pow10 = Math.pow(10, Math.floor(Math.log10(d)))
+        var n = d / pow10
+        if (n < 1.5) return 1 * pow10
+        else if (n < 3) return 2 * pow10
+        else if (n < 7) return 5 * pow10
+        else return 10 * pow10
     }
 
     // Connect to droneController to listen for drone state changes
