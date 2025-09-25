@@ -87,6 +87,7 @@ Item {
         }
     }
 
+    // Scale Indicator
     Item {
         id: scaleBarContainer
         anchors {
