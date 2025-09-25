@@ -87,6 +87,56 @@ Item {
         }
     }
 
+    Item {
+        id: scaleBarContainer
+        anchors {
+            left: parent.left
+            bottom: parent.bottom
+            leftMargin: 10
+            bottomMargin: 40
+        }
+        width: 160
+        height: 30
+
+        // Horizontal scale line
+        Rectangle {
+            id: scaleBarLine
+            anchors.verticalCenter: parent.verticalCenter
+            x: 10
+            height: 2
+            width: 100   // will update dynamically
+            color: "white"
+        }
+
+        // Left bracket
+        Rectangle {
+            anchors.left: scaleBarLine.left
+            anchors.verticalCenter: scaleBarLine.verticalCenter
+            width: 2
+            height: 10
+            color: "white"
+        }
+
+        // Right bracket
+        Rectangle {
+            anchors.left: scaleBarLine.right
+            anchors.verticalCenter: scaleBarLine.verticalCenter
+            width: 2
+            height: 10
+            color: "white"
+        }
+
+        Text {
+            id: scaleText
+            anchors.verticalCenter: scaleBarLine.verticalCenter
+            anchors.left: scaleBarLine.right
+            anchors.leftMargin: 5
+            color: "white"
+            font.pixelSize: 14
+            text: ""  // dynamically updated
+        }
+    }
+
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
