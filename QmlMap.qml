@@ -93,11 +93,11 @@ Item {
     Item {
         id: scaleBarContainer
         anchors {
-            left: parent.left
-            bottom: parent.bottom
-            leftMargin: 10
-            bottomMargin: 20
-        }
+                    left: parent.left
+                    bottom: parent.bottom
+                    leftMargin: 50
+                    bottomMargin: 20
+                }
         width: 160
         height: 30
 
@@ -132,8 +132,8 @@ Item {
         Text {
             id: scaleText
             anchors.verticalCenter: scaleBarLine.verticalCenter
-            anchors.left: scaleBarLine.right
-            anchors.leftMargin: 5
+            anchors.right: scaleBarLine.left
+            anchors.rightMargin: 5
             color: "black"
             font.pixelSize: 14
             text: ""  // will dynamically update
@@ -163,7 +163,7 @@ Item {
             scaleText.text = Math.round(niceDistance) + " m"
     }
 
-    // helper to round distances to multiples of 1, 2, 5 *10^n
+    // helper to round distances to multiples of 1, 2, 5 * 10^n
     function getNiceDistance(d){
         var pow10 = Math.pow(10, Math.floor(Math.log10(d)))
         var n = d / pow10
