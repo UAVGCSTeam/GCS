@@ -129,48 +129,81 @@ Rectangle {
     Rectangle {
         id: waypointWindow
         width: 300
-        height: 350
+        height: 250
         visible: false
 
         anchors.top: mainPanel.bottom
-        anchors. topMargin: 60
+        anchors.margins: 20
         color: GcsStyle.PanelStyle.primaryColor
         radius: GcsStyle.PanelStyle.cornerRadius
 
         ColumnLayout {
-            anchors.fill: parent
             Layout.fillWidth: true
+            //anchors.fill: parent
+            anchors.centerIn : parent
             anchors.margins: 20
-            spacing: 20
-
-            //Layout.alignment: Qt.AlignTop
-            //spacing: 10
-            //width: parent.width
+            spacing: 10
+            Layout.fillHeight: true
 
             Text {
                 text: "Waypoint for " + mainPanel.selectedDroneModel
                 color: GcsStyle.PanelStyle.textOnPrimaryColor
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                Layout.fillWidth: true
             }
 
             TextField {
                 id: latitude
-                anchors.centerIn: parent
-                width: 260
-                placeholderText: "latitude"
-
-                onAccepted: {
-                    console.log("Latitude: ",latitude.text)
+                width: 200
+                height: 60
+                Layout.fillWidth: true
+                placeholderText: "Enter latitude"
+                background: Rectangle {
+                    color: "#d3d3d3"
+                    radius: 4
                 }
             }
             TextField {
                 id: longitude
-                anchors.centerIn: parent
-                width: 260
-                placeholderText: "longitude"
+                Layout.fillWidth: true
+                width: 200
+                height: 60
+                placeholderText: "Enter Longitude"
+                background: Rectangle {
+                    color: "#d3d3d3"
+                    radius: 4
+                }
+            }
+            // Start Button
+            Button {
+                text: "Start"
+                height: 60
+                Layout.fillWidth: true
+                background: Rectangle {
+                    color: "#7bb4d8"
+                    radius: 4
+                }
 
-                onAccepted: {
-                    console.log("Longitude: ",longitude.text)
+                onClicked: {
+                    //waypointLatitude = latitude.text
+                    //waypointLongitutde = longitude.text
+
+                    console.log("Sending drone to:", latitude.text,", ", longitude.text)
+                }
+            }
+
+            // Cancel Button
+            Button {
+                text: "Cancel"
+                height: 60
+                Layout.fillWidth: true
+                background: Rectangle {
+                    color: "#EE4B2B"
+                    radius: 4
+                }
+
+                onClicked: {
+                    waypointWindow.visible = false
                 }
             }
         }
