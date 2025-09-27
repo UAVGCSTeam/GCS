@@ -226,7 +226,7 @@ Window {
 
             // Optionally save to database
             try {
-                droneController.saveDrone(
+                droneController.createDrone(
                     drone.name,
                     drone.role,
                     drone.xbeeId,
@@ -600,7 +600,7 @@ Window {
                             try {
                                 // We no longer manually add to the model
                                 // Instead, we rely on the dronesChanged signal to update the UI
-                                droneController.saveDrone(
+                                droneController.createDrone(
                                     droneNameField.text,
                                     droneRole.text,
                                     droneXbeeID.text,
@@ -655,14 +655,21 @@ Window {
 
                     onClicked: {
                         if (selectedDroneIndex >= 0 && droneNameField.text.length > 0) {
-                            var oldXbeeAddress = droneModel.get(selectedDroneIndex).xbeeAddress;
+                            // get the actual DroneClass from the model
+                            var droneObj = droneModel.get(selectedDroneIndex);
 
                             // Update the item in the model
-                                try {
-                                    droneController.updateDrone(oldXbeeAddress, droneNameField.text,
-                                                             droneRole.text, droneXbeeID.text, droneXbeeAddr.text);
-                                    // Update model from database
-                                    syncModelWithDatabase();
+                            droneObj.name = droneNameField.text;
+                            droneObj.role = droneRole.text;
+                            droneObj.xbeeID = droneXbeeID.text;
+                            droneObj.xbeeAddress = droneXbeeAddr.text;
+                            // Update the item in the model
+                            try {
+                                // Pass the whole object to C++
+                                droneController.updateDrone(droneObj);
+
+                                // Update model from database
+                                syncModelWithDatabase();
                                 successMessage.text = "Drone updated successfully!";
                                 successPopup.open();
                                 clearFields();

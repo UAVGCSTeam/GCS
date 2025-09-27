@@ -17,204 +17,6 @@ Window {
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
 
-    // Menu bar for the top of the application to display various features and actions
-    MenuBar {
-        id: menuBar
-
-        // GCS Menu with two items:
-        // 1. "Manage Drones" that opens the manage drone window.
-        // 2. "Command Menu" that shows a submenu with the 4 command options.
-        Menu {
-            id: gcsMenu
-            title: qsTr("GCS")
-            // first button tab of the menu bar allows you to open the manage drone panel
-            // this button is attached to the manageDroneWindow.qml
-
-            // "Manage Drones" menu item
-            MenuItem {
-                text: qsTr("Manage Drones") // look here
-                onTriggered: {
-                    var component = Qt.createComponent("manageDroneWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating object:", component.errorString());
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString());
-                    }
-                }
-            }
-        }
-
-        Menu {
-            id: commandMenu
-            title: qsTr("Command Menu")
-
-            MenuItem {
-                id: armMenuItem
-                text: qsTr("ARM")
-                onTriggered: {
-                    // Load and show armWindow.qml
-                    var component = Qt.createComponent("armWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating ARM window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
-            }
-            MenuItem {
-                id: takeOffMenuItem
-                text: qsTr("Take-off")
-                onTriggered: {
-                    // Load and show takeOffWindow.qml
-                    var component = Qt.createComponent("takeOffWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Take-off window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
-            }
-            MenuItem {
-                id: coordinateNavMenuItem
-                text: qsTr("Coordinate Navigation")
-                onTriggered: {
-                    // Load and show coordinateNavigationWindow.qml
-                    var component = Qt.createComponent("coordinateNavigationWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Coordinate Navigation window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
-            }
-            MenuItem {
-                id: goHomeLandingMenuItem
-                text: qsTr("Go Home Landing")
-                onTriggered: {
-                    // Load and show goHomeLandingWindow.qml
-                    var component = Qt.createComponent("goHomeLandingWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Go Home Landing window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
-            }
-
-            MenuItem {
-                text: qsTr("Delete All Drones")
-                onTriggered: {
-                    deleteAllDronesWindow.open();
-                }
-            }
-        }
-    }
-
-    // Creates pop-up for Delete drone command
-    Popup {
-            id: deleteAllDronesWindow
-            modal: true
-            focus: true
-            width: 200
-            height: 200
-
-            Column {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-
-                // Display confirmation message
-                Text {
-                    id: confirmMessage
-                    text: "Are you sure you want to delete ALL drones?"
-                    wrapMode: Text.WordWrap
-                    // Width is parent's width minus margins
-                    width: parent.width - 20
-                    horizontalAlignment: Text.AlignHCenter
-                    font.pointSize: 12
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                }
-
-                Button {
-                    text: "No"
-                    width: parent.width
-                    onClicked: {
-                        deleteAllDronesWindow.close()
-                    }
-                }
-
-                Button {
-                    text: "Yes"
-                    width: parent.width
-                    onClicked: {
-                        droneController.deleteALlDrones_UI()
-                        deleteAllDronesWindow.close()
-                        confirmWindow.open()
-                    }
-                }
-            }
-        }
-           /* Display input fields for drone object
-            Current: Drone Name, Status, Battery @ Connor
-            New: Drone Name, Drone Type*, Xbee ID, Type @ Brandon
-            Drone ID will seen somewhere else
-          */
-
-        Popup {
-            id: confirmWindow
-            modal: true
-            focus: true
-            width: 200
-            height: 200
-            Column {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 10
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                Text {
-                    id: confirmWindowText
-                    text: "Drone successfully deleted!"
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                }
-
-                Button {
-                    text: "Ok"
-                    width: parent.width
-                    onClicked: {
-                        confirmWindow.close();
-                    }
-                }
-            }
-        }
-
     // These are our components that sit on top of our Window object
     QmlMap {
         // Reference by id not file name
@@ -239,8 +41,9 @@ Window {
         }
         visible: false
     }
-    DroneTrackingPanel {
-        id: droneTrackingPanel
+    // Menu bar above the drone tracking panel
+    DroneMenuBar {
+        id: menuBar
         anchors {
             top: parent.top
             left: parent.left
@@ -250,12 +53,38 @@ Window {
 
     TelemetryPanel {
         id: telemetryPanel
+        width: 640
+        height: 280
         anchors {
             bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
             margins: 10
         }
         visible: false
+        clip: true
+    }
+    DroneTrackingPanel {
+        id: droneTrackingPanel
+        anchors {
+            top: menuBar.bottom
+            left: parent.left
+            margins: 10
+        }
+        onDroneClicked: {
+                console.log("Clicked drone:", drone.name)
+                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
+                    // Toggle the visability of the status panel if same drone is clicked
+                    droneStatusPanel.visible = !droneStatusPanel.visible
+                } else {
+                    // update status panel with new info
+                    droneStatusPanel.populateActiveDroneModel(drone)
+
+                    // Ensure panel is visible for a new drone
+                    droneStatusPanel.visible = true
+                    telemetryPanel.populateActiveDroneModel(drone)
+                    telemetryPanel.visible = true
+                }
+            }
     }
 
     /*
@@ -297,15 +126,7 @@ Window {
                 for (var i = 0; i < drones.length; i++) {
                     if (drones[i].name === droneName) {
                         // Update the status panel
-                        droneTrackingPanel.updateSelectedDroneSignal(
-                            drones[i].name,
-                            drones[i].status,
-                            drones[i].battery,
-                            drones[i].latitude,
-                            drones[i].longitude,
-                            drones[i].altitude,
-                            drones[i].airspeed
-                        );
+                        droneStatusPanel.populateActiveDroneModel(drones[i]);
                         break;
                     }
                 }
