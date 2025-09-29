@@ -13,6 +13,7 @@
         <file>goHomeLandingWindow.qml</file>
         <file>takeOffWindow.qml</file>
         <file>DroneLabelComponent.qml</file>
+        <file>DroneCommandPanel.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>

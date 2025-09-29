@@ -184,7 +184,7 @@ Rectangle {
 
                         Make header allocate those numbers dynamically.
 
-                        Make drone symbols update based on status.
+                        Make drone symbols update based on .
                 */
                 ListModel {
                     // This ListModel gets its data from the fetch() JS function in main.qml

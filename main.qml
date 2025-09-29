@@ -41,6 +41,16 @@ Window {
         }
         visible: false
     }
+    DroneCommandPanel {
+        id: droneCommandPanel
+        anchors {
+            top: parent.top
+            right: parent.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: false
+    }
+
     // Menu bar above the drone tracking panel
     DroneMenuBar {
         id: menuBar
@@ -69,6 +79,15 @@ Window {
 
                     // Ensure panel is visible for a new drone
                     droneStatusPanel.visible = true
+                }
+
+                //droneCommandPanel
+                if(!droneCommandPanel.activeDrone || droneCommandPanel.activeDrone.name !== drone.name) {
+                    droneCommandPanel.activeDrone = drone
+                    droneCommandPanel.visible = true
+                }
+                else {
+                    droneCommandPanel.visible = !droneCommandPanel.visible
                 }
             }
     }

@@ -1,17 +1,18 @@
+#include <QDir>
 #include <QGuiApplication>
+#include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QProcess>
 #include <QTimer>
-#include <QDir>
-#include "mapcontroller.h"
-#include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
+#include "filehandler.h"
+#include "mapcontroller.h"
 
 // Function to start the Python XBee script
-QProcess* startXbeeProcess() {
-    QProcess* pythonProcess = new QProcess();
+QProcess *startXbeeProcess()
+{
+    QProcess *pythonProcess = new QProcess();
 
     // Connect signals to handle process output and errors
     QObject::connect(pythonProcess, &QProcess::readyReadStandardOutput, [pythonProcess]() {
@@ -29,7 +30,8 @@ QProcess* startXbeeProcess() {
         QDir::currentPath() + "/setup_and_run_xbee.py",
         QCoreApplication::applicationDirPath() + "/setup_and_run_xbee.py",
         QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../setup_and_run_xbee.py"),
-        QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("../../GCS/setup_and_run_xbee.py"),
+        QDir(QCoreApplication::applicationDirPath())
+            .absoluteFilePath("../../GCS/setup_and_run_xbee.py"),
         // Your actual source directory
         // PLEASE UPDATE
         // The top paths are in the BUILD directory
@@ -93,7 +95,7 @@ int main(int argc, char *argv[])
     */
 
     // Start the Python XBee script
-    QProcess* pythonProcess = startXbeeProcess();
+    QProcess *pythonProcess = startXbeeProcess();
     if (pythonProcess) {
         qDebug() << "XBee Python script started successfully";
 
@@ -128,9 +130,11 @@ int main(int argc, char *argv[])
     qmlRegisterType<FileHandler>("com.gcs.filehandler", 1, 0, "FileHandler");
 
     // Register droneclass to QML
-    qmlRegisterUncreatableType<DroneClass>(
-        "com.gcs.dronecontroller", 1, 0, "DroneClass",
-        "DroneClass cannot be created from QML");
+    qmlRegisterUncreatableType<DroneClass>("com.gcs.dronecontroller",
+                                           1,
+                                           0,
+                                           "DroneClass",
+                                           "DroneClass cannot be created from QML");
 
     // Expose dronecontroller to QML
     qmlRegisterType<DroneController>("com.gcs.dronecontroller", 1, 0, "DroneController");
@@ -151,11 +155,15 @@ int main(int argc, char *argv[])
     */
 
     // Creates the root object, which is the engine that runs the program
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
-                         if (!obj && url == objUrl)
-                             QCoreApplication::exit(-1);
-                     }, Qt::QueuedConnection);
+    QObject::connect(
+        &engine,
+        &QQmlApplicationEngine::objectCreated,
+        &app,
+        [url](QObject *obj, const QUrl &objUrl) {
+            if (!obj && url == objUrl)
+                QCoreApplication::exit(-1);
+        },
+        Qt::QueuedConnection);
     engine.load(url);
 
     return app.exec();

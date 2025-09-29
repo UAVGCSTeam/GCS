@@ -1,11 +1,14 @@
 #include "filehandler.h"
+#include <QDebug>
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
 
-FileHandler::FileHandler(QObject *parent) : QObject(parent) {}
+FileHandler::FileHandler(QObject *parent)
+    : QObject(parent)
+{}
 
-QString FileHandler::readFile(const QString &filePath) {
+QString FileHandler::readFile(const QString &filePath)
+{
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "Failed to open file:" << filePath;
@@ -14,4 +17,3 @@ QString FileHandler::readFile(const QString &filePath) {
     QTextStream in(&file);
     return in.readAll();
 }
-

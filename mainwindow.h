@@ -2,11 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QtWidgets>
-#include <QtQuick>
-#include <QVariant>
-#include <QQuickWidget>
 #include <QProcess>
+#include <QQuickWidget>
+#include <QVariant>
+#include <QtQuick>
+#include <QtWidgets>
 
 /*
  * Provides the functions and constructors for our mainwindow object
