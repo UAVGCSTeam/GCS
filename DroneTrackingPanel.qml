@@ -251,6 +251,34 @@ Rectangle {
                 text: "Add Drone"
                 Layout.fillWidth: true
                 Layout.margins: GcsStyle.PanelStyle.defaultMargin
+
+                MouseArea {
+                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: parent.clicked()
+                }
+
+                background: Rectangle {
+                    // Sets a fixed background color for the button
+                    color: GcsStyle.ButtonPrimary.color
+                    radius: 5
+                    border.width: 1
+                    border.color: "darkgray"
+                }
+
+                contentItem: Text {
+                    // This button is special because of this code.
+                    // The idea is that the font has a specific color now. The issue was that for 
+                    // systems that use dynamic light/dark mode, the font disappeared in dark mode.
+                    text: parent.text
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: GcsStyle.ButtonPrimary.textColor
+                    font.pointSize: 12
+                }
+
                 onClicked: {
                     var component = Qt.createComponent("manageDroneWindow.qml")
                     if (component.status === Component.Ready) {
@@ -265,6 +293,7 @@ Rectangle {
                     }
                 }
             }
+
             // Fire view (placeholder)
             Rectangle {
                 id: fireView
