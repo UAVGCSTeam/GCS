@@ -57,7 +57,7 @@ Window {
         height: 280
         anchors {
             bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
+            right: parent.right
             margins: 10
         }
         visible: false

@@ -44,7 +44,7 @@ Rectangle {
                     }
 
                     Text {
-                        text: "1800000000000" // to see if it overflows
+                        text: longitude
                         width: parent.width - 12
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
@@ -424,140 +424,50 @@ Rectangle {
                                     altitude: drone.altitude,
                                     airspeed: drone.airspeed            });
     }
+
+    property int minPanelWidth: 320
+    property int minPanelHeight: 200
+    property int resizeHandleSize: 20
+
+    MouseArea {
+        id: topLeftResizeHandle
+        width: resizeHandleSize
+        height: resizeHandleSize
+        anchors.left: parent.left
+        anchors.top: parent.top
+        hoverEnabled: true
+        cursorShape: Qt.SizeFDiagCursor
+        property real startWidth: 0
+        property real startHeight: 0
+        property real pressX: 0
+        property real pressY: 0
+
+        onPressed: {
+            startWidth = mainPanel.width
+            startHeight = mainPanel.height
+            pressX = mouse.x
+            pressY = mouse.y
+        }
+
+        onPositionChanged: {
+            if (!(mouse.buttons & Qt.LeftButton)) return;
+
+            var dx = mouse.x - pressX;
+            var dy = mouse.y - pressY;
+
+            var newW = startWidth  - dx;
+            var newH = startHeight - dy;
+
+            if (newW < minPanelWidth)  {
+                newW = minPanelWidth;
+            }
+            if (newH < minPanelHeight){
+                newH = minPanelHeight;
+            }
+            mainPanel.width  = newW;
+            mainPanel.height = newH;
+        }
+    }
 }
 
 
-
-
-
-// Rectangle {
-//     id: mainPanel
-//     color: "#80000000"
-//     radius: GcsStyle.PanelStyle.cornerRadius
-//     width: 600
-//     height: 260
-
-
-
-//     ColumnLayout {
-//         anchors.fill: parent
-//         anchors.margins: GcsStyle.PanelStyle.defaultMargin
-//         spacing: 12
-
-//         Rectangle {
-//             Layout.fillWidth: true
-//             Layout.fillHeight: true
-//             radius: GcsStyle.PanelStyle.cornerRadius
-//             clip: true
-//             color: "transparent"
-
-//             ListView {
-//                 id: droneListViewTop
-//                 anchors.fill: parent
-//                 clip: true
-//                 model: activeDroneModel
-
-//                 delegate: RowLayout {
-//                     width: ListView.view.width
-//                     height: 40
-//                     spacing: 10
-
-//                     Text {
-//                         text: "Longitude: " + longitude
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Latitude: " + latitude
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Altitude: " + altitude
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Airspeed: " + airspeed
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Battery: " + battery
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                 }
-//             }
-//         }
-
-//         Rectangle {
-//             Layout.fillWidth: true
-//             Layout.fillHeight: true
-//             radius: GcsStyle.PanelStyle.cornerRadius
-//             clip: true
-//             color: "transparent"
-
-//             ListView {
-//                 id: droneListViewBottom
-//                 anchors.fill: parent
-//                 clip: true
-//                 model: activeDroneModel
-
-//                 delegate: RowLayout {
-//                     width: ListView.view.width
-//                     height: 40
-//                     spacing: 10
-
-//                     Text {
-//                         text: "Pitch: "
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Yaw: "
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Groundspeed: "
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Status: " + status
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                     Text {
-//                         text: "Flight Time: "
-//                         Layout.fillWidth: true
-//                         horizontalAlignment: Text.AlignHCenter
-//                         color: "white"
-//                         font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-
-// }
