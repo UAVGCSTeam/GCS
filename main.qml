@@ -54,7 +54,7 @@ Window {
     TelemetryPanel {
         id: telemetryPanel
         width: 640
-        height: 280
+        //height: 280
         anchors {
             bottom: parent.bottom
             right: parent.right
@@ -95,6 +95,15 @@ Window {
       We actually want certain UI to be self-contained as it becomes more modular.
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
+
+    Connections {
+        target: droneStatusPanel
+        onStatusHeightReady: telemetryPanel.setStatusHeight(h)
+    }
+    // Component.onCompleted: {
+    //     droneStatusPanel.publishStatusHeight();
+    // }
+
     Connections {
     }
 
@@ -102,7 +111,7 @@ Window {
     Component.onCompleted: {
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-
+        droneStatusPanel.publishStatusHeight();
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
