@@ -28,14 +28,19 @@ Rectangle {
     height: 30 // This height of the entire menu bar controls the height of 
                 // all the menu bar buttons. 
     color: "transparent"
+    radius: GcsStyle.PanelStyle.cornerRadius - 3
+        // This radius of the ENTIRE menu bar controls the radius of 
+        // all the menu bar buttons
+
+
     // Colors sourced from theme
     property color baseColor: GcsStyle.PanelStyle.primaryColor
     property color borderClr: GcsStyle.PanelStyle.buttonBorderColor
     property color hoverClr: GcsStyle.PanelStyle.buttonHoverColor
     property color pressedClr: GcsStyle.PanelStyle.buttonPressedColor
-    radius: GcsStyle.PanelStyle.cornerRadius - 3
-        // This radius of the ENTIRE menu bar controls the radius of 
-        // all the menu bar buttons
+    property int fontSize: GcsStyle.PanelStyle.fontSizeSmall
+
+
     Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -46,40 +51,31 @@ Rectangle {
         Rectangle {
             id: gcsMenuButton
             height: parent.parent.height
-            width: 90
+            width: gcsLabel.width + 40
             radius: parent.parent.radius
-            // Button color state logic for hovering/pressing
-            color: pressed ? pressedClr :
-                   hovered ? hoverClr :
-                   baseColor
             border.color: borderClr
             border.width: 1
 
             // Text styling
             Text {
+                id: gcsLabel
                 text: "GCS ▼"
                 anchors.centerIn: parent
                 color: GcsStyle.PanelStyle.textPrimaryColor
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                font.pointSize: 10
+                font.pointSize: fontSize
             }
 
-            // Tracks button's normal state (not being interacted with)
-            property bool hovered: false
-            property bool pressed: false
-
-            // Mouse event states 
+            color:  gcsMenuButtonMouseArea.pressed ? pressedClr :
+                    gcsMenuButtonMouseArea.containsMouse ? hoverClr :
+                    baseColor
             MouseArea {
+                id: gcsMenuButtonMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onClicked: gcsMenu.open()
-                onPressed: gcsMenuButton.pressed = true
-                onReleased: gcsMenuButton.pressed = false
-                onCanceled: gcsMenuButton.pressed = false
-                onEntered: gcsMenuButton.hovered = true
-                onExited: gcsMenuButton.hovered = false
             }
         }
 
@@ -87,40 +83,31 @@ Rectangle {
         Rectangle {
             id: commandMenuButton
             height: parent.parent.height
-            width: 135
+            width: commandLabel.width + 40
             radius: parent.parent.radius
-            // Button color state logic for hovering/pressing
-            color: pressed ? pressedClr :
-                   hovered ? hoverClr :
-                   baseColor
             border.color: borderClr
             border.width: 1
+            color:  commandMenuButtonMouseArea.containsMouse ? hoverClr : 
+                    commandMenuButtonMouseArea.pressed ? pressedClr : 
+                    baseColor
 
             // Text styling
             Text {
+                id: commandLabel
                 text: "Command Menu ▼"
                 anchors.centerIn: parent
                 color: GcsStyle.PanelStyle.textPrimaryColor
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                font.pointSize: 10
+                font.pointSize: fontSize
             }
 
-            // Tracks button default state (not hovered/pressed)
-            property bool hovered: false
-            property bool pressed: false
-
-            // Mouse states to make rounded hover/press visuals
             MouseArea {
+                id: commandMenuButtonMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onClicked: commandMenu.open()
-                onPressed: commandMenuButton.pressed = true
-                onReleased: commandMenuButton.pressed = false
-                onCanceled: commandMenuButton.pressed = false
-                onEntered: commandMenuButton.hovered = true
-                onExited: commandMenuButton.hovered = false
             }
         }
     }
@@ -184,7 +171,7 @@ Rectangle {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
+                    font.pixelSize: fontSize
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -237,18 +224,6 @@ Rectangle {
                 height: menuBar.height
                 text: "ARM"
 
-                // palette {
-                //     text: "black"
-                // }
-
-                // background: Rectangle {
-                //     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                //             parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
-                //             "red"
-                //     radius: 2
-                // }
-
-
                 background: Rectangle {
                     // Background color logic for clicking and hovering
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
@@ -263,7 +238,7 @@ Rectangle {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
+                    font.pixelSize: fontSize
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -304,7 +279,7 @@ Rectangle {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
+                    font.pixelSize: fontSize
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -345,7 +320,7 @@ Rectangle {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
+                    font.pixelSize: fontSize
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -386,7 +361,7 @@ Rectangle {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
+                    font.pixelSize: fontSize
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -427,7 +402,7 @@ Rectangle {
                     color: parent.pressed || parent.hovered ? "#ffffff" : "#ff4444"
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
+                    font.pixelSize: fontSize
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -468,7 +443,7 @@ Rectangle {
                 wrapMode: Text.WordWrap
                 width: parent.width - 20
                 horizontalAlignment: Text.AlignHCenter
-                font.pointSize: 12
+                font.pointSize: fontSize
                 color: GcsStyle.PanelStyle.textPrimaryColor
             }
 
