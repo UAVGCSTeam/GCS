@@ -29,7 +29,7 @@ Window {
         anchors {
             top: parent.top
             right: parent.right
-            margins: 10
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
     DroneStatusPanel {
@@ -37,7 +37,7 @@ Window {
         anchors {
             top: parent.top
             right: parent.right
-            margins: 10
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
     }
@@ -47,7 +47,7 @@ Window {
         anchors {
             top: parent.top
             left: parent.left
-            margins: 10
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
 
@@ -68,7 +68,7 @@ Window {
         anchors {
             top: menuBar.bottom
             left: parent.left
-            margins: 10
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         onDroneClicked: {
                 console.log("Clicked drone:", drone.name)
