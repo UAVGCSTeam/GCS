@@ -140,12 +140,13 @@ Rectangle {
         focus: true
         // Closes popup when clicking outside
         closePolicy: Popup.CloseOnPressOutside
+        padding: 3
 
         background: Rectangle {
             color: GcsStyle.PanelStyle.primaryColor
             border.color: GcsStyle.PanelStyle.buttonBorderColor
             border.width: 1
-            radius: 4
+            radius: menuBar.radius
         }
 
         // Column layout for menu items
@@ -162,7 +163,7 @@ Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
-                    radius: 2
+                    radius: menuBar.radius - 3
                 }
 
                 // Text styling
@@ -206,12 +207,13 @@ Rectangle {
         focus: true
         // Closes popup when clicking outside
         closePolicy: Popup.CloseOnPressOutside
+        padding: 3
 
         background: Rectangle {
             color: GcsStyle.PanelStyle.primaryColor
             border.color: GcsStyle.PanelStyle.buttonBorderColor
             border.width: 1
-            radius: 4
+            radius: menuBar.radius
         }
 
         // Column layout for menu items
@@ -229,7 +231,7 @@ Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
-                    radius: 2
+                    radius: menuBar.radius - 3
                 }
 
                 // Menu Item text styling
@@ -270,7 +272,7 @@ Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
-                    radius: 2
+                    radius: menuBar.radius - 3
                 }
 
                 // Text styling
@@ -311,7 +313,7 @@ Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
-                    radius: 2
+                    radius: menuBar.radius - 3
                 }
 
                 // Text styling
@@ -352,7 +354,7 @@ Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
-                    radius: 2
+                    radius: menuBar.radius - 3
                 }
 
                 // Text styling
@@ -393,7 +395,7 @@ Rectangle {
                     color: parent.pressed ? "#ff6b6b" :
                            parent.hovered ? "#ff8e8e" :
                            "transparent"
-                    radius: 2
+                    radius: menuBar.radius - 3
                 }
 
                 // Text styling
