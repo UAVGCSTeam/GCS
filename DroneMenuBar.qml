@@ -81,17 +81,6 @@ Rectangle {
                 onEntered: gcsMenuButton.hovered = true
                 onExited: gcsMenuButton.hovered = false
             }
-
-            // Shadow effect
-            // Rectangle {
-            //     x: gcsMenuButton.x + 2
-            //     y: gcsMenuButton.y + 2
-            //     width: gcsMenuButton.width
-            //     height: gcsMenuButton.height
-            //     color: "#30000000"
-            //     radius: parent.radius
-            //     z: -1
-            // }
         }
 
         // Command Menu Button
