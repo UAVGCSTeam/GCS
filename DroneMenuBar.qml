@@ -20,6 +20,9 @@ import "qrc:/gcsStyle" as GcsStyle
 //          code each command into this file. Because each command does a similar 
 //          thing, we just need to iterate through that list of commands and display them.
  
+
+
+
 Rectangle {
     id: menuBar
     height: 30 // This height of the entire menu bar controls the height of 
@@ -33,7 +36,6 @@ Rectangle {
     radius: GcsStyle.PanelStyle.cornerRadius - 3
         // This radius of the ENTIRE menu bar controls the radius of 
         // all the menu bar buttons
-
     Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -131,18 +133,6 @@ Rectangle {
                 onEntered: commandMenuButton.hovered = true
                 onExited: commandMenuButton.hovered = false
             }
-
-            // Shadow effect
-            // Rectangle {
-            //     anchors.fill: parent
-            //     anchors.leftMargin: 2
-            //     anchors.topMargin: 2
-            //     anchors.rightMargin: -2
-            //     anchors.bottomMargin: -2
-            //     color: "#30000000"
-            //     radius: parent.radius
-            //     z: -1
-            // }
         }
     }
 
@@ -168,8 +158,8 @@ Rectangle {
         // positioned just below the menu button
         y: menuBar.height + 5
         width: 200
-        height: 50
         modal: false
+
         // Allows popup to receive keyboard events
         focus: true
         // Closes popup when clicking outside
@@ -185,12 +175,10 @@ Rectangle {
         // Column layout for menu items
         Column {
             anchors.fill: parent
-            anchors.margins: 5
-            spacing: 2
 
             Button {
                 width: parent.width
-                height: 30
+                height: menuBar.height
                 text: "Manage Drones"
 
                 background: Rectangle {
@@ -237,7 +225,6 @@ Rectangle {
         x: commandMenuButton.x + 2
         y: menuBar.height + 5
         width: 200
-        height: 200
         modal: false
         // Allows popup to receive keyboard events
         focus: true
@@ -254,14 +241,24 @@ Rectangle {
         // Column layout for menu items
         Column {
             anchors.fill: parent
-            anchors.margins: 5
-            spacing: 2
 
             // ARM Menu item
             Button {
                 width: parent.width
-                height: 30
+                height: menuBar.height
                 text: "ARM"
+
+                // palette {
+                //     text: "black"
+                // }
+
+                // background: Rectangle {
+                //     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
+                //             parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
+                //             "red"
+                //     radius: 2
+                // }
+
 
                 background: Rectangle {
                     // Background color logic for clicking and hovering
@@ -301,7 +298,7 @@ Rectangle {
             // Take-off Menu item
             Button {
                 width: parent.width
-                height: 30
+                height: menuBar.height
                 text: "Take-off"
 
                 background: Rectangle {
@@ -342,7 +339,7 @@ Rectangle {
             // Coordinate Navigation Menu item
             Button {
                 width: parent.width
-                height: 30
+                height: menuBar.height
                 text: "Coordinate Navigation"
 
                 background: Rectangle {
@@ -383,7 +380,7 @@ Rectangle {
             // Go Home Landing Menu item
             Button {
                 width: parent.width
-                height: 30
+                height: menuBar.height
                 text: "Go Home Landing"
 
                 background: Rectangle {
@@ -424,7 +421,7 @@ Rectangle {
             // Delete All Drones Menu item
             Button {
                 width: parent.width
-                height: 30
+                height: menuBar.height
                 text: "Delete All Drones"
 
                 background: Rectangle {
