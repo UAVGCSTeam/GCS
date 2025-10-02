@@ -8,6 +8,7 @@
 #include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
+#include <QtQuickControls2/QQuickStyle>
 
 // Function to start the Python XBee script
 QProcess* startXbeeProcess() {
@@ -86,6 +87,8 @@ QProcess* startXbeeProcess() {
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    // Force a non-native style so customization is supported
+    QQuickStyle::setStyle("Basic");
 
     /*
      * We want to use QQmlApplicationEngine as it provides more resources for our use case
