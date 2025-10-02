@@ -135,16 +135,13 @@ Rectangle {
         y: menuBar.height + 5
         width: 200
         modal: false
-
-        // Allows popup to receive keyboard events
-        focus: true
-        // Closes popup when clicking outside
-        closePolicy: Popup.CloseOnPressOutside
+        focus: true // Allows popup to receive keyboard events
+        closePolicy: Popup.CloseOnPressOutside && gcsMenuButton // Closes popup when clicking outside
         padding: 3
 
         background: Rectangle {
-            color: GcsStyle.PanelStyle.primaryColor
-            border.color: GcsStyle.PanelStyle.buttonBorderColor
+            color: baseColor
+            border.color: borderClr
             border.width: 1
             radius: menuBar.radius
         }
@@ -160,8 +157,8 @@ Rectangle {
 
                 background: Rectangle {
                     // Button background color logic for hovering and clicking, for intuity
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                    color: parent.pressed ? pressedClr :
+                           parent.hovered ? hoverClr :
                            "transparent"
                     radius: menuBar.radius - 3
                 }
@@ -203,15 +200,13 @@ Rectangle {
         y: menuBar.height + 5
         width: 200
         modal: false
-        // Allows popup to receive keyboard events
-        focus: true
-        // Closes popup when clicking outside
-        closePolicy: Popup.CloseOnPressOutside
+        focus: true // Allows popup to receive keyboard events
+        closePolicy: Popup.CloseOnPressOutside // Closes popup when clicking outside
         padding: 3
 
         background: Rectangle {
-            color: GcsStyle.PanelStyle.primaryColor
-            border.color: GcsStyle.PanelStyle.buttonBorderColor
+            color: baseColor
+            border.color: borderClr
             border.width: 1
             radius: menuBar.radius
         }
@@ -228,8 +223,8 @@ Rectangle {
 
                 background: Rectangle {
                     // Background color logic for clicking and hovering
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                    color: parent.pressed ? pressedClr :
+                           parent.hovered ? hoverClr :
                            "transparent"
                     radius: menuBar.radius - 3
                 }
@@ -269,8 +264,8 @@ Rectangle {
 
                 background: Rectangle {
                     // Button background color logic
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                    color: parent.pressed ? pressedClr :
+                           parent.hovered ? hoverClr :
                            "transparent"
                     radius: menuBar.radius - 3
                 }
@@ -310,8 +305,8 @@ Rectangle {
 
                 background: Rectangle {
                     // Background color logic
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                    color: parent.pressed ? pressedClr :
+                           parent.hovered ? hoverClr :
                            "transparent"
                     radius: menuBar.radius - 3
                 }
@@ -351,8 +346,8 @@ Rectangle {
 
                 background: Rectangle {
                     // Background color logic
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                    color: parent.pressed ? pressedClr :
+                           parent.hovered ? hoverClr :
                            "transparent"
                     radius: menuBar.radius - 3
                 }
