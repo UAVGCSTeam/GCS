@@ -80,7 +80,6 @@ Window {
                     mapComponent.followedDroneName = drone.name
                     mapComponent.followDrone = true
                     mapController.setCenterPosition(drone.latitude, drone.longitude)
-                    mapController.setZoomLevel(18)
                     console.log("Map centered on drone:", drone.name, drone.latitude, drone.longitude)
                 } else {
                     mapComponent.followDrone = false

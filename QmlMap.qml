@@ -28,6 +28,14 @@ Item {
         center: QtPositioning.coordinate(latitude, longitude)
         zoomLevel: 18
 
+        // gives smooth transition for center changes
+        Behavior on center {
+                CoordinateAnimation {
+                    duration: 1200
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
         PinchHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
@@ -100,7 +108,7 @@ Item {
             if (mapwindow.followDrone && droneName === mapwindow.followedDroneName) {
                     var drone = droneController.getDrone(droneName)
                     if (drone) {
-                        mapview.flyTo(QtPositioning.coordinate(drone.latitude, drone.longitude))
+                        mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
                 }
             }
         }

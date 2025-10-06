@@ -107,12 +107,6 @@ void MapController::updateCenter(const QPair<double, double> &center)
     emit centerPositionChanged(QVariant(center.first), QVariant(center.second));
 }
 
-void MapController::setZoomLevel(int level)
-{
-    qDebug() << "Setting zoom level to:" << level;
-    emit zoomLevelChanged(level);
-}
-
 void MapController::addMarker(const QPair<double, double> &position)
 {
     // Stores markers on cpp side
