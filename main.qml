@@ -65,27 +65,29 @@ Window {
         }
         onDroneClicked: {
                 console.log("Clicked drone:", drone.name)
-                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
+                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name && droneStatusPanel.visible) {
                     // Toggle the visability of the status panel if same drone is clicked
                     droneStatusPanel.visible = !droneStatusPanel.visible
+
+                    // Toggle following flags
+                    mapComponent.followedDroneName = ""
+                    mapComponent.followDrone = false
                 } else {
                     // update status panel with new info
                     droneStatusPanel.populateActiveDroneModel(drone)
 
                     // Ensure panel is visible for a new drone
                     droneStatusPanel.visible = true
+                    if (drone.latitude && drone.longitude) {
+                        mapComponent.followedDroneName = drone.name
+                        mapComponent.followDrone = true
+                        mapController.setCenterPosition(drone.latitude, drone.longitude)
+                        console.log("Map centered on drone:", drone.name, drone.latitude, drone.longitude)
+                    } else {
+                        mapComponent.followDrone = false
+                        console.warn("Drone has no position:", drone.name)
+                    }
                 }
-
-                if (drone.latitude && drone.longitude) {
-                    mapComponent.followedDroneName = drone.name
-                    mapComponent.followDrone = true
-                    mapController.setCenterPosition(drone.latitude, drone.longitude)
-                    console.log("Map centered on drone:", drone.name, drone.latitude, drone.longitude)
-                } else {
-                    mapComponent.followDrone = false
-                    console.warn("Drone has no position:", drone.name)
-                }
-
             }
     }
 
