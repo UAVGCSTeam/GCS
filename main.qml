@@ -16,7 +16,6 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
-
     // These are our components that sit on top of our Window object
     QmlMap {
         // Reference by id not file name
@@ -40,6 +39,12 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
+        onVisibleChanged: {
+                if (!visible) {
+                    mapComponent.followDrone = false
+                    mapComponent.followedDroneName = ""
+                }
+            }
     }
     // Menu bar above the drone tracking panel
     DroneMenuBar {
@@ -70,6 +75,18 @@ Window {
                     // Ensure panel is visible for a new drone
                     droneStatusPanel.visible = true
                 }
+
+                if (drone.latitude && drone.longitude) {
+                    mapComponent.followedDroneName = drone.name
+                    mapComponent.followDrone = true
+                    mapController.setCenterPosition(drone.latitude, drone.longitude)
+                    mapController.setZoomLevel(18)
+                    console.log("Map centered on drone:", drone.name, drone.latitude, drone.longitude)
+                } else {
+                    mapComponent.followDrone = false
+                    console.warn("Drone has no position:", drone.name)
+                }
+
             }
     }
 

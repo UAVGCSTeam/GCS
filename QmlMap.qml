@@ -5,6 +5,8 @@ import QtPositioning
 Item {
     id: mapwindow
 
+    property string followedDroneName: ""
+    property bool followDrone: false
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
     property var supportedMapTypes: [
@@ -94,6 +96,13 @@ Item {
         function onDroneStateChanged(droneName) {
             // Refresh the drone markers when a drone's state changes
             droneMarkerView.model = droneController.getAllDrones();
+            // Following drone funcitions
+            if (mapwindow.followDrone && droneName === mapwindow.followedDroneName) {
+                    var drone = droneController.getDrone(droneName)
+                    if (drone) {
+                        mapview.flyTo(QtPositioning.coordinate(drone.latitude, drone.longitude))
+                }
+            }
         }
 
         function onDronesChanged() {
@@ -111,6 +120,9 @@ Item {
             if (index < mapview.supportedMapTypes.length) {
                 mapview.activeMapType = mapview.supportedMapTypes[index]
             }
+        }
+        function onZoomLevelChanged(level) {
+                mapview.zoomLevel = level
         }
     }
 
