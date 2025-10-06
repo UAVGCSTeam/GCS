@@ -33,7 +33,6 @@ public slots:
     void setCenterPosition(const QVariant &lat, const QVariant &lon);
     void setLocationMarking(const QVariant &lat, const QVariant &lon);
     void changeMapType(int typeIndex);
-    Q_INVOKABLE void setZoomLevel(int level);
     Q_INVOKABLE void addDrone(DroneClass* drone);
     Q_INVOKABLE QVariantList getAllDrones() const;
 signals:
