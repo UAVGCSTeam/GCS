@@ -19,7 +19,12 @@ Window {
             id: armButton
             text: qsTr("ARM")
             anchors.centerIn: parent
-            onClicked: console.log("ARM window button clicked")
+            onClicked: {
+                // TEMP: hardcode a target; replace with your real XBee address or ID later
+                const target = "0013A20041D365C4"
+                const ok = droneController.sendArm(target, true)   // true = arm, false = disarm
+                console.log("ARM ->", target, ok)
+            }
         }
     }
 }

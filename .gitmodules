@@ -4,3 +4,9 @@
 [submodule "extern/digixbee"]
 	path = extern/digixbee
 	url = https://github.com/digidotcom/xbee-python.git
+[submodule "third_party/c_library_v2"]
+	path = third_party/c_library_v2
+	url = https://github.com/mavlink/c_library_v2.git
+[submodule "external/mavlink"]
+	path = external/mavlink
+	url = https://github.com/mavlink/c_library_v2

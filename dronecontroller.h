@@ -8,6 +8,8 @@
 #include <QSharedPointer>
 #include <QSharedMemory>
 #include <QTimer>
+#include <memory>
+#include <cstdint>
 // #include "drone.h"
 
 /*
@@ -27,6 +29,9 @@
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
+class XbeeLink;
+class MavlinkSender;
+
 class DroneController : public QObject {
     Q_OBJECT
 public:
@@ -39,6 +44,9 @@ public:
     void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool isSimulationMode() const;
+    Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
+    Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
+
 
 public slots:
     void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
@@ -51,6 +59,7 @@ public:
     Q_INVOKABLE QVariantList getDroneList() const;
     // Process data recieved from XBee via shared memory
     Q_INVOKABLE QVariantList getAllDrones() const;
+
 
 private slots:
     void processXbeeData();
@@ -80,6 +89,10 @@ private:
 
     QString getDataFilePath();
     QString getConfigFilePath() const;
+
+    std::unique_ptr<XbeeLink>    xbee_;
+    std::unique_ptr<MavlinkSender> mav_;
+
 };
 
 

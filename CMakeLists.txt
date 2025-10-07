@@ -10,7 +10,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 6.7.3 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core Sql)
+# + SerialPort added here
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core Sql SerialPort)
 
 set(PROJECT_SOURCES
 
@@ -33,18 +34,18 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         xbeeHandler.py
         requirements.txt
         setup_and_run_xbee.py
+        XbeeLink.cpp
+        XbeeLink.h
+        MavlinkSender.cpp
+        MavlinkSender.h
+
+       # MavLinkUdp.h MavLinkUdp.cpp
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET GCS APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
         add_library(GCS SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(GCS
             ${PROJECT_SOURCES}
@@ -52,12 +53,21 @@ else()
     endif()
 endif()
 
+# MAVLink headers (handle both layouts)
+set(MAVLINK_DIR "${CMAKE_SOURCE_DIR}/external/mavlink" CACHE PATH "Path to MAVLink c_library_v2")
+target_include_directories(GCS PRIVATE
+    ${MAVLINK_DIR}
+    ${MAVLINK_DIR}/mavlink
+)
+
 target_link_libraries(GCS PRIVATE
 Qt${QT_VERSION_MAJOR}::Widgets
 Qt${QT_VERSION_MAJOR}::Quick
 Qt${QT_VERSION_MAJOR}::QuickWidgets
 Qt${QT_VERSION_MAJOR}::Core
-Qt${QT_VERSION_MAJOR}::Sql)
+Qt${QT_VERSION_MAJOR}::Sql
+# + link SerialPort
+Qt${QT_VERSION_MAJOR}::SerialPort)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

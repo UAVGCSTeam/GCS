@@ -1,6 +1,9 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
+#include "XbeeLink.h"
+#include "MavlinkSender.h"
 #include <QDebug>
+#include <memory>
 
 #include <QTimer>
 #include <QJsonDocument>
@@ -503,3 +506,43 @@ void DroneController::startXbeeMonitoring() {
         reconnectTimer.start(1000);  // Try every second
     }
 }
+
+bool DroneController::openXbee(const QString& port, int baud)
+{
+    if (!xbee_) xbee_ = std::make_unique<XbeeLink>(this);
+    if (!mav_)  mav_  = std::make_unique<MavlinkSender>(xbee_.get(), this);
+
+    const bool ok = xbee_->open(port, baud);
+    if (!ok) {
+        qWarning() << "[DroneController] Failed to open XBee port" << port << "baud" << baud;
+        return false;
+    }
+    qInfo()  << "[DroneController] XBee opened on" << port << "@" << baud;
+    return true;
+}
+
+bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
+{
+    // Use your existing resolver so callers can pass either address or ID
+    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController] sendArm: unknown drone/address:" << droneKeyOrAddr;
+        return false;
+    }
+
+    if (!mav_) {
+        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        return false;
+    }
+
+    // TODO: make these configurable or read from DB later
+    const uint8_t targetSys  = 1;
+    const uint8_t targetComp = 1;   // MAV_COMP_ID_AUTOPILOT1
+
+    const bool ok = mav_->sendArm(targetSys, targetComp, arm);
+    qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
+            << "->" << drone->getName() << drone->getXbeeAddress()
+            << "sent=" << ok;
+    return ok;
+}
+
