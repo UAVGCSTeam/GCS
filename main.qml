@@ -32,6 +32,7 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
     DroneStatusPanel {
         id: droneStatusPanel
         anchors {
@@ -41,14 +42,15 @@ Window {
         }
         visible: false
     }
+
     DroneCommandPanel {
         id: droneCommandPanel
         anchors {
-            top: parent.top
+            top: mapTypeButton.bottom
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        visible: false
+        visible: true
     }
 
     // Menu bar above the drone tracking panel
@@ -82,12 +84,22 @@ Window {
                 }
 
                 //droneCommandPanel
-                if(!droneCommandPanel.activeDrone || droneCommandPanel.activeDrone.name !== drone.name) {
-                    droneCommandPanel.activeDrone = drone
-                    droneCommandPanel.visible = true
+                if(droneCommandPanel.activeDrone && droneCommandPanel.activeDrone.name === drone.name) {
+                    // Toggle the visability of the command panel if same drone is clicked
+                    if (droneCommandPanel.expanded)
+                    {
+                        droneCommandPanel.collapse()
+                    }
+                    else {
+                        droneCommandPanel.expanded()
+                    }
                 }
                 else {
-                    droneCommandPanel.visible = !droneCommandPanel.visible
+                    droneCommandPanel.activeDrone = drone
+
+                    //droneCommandPanel.expand()
+                    droneCommandPanel.collapse()
+                    droneCommandPanel.expanded = false;
                 }
             }
     }
