@@ -270,7 +270,7 @@ Window {
             console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        droneController.openXbee("/dev/ttys013", 57600)
+        droneController.openXbee("/dev/tty.placeho", 57600)
 
         fetch();
     }
