@@ -134,4 +134,12 @@ Rectangle {
                                     altitude: drone.altitude,
                                     airspeed: drone.airspeed            });
     }
+
+    signal statusHeightReady(int h)
+
+    function publishStatusHeight() {
+        statusHeightReady(height)
+    }
+
+
 }

@@ -10,396 +10,90 @@ Rectangle {
     width: 600
     height: 260
 
-    GridLayout {
-        columns: 5
-        anchors.centerIn: parent
-        rowSpacing: 10
-        columnSpacing: 10
+    ListModel { id: activeDroneModel }
 
-        ListModel {
-            id: activeDroneModel
-        }
+    ListModel {
+        id: fieldsModel
+        ListElement { label: "Longitude";     key: "longitude" }
+        ListElement { label: "Latitude";      key: "latitude" }
+        ListElement { label: "Altitude";      key: "altitude" }
+        ListElement { label: "Airspeed";      key: "airspeed" }
+        ListElement { label: "Battery";       key: "battery" }
+        ListElement { label: "Pitch";         key: "pitch" }
+        ListElement { label: "Yaw";           key: "yaw" }
+        ListElement { label: "Groundspeed";   key: "groundspeed" }
+        ListElement { label: "Status";        key: "status" }
+        ListElement { label: "Flight Time";   key: "flightTime" }
+// default values to fill space
+        ListElement { label: "Latency";       key: "Latency" }
+        ListElement { label: "FailSafeTriggered";          key: "FailSafeTriggered" }
+        ListElement { label: "Climb Rate";    key: "climbRate" }
+        ListElement { label: "GPS Sats";      key: "satCount" }
+        ListElement { label: "Mode";          key: "mode" }
+    }
 
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
 
-            ListView {
-                anchors.fill: parent
-                interactive: false // to make the list static
-                //clip: true
-                model: activeDroneModel
+    GridView {
+        id: grid
+        anchors.fill: parent
+        anchors.margins: 10
+        model: fieldsModel
+        cellWidth: 120
+        cellHeight: 120
+        interactive: true
+        boundsBehavior: Flickable.StopAtBounds
+        highlightFollowsCurrentItem: false
+        clip: true
 
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
 
-                    Text {
-                        text: "Longitude"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
+        // vertical scrollbar
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AsNeeded
+            interactive: true
 
-                    Text {
-                        text: longitude
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-
-                    }
-                }
+            background: Rectangle {
+                color: "transparent"
+            }
+            contentItem: Rectangle {
+                implicitWidth: 8
+                radius: width
+                color: "#CCCCCC"
             }
         }
 
-        Rectangle {
-            width: 120
-            height: 120
+        delegate: Rectangle {
+            width: grid.cellWidth
+            height: grid.cellHeight
             color: "transparent"
 
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
+            // if our model has more than 0 entries place in row otherwise dont
+            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+            // show an emptry string if do not have row[key] in our fieldsmodel
+            property var value: (row && row[key] !== undefined) ? row[key] : ""
 
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Latitude"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: latitude
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
+            Text { // telemetry
+                text: label
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "white"
+                font.pixelSize: 18
+                wrapMode: Text.WordWrap
             }
-        }
 
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Altitude"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: altitude
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Airspeed"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: airspeed
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Battery"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: battery
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Pitch"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: pitch
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Yaw"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: yaw
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Groundspeed"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: groundspeed
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Status"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: status
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
-            }
-        }
-        Rectangle {
-            width: 120
-            height: 120
-            color: "transparent"
-
-            ListView {
-                anchors.fill: parent
-                interactive: false
-                clip: true
-                model: activeDroneModel
-
-                delegate: Item {
-                    width: ListView.view.width
-                    height: ListView.view.height
-
-                    Text {
-                        text: "Flight Time"
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        color: "white"
-                        font.pixelSize: 14
-                    }
-
-                    Text {
-                        text: flightTime
-                        width: parent.width - 12
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                        font.pixelSize: 24
-                        font.bold: true
-                        color: "white"
-                    }
-                }
+            Text { // value of the telemetry
+                text: value
+                width: parent.width - 12
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                font.pixelSize: 24
+                font.bold: true
+                color: "white"
             }
         }
     }
+
 
     Connections {
         target: droneTrackingPanel
@@ -411,23 +105,29 @@ Rectangle {
 
     function populateActiveDroneModel(drone) {
         if (!drone) return;
-
         activeDrone = drone; // store reference to currently active drone
 
-        // Update model
+        // Update model (same as before)
         activeDroneModel.clear();
-        activeDroneModel.append({name: drone.name,
-                                    status: drone.status,
-                                    battery: drone.battery,
-                                    latitude: drone.latitude,
-                                    longitude: drone.longitude,
-                                    altitude: drone.altitude,
-                                    airspeed: drone.airspeed            });
+        activeDroneModel.append({
+            name: drone.name,
+            status: drone.status,
+            battery: drone.battery,
+            latitude: drone.latitude,
+            longitude: drone.longitude,
+            altitude: drone.altitude,
+            airspeed: drone.airspeed
+        });
     }
 
     property int minPanelWidth: 320
     property int minPanelHeight: 200
     property int resizeHandleSize: 20
+    property int statusHeight: 0
+
+    function setStatusHeight(h) {
+        statusHeight = h
+    }
 
     MouseArea {
         id: topLeftResizeHandle
@@ -437,14 +137,23 @@ Rectangle {
         anchors.top: parent.top
         hoverEnabled: true
         cursorShape: Qt.SizeFDiagCursor
+
         property real startWidth: 0
         property real startHeight: 0
         property real pressX: 0
         property real pressY: 0
+        property real maxHAtPress: 0
 
         onPressed: {
             startWidth = mainPanel.width
             startHeight = mainPanel.height
+
+            var gap = 12
+            var bottomMargin = mainPanel.anchors.bottomMargin || 0
+            maxHAtPress = mainPanel.parent.height - statusHeight - gap - bottomMargin
+            if (maxHAtPress < minPanelHeight)
+                maxHAtPress = minPanelHeight
+
             pressX = mouse.x
             pressY = mouse.y
         }
@@ -458,16 +167,17 @@ Rectangle {
             var newW = startWidth  - dx;
             var newH = startHeight - dy;
 
-            if (newW < minPanelWidth)  {
+            if (newW < minPanelWidth)
                 newW = minPanelWidth;
-            }
-            if (newH < minPanelHeight){
+
+            if (newH < minPanelHeight)
                 newH = minPanelHeight;
-            }
+
+            if (newH > maxHAtPress)
+                newH = maxHAtPress;
+
             mainPanel.width  = newW;
             mainPanel.height = newH;
         }
     }
 }
-
-
