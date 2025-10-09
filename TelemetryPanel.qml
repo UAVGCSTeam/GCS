@@ -96,6 +96,7 @@ Rectangle {
                 width: grid.cellWidth
                 height: grid.cellHeight
                 color: "transparent"
+                clip: true
 
                 // if our model has more than 0 entries place in row otherwise dont
                 property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
