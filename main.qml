@@ -53,14 +53,11 @@ Window {
 
     TelemetryPanel {
         id: telemetryPanel
-        // width: 640
-        //height: 280
         anchors {
             bottom: parent.bottom
             right: parent.right
-            margins: 10
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        clip: false
     }
     DroneTrackingPanel {
         id: droneTrackingPanel
