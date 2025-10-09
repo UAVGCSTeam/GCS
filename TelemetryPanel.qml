@@ -24,7 +24,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.bottom: parent.bottom
 
-    property var activeDrone: null // udpated by the updateSelectedDroneModel function
+    property var activeDrone: null // updated by the updateSelectedDroneModel function
     property int minPanelWidth: grid.cellWidth * 2 + grid.anchors.margins * 2
     property int minPanelHeight: grid.cellHeight + grid.anchors.margins * 2
     property int resizeHandleSize: 20
@@ -69,8 +69,8 @@ Rectangle {
             anchors.fill: parent
             anchors.margins: 10
             model: fieldsModel
-            cellWidth: 120
             cellHeight: 120
+            cellWidth: 160
             interactive: true
             boundsBehavior: Flickable.StopAtBounds
             highlightFollowsCurrentItem: false
@@ -96,7 +96,7 @@ Rectangle {
                 width: grid.cellWidth
                 height: grid.cellHeight
                 color: "transparent"
-                clip: true
+                clip: true // This is to clip text overflow. Most likely important for long lat
 
                 // if our model has more than 0 entries place in row otherwise dont
                 property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
