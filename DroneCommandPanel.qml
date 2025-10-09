@@ -22,7 +22,7 @@ Rectangle {
             // Header aka collapsed view
             Rectangle {
                 Layout.fillWidth: true
-                height: GcsStyle.PanelStyle.headerHeight + 15
+                height: GcsStyle.PanelStyle.headerHeight + 10
                 color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
@@ -63,7 +63,8 @@ Rectangle {
 
                     Text {
                         text: "Commands"
-                        font.pixelSize: GcsStyle.PanelStyle.headerFontSize - 5
+                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                        //font.pixelSize: GcsStyle.PanelStyle.headerFontSize - 5
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
@@ -71,10 +72,12 @@ Rectangle {
             //expanded form
             Rectangle {
                 id: expandedBody
+                color: GcsStyle.PanelStyle.primaryColor
+                radius: GcsStyle.PanelStyle.cornerRadius
                 Layout.fillWidth: true
 
                 height: 0
-                opacity: height > 0 ? 1 : 0
+                //opacity: height > 0 ? 1 : 0
                 clip: true
 
                 PropertyAnimation {
@@ -110,6 +113,7 @@ Rectangle {
 
                         Button {
                             text: "test"
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                         }
                     }
                 }
