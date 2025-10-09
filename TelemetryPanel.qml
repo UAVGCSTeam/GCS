@@ -3,17 +3,37 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
 
+/**
+This telemetry panel works by making a container, and a visible telemetry window.
+This is necessary in order to have window scaling. When getting the mouse.x and mouse.y positions within MouseArea,
+those positions are relative to the coordinate system of the MouseArea. This means that when the 
+MouseArea is moved, the coordinates of the user's mouse is affected. 
+
+To get around this scaling issue, we've implemented a container around the visible telem panel. 
+Now when scaling the panel, the mouse area stays static --- until the user releases the mouse. 
+When the user releases the mouse, the container is resized to fit the visible telem panel
+**/
+
 Rectangle {
+    // This is the container element 
     id: mainPanel
-    height: 260
-    width: 600
+    height: grid.cellHeight + grid.anchors.margins * 2
+    width: grid.cellWidth * 2 + grid.anchors.margins * 2
     color: "red"
     visible: false
     anchors.right: parent.right
     anchors.bottom: parent.bottom
 
+    property var activeDrone: null // udpated by the updateSelectedDroneModel function
+    property int minPanelWidth: grid.cellWidth * 2 + grid.anchors.margins * 2
+    property int minPanelHeight: grid.cellHeight + grid.anchors.margins * 2
+    property int resizeHandleSize: 20
+    property int statusHeight: 0
+    property int trackingWidth: 0
+
     Rectangle {
-        id: telemeMain
+        // This is the visible telem container element
+        id: telemMain
         color: "#80000000"
         radius: GcsStyle.PanelStyle.cornerRadius
         width: parent.width
@@ -114,8 +134,6 @@ Rectangle {
         onDroneClicked: populateActiveDroneModel(drone)
     }
 
-    property var activeDrone: null
-
     function populateActiveDroneModel(drone) {
         if (!drone) return;
         activeDrone = drone; // store reference to currently active drone
@@ -132,13 +150,6 @@ Rectangle {
             airspeed: drone.airspeed
         });
     }
-
-    property int minPanelWidth: 320
-    property int minPanelHeight: 200
-    property int resizeHandleSize: 20
-    property int statusHeight: 0
-    property int trackingWidth: 0
-
     function setStatusHeight(h) {
         statusHeight = h
     }
@@ -150,8 +161,6 @@ Rectangle {
         id: topLeftResizeHandle
         width: resizeHandleSize
         height: resizeHandleSize
-        // anchors.left: telemeMain.left
-        // anchors.top: telemeMain.top
         hoverEnabled: true
         cursorShape: Qt.SizeFDiagCursor
 
@@ -163,17 +172,14 @@ Rectangle {
         property real maxWAtPress: 0
 
         onPressed: {
-            startWidth = telemeMain.width
-            startHeight = telemeMain.height
+            startWidth = telemMain.width
+            startHeight = telemMain.height
 
+            // This sets the max width and max height based 
+            // on where the status panel and the telemetry panel are
             var gap = GcsStyle.PanelStyle.applicationBorderMargin
-            // var bottomMargin = telemeMain.anchors.bottomMargin || 0
-            // var leftMargin = telemeMain.anchors.leftMargin
-            maxHAtPress = telemeMain.parent.parent.height - statusHeight - (3 * gap)
-            console.log("this is the width:", telemeMain.parent.parent.width)
-            maxWAtPress = telemeMain.parent.parent.width - trackingWidth - (3 * gap)
-            // if (maxHAtPress < minPanelHeight)
-            //     maxHAtPress = minPanelHeight
+            maxHAtPress = telemMain.parent.parent.height - statusHeight - (3 * gap)
+            maxWAtPress = telemMain.parent.parent.width - trackingWidth - (3 * gap)
 
             pressX = mouse.x
             pressY = mouse.y
@@ -191,7 +197,6 @@ Rectangle {
             if (newW < minPanelWidth)
                 newW = minPanelWidth;
             
-            console.log("This witddh:: ", maxWAtPress)
             if (newW > maxWAtPress) 
                 newW = maxWAtPress;
 
@@ -201,15 +206,16 @@ Rectangle {
             if (newH > maxHAtPress) 
                 newH = maxHAtPress;
 
-            telemeMain.width  = newW;
-            telemeMain.height = newH;
+            telemMain.width  = newW;
+            telemMain.height = newH;
         }
 
         onReleased: {
-            mainPanel.height = telemeMain.height
-            mainPanel.width = telemeMain.width
-            // anchors.left = telemeMain.left
-            // anchors.top = telemeMain.top
+            // This resizes the "container" (mainPanel). 
+            // This is crucial for ensuring that the MouseArea is always 
+            // in the top left of the visible telemetry window. 
+            mainPanel.height = telemMain.height
+            mainPanel.width = telemMain.width
         }
     }
 }

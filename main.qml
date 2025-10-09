@@ -95,17 +95,14 @@ Window {
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
 
+    // The following two connections are crucial for setting the limits of how much the telemetry window can expand
     Connections {
         target: droneStatusPanel
         onStatusHeightReady: telemetryPanel.setStatusHeight(h)
     }
-
-     Connections {
+    Connections {
         target: droneTrackingPanel
         onTrackingWidthReady: telemetryPanel.setTrackingWidth(w)
-    }
-
-    Connections {
     }
 
     // Once the component is fully loaded, run through our js file to grab the needed info
