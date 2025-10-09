@@ -5,95 +5,109 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    color: "#80000000"
-    radius: GcsStyle.PanelStyle.cornerRadius
-    width: 600
-    height: 260
+    height: 600
+    width: 260
+    color: "red"
+    visible: false
+    // anchors.right: parent.right
+    // anchors.bottom: parent.bottom
+    clip: false
 
-    ListModel { id: activeDroneModel }
+    Rectangle {
+        id: telemeMain
+        color: "#80000000"
+        radius: GcsStyle.PanelStyle.cornerRadius
+        width: 600
+        height: 400
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
 
-    ListModel {
-        id: fieldsModel
-        ListElement { label: "Longitude";     key: "longitude" }
-        ListElement { label: "Latitude";      key: "latitude" }
-        ListElement { label: "Altitude";      key: "altitude" }
-        ListElement { label: "Airspeed";      key: "airspeed" }
-        ListElement { label: "Battery";       key: "battery" }
-        ListElement { label: "Pitch";         key: "pitch" }
-        ListElement { label: "Yaw";           key: "yaw" }
-        ListElement { label: "Groundspeed";   key: "groundspeed" }
-        ListElement { label: "Status";        key: "status" }
-        ListElement { label: "Flight Time";   key: "flightTime" }
-// default values to fill space
-        ListElement { label: "Latency";       key: "Latency" }
-        ListElement { label: "FailSafeTriggered";          key: "FailSafeTriggered" }
-        ListElement { label: "Climb Rate";    key: "climbRate" }
-        ListElement { label: "GPS Sats";      key: "satCount" }
-        ListElement { label: "Mode";          key: "mode" }
-    }
+        ListModel { id: activeDroneModel }
 
-
-    GridView {
-        id: grid
-        anchors.fill: parent
-        anchors.margins: 10
-        model: fieldsModel
-        cellWidth: 120
-        cellHeight: 120
-        interactive: true
-        boundsBehavior: Flickable.StopAtBounds
-        highlightFollowsCurrentItem: false
-        clip: true
+        ListModel {
+            id: fieldsModel
+            ListElement { label: "Longitude";     key: "longitude" }
+            ListElement { label: "Latitude";      key: "latitude" }
+            ListElement { label: "Altitude";      key: "altitude" }
+            ListElement { label: "Airspeed";      key: "airspeed" }
+            ListElement { label: "Battery";       key: "battery" }
+            ListElement { label: "Pitch";         key: "pitch" }
+            ListElement { label: "Yaw";           key: "yaw" }
+            ListElement { label: "Groundspeed";   key: "groundspeed" }
+            ListElement { label: "Status";        key: "status" }
+            ListElement { label: "Flight Time";   key: "flightTime" }
+            // default values to fill space
+            ListElement { label: "Latency";       key: "Latency" }
+            ListElement { label: "FailSafeTriggered";          key: "FailSafeTriggered" }
+            ListElement { label: "Climb Rate";    key: "climbRate" }
+            ListElement { label: "GPS Sats";      key: "satCount" }
+            ListElement { label: "Mode";          key: "mode" }
+        }
 
 
-        // vertical scrollbar
-        ScrollBar.vertical: ScrollBar {
-            policy: ScrollBar.AsNeeded
+        GridView {
+            id: grid
+            anchors.fill: parent
+            anchors.margins: 10
+            model: fieldsModel
+            cellWidth: 120
+            cellHeight: 120
             interactive: true
+            boundsBehavior: Flickable.StopAtBounds
+            highlightFollowsCurrentItem: false
+            clip: true
 
-            background: Rectangle {
+
+            // vertical scrollbar
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+                interactive: true
+
+                background: Rectangle {
+                    color: "transparent"
+                }
+                contentItem: Rectangle {
+                    implicitWidth: 8
+                    radius: width
+                    color: "#CCCCCC"
+                }
+            }
+
+            delegate: Rectangle {
+                width: grid.cellWidth
+                height: grid.cellHeight
                 color: "transparent"
-            }
-            contentItem: Rectangle {
-                implicitWidth: 8
-                radius: width
-                color: "#CCCCCC"
-            }
-        }
 
-        delegate: Rectangle {
-            width: grid.cellWidth
-            height: grid.cellHeight
-            color: "transparent"
+                // if our model has more than 0 entries place in row otherwise dont
+                property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+                // show an emptry string if do not have row[key] in our fieldsmodel
+                property var value: (row && row[key] !== undefined) ? row[key] : ""
 
-            // if our model has more than 0 entries place in row otherwise dont
-            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
-            // show an emptry string if do not have row[key] in our fieldsmodel
-            property var value: (row && row[key] !== undefined) ? row[key] : ""
+                Text { // telemetry
+                    text: label
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "white"
+                    font.pixelSize: 18
+                    wrapMode: Text.WordWrap
+                }
 
-            Text { // telemetry
-                text: label
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter
-                color: "white"
-                font.pixelSize: 18
-                wrapMode: Text.WordWrap
-            }
-
-            Text { // value of the telemetry
-                text: value
-                width: parent.width - 12
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WordWrap
-                font.pixelSize: 24
-                font.bold: true
-                color: "white"
+                Text { // value of the telemetry
+                    text: value
+                    width: parent.width - 12
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 24
+                    font.bold: true
+                    color: "white"
+                }
             }
         }
+
+
     }
-
 
     Connections {
         target: droneTrackingPanel
@@ -133,8 +147,8 @@ Rectangle {
         id: topLeftResizeHandle
         width: resizeHandleSize
         height: resizeHandleSize
-        anchors.left: parent.left
-        anchors.top: parent.top
+        anchors.left: telemeMain.left
+        anchors.top: telemeMain.top
         hoverEnabled: true
         cursorShape: Qt.SizeFDiagCursor
 
@@ -145,14 +159,14 @@ Rectangle {
         property real maxHAtPress: 0
 
         onPressed: {
-            startWidth = mainPanel.width
-            startHeight = mainPanel.height
+            startWidth = telemeMain.width
+            startHeight = telemeMain.height
 
             var gap = 12
-            var bottomMargin = mainPanel.anchors.bottomMargin || 0
-            maxHAtPress = mainPanel.parent.height - statusHeight - gap - bottomMargin
-            if (maxHAtPress < minPanelHeight)
-                maxHAtPress = minPanelHeight
+            var bottomMargin = telemeMain.anchors.bottomMargin || 0
+            maxHAtPress = telemeMain.parent.height - statusHeight - gap - bottomMargin
+            // if (maxHAtPress < minPanelHeight)
+            //     maxHAtPress = minPanelHeight
 
             pressX = mouse.x
             pressY = mouse.y
@@ -173,11 +187,18 @@ Rectangle {
             if (newH < minPanelHeight)
                 newH = minPanelHeight;
 
-            if (newH > maxHAtPress)
-                newH = maxHAtPress;
+            // if (newH > maxHAtPress) // what the flip. idk how this makes sense
+            //     newH = maxHAtPress;
 
-            mainPanel.width  = newW;
-            mainPanel.height = newH;
+            telemeMain.width  = newW;
+            telemeMain.height = newH;
+        }
+
+        onReleased: {
+            mainPanel.height = telemeMain.height
+            mainPanel.width = telemeMain.width
+            // anchors.left = telemeMain.left
+            // anchors.top = telemeMain.top
         }
     }
 }
