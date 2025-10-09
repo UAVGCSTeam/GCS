@@ -53,15 +53,14 @@ Window {
 
     TelemetryPanel {
         id: telemetryPanel
-        width: 640
+        // width: 640
         //height: 280
         anchors {
             bottom: parent.bottom
             right: parent.right
             margins: 10
         }
-        visible: false
-        clip: true
+        clip: false
     }
     DroneTrackingPanel {
         id: droneTrackingPanel
@@ -100,9 +99,11 @@ Window {
         target: droneStatusPanel
         onStatusHeightReady: telemetryPanel.setStatusHeight(h)
     }
-    // Component.onCompleted: {
-    //     droneStatusPanel.publishStatusHeight();
-    // }
+
+     Connections {
+        target: droneTrackingPanel
+        onTrackingWidthReady: telemetryPanel.setTrackingWidth(w)
+    }
 
     Connections {
     }
@@ -112,6 +113,7 @@ Window {
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
         droneStatusPanel.publishStatusHeight();
+        droneTrackingPanel.publishTrackingWidth();
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)

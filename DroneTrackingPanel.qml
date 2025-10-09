@@ -340,4 +340,11 @@ Rectangle {
             updateDroneListModel(filteredList)
         }
     }
+
+    signal trackingWidthReady(int w)
+
+    function publishTrackingWidth() {
+        console.log("width of the tracking panel :DDDDDD", width)
+        trackingWidthReady(width)
+    }
 }

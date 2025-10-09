@@ -5,20 +5,19 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    height: 600
-    width: 260
+    height: 260
+    width: 600
     color: "red"
     visible: false
-    // anchors.right: parent.right
-    // anchors.bottom: parent.bottom
-    clip: false
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
 
     Rectangle {
         id: telemeMain
         color: "#80000000"
         radius: GcsStyle.PanelStyle.cornerRadius
-        width: 600
-        height: 400
+        width: parent.width
+        height: parent.height
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
@@ -138,17 +137,21 @@ Rectangle {
     property int minPanelHeight: 200
     property int resizeHandleSize: 20
     property int statusHeight: 0
+    property int trackingWidth: 0
 
     function setStatusHeight(h) {
         statusHeight = h
+    }
+    function setTrackingWidth(w){
+        trackingWidth = w
     }
 
     MouseArea {
         id: topLeftResizeHandle
         width: resizeHandleSize
         height: resizeHandleSize
-        anchors.left: telemeMain.left
-        anchors.top: telemeMain.top
+        // anchors.left: telemeMain.left
+        // anchors.top: telemeMain.top
         hoverEnabled: true
         cursorShape: Qt.SizeFDiagCursor
 
@@ -157,14 +160,18 @@ Rectangle {
         property real pressX: 0
         property real pressY: 0
         property real maxHAtPress: 0
+        property real maxWAtPress: 0
 
         onPressed: {
             startWidth = telemeMain.width
             startHeight = telemeMain.height
 
-            var gap = 12
-            var bottomMargin = telemeMain.anchors.bottomMargin || 0
-            maxHAtPress = telemeMain.parent.height - statusHeight - gap - bottomMargin
+            var gap = GcsStyle.PanelStyle.applicationBorderMargin
+            // var bottomMargin = telemeMain.anchors.bottomMargin || 0
+            // var leftMargin = telemeMain.anchors.leftMargin
+            maxHAtPress = telemeMain.parent.parent.height - statusHeight - (3 * gap)
+            console.log("this is the width:", telemeMain.parent.parent.width)
+            maxWAtPress = telemeMain.parent.parent.width - trackingWidth - (3 * gap)
             // if (maxHAtPress < minPanelHeight)
             //     maxHAtPress = minPanelHeight
 
@@ -183,12 +190,16 @@ Rectangle {
 
             if (newW < minPanelWidth)
                 newW = minPanelWidth;
+            
+            console.log("This witddh:: ", maxWAtPress)
+            if (newW > maxWAtPress) 
+                newW = maxWAtPress;
 
             if (newH < minPanelHeight)
                 newH = minPanelHeight;
 
-            // if (newH > maxHAtPress) // what the flip. idk how this makes sense
-            //     newH = maxHAtPress;
+            if (newH > maxHAtPress) 
+                newH = maxHAtPress;
 
             telemeMain.width  = newW;
             telemeMain.height = newH;
