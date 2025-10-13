@@ -69,11 +69,11 @@ Item {
             model: droneController ? droneController.getAllDrones() : []
             delegate: MapQuickItem {
                 coordinate: QtPositioning.coordinate(
-                    modelData.latitude > 0 ? modelData.latitude : latitude,
-                    modelData.longitude > 0 ? modelData.longitude : longitude
+                    modelData.latitude !== undefined ? modelData.latitude : latitude,
+                    modelData.longitude !== undefined ? modelData.longitude : longitude
                 )
-                anchorPoint.x: sourceItem.width / 2
-                anchorPoint.y: sourceItem.height
+                anchorPoint.x: markerImage.width / 2
+                anchorPoint.y: markerImage.height
 
                 sourceItem: Item {
                     width: markerImage.width

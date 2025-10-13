@@ -124,7 +124,7 @@ Window {
             fetch();
 
             // If this is the currently selected drone, update its panel too
-            if (droneStatusPanel.visible) {
+            if (droneStatusPanel.visible && droneStatusPanel.currentDroneName === droneName) {
                 // Find the updated drone
                 var drones = droneController.getAllDrones();
                 for (var i = 0; i < drones.length; i++) {
