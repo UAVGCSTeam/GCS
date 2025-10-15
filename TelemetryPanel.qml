@@ -13,13 +13,12 @@ To get around this scaling issue, we've implemented a container around the visib
 Now when scaling the panel, the mouse area stays static --- until the user releases the mouse. 
 When the user releases the mouse, the container is resized to fit the visible telem panel
 **/
-
 Rectangle {
-    // This is the container element 
+    // This is the container element
     id: mainPanel
     height: grid.cellHeight + grid.anchors.margins * 2
     width: grid.cellWidth * 2 + grid.anchors.margins * 2
-    color: "red"
+    color: "transparent"
     visible: false
     anchors.right: parent.right
     anchors.bottom: parent.bottom
@@ -57,25 +56,45 @@ Rectangle {
             ListElement { label: "Flight Time";   key: "flightTime" }
             // default values to fill space
             ListElement { label: "Latency";       key: "Latency" }
-            ListElement { label: "FailSafeTriggered";          key: "FailSafeTriggered" }
+            ListElement { label: "FailSafeTriggered"; key: "FailSafeTriggered" }
             ListElement { label: "Climb Rate";    key: "climbRate" }
             ListElement { label: "GPS Sats";      key: "satCount" }
             ListElement { label: "Mode";          key: "mode" }
         }
 
+        // invisibile event flow that sits up on top of map but below the telemetry panel
+        MouseArea{
+            anchors.fill: parent
+            propagateComposedEvents: false
+            onWheel: wheel.accepted = true
+        }
 
         GridView {
             id: grid
             anchors.fill: parent
             anchors.margins: 10
             model: fieldsModel
+
+            property int horizontalSpacing: 20
+            property int verticalSpacing: 20
+            property int minCellWidth: 160
+            property int columns: 1
+
+            onWidthChanged: {
+                const newColumns = Math.max(1, Math.floor((width - anchors.margins * 2 + horizontalSpacing) / (minCellWidth + horizontalSpacing)))
+                if (newColumns !== columns) {
+                    columns = newColumns
+                }
+            }
+
+            // adjust each cell width so they stretch evenly across the panel
+            cellWidth: (width - (columns - 1) * horizontalSpacing - anchors.margins * 2) / columns
             cellHeight: 120
-            cellWidth: 160
+
             interactive: true
             boundsBehavior: Flickable.StopAtBounds
             highlightFollowsCurrentItem: false
             clip: true
-
 
             // vertical scrollbar
             ScrollBar.vertical: ScrollBar {
@@ -125,14 +144,6 @@ Rectangle {
                 }
             }
         }
-
-
-    }
-
-    Connections {
-        target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
-        onDroneClicked: populateActiveDroneModel(drone)
     }
 
     function populateActiveDroneModel(drone) {
@@ -171,22 +182,22 @@ Rectangle {
         property real pressY: 0
         property real maxHAtPress: 0
         property real maxWAtPress: 0
+        property bool dragging: false // flag for visibility
 
-        onPressed: {
+        onPressed: { // capture starting dimensions and mouse positions
             startWidth = telemMain.width
             startHeight = telemMain.height
 
-            // This sets the max width and max height based 
-            // on where the status panel and the telemetry panel are
             var gap = GcsStyle.PanelStyle.applicationBorderMargin
             maxHAtPress = telemMain.parent.parent.height - statusHeight - (3 * gap)
             maxWAtPress = telemMain.parent.parent.width - trackingWidth - (3 * gap)
 
             pressX = mouse.x
             pressY = mouse.y
+            dragging = true
         }
 
-        onPositionChanged: {
+        onPositionChanged: { // dynamic resizing
             if (!(mouse.buttons & Qt.LeftButton)) return;
 
             var dx = mouse.x - pressX;
@@ -195,16 +206,20 @@ Rectangle {
             var newW = startWidth  - dx;
             var newH = startHeight - dy;
 
-            if (newW < minPanelWidth)
-                newW = minPanelWidth;
-            
-            if (newW > maxWAtPress) 
+            // to make sure we cant shrink pass 2 columns × 1 row
+            var minCols = 2;
+            var minRows = 1;
+            var minWidthCols = minCols * grid.minCellWidth + (minCols - 1) * grid.horizontalSpacing + grid.anchors.margins * 2;
+            var minHeightRows = minRows * grid.cellHeight + (minRows - 1) * grid.verticalSpacing + grid.anchors.margins * 2;
+
+            if (newW < minWidthCols)
+                newW = minWidthCols;
+            if (newH < minHeightRows)
+                newH = minHeightRows;
+
+            if (newW > maxWAtPress)
                 newW = maxWAtPress;
-
-            if (newH < minPanelHeight)
-                newH = minPanelHeight;
-
-            if (newH > maxHAtPress) 
+            if (newH > maxHAtPress)
                 newH = maxHAtPress;
 
             telemMain.width  = newW;
@@ -212,11 +227,34 @@ Rectangle {
         }
 
         onReleased: {
-            // This resizes the "container" (mainPanel). 
-            // This is crucial for ensuring that the MouseArea is always 
-            // in the top left of the visible telemetry window. 
             mainPanel.height = telemMain.height
             mainPanel.width = telemMain.width
+            dragging = false
+        }
+
+        Text {
+            id: chevron
+            text: "≪"
+            color: "white"
+            font.pixelSize: 16
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 5
+            rotation: 45
+            visible: true
+            opacity: 0.6
+
+            Connections {
+                target: topLeftResizeHandle
+                onDraggingChanged: {
+                    if (topLeftResizeHandle.dragging) {
+                        chevron.visible = false
+                    } else {
+                        chevron.visible = true
+                        chevron.opacity = 0.6
+                    }
+                }
+            }
         }
     }
 }
