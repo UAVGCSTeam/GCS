@@ -21,44 +21,65 @@ Rectangle {
 
             // Header aka collapsed view
             Rectangle {
+                z: 2
                 Layout.fillWidth: true
                 height: GcsStyle.PanelStyle.headerHeight + 10
                 color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        if (mainPanel.expanded) {
-                            expandedBody.collapse()
-                        }
-                        else {
-                            expandedBody.expand()
-                        }
-                        mainPanel.expanded = !mainPanel.expanded
-                    }
-                }
-
-                Rectangle {
+                /*Rectangle {
                     anchors.left: parent.left
                     anchors.bottom: parent.bottom
                     width: parent.width
                     height: parent.height / 2
                     color: parent.color
-                }
+                }*/
 
                 ColumnLayout {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
+                    anchors.fill:parent
                     anchors.margins: GcsStyle.PanelStyle.defaultMargin
                     spacing: 0
 
-                    Text {
-                        id: droneNameText
-                        text: activeDrone ? activeDrone.name: ""
-                        font.pixelSize: GcsStyle.PanelStyle.headerFontSize
-                        color: GcsStyle.PanelStyle.textOnPrimaryColor
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Text {
+                            id: droneNameText
+                            text: activeDrone ? activeDrone.name: ""
+                            font.pixelSize: GcsStyle.PanelStyle.headerFontSize
+                            font.bold: true
+                            color: "#006480"
+                        }
+
+                        // spacer
+                        Item {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 1
+                        }
+
+                        Button {
+                            id: collapseButton
+                            text: mainPanel.expanded ? "v" : ">"
+                            Layout.alignment: Qt.AlignTop | Qt.AlignRight
+                            implicitWidth: 28
+                            implicitHeight: 24
+
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    if (mainPanel.expanded) {
+                                        expandedBody.collapse()
+                                    }
+                                    else {
+                                        expandedBody.expand()
+                                    }
+                                    mainPanel.expanded = !mainPanel.expanded
+                                }
+                            }
+                        }
                     }
 
                     Text {
@@ -72,9 +93,11 @@ Rectangle {
             //expanded form
             Rectangle {
                 id: expandedBody
+                z: 1
                 color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
                 Layout.fillWidth: true
+                Layout.topMargin: -30
 
                 height: 0
                 //opacity: height > 0 ? 1 : 0
@@ -98,6 +121,29 @@ Rectangle {
                     animation.running = true
                 }
 
+                ListModel {
+                    id: repeaterModel
+
+                    ListElement {
+                        name: "Connect" //; destination:
+                    }
+                    ListElement {
+                        name: "Arm Drone" //; destination:
+                    }
+                    ListElement {
+                        name: "Take Off" //; destination:
+                    }
+                    ListElement {
+                        name: "Waypointing" //; destination:
+                    }
+                    ListElement {
+                        name: "Go Home" //; destination:
+                    }
+                    ListElement {
+                        name: "Hover" //; destination:
+                    }
+                }
+
                 ColumnLayout {
                     id: content
                     anchors.left: parent.left
@@ -105,15 +151,24 @@ Rectangle {
                     anchors.margins: GcsStyle.PanelStyle.defaultMargin
                     spacing: 5
 
-                    Layout.preferredHeight: 200
+                    Layout.preferredHeight: content.implicitHeight + 14
 
-                    RowLayout {
-                        Layout.fillWidth:true
-                        spacing: 8
+                    Repeater {
+                        model: repeaterModel
+                        delegate: Button {
+                            text: name
+                            Layout.fillWidth: true
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                            Layout.topMargin: index === 0 ? 20 : 0 //adding padding above first button
 
-                        Button {
-                            text: "test"
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                            background: Rectangle {
+                                border.width: 0.05
+                                radius: 1
+                            }
+
+                            onClicked: {
+                                console.log ("opening", name)
+                            }
                         }
                     }
                 }
