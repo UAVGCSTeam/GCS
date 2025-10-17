@@ -196,14 +196,39 @@ Rectangle {
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
                     height: GcsStyle.PanelStyle.listItemHeight
-                    color: index % 2 == 0 ? GcsStyle.PanelStyle.listItemEvenColor : GcsStyle.PanelStyle.listItemOddColor
+
+                    // local UI state
+                    property bool hovered: false
+                    // treat the list's current item as "selected" for now
+                    property bool selected: ListView.isCurrentItem
+
+                    // dynamic background color rule:
+                    // selected > hovered > alternating row color (unchanged)
+                    color: selected
+                           ? GcsStyle.PanelStyle.listItemSelectedColor
+                           : (hovered
+                              ? GcsStyle.PanelStyle.listItemHoverColor
+                              : (index % 2 === 0
+                                 ? GcsStyle.PanelStyle.listItemEvenColor
+                                 : GcsStyle.PanelStyle.listItemOddColor))
 
                     MouseArea {
-                        id: droneItem
+                        //id: droneItem
                         anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onEntered:  parent.hovered = true
+                        onExited:   parent.hovered = false
+
                         onClicked: {
+                            // mark this delegate as the selected one in the ListView
+                            //if (ListView.view) ListView.view.currentIndex = index
+                            droneListView.currentIndex = index
+
+                            // keep your existing behavior (open/update the right panel)
                             var droneObj = model
-                                droneClicked(droneObj)
+                            droneClicked(droneObj)
                         }
                     }
 
@@ -214,9 +239,9 @@ Rectangle {
 
                         Image {
                             source: "qrc:/resources/droneStatusSVG.svg"
-                            sourceSize.width: GcsStyle.PanelStyle.statusIconSize
+                            sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredWidth: GcsStyle.PanelStyle.statusIconSize
+                            Layout.preferredWidth:  GcsStyle.PanelStyle.statusIconSize
                             Layout.preferredHeight: GcsStyle.PanelStyle.statusIconSize
                         }
 
@@ -238,13 +263,15 @@ Rectangle {
 
                         Text {
                             text: model.battery
-                            color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
-                                                        model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
-                                                                 GcsStyle.PanelStyle.batteryLowColor
+                            color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor
+                                                      : (model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor
+                                                                            : GcsStyle.PanelStyle.batteryLowColor)
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                         }
                     }
                 }
+
+
             }
             // Add Drone Button
             Button {
@@ -270,7 +297,7 @@ Rectangle {
 
                 contentItem: Text {
                     // This button is special because of this code.
-                    // The idea is that the font has a specific color now. The issue was that for 
+                    // The idea is that the font has a specific color now. The issue was that for
                     // systems that use dynamic light/dark mode, the font disappeared in dark mode.
                     text: parent.text
                     horizontalAlignment: Text.AlignHCenter
