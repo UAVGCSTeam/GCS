@@ -61,14 +61,23 @@ Rectangle {
 
                         Button {
                             id: collapseButton
-                            text: mainPanel.expanded ? "v" : ">"
+                            icon.source: "https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/4/sidebar-collapse-wa8mq2uy2zwwo4sv7h6j8.png/sidebar-collapse-2w3re62ix0sjmbcj645cho.png?_a=DATAg1AAZAA0"
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
                             implicitWidth: 28
                             implicitHeight: 24
 
+                            background: Rectangle {
+                                border.width: 0
+                                //border.color: transparent
+                                color: GcsStyle.PanelStyle.primaryColor
+                            }
 
                             MouseArea {
                                 anchors.fill: parent
+                                anchors.margins: -8
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+
                                 onClicked: {
                                     if (mainPanel.expanded) {
                                         expandedBody.collapse()
