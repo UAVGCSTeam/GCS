@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtLocation
 import QtPositioning
+import QtQuick.Controls
 
 Item {
     id: mapwindow
@@ -13,6 +14,10 @@ Item {
         { name: "Terrain", type: Map.TerrainMap },
     ]
     property int currentMapTypeIndex: 0
+    property bool wayPointingActive: false
+    property var selectedDrone: null
+    property var waypointLineModel: []
+
 
     Plugin {
         id: mapPlugin
@@ -85,10 +90,48 @@ Item {
                 }
             }
         }
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onPositionChanged: {
+                if (mapwindow.wayPointingActive && mapwindow.selectedDrone) {
+                    let droneCoord = QtPositioning.coordinate(
+                        mapwindow.selectedDrone.latitude,
+                        mapwindow.selectedDrone.longitude
+                    );
+                    let cursorCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y));
+
+                    mapwindow.waypointLineModel = [droneCoord, cursorCoord];
+                }
+            }
+        }
+        MapPolyline {
+            line.width: 2
+            line.color: "red"
+            path: mapwindow.waypointLineModel
+        }
+        // Confirm button overlay
+        Button {
+            id: confirmWaypointButton
+            text: "Confirm Waypoint"
+            visible: mapwindow.wayPointingActive && mapwindow.selectedDrone !== null
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            anchors.margins: 20
+            z: 10  // make sure it's on top
+
+            onClicked: {
+                console.log("Waypoint confirmed for drone:", mapwindow.selectedDrone.name)
+
+                // TODO: send command to droneController
+                mapwindow.wayPointingActive = false
+                mapwindow.selectedDrone = null
+                mapwindow.waypointLineModel = []
+            }
+        }
         onZoomLevelChanged: updateScaleBar()
         onCenterChanged: updateScaleBar()
-    }
-
+    }   
     // Scale Indicator
     Item {
         id: scaleBarContainer

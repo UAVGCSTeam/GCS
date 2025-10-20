@@ -34,8 +34,8 @@ DroneClass::DroneClass(const QString &input_name,
     , m_role(input_role)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
-    , m_latitude(-1) //temporary
-    , m_longitude(-1) //temporary
+    , m_latitude(34.059174611493965) //temporary
+    , m_longitude(-117.82051240067321) //temporary
     , m_altitude(-1)  //temporary
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)  //temporary

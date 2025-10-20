@@ -33,7 +33,7 @@ Rectangle {
     radius: GcsStyle.PanelStyle.cornerRadius - 3
         // This radius of the ENTIRE menu bar controls the radius of 
         // all the menu bar buttons
-
+    signal wayPointingRequested()
     Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -339,21 +339,19 @@ Rectangle {
                 }
             }
 
-            // Coordinate Navigation Menu item
+            // Way Pointing Menu item
             Button {
                 width: parent.width
                 height: 30
-                text: "Coordinate Navigation"
+                text: "Way Pointing"
 
                 background: Rectangle {
-                    // Background color logic
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
                 }
 
-                // Text styling
                 contentItem: Text {
                     text: parent.text
                     color: GcsStyle.PanelStyle.textPrimaryColor
@@ -365,21 +363,10 @@ Rectangle {
                 }
 
                 onClicked: {
+                    wayPointingRequested()
                     commandMenu.close()
-                    var component = Qt.createComponent("coordinateNavigationWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Coordinate Navigation window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
                 }
             }
-
             // Go Home Landing Menu item
             Button {
                 width: parent.width
