@@ -3,99 +3,220 @@ import QtQuick.Controls 2.15
 import Qt.labs.platform
 import "qrc:/gcsStyle" as GcsStyle
 
-/*
- * DroneMenuBar - Menu bar component to display various features and actions
- * Located at the top of the drone tracking panel
- * Contains two dropdown items:
- * 1. "GCS" that opens the manage drone window.
- * 2. "Command Menu" that shows a submenu with the 4 command options.
- */
-
-// TODO:    The sizing and spacing for all the elements should be dynamic: 
-//          Meaning changing the text of a button will change the width as well. 
-
-// TODO:    It's worth a shot looking into making the menus dynamic as a WHOLE.
-//          If we're given a json of --> "Commands": {"Take Off", "Arm Drone"}
-//          Maybe not that simple, but the idea is that we don't have to hard
-//          code each command into this file. Because each command does a similar 
-//          thing, we just need to iterate through that list of commands and display them.
- 
 Rectangle {
-    id: menuBar
+    id: titleBar
     height: 32
-    width: parent.width
-    color: GcsStyle.PanelStyle.primaryColor
-
-    // Bottom border for separation
+    color: "#ECECEC"
+    opacity: 0.95
+    
+    // Properties
+    property string windowTitle: "GCS - Cal Poly Pomona"
+    property var targetWindow: null
+    
+    // Bottom border
     Rectangle {
         anchors.bottom: parent.bottom
         width: parent.width
         height: 1
-        color: GcsStyle.PanelStyle.buttonBorderColor
-        opacity: 0.5
+        color: "#D1D1D6"
+        opacity: 0.6
     }
-
-    // Properties for menu items
-    property color menuItemHoverColor: GcsStyle.PanelStyle.buttonHoverColor
-    property color menuItemPressedColor: GcsStyle.PanelStyle.buttonPressedColor
-
+    
+    // Left side: Menu items
     Row {
+        id: menuRow
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         spacing: 0
-
+        
         // GCS Menu Item
         Button {
             id: gcsMenuItem
             text: "GCS"
-            height: menuBar.height
+            height: titleBar.height
             leftPadding: 15
             rightPadding: 15
+            
             background: Rectangle {
-                color: parent.hovered ? menuItemHoverColor : 
-                       parent.pressed ? menuItemPressedColor : 
+                color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
+                       parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor : 
                        "transparent"
             }
+            
             contentItem: Text {
                 text: parent.text
-                color: GcsStyle.PanelStyle.textOnPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.menuBarFontSize
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-            onClicked: gcsMenu.open()
-        }
-
-        // Command Menu Item
-        Button {
-            id: commandMenuItem
-            text: "Command Menu"
-            height: menuBar.height
-            leftPadding: 15
-            rightPadding: 15      
-            background: Rectangle {
-                color: parent.hovered ? menuItemHoverColor :
-                       parent.pressed ? menuItemPressedColor :
-                       "transparent"
-            }
-            contentItem: Text {
-                text: parent.text
-                color: GcsStyle.PanelStyle.textOnPrimaryColor
+                color: GcsStyle.PanelStyle.textPrimaryColor
                 font.pointSize: GcsStyle.PanelStyle.menuBarFontSize
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
+            
+            onClicked: gcsMenu.open()
+        }
+        
+        // Command Menu Item
+        Button {
+            id: commandMenuItem
+            text: "Command Menu"
+            height: titleBar.height
+            leftPadding: 15
+            rightPadding: 15
+            
+            background: Rectangle {
+                color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                       parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
+                       "transparent"
+            }
+            
+            contentItem: Text {
+                text: parent.text
+                color: GcsStyle.PanelStyle.textPrimaryColor
+                font.pointSize: GcsStyle.PanelStyle.menuBarFontSize
+                font.weight: Font.Medium
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            
             onClicked: commandMenu.open()
         }
     }
-
+    
+    // Center: Window Title
+    Text {
+        id: titleText
+        text: windowTitle
+        anchors.centerIn: parent
+        color: GcsStyle.PanelStyle.textPrimaryColor
+        font.pointSize: 11
+        font.weight: Font.Medium
+    }
+    
+    // Right side: Window controls
+    Row {
+        id: windowControls
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 0
+        
+        // Minimize button
+        Button {
+            width: 46
+            height: titleBar.height
+            
+            background: Rectangle {
+                color: parent.hovered ? "#E0E0E0" : "transparent"
+            }
+            
+            contentItem: Text {
+                text: "−"
+                color: "#333333"
+                font.pixelSize: 16
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            
+            onClicked: {
+                if (targetWindow) {
+                    targetWindow.showMinimized()
+                }
+            }
+        }
+        
+        // Maximize/Restore button
+        Button {
+            width: 46
+            height: titleBar.height
+            
+            background: Rectangle {
+                color: parent.hovered ? "#E0E0E0" : "transparent"
+            }
+            
+            contentItem: Text {
+                text: targetWindow && targetWindow.isMaximized ? "❐" : "□"
+                color: "#333333"
+                font.pixelSize: 14
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            
+            onClicked: {
+                if (targetWindow) {
+                    if (targetWindow.isMaximized) {
+                        targetWindow.showNormal()
+                        targetWindow.isMaximized = false
+                    } else {
+                        targetWindow.showMaximized()
+                        targetWindow.isMaximized = true
+                    }
+                }
+            }
+        }
+        
+        // Close button
+        Button {
+            width: 46
+            height: titleBar.height
+            
+            background: Rectangle {
+                color: parent.hovered ? "#E81123" : "transparent"
+            }
+            
+            contentItem: Text {
+                text: "×"
+                color: parent.parent.hovered ? "#FFFFFF" : "#333333"
+                font.pixelSize: 20
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            
+            onClicked: {
+                if (targetWindow) {
+                    targetWindow.close()
+                }
+            }
+        }
+    }
+    
+    // Make title bar draggable
+    MouseArea {
+        anchors.fill: parent
+        anchors.leftMargin: menuRow.width
+        anchors.rightMargin: windowControls.width
+        
+        property point clickPos: "0,0"
+        
+        onPressed: {
+            clickPos = Qt.point(mouse.x, mouse.y)
+        }
+        
+        onPositionChanged: {
+            if (pressed && targetWindow) {
+                var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
+                targetWindow.x += delta.x
+                targetWindow.y += delta.y
+            }
+        }
+        
+        onDoubleClicked: {
+            if (targetWindow) {
+                if (targetWindow.isMaximized) {
+                    targetWindow.showNormal()
+                    targetWindow.isMaximized = false
+                } else {
+                    targetWindow.showMaximized()
+                    targetWindow.isMaximized = true
+                }
+            }
+        }
+    }
+    
     // Keyboard shortcuts
     Shortcut {
         sequence: "Ctrl+Shift+P"
         onActivated: commandMenu.open()
     }
-
+    
     Shortcut {
         sequence: "Escape"
         onActivated: {
@@ -103,48 +224,42 @@ Rectangle {
             if (commandMenu.visible) commandMenu.close()
         }
     }
-
+    
     // GCS Menu Popup
     Popup {
         id: gcsMenu
         x: gcsMenuItem.x + 2
-        // positioned just below the menu button
-        y: menuBar.height + 5
+        y: titleBar.height + 5
         width: 200
         height: 50
         modal: false
-        // Allows popup to receive keyboard events
         focus: true
-        // Closes popup when clicking outside
         closePolicy: Popup.CloseOnPressOutside
-
+        
         background: Rectangle {
             color: GcsStyle.PanelStyle.primaryColor
             border.color: GcsStyle.PanelStyle.buttonBorderColor
             border.width: 1
             radius: 4
         }
-
-        // Column layout for menu items
+        
         Column {
             anchors.fill: parent
             anchors.margins: 5
             spacing: 2
-
+            
             Button {
                 width: parent.width
                 height: 30
                 text: "Manage Drones"
-
+                
                 background: Rectangle {
-                    // Button background color logic for hovering and clicking, for intuity
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
                 }
-
-                // Text styling
+                
                 contentItem: Text {
                     text: parent.text
                     color: GcsStyle.PanelStyle.textPrimaryColor
@@ -154,7 +269,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
-
+                
                 onClicked: {
                     gcsMenu.close()
                     var component = Qt.createComponent("manageDroneWindow.qml")
@@ -172,48 +287,42 @@ Rectangle {
             }
         }
     }
-
+    
     // Command Menu Popup
     Popup {
         id: commandMenu
         x: commandMenuItem.x + 2
-        y: menuBar.height + 5
+        y: titleBar.height + 5
         width: 200
         height: 200
         modal: false
-        // Allows popup to receive keyboard events
         focus: true
-        // Closes popup when clicking outside
         closePolicy: Popup.CloseOnPressOutside
-
+        
         background: Rectangle {
             color: GcsStyle.PanelStyle.primaryColor
             border.color: GcsStyle.PanelStyle.buttonBorderColor
             border.width: 1
             radius: 4
         }
-
-        // Column layout for menu items
+        
         Column {
             anchors.fill: parent
             anchors.margins: 5
             spacing: 2
-
-            // ARM Menu item
+            
             Button {
                 width: parent.width
                 height: 30
                 text: "ARM"
-
+                
                 background: Rectangle {
-                    // Background color logic for clicking and hovering
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
                 }
-
-                // Menu Item text styling
+                
                 contentItem: Text {
                     text: parent.text
                     color: GcsStyle.PanelStyle.textPrimaryColor
@@ -223,7 +332,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
-
+                
                 onClicked: {
                     commandMenu.close()
                     var component = Qt.createComponent("armWindow.qml")
@@ -239,22 +348,19 @@ Rectangle {
                     }
                 }
             }
-
-            // Take-off Menu item
+            
             Button {
                 width: parent.width
                 height: 30
                 text: "Take-off"
-
+                
                 background: Rectangle {
-                    // Button background color logic
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
                 }
-
-                // Text styling
+                
                 contentItem: Text {
                     text: parent.text
                     color: GcsStyle.PanelStyle.textPrimaryColor
@@ -264,7 +370,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
-
+                
                 onClicked: {
                     commandMenu.close()
                     var component = Qt.createComponent("takeOffWindow.qml")
@@ -280,22 +386,19 @@ Rectangle {
                     }
                 }
             }
-
-            // Coordinate Navigation Menu item
+            
             Button {
                 width: parent.width
                 height: 30
                 text: "Coordinate Navigation"
-
+                
                 background: Rectangle {
-                    // Background color logic
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
                 }
-
-                // Text styling
+                
                 contentItem: Text {
                     text: parent.text
                     color: GcsStyle.PanelStyle.textPrimaryColor
@@ -305,7 +408,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
-
+                
                 onClicked: {
                     commandMenu.close()
                     var component = Qt.createComponent("coordinateNavigationWindow.qml")
@@ -321,22 +424,19 @@ Rectangle {
                     }
                 }
             }
-
-            // Go Home Landing Menu item
+            
             Button {
                 width: parent.width
                 height: 30
                 text: "Go Home Landing"
-
+                
                 background: Rectangle {
-                    // Background color logic
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
                 }
-
-                // Text styling
+                
                 contentItem: Text {
                     text: parent.text
                     color: GcsStyle.PanelStyle.textPrimaryColor
@@ -346,7 +446,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
-
+                
                 onClicked: {
                     commandMenu.close()
                     var component = Qt.createComponent("goHomeLandingWindow.qml")
@@ -362,22 +462,19 @@ Rectangle {
                     }
                 }
             }
-
-            // Delete All Drones Menu item
+            
             Button {
                 width: parent.width
                 height: 30
                 text: "Delete All Drones"
-
+                
                 background: Rectangle {
-                    // Background color logic
                     color: parent.pressed ? "#ff6b6b" :
                            parent.hovered ? "#ff8e8e" :
                            "transparent"
                     radius: 2
                 }
-
-                // Text styling
+                
                 contentItem: Text {
                     text: parent.text
                     color: parent.pressed || parent.hovered ? "#ffffff" : "#ff4444"
@@ -387,7 +484,7 @@ Rectangle {
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
-
+                
                 onClicked: {
                     commandMenu.close()
                     deleteAllDronesWindow.open()
@@ -395,8 +492,8 @@ Rectangle {
             }
         }
     }
-
-    // Creates pop-up for Delete drone command
+    
+    // Delete confirmation popup
     Popup {
         id: deleteAllDronesWindow
         modal: true
@@ -404,21 +501,21 @@ Rectangle {
         width: 200
         height: 200
         x: 105
-        y: menuBar.height + 5
-
+        y: titleBar.height + 5
+        
         background: Rectangle {
             color: "#f8d7da"
             border.color: "#f5c6cb"
             radius: 10
         }
-
+        
         Column {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 10
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-
+            
             Text {
                 text: "Are you sure you want to delete ALL drones?"
                 wrapMode: Text.WordWrap
@@ -427,7 +524,7 @@ Rectangle {
                 font.pointSize: 12
                 color: GcsStyle.PanelStyle.textPrimaryColor
             }
-
+            
             Button {
                 text: "No"
                 width: parent.width
@@ -435,7 +532,7 @@ Rectangle {
                     deleteAllDronesWindow.close()
                 }
             }
-
+            
             Button {
                 text: "Yes"
                 width: parent.width
@@ -447,7 +544,7 @@ Rectangle {
             }
         }
     }
-
+    
     Popup {
         id: confirmWindow
         modal: true
@@ -455,20 +552,20 @@ Rectangle {
         width: 200
         height: 200
         x: 105
-        y: menuBar.height + 5
-
+        y: titleBar.height + 5
+        
         Column {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 10
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-
+            
             Text {
                 text: "Drone successfully deleted!"
                 color: GcsStyle.PanelStyle.textPrimaryColor
             }
-
+            
             Button {
                 text: "Ok"
                 width: parent.width
@@ -479,3 +576,4 @@ Rectangle {
         }
     }
 }
+
