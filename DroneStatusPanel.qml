@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
+import "."
 // Drone Status Panel UI Component
 // Displays real-time status information of the active drone
 //Button to open waypointing panel
@@ -53,6 +54,7 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
+               
             }
 
             ListModel {
@@ -128,6 +130,7 @@ Rectangle {
                 onClicked: {
                     console.log("Waypoint Button Clicked");
                     //TODO: Open Waypoint Window/Show Waypoint Panel
+                    waypointWindow.open();
             }
           }
         }
@@ -136,6 +139,14 @@ Rectangle {
 
     property var activeDrone: null
 
+    // Single instance of WaypointWindow as a child of mainPanel
+    WaypointWindow {
+        id: waypointWindow
+        x: parent.width - width - 20
+        y: parent.height - height - 20
+        visible: false
+    }
+    
     function populateActiveDroneModel(drone) {
         if (!drone) return;
 
