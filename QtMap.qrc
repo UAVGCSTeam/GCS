@@ -21,7 +21,7 @@
         <file>droneStatusSVG.svg</file>
         <file>droneSVG.svg</file>
         <file>fireSVG.svg</file>
-        <file>droneMapIconSVG.svg</file>
+        <file>droneMapIconSVG02.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
