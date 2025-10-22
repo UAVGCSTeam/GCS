@@ -49,7 +49,6 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
-               
             }
 
             ListModel {
@@ -119,7 +118,6 @@ Rectangle {
 
 
     property var activeDrone: null
-    
     function populateActiveDroneModel(drone) {
         if (!drone) return;
 
@@ -136,4 +134,3 @@ Rectangle {
                                     airspeed: drone.airspeed            });
     }
 }
-
