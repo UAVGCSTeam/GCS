@@ -6,27 +6,27 @@ import "qrc:/gcsStyle" as GcsStyle
 /**
 This telemetry panel works by making a container, and a visible telemetry window.
 This is necessary in order to have window scaling. When getting the mouse.x and mouse.y positions within MouseArea,
-those positions are relative to the coordinate system of the MouseArea. This means that when the 
-MouseArea is moved, the coordinates of the user's mouse is affected. 
+those positions are relative to the coordinate system of the MouseArea. This means that when the
+MouseArea is moved, the coordinates of the user's mouse is affected.
 
-To get around this scaling issue, we've implemented a container around the visible telem panel. 
-Now when scaling the panel, the mouse area stays static --- until the user releases the mouse. 
-When the user releases the mouse, the container is resized to fit the visible telem panel
+To get around this scaling issue, we've implemented a container around the visible telem panel.
+Now when scaling the panel, the mouse area stays static --- until the user releases the mouse.
+When the user releases the mouse, the container is resized to fit the visible telem panel.
 **/
 
 Rectangle {
-    // This is the container element 
+    // This is the container element
     id: mainPanel
-    height: grid.cellHeight + grid.anchors.margins * 2
-    width: grid.cellWidth * 2 + grid.anchors.margins * 2
-    color: "red"
+    height: 140
+    width: 340
+    color: "transparent"
     visible: false
     anchors.right: parent.right
     anchors.bottom: parent.bottom
 
     property var activeDrone: null // updated by the updateSelectedDroneModel function
-    property int minPanelWidth: grid.cellWidth * 2 + grid.anchors.margins * 2
-    property int minPanelHeight: grid.cellHeight + grid.anchors.margins * 2
+    property int minPanelWidth: 380
+    property int minPanelHeight: 140
     property int resizeHandleSize: 20
     property int statusHeight: 0
     property int trackingWidth: 0
@@ -57,89 +57,165 @@ Rectangle {
             ListElement { label: "Flight Time";   key: "flightTime" }
             // default values to fill space
             ListElement { label: "Latency";       key: "Latency" }
-            ListElement { label: "FailSafeTriggered";          key: "FailSafeTriggered" }
+            ListElement { label: "FailSafeTriggered"; key: "FailSafeTriggered" }
             ListElement { label: "Climb Rate";    key: "climbRate" }
             ListElement { label: "GPS Sats";      key: "satCount" }
             ListElement { label: "Mode";          key: "mode" }
         }
 
+        // invisible wheel-blocker to prevent map scrolling when over the telemetry panel
+        MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
+            propagateComposedEvents: false
+            onWheel: wheel.accepted = true
+            z: 0
+        }
 
-        GridView {
-            id: grid
+        // double-tap handler for expand/shrink
+        Item {
+            anchors.fill: parent
+            z: 999
+
+            TapHandler {
+                acceptedDevices: PointerDevice.Mouse
+                grabPermissions: PointerHandler.TakeOverForbidden
+
+                onDoubleTapped: (eventPoint) => {
+                    const localPos = eventPoint.position;
+                    const handleSize = topLeftResizeHandle.width;
+
+                    if (localPos.x < handleSize && localPos.y < handleSize)
+                        return;
+
+                    const gap = GcsStyle.PanelStyle.applicationBorderMargin;
+                    const maxW = telemMain.parent.parent.width - trackingWidth - (3 * gap);
+                    const maxH = telemMain.parent.parent.height - statusHeight - (3 * gap);
+                    const minW = mainPanel.minPanelWidth;
+                    const minH = mainPanel.minPanelHeight;
+
+                    const midW = (minW + maxW) / 2;
+                    const midH = (minH + maxH) / 2;
+
+                    if (telemMain.width > midW || telemMain.height > midH) {
+                        telemMain.width = minW;
+                        telemMain.height = minH;
+                        mainPanel.width = minW;
+                        mainPanel.height = minH;
+                    } else {
+                        telemMain.width = maxW;
+                        telemMain.height = maxH;
+                        mainPanel.width = maxW;
+                        mainPanel.height = maxH;
+                        console.log("Expanding to:", maxW, maxH);
+                    }
+                }
+            }
+        }
+
+        /**
+        This Flow-based layout achieves evenly spaced, responsive telemetry cells.
+        Now scrolling works both by trackpad and dragging the scrollbar.
+        **/
+        Flickable {
+            id: flick
             anchors.fill: parent
             anchors.margins: 10
-            model: fieldsModel
-            cellHeight: 120
-            cellWidth: 160
+            clip: true
             interactive: true
             boundsBehavior: Flickable.StopAtBounds
-            highlightFollowsCurrentItem: false
-            clip: true
+            flickableDirection: Flickable.VerticalFlick
+            contentWidth: width
+            contentHeight: flow.implicitHeight
+            z: 1
 
+            property int horizontalSpacing: 20
+            property int verticalSpacing: 20
+            property int minCellWidth: 160
+            property int cellHeight: 120
 
-            // vertical scrollbar
+            Rectangle {
+                id: flickContent
+                width: flick.width
+                height: flow.implicitHeight
+                color: "transparent"
+
+                Flow {
+                    id: flow
+                    width: flickContent.width - flick.anchors.margins * 2
+                    spacing: flick.horizontalSpacing
+                    flow: Flow.LeftToRight
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.margins: 0
+                    padding: 0
+
+                    Repeater {
+                        model: fieldsModel
+
+                        delegate: Rectangle {
+                            property int columns: Math.max(1, Math.floor((flow.width + flow.spacing) / (flick.minCellWidth + flow.spacing)))
+
+                            width: {
+                                const totalSpacing = (columns - 1) * flow.spacing
+                                const availableWidth = flow.width - totalSpacing
+                                return availableWidth / columns
+                            }
+
+                            height: flick.cellHeight
+                            color: "transparent"
+                            clip: true
+
+                            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+                            property var value: (row && row[key] !== undefined) ? row[key] : ""
+
+                            Text { // telemetry label
+                                text: label
+                                anchors.top: parent.top
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: "white"
+                                font.pixelSize: 18
+                                wrapMode: Text.WordWrap
+                            }
+
+                            Text { // telemetry value
+                                text: value
+                                anchors.centerIn: parent
+                                width: parent.width - 12
+                                horizontalAlignment: Text.AlignHCenter
+                                wrapMode: Text.WordWrap
+                                font.pixelSize: 24
+                                font.bold: true
+                                color: "white"
+                            }
+                        }
+                    }
+                }
+            }
+
+            // vertical scrollbar for flickable container
             ScrollBar.vertical: ScrollBar {
                 policy: ScrollBar.AsNeeded
                 interactive: true
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
 
-                background: Rectangle {
-                    color: "transparent"
-                }
+                background: Rectangle { color: "transparent" }
+
                 contentItem: Rectangle {
                     implicitWidth: 8
                     radius: width
                     color: "#CCCCCC"
                 }
             }
-
-            delegate: Rectangle {
-                width: grid.cellWidth
-                height: grid.cellHeight
-                color: "transparent"
-                clip: true // This is to clip text overflow. Most likely important for long lat
-
-                // if our model has more than 0 entries place in row otherwise dont
-                property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
-                // show an emptry string if do not have row[key] in our fieldsmodel
-                property var value: (row && row[key] !== undefined) ? row[key] : ""
-
-                Text { // telemetry
-                    text: label
-                    anchors.top: parent.top
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "white"
-                    font.pixelSize: 18
-                    wrapMode: Text.WordWrap
-                }
-
-                Text { // value of the telemetry
-                    text: value
-                    width: parent.width - 12
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    font.pixelSize: 24
-                    font.bold: true
-                    color: "white"
-                }
-            }
         }
-
-
-    }
-
-    Connections {
-        target: droneTrackingPanel
-        onUpdateSelectedDroneSignal: populateActiveDroneModel(name, status, battery, latitude, longitude, altitude, airspeed)
-        onDroneClicked: populateActiveDroneModel(drone)
     }
 
     function populateActiveDroneModel(drone) {
         if (!drone) return;
-        activeDrone = drone; // store reference to currently active drone
+        activeDrone = drone;
 
-        // Update model (same as before)
         activeDroneModel.clear();
         activeDroneModel.append({
             name: drone.name,
@@ -151,10 +227,12 @@ Rectangle {
             airspeed: drone.airspeed
         });
     }
+
     function setStatusHeight(h) {
         statusHeight = h
     }
-    function setTrackingWidth(w){
+
+    function setTrackingWidth(w) {
         trackingWidth = w
     }
 
@@ -171,19 +249,19 @@ Rectangle {
         property real pressY: 0
         property real maxHAtPress: 0
         property real maxWAtPress: 0
+        property bool dragging: false
 
         onPressed: {
             startWidth = telemMain.width
             startHeight = telemMain.height
 
-            // This sets the max width and max height based 
-            // on where the status panel and the telemetry panel are
             var gap = GcsStyle.PanelStyle.applicationBorderMargin
             maxHAtPress = telemMain.parent.parent.height - statusHeight - (3 * gap)
             maxWAtPress = telemMain.parent.parent.width - trackingWidth - (3 * gap)
 
             pressX = mouse.x
             pressY = mouse.y
+            dragging = true
         }
 
         onPositionChanged: {
@@ -192,31 +270,52 @@ Rectangle {
             var dx = mouse.x - pressX;
             var dy = mouse.y - pressY;
 
-            var newW = startWidth  - dx;
+            var newW = startWidth - dx;
             var newH = startHeight - dy;
 
             if (newW < minPanelWidth)
                 newW = minPanelWidth;
-            
-            if (newW > maxWAtPress) 
+            if (newW > maxWAtPress)
                 newW = maxWAtPress;
-
             if (newH < minPanelHeight)
                 newH = minPanelHeight;
-
-            if (newH > maxHAtPress) 
+            if (newH > maxHAtPress)
                 newH = maxHAtPress;
 
-            telemMain.width  = newW;
+            telemMain.width = newW;
             telemMain.height = newH;
         }
 
         onReleased: {
-            // This resizes the "container" (mainPanel). 
-            // This is crucial for ensuring that the MouseArea is always 
-            // in the top left of the visible telemetry window. 
             mainPanel.height = telemMain.height
             mainPanel.width = telemMain.width
+            dragging = false
+        }
+
+        Text {
+            id: chevron
+            text: "≪"
+            color: "white"
+            font.pixelSize: 16
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.margins: 5
+            rotation: 45
+            visible: true
+            opacity: 0.6
+
+            Connections {
+                target: topLeftResizeHandle
+                onDraggingChanged: {
+                    if (topLeftResizeHandle.dragging) {
+                        chevron.visible = false
+                    } else {
+                        chevron.visible = true
+                        chevron.opacity = 0.6
+                    }
+                }
+            }
         }
     }
 }
+
