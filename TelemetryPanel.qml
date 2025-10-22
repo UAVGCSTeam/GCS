@@ -107,106 +107,84 @@ Rectangle {
                         telemMain.height = maxH;
                         mainPanel.width = maxW;
                         mainPanel.height = maxH;
-                        console.log("Expanding to:", maxW, maxH);
                     }
                 }
             }
         }
 
-        /**
-        This Flow-based layout achieves evenly spaced, responsive telemetry cells.
-        Now scrolling works both by trackpad and dragging the scrollbar.
-        **/
-        Flickable {
-            id: flick
+        GridView {
+            id: grid
             anchors.fill: parent
             anchors.margins: 10
-            clip: true
-            interactive: true
-            boundsBehavior: Flickable.StopAtBounds
-            flickableDirection: Flickable.VerticalFlick
-            contentWidth: width
-            contentHeight: flow.implicitHeight
-            z: 1
+            model: fieldsModel
 
             property int horizontalSpacing: 20
             property int verticalSpacing: 20
             property int minCellWidth: 160
-            property int cellHeight: 120
+            property int columns: 1
 
-            Rectangle {
-                id: flickContent
-                width: flick.width
-                height: flow.implicitHeight
-                color: "transparent"
-
-                Flow {
-                    id: flow
-                    width: flickContent.width - flick.anchors.margins * 2
-                    spacing: flick.horizontalSpacing
-                    flow: Flow.LeftToRight
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.margins: 0
-                    padding: 0
-
-                    Repeater {
-                        model: fieldsModel
-
-                        delegate: Rectangle {
-                            property int columns: Math.max(1, Math.floor((flow.width + flow.spacing) / (flick.minCellWidth + flow.spacing)))
-
-                            width: {
-                                const totalSpacing = (columns - 1) * flow.spacing
-                                const availableWidth = flow.width - totalSpacing
-                                return availableWidth / columns
-                            }
-
-                            height: flick.cellHeight
-                            color: "transparent"
-                            clip: true
-
-                            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
-                            property var value: (row && row[key] !== undefined) ? row[key] : ""
-
-                            Text { // telemetry label
-                                text: label
-                                anchors.top: parent.top
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                color: "white"
-                                font.pixelSize: 18
-                                wrapMode: Text.WordWrap
-                            }
-
-                            Text { // telemetry value
-                                text: value
-                                anchors.centerIn: parent
-                                width: parent.width - 12
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                font.pixelSize: 24
-                                font.bold: true
-                                color: "white"
-                            }
-                        }
-                    }
-                }
+            onWidthChanged: {
+                const availableWidth = width - anchors.margins * 2
+                const newColumns = Math.max(1, Math.floor((availableWidth + horizontalSpacing) / (minCellWidth + horizontalSpacing)))
+                if (newColumns !== columns)
+                    columns = newColumns
+            }
+            cellWidth: {
+                const availableWidth = width - anchors.margins * 2
+                const totalSpacing = (columns - 1) * horizontalSpacing
+                return (availableWidth - totalSpacing) / columns
             }
 
-            // vertical scrollbar for flickable container
+            cellHeight: 120
+            interactive: true
+            boundsBehavior: Flickable.StopAtBounds
+            highlightFollowsCurrentItem: false
+            clip: true
+
+            // vertical scrollbar
             ScrollBar.vertical: ScrollBar {
                 policy: ScrollBar.AsNeeded
                 interactive: true
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
 
-                background: Rectangle { color: "transparent" }
+                background: Rectangle {
+                    color: "transparent"
+                }
 
                 contentItem: Rectangle {
                     implicitWidth: 8
                     radius: width
                     color: "#CCCCCC"
+                }
+            }
+
+            delegate: Rectangle {
+                width: grid.cellWidth
+                height: grid.cellHeight
+                color: "transparent"
+                clip: true // clip overflowed text
+
+                property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+                property var value: (row && row[key] !== undefined) ? row[key] : ""
+
+                Text { // telemetry
+                    text: label
+                    anchors.top: parent.top
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "white"
+                    font.pixelSize: 18
+                    wrapMode: Text.WordWrap
+                }
+
+                Text { // value
+                    text: value
+                    width: parent.width - 12
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    font.pixelSize: 24
+                    font.bold: true
+                    color: "white"
                 }
             }
         }
@@ -318,4 +296,3 @@ Rectangle {
         }
     }
 }
-
