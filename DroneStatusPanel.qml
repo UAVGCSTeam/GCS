@@ -118,6 +118,7 @@ Rectangle {
 
 
     property var activeDrone: null
+
     function populateActiveDroneModel(drone) {
         if (!drone) return;
 
