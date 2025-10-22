@@ -6,8 +6,8 @@ import "qrc:/gcsStyle" as GcsStyle
 Rectangle {
     id: titleBar
     height: 32
-    color: "#ECECEC"
-    opacity: 0.95
+    color: GcsStyle.PanelStyle.primaryColor
+    radius: targetWindow && targetWindow.isMaximized ? 0 : 8
     
     // Properties
     property string windowTitle: "GCS - Cal Poly Pomona"
@@ -18,8 +18,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         width: parent.width
         height: 1
-        color: "#D1D1D6"
-        opacity: 0.6
+        color: GcsStyle.PanelStyle.buttonBorderColor
+        opacity: 0.5
     }
     
     // Left side: Menu items
@@ -33,9 +33,10 @@ Rectangle {
         Button {
             id: gcsMenuItem
             text: "GCS"
-            height: titleBar.height
+            height: titleBar.height - 1
             leftPadding: 15
             rightPadding: 15
+            flat: true
             
             background: Rectangle {
                 color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
@@ -46,7 +47,7 @@ Rectangle {
             contentItem: Text {
                 text: parent.text
                 color: GcsStyle.PanelStyle.textPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.menuBarFontSize
+                font.pointSize: GcsStyle.PanelStyle.fontSizeExtraSmall
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -59,9 +60,10 @@ Rectangle {
         Button {
             id: commandMenuItem
             text: "Command Menu"
-            height: titleBar.height
+            height: titleBar.height - 1
             leftPadding: 15
             rightPadding: 15
+            flat: true
             
             background: Rectangle {
                 color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
@@ -72,7 +74,7 @@ Rectangle {
             contentItem: Text {
                 text: parent.text
                 color: GcsStyle.PanelStyle.textPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.menuBarFontSize
+                font.pointSize: GcsStyle.PanelStyle.fontSizeExtraSmall
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -88,7 +90,7 @@ Rectangle {
         text: windowTitle
         anchors.centerIn: parent
         color: GcsStyle.PanelStyle.textPrimaryColor
-        font.pointSize: 11
+        font.pointSize: GcsStyle.PanelStyle.fontSizeSmall
         font.weight: Font.Medium
     }
     
@@ -101,17 +103,20 @@ Rectangle {
         
         // Minimize button
         Button {
+            id: minimizeButton
             width: 46
-            height: titleBar.height
+            height: titleBar.height - 1
+            flat: true
             
             background: Rectangle {
-                color: parent.hovered ? "#E0E0E0" : "transparent"
+                anchors.fill: parent
+                color: minimizeButton.hovered ? GcsStyle.PanelStyle.buttonHoverColor : "transparent"
             }
             
             contentItem: Text {
-                text: "−"
-                color: "#333333"
-                font.pixelSize: 16
+                text: "─"
+                color: GcsStyle.PanelStyle.textPrimaryColor
+                font.pixelSize: 14
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }
@@ -123,18 +128,21 @@ Rectangle {
             }
         }
         
-        // Maximize/Restore button
+        // Maximize button
         Button {
+            id: maximizeButton
             width: 46
-            height: titleBar.height
+            height: titleBar.height - 1
+            flat: true
             
             background: Rectangle {
-                color: parent.hovered ? "#E0E0E0" : "transparent"
+                anchors.fill: parent
+                color: maximizeButton.hovered ? GcsStyle.PanelStyle.buttonHoverColor : "transparent"
             }
             
             contentItem: Text {
-                text: targetWindow && targetWindow.isMaximized ? "❐" : "□"
-                color: "#333333"
+                text: "❐"
+                color: GcsStyle.PanelStyle.textPrimaryColor
                 font.pixelSize: 14
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -155,17 +163,20 @@ Rectangle {
         
         // Close button
         Button {
+            id: closeButton
             width: 46
-            height: titleBar.height
+            height: titleBar.height - 1
+            flat: true
             
             background: Rectangle {
-                color: parent.hovered ? "#E81123" : "transparent"
+                anchors.fill: parent
+                color: closeButton.hovered ? GcsStyle.PanelStyle.buttonCloseHoverColor : "transparent"
             }
             
             contentItem: Text {
-                text: "×"
-                color: parent.parent.hovered ? "#FFFFFF" : "#333333"
-                font.pixelSize: 20
+                text: "✕"
+                color: closeButton.hovered ? "#FFFFFF" : GcsStyle.PanelStyle.textPrimaryColor
+                font.pixelSize: 14
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
             }

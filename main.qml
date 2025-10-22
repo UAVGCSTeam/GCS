@@ -25,13 +25,18 @@ Window {
     QmlMap {
         // Reference by id not file name
         id: mapComponent
-        anchors.fill: parent
+        anchors {
+            top: windowTitleBar.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
     }
 
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
-            top: parent.top
+            top: windowTitleBar.bottom
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
@@ -39,27 +44,28 @@ Window {
     DroneStatusPanel {
         id: droneStatusPanel
         anchors {
-            top: parent.top
+            top: windowTitleBar.bottom
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
     }
-    // Custom title bar with menu and window controls
-    CustomTitleBar {
-        id: customTitleBar
+    // Window title bar with integrated menu and controls
+    WindowTitleBar {
+        id: windowTitleBar
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
         }
         targetWindow: mainWindow
+        z: 100  // Keep title bar on top of everything
     }
 
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
-            top: customTitleBar.bottom
+            top: windowTitleBar.bottom
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
