@@ -7,7 +7,6 @@
         <file>DroneTrackingPanel.qml</file>
         <file>DroneStatusPanel.qml</file>
         <file>DroneMenuBar.qml</file>
-        <file>WindowTitleBar.qml</file>
         <file>manageDroneWindow.qml</file>
         <file>armWindow.qml</file>
         <file>coordinateNavigationWindow.qml</file>
