@@ -130,7 +130,7 @@ Rectangle {
                 onClicked: {
                     console.log("Waypoint Button Clicked");
                     //TODO: Open Waypoint Window/Show Waypoint Panel
-                    waypointWindow.open();
+                    waypointWindow.visible = true;
             }
           }
         }
@@ -141,10 +141,11 @@ Rectangle {
 
     // Single instance of WaypointWindow as a child of mainPanel
     WaypointWindow {
-        id: waypointWindow
-        x: parent.width - width - 20
-        y: parent.height - height - 20
-        visible: false
+          id: waypointWindow
+          parent: Overlay.overlay // <-- makes it a child of the app overlay
+          x: parent.width - width - 20
+          y: parent.height - height - 20
+          visible: false
     }
     
     function populateActiveDroneModel(drone) {

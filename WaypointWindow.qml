@@ -1,62 +1,92 @@
-// Waypoint Window UI Component
-//Pop-up window for setting waypoints for the drone
 import QtQuick 2.15
-import QtQuick.Window 2.15
-import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import "qrc://gcsStyle/panelStyle.qml" as GcsStyle
+import QtQuick.Controls 2.15
 
-
-Popup {
+Rectangle {
     id: waypointWindow
-    width: 400
-    height: 300
-    modal: true
-    focus: true
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    
-    background: Rectangle {
-        color: GcsStyle.PanelStyle.primaryColor
-        radius: GcsStyle.PanelStyle.cornerRadius
-    }
+    width: 300
+    height: 230
+    color: "white"
+    radius: 10
+    border.color: "lightgray"
+    border.width: 2
+    visible: false
+
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    anchors.margins: 20
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: GcsStyle.PanelStyle.defaultMargin
-        spacing: GcsStyle.PanelStyle.defaultMargin
+        anchors.margins: 15
+        spacing: 12
 
         // Header
         Text {
             text: "Set Waypoints"
-            font.pixelSize: GcsStyle.PanelStyle.headerFontSize
-            color: GcsStyle.PanelStyle.textOnPrimaryColor
+            font.pixelSize: 18
+            horizontalAlignment: Text.AlignHCenter
             Layout.alignment: Qt.AlignHCenter
+            color: "black"
         }
 
-        // Waypoint Input Area
-        TextArea {
-            id: waypointInput
-            placeholderText: "Enter waypoints here..."
+        // Latitude input
+        TextField {
+            id: latitudeField
+            placeholderText: "Enter Latitude"
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.preferredHeight: 45   
+            font.pixelSize: 15
+            background: Rectangle {
+                color: "lightgray"
+                radius: 6
+                border.color: "gray"
+                border.width: 2
+            }
         }
 
-        // Buttons
+        // Longitude input
+        TextField {
+            id: longitudeField
+            placeholderText: "Enter Longitude"
+            Layout.fillWidth: true
+            Layout.preferredHeight: 45   
+            font.pixelSize: 15
+            background: Rectangle {
+                color: "lightgray"
+                radius: 6
+                border.color: "gray"
+                border.width: 2
+            }
+        }
+
+        // Buttons row
         RowLayout {
             Layout.alignment: Qt.AlignRight
-            spacing: GcsStyle.PanelStyle.defaultMargin
+            spacing: 10
 
             Button {
                 text: "Cancel"
-                onClicked: waypointWindow.close()
+                background: Rectangle {
+                    color: "lightgray"
+                    radius: 6
+                    border.color: "gray"
+                }
+                onClicked: waypointWindow.visible = false
             }
 
             Button {
-                text: "Save"
+                text: "Start"
+                background: Rectangle {
+                    color: "lightblue"
+                    radius: 6
+                    border.color: "gray"
+                }
                 onClicked: {
-                    console.log("Waypoint Input:", waypointInput.text);
-                    // TODO: Save waypoints to drone
-                    waypointWindow.close();
+                    console.log("Starting waypointing...")
+                    console.log("Latitude:", latitudeField.text)
+                    console.log("Longitude:", longitudeField.text)
+                    waypointWindow.visible = false
                 }
             }
         }
