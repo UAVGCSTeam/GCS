@@ -47,7 +47,7 @@ Rectangle {
             contentItem: Text {
                 text: parent.text
                 color: GcsStyle.PanelStyle.textPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.fontSizeExtraSmall
+                font.pointSize: GcsStyle.PanelStyle.fontSizeXS
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
@@ -74,7 +74,7 @@ Rectangle {
             contentItem: Text {
                 text: parent.text
                 color: GcsStyle.PanelStyle.textPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.fontSizeExtraSmall
+                font.pointSize: GcsStyle.PanelStyle.fontSizeXS
                 font.weight: Font.Medium
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

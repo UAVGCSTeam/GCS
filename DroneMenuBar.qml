@@ -5,74 +5,89 @@ import "qrc:/gcsStyle" as GcsStyle
 
 /*
  * DroneMenuBar - Menu bar component to display various features and actions
- * Designed to be embedded in WindowTitleBar
- * Contains menu items and their dropdown popups:
+ * Located below the native window title bar
+ * Full-width bar with menu items on the left
+ * Contains two dropdown items:
  * 1. "GCS" that opens the manage drone window.
  * 2. "Command Menu" that shows a submenu with the 4 command options.
  */
 
-// TODO:    It's worth a shot looking into making the menus dynamic as a WHOLE.
-//          If we're given a json of --> "Commands": {"Take Off", "Arm Drone"}
-//          Maybe not that simple, but the idea is that we don't have to hard
-//          code each command into this file. Because each command does a similar 
-//          thing, we just need to iterate through that list of commands and display them.
-
-Row {
-    id: menuRow
-    spacing: 0
+Rectangle {
+    id: menuBar
+    height: 26
+    color: GcsStyle.PanelStyle.primaryColor
     
-    // GCS Menu Item
-    Button {
-        id: gcsMenuItem
-        text: "GCS"
-        height: parent.height
-        leftPadding: 15
-        rightPadding: 15
-        flat: true
-        
-        background: Rectangle {
-            color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
-                   parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor : 
-                   "transparent"
-        }
-        
-        contentItem: Text {
-            text: parent.text
-            color: GcsStyle.PanelStyle.textPrimaryColor
-            font.pointSize: GcsStyle.PanelStyle.fontSizeExtraSmall
-            font.weight: Font.Medium
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-        }
-        
-        onClicked: gcsMenu.open()
+    // Bottom border
+    Rectangle {
+        anchors.bottom: parent.bottom
+        width: parent.width
+        height: 1
+        color: GcsStyle.PanelStyle.buttonBorderColor
+        opacity: 0.5
     }
     
-    // Command Menu Item
-    Button {
-        id: commandMenuItem
-        text: "Command Menu"
-        height: parent.height
-        leftPadding: 15
-        rightPadding: 15
-        flat: true
+    // Menu items row
+    Row {
+        id: menuRow
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 0
         
-        background: Rectangle {
-            color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                   parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                   "transparent"
+        // GCS Menu Item
+        Button {
+            id: gcsMenuItem
+            text: "GCS"
+            height: menuBar.height - 1
+            leftPadding: 15
+            rightPadding: 15
+            flat: true
+            
+            background: Rectangle {
+                radius: 5
+                color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
+                       parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor : 
+                       "transparent"
+            }
+            
+            contentItem: Text {
+                text: parent.text
+                color: GcsStyle.PanelStyle.textPrimaryColor
+                font.pointSize: GcsStyle.PanelStyle.fontSizeXS
+                font.weight: Font.Medium
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            
+            onClicked: gcsMenu.open()
         }
         
-        contentItem: Text {
-            text: parent.text
-            color: GcsStyle.PanelStyle.textPrimaryColor
-            font.pointSize: GcsStyle.PanelStyle.fontSizeExtraSmall
-            font.weight: Font.Medium
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+        // Command Menu Item
+        Button {
+            id: commandMenuItem
+            text: "Command Menu"
+            height: menuBar.height - 1
+            leftPadding: 15
+            rightPadding: 15
+            flat: true
+            
+            background: Rectangle {
+                radius: 5
+                color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
+                       parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
+                       "transparent"
+            }
+            
+            contentItem: Text {
+                text: parent.text
+                color: GcsStyle.PanelStyle.textPrimaryColor
+                font.pointSize: GcsStyle.PanelStyle.fontSizeXS
+                font.weight: Font.Medium
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            
+            onClicked: commandMenu.open()
         }
-        
-        onClicked: commandMenu.open()
     }
     
     // Keyboard shortcuts
@@ -92,13 +107,11 @@ Row {
     // GCS Menu Popup
     Popup {
         id: gcsMenu
-        // Positioned in regards to menu button
         x: gcsMenuItem.x + 2
-        y: menuRow.height + 5
+        y: menuBar.height
         width: 200
-        height: 50
+        padding: 5
         modal: false
-        // Allows popup to receive keyboard events
         focus: true
         closePolicy: Popup.CloseOnPressOutside
         
@@ -109,16 +122,15 @@ Row {
             radius: 4
         }
         
-        // Column layout for menu items
         Column {
-            anchors.fill: parent
-            anchors.margins: 5
+            width: parent.width
             spacing: 2
             
             Button {
                 width: parent.width
                 height: 30
                 text: "Manage Drones"
+                flat: true
                 
                 background: Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
@@ -132,7 +144,7 @@ Row {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: fontSizeExtraSmall
+                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -159,9 +171,9 @@ Row {
     Popup {
         id: commandMenu
         x: commandMenuItem.x + 2
-        y: menuRow.height + 5
+        y: menuBar.height
         width: 200
-        height: 200
+        padding: 5
         modal: false
         focus: true
         closePolicy: Popup.CloseOnPressOutside
@@ -174,14 +186,14 @@ Row {
         }
         
         Column {
-            anchors.fill: parent
-            anchors.margins: 5
+            width: parent.width
             spacing: 2
             
             Button {
                 width: parent.width
                 height: 30
                 text: "ARM"
+                flat: true
                 
                 background: Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
@@ -195,7 +207,7 @@ Row {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: fontSizeExtraSmall
+                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -220,6 +232,7 @@ Row {
                 width: parent.width
                 height: 30
                 text: "Take-off"
+                flat: true
                 
                 background: Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
@@ -233,7 +246,7 @@ Row {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: fontSizeExtraSmall
+                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -258,6 +271,7 @@ Row {
                 width: parent.width
                 height: 30
                 text: "Coordinate Navigation"
+                flat: true
                 
                 background: Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
@@ -271,7 +285,7 @@ Row {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: fontSizeExtraSmall
+                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -296,6 +310,7 @@ Row {
                 width: parent.width
                 height: 30
                 text: "Go Home Landing"
+                flat: true
                 
                 background: Rectangle {
                     color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
@@ -309,7 +324,7 @@ Row {
                     color: GcsStyle.PanelStyle.textPrimaryColor
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: fontSizeExtraSmall
+                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -334,6 +349,7 @@ Row {
                 width: parent.width
                 height: 30
                 text: "Delete All Drones"
+                flat: true
                 
                 background: Rectangle {
                     color: parent.pressed ? "#ff6b6b" :
@@ -347,7 +363,7 @@ Row {
                     color: parent.pressed || parent.hovered ? "#ffffff" : "#ff4444"
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: fontSizeExtraSmall
+                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
                     anchors.left: parent.left
                     anchors.leftMargin: 10
                 }
@@ -368,7 +384,7 @@ Row {
         width: 200
         height: 200
         x: 105
-        y: menuRow.height + 5
+        y: menuBar.height
         
         background: Rectangle {
             color: "#f8d7da"
@@ -419,7 +435,7 @@ Row {
         width: 200
         height: 200
         x: 105
-        y: menuRow.height + 5
+        y: menuBar.height + 5
         
         Column {
             anchors.fill: parent

@@ -16,17 +16,13 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
-    flags: Qt.Window | Qt.FramelessWindowHint
-    
-    // Store window state
-    property bool isMaximized: false
 
     // These are our components that sit on top of our Window object
     QmlMap {
         // Reference by id not file name
         id: mapComponent
         anchors {
-            top: windowTitleBar.bottom
+            top: droneMenuBar.bottom
             left: parent.left
             right: parent.right
             bottom: parent.bottom
@@ -36,7 +32,7 @@ Window {
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
-            top: windowTitleBar.bottom
+            top: droneMenuBar.bottom
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
@@ -44,28 +40,27 @@ Window {
     DroneStatusPanel {
         id: droneStatusPanel
         anchors {
-            top: windowTitleBar.bottom
+            top: droneMenuBar.bottom
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
     }
-    // Window title bar with integrated menu and controls
-    WindowTitleBar {
-        id: windowTitleBar
+    // Menu bar below native title bar
+    DroneMenuBar {
+        id: droneMenuBar
         anchors {
             top: parent.top
             left: parent.left
             right: parent.right
         }
-        targetWindow: mainWindow
-        z: 100  // Keep title bar on top of everything
+        z: 100
     }
 
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
-            top: windowTitleBar.bottom
+            top: droneMenuBar.bottom
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
