@@ -168,6 +168,7 @@ Rectangle {
                 Layout.fillHeight: true
                 clip: true
                 visible: true
+                currentIndex: -1 //Sets currentIndex to -1 so that no item in the index is initially selected
                 /*
                   Eventually this will read from our cpp list of drones
                   We will be able to dynamically read this list and create what we need
@@ -200,7 +201,7 @@ Rectangle {
                     // local UI state
                     property bool hovered: false
                     // treat the list's current item as "selected" for now
-                    property bool selected: ListView.isCurrentItem
+                    property bool selected: ListView.isCurrentItem //false
 
                     // dynamic background color rule:
                     // selected > hovered > alternating row color (unchanged)
@@ -222,8 +223,8 @@ Rectangle {
                         onExited:   parent.hovered = false
 
                         onClicked: {
+                            //Change to make the sle
                             // mark this delegate as the selected one in the ListView
-                            //if (ListView.view) ListView.view.currentIndex = index
                             droneListView.currentIndex = index
 
                             // keep your existing behavior (open/update the right panel)
@@ -366,5 +367,10 @@ Rectangle {
             var filteredList = fullDroneList.filter(drone => drone.name.toLowerCase().includes(searchText.toLowerCase()))
             updateDroneListModel(filteredList)
         }
+    }
+
+    // Function to clear current selection highlight
+    function clearSelection() {
+        droneListView.currentIndex = -1
     }
 }

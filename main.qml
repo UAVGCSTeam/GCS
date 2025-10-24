@@ -63,6 +63,11 @@ Window {
                 if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
                     // Toggle the visability of the status panel if same drone is clicked
                     droneStatusPanel.visible = !droneStatusPanel.visible
+
+                    //If the drone status panel is not visible, then clear selected color
+                    if (!droneStatusPanel.visible) {
+                        droneTrackingPanel.clearSelection()
+                    }
                 } else {
                     // update status panel with new info
                     droneStatusPanel.populateActiveDroneModel(drone)
