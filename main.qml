@@ -271,6 +271,7 @@ Window {
         }
 
         droneController.openXbee("/dev/tty.placeho", 57600)
+        // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
 
         fetch();
     }

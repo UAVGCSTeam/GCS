@@ -536,8 +536,9 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
     }
 
     // TODO: make these configurable or read from DB later
-    const uint8_t targetSys  = 1;
-    const uint8_t targetComp = 1;   // MAV_COMP_ID_AUTOPILOT1
+    // targetSys and targetComp are both 0 when dealing with ArduPilot SITL
+    const uint8_t targetSys  = 0;   
+    const uint8_t targetComp = 0;   // MAV_COMP_ID_AUTOPILOT1
 
     const bool ok = mav_->sendArm(targetSys, targetComp, arm);
     qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
