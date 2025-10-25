@@ -270,7 +270,8 @@ Window {
             console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        droneController.openXbee("/dev/tty.placeho", 57600)
+        // TODO: This is where we will change the radio connection to be dynamic
+        droneController.openXbee("COM3", 9600)
 
         fetch();
     }

@@ -11,7 +11,7 @@ public:
     bool isOpen() const { return serial_.isOpen(); }
     bool writeBytes(const QByteArray& bytes);  // raw pass-through
 signals:
-    void bytesReceived(QByteArray bytes);
+    void bytesReceived(const QByteArray& bytes);
     void linkError(QString msg);
 private:
     QSerialPort serial_;

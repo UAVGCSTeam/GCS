@@ -2,6 +2,7 @@
 #include "droneclass.h"
 #include "XbeeLink.h"
 #include "MavlinkSender.h"
+#include "mavlinkreceiver.h"
 #include <QDebug>
 #include <memory>
 
@@ -511,6 +512,7 @@ bool DroneController::openXbee(const QString& port, int baud)
 {
     if (!xbee_) xbee_ = std::make_unique<XbeeLink>(this);
     if (!mav_)  mav_  = std::make_unique<MavlinkSender>(xbee_.get(), this);
+    if (!mavReceiver_) mavReceiver_ = std::make_unique<MavlinkReceiver>(this);
 
     const bool ok = xbee_->open(port, baud);
     if (!ok) {
@@ -519,6 +521,9 @@ bool DroneController::openXbee(const QString& port, int baud)
     }
     qInfo()  << "[DroneController] XBee opened on" << port << "@" << baud;
     return true;
+
+    QObject::connect(xbee_.get(), &XbeeLink::bytesReceived,
+                     mavReceiver_.get(),   &MavlinkReceiver::unpackMessage);
 }
 
 bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)

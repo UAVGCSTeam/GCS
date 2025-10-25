@@ -38,6 +38,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         XbeeLink.h
         MavlinkSender.cpp
         MavlinkSender.h
+        mavlinkreceiver.h mavlinkreceiver.cpp
+
 
        # MavLinkUdp.h MavLinkUdp.cpp
     )

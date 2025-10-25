@@ -16,8 +16,7 @@
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
  * It allows for communication between QML and C++.
  * https://doc.qt.io/qt-6/signalsandslots.html
-*/
-
+ */
 
 /*
  * Button Press:
@@ -25,14 +24,16 @@
  * 2. DroneManager -- Holds the list of Drone C++ objects and modifies it. -- vectorList
  * 3. DroneClass - Is the data model that can take real time updates
  * 4. DBManager -- Connects Drone Database
-*/
+ */
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
 class XbeeLink;
 class MavlinkSender;
+class MavlinkReceiver;
 
-class DroneController : public QObject {
+class DroneController : public QObject
+{
     Q_OBJECT
 public:
     // idk how to pass the parent function
@@ -47,19 +48,17 @@ public:
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
 
-
 public slots:
     void saveDrone(const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
     void updateDrone(const QString &oldXbeeId, const QString &name, const QString &role, const QString &xbeeId, const QString &xbeeAddress);
     void deleteDrone(const QString &xbeeId);
     void deleteALlDrones_UI();
 
-// Declaration for retrieving the drone list
+    // Declaration for retrieving the drone list
 public:
     Q_INVOKABLE QVariantList getDroneList() const;
     // Process data recieved from XBee via shared memory
     Q_INVOKABLE QVariantList getAllDrones() const;
-
 
 private slots:
     void processXbeeData();
@@ -76,8 +75,8 @@ signals:
 private:
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
-    //DroneClass &droneClass;
-    // Timers for data polling
+    // DroneClass &droneClass;
+    //  Timers for data polling
     QTimer xbeeDataTimer;
     QTimer reconnectTimer;
     // Method to find drone by name
@@ -90,10 +89,9 @@ private:
     QString getDataFilePath();
     QString getConfigFilePath() const;
 
-    std::unique_ptr<XbeeLink>    xbee_;
+    std::unique_ptr<XbeeLink> xbee_;
     std::unique_ptr<MavlinkSender> mav_;
-
+    std::unique_ptr<MavlinkReceiver> mavReceiver_;
 };
-
 
 #endif // DRONECONTROLLER_H
