@@ -18,7 +18,7 @@ extern "C"
 
 MavlinkReceiver::MavlinkReceiver(QObject *p) : QObject(p) {}
 
-void MavlinkReceiver::unpackMessage(QByteArray& data) {
+void MavlinkReceiver::unpackMessage(const QByteArray& data) {
     const auto* p = reinterpret_cast<const uint8_t*>(data.constData());
     const int n = data.size();
 

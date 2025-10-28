@@ -24,7 +24,7 @@ class MavlinkReceiver : public QObject {
 public:
     MavlinkReceiver(QObject* parent=nullptr);
 public slots:
-    void unpackMessage(QByteArray& data);
+    void unpackMessage(const QByteArray& data);
 
 private:
     void decodeType(const mavlink_message_t& msg);
