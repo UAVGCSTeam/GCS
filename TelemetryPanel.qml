@@ -45,26 +45,6 @@ Rectangle {
 
         ListModel { id: activeDroneModel }
 
-        ListModel {
-            id: fieldsModel
-            ListElement { label: "Longitude";     key: "longitude" }
-            ListElement { label: "Latitude";      key: "latitude" }
-            ListElement { label: "Altitude";      key: "altitude" }
-            ListElement { label: "Airspeed";      key: "airspeed" }
-            ListElement { label: "Battery";       key: "battery" }
-            ListElement { label: "Pitch";         key: "pitch" }
-            ListElement { label: "Yaw";           key: "yaw" }
-            ListElement { label: "Groundspeed";   key: "groundspeed" }
-            ListElement { label: "Status";        key: "status" }
-            ListElement { label: "Flight Time";   key: "flightTime" }
-            // default values to fill space
-            ListElement { label: "Latency";       key: "Latency" }
-            ListElement { label: "FailSafeTriggered"; key: "FailSafeTriggered" }
-            ListElement { label: "Climb Rate";    key: "climbRate" }
-            ListElement { label: "GPS Sats";      key: "satCount" }
-            ListElement { label: "Mode";          key: "mode" }
-        }
-
         // Prevent wheel from bubbling to map behind
         MouseArea {
             anchors.fill: parent
@@ -112,69 +92,116 @@ Rectangle {
         }
 
         // Main Content
-        Flickable {
-            id: flick
+
+        Item {
             anchors.fill: parent
-            anchors.margins: 8
-            clip: true
-            interactive: false
-            boundsBehavior: Flickable.StopAtBounds
-            flickableDirection: Flickable.VerticalFlick
-            contentWidth: width
-            contentHeight: flow.implicitHeight
+            anchors.margins: 15
+            anchors.topMargin: 25
 
-            property int columns: 3
-            property int rowSpacing: 6
-            property int colSpacing: 10
+            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
 
-            // GridLayout
-            Item {
-                id: content
-                width: flick.width
-                height: grid.implicitHeight
+            // Organized Grid Layout
+            GridLayout {
+                anchors.fill: parent
+                columns: 3
+                rowSpacing: 12
+                columnSpacing: 15
 
-                property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+                // Position Section
+                TelemetryItem {
+                    label: "Latitude"
+                    value: parent.parent.row ? (parent.parent.row.latitude || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Longitude"
+                    value: parent.parent.row ? (parent.parent.row.longitude || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Altitude"
+                    value: parent.parent.row ? (parent.parent.row.altitude || "") : ""
+                    Layout.fillWidth: true
+                }
 
-                GridLayout {
-                    id: grid
-                    anchors.fill: parent
-                    columns: flick.columns
-                    rowSpacing: flick.rowSpacing
-                    columnSpacing: flick.colSpacing
+                // Speed Section
+                TelemetryItem {
+                    label: "Airspeed"
+                    value: parent.parent.row ? (parent.parent.row.airspeed || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Groundspeed"
+                    value: parent.parent.row ? (parent.parent.row.groundspeed || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Climb Rate"
+                    value: parent.parent.row ? (parent.parent.row.climbRate || "") : ""
+                    Layout.fillWidth: true
+                }
 
-                    Repeater {
-                        model: fieldsModel
+                // Orientation Section
+                TelemetryItem {
+                    label: "Pitch"
+                    value: parent.parent.row ? (parent.parent.row.pitch || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Yaw"
+                    value: parent.parent.row ? (parent.parent.row.yaw || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "GPS Sats"
+                    value: parent.parent.row ? (parent.parent.row.satCount || "") : ""
+                    Layout.fillWidth: true
+                }
 
-                        delegate: TelemetryItem {
-                            label: model.label
+                // Status Section
+                TelemetryItem {
+                    label: "Battery"
+                    value: parent.parent.row ? (parent.parent.row.battery || "") : ""
+                    Layout.fillWidth: true
+                    valueColor: {
+                        if (!parent.parent.row || !parent.parent.row.battery) return "white"
+                        var batteryStr = parent.parent.row.battery.toString()
+                        var batteryNum = parseFloat(batteryStr.replace('%', ''))
+                        if (batteryNum < 20) return "#ff4444"
+                        if (batteryNum < 40) return "#ffaa00"
+                        return "#44ff44"
+                    }
+                }
+                TelemetryItem {
+                    label: "Status"
+                    value: parent.parent.row ? (parent.parent.row.status || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Mode"
+                    value: parent.parent.row ? (parent.parent.row.mode || "") : ""
+                    Layout.fillWidth: true
+                }
 
-                            value: {
-                                const r = content.row
-                                if (!r) return ""
-                                const k = model.key
-                                return (r[k] !== undefined && r[k] !== null && r[k] !== "") ? r[k] : ""
-                            }
-
-                            // contexual coloring
-                            valueColor: {
-                                const k = model.key
-                                const v = value ? value.toString() : ""
-                                if (k === "battery") {
-                                    var n = parseFloat(v.replace('%',''))
-                                    if (isNaN(n)) return "white"
-                                    if (n < 20) return "red"
-                                    if (n < 40) return "yellow"
-                                    return "green"
-                                }
-                                if (k === "FailSafeTriggered") {
-                                    const s = v.toLowerCase()
-                                    return (s === "true" || s === "triggered" || s === "1") ? "red" : "white"
-                                }
-                                return "white"
-                            }
-
-                            Layout.fillWidth: true
-                        }
+                // System Section
+                TelemetryItem {
+                    label: "Flight Time"
+                    value: parent.parent.row ? (parent.parent.row.flightTime || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "Latency"
+                    value: parent.parent.row ? (parent.parent.row.Latency || "") : ""
+                    Layout.fillWidth: true
+                }
+                TelemetryItem {
+                    label: "FailSafe"
+                    value: parent.parent.row ? (parent.parent.row.FailSafeTriggered || "") : ""
+                    Layout.fillWidth: true
+                    valueColor: {
+                        if (!parent.parent.row || !parent.parent.row.FailSafeTriggered) return "white"
+                        var val = parent.parent.row.FailSafeTriggered.toString().toLowerCase()
+                        return (val === "true" || val === "triggered") ? "" : "white"
                     }
                 }
             }
@@ -187,32 +214,26 @@ Rectangle {
         property color valueColor: "white"
 
         color: "transparent"
-        implicitHeight: 48
-        implicitWidth: 120
+        implicitHeight: 52
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 0
-            spacing: 1
+            spacing: 2
 
             Text {
                 text: label
-                color: "white"
-                font.pixelSize: 16
+                color: "#b0b0b0"
+                font.pixelSize: 12
                 font.weight: Font.Normal
                 horizontalAlignment: Text.AlignLeft
-                Layout.fillWidth: true
-                elide: Text.ElideRight
             }
 
             Text {
                 text: value || "-"
-                color: value ? valueColor : "white"
-                font.pixelSize: 12
+                color: value ? valueColor : "#606060"
+                font.pixelSize: 18
                 font.weight: Font.DemiBold
                 horizontalAlignment: Text.AlignLeft
-                Layout.fillWidth: true
-                elide: Text.ElideRight
             }
         }
     }
@@ -229,7 +250,16 @@ Rectangle {
             latitude: drone.latitude,
             longitude: drone.longitude,
             altitude: drone.altitude,
-            airspeed: drone.airspeed
+            airspeed: drone.airspeed,
+            groundspeed: drone.groundspeed,
+            pitch: drone.pitch,
+            yaw: drone.yaw,
+            climbRate: drone.climbRate,
+            satCount: drone.satCount,
+            mode: drone.mode,
+            flightTime: drone.flightTime,
+            Latency: drone.Latency,
+            FailSafeTriggered: drone.FailSafeTriggered
         });
     }
 
