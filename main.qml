@@ -23,7 +23,6 @@ Window {
         id: mapComponent
         anchors.fill: parent
     }
-
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
@@ -49,10 +48,11 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+
         onWayPointingRequested: {
-            console.log("Waypointing active")
+            console.log("Waypointing mode activated")
             mapComponent.wayPointingActive = true
-            mapComponent.selectedDrone = null
+            mapComponent.selectedDrone = null  // overlay shows once a drone is selected
         }
     }
 
