@@ -372,7 +372,8 @@ Rectangle {
     // Function to clear current selection highlight
     function clearSelection() {
         droneListView.currentIndex = -1
-
+    }
+    
     // this ties into the telemetry panel to control maximum width of the panel         
     signal trackingWidthReady(int w)
     function publishTrackingWidth() {
