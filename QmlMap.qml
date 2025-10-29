@@ -17,7 +17,7 @@ Item {
     property bool wayPointingActive: false
     property var selectedDrone: null
     property var waypointLineModel: []
-
+    property var clickedCoordLabel: null
 
     Plugin {
         id: mapPlugin
@@ -128,17 +128,19 @@ Item {
                 if (mapwindow.wayPointingActive && mapwindow.selectedDrone) {
                     var clickedCoord = mapview.toCoordinate(Qt.point(mouseX, mouseY))
 
-                    // Finalize the line
+                    // Draw the line
                     var droneCoord = QtPositioning.coordinate(
                         mapwindow.selectedDrone.latitude,
                         mapwindow.selectedDrone.longitude
                     )
                     mapwindow.waypointLineModel = [droneCoord, clickedCoord]
 
-                    // Print to console
+                    // Save the clicked coordinate for the label
+                    mapwindow.clickedCoordLabel = clickedCoord
+
                     console.log("Waypoint set at:", clickedCoord.latitude.toFixed(6), clickedCoord.longitude.toFixed(6))
 
-                    // Optionally stop waypointing:
+                    // Optionally disable waypointing
                     mapwindow.wayPointingActive = false
                 }
             }
@@ -168,7 +170,35 @@ Item {
                 }
             }
         }
+        MapQuickItem {
+            id: clickedCoordLabelItem
+            coordinate: mapwindow.clickedCoordLabel
+            visible: mapwindow.clickedCoordLabel !== null
 
+            // offset label 15px right & 15px down from the actual coordinate
+            anchorPoint.x: labelRect.width / 2 - 15
+            anchorPoint.y: labelRect.height + 15
+
+            sourceItem: Rectangle {
+                id: labelRect
+                color: "#ffffff"
+                radius: 5
+
+                // Let the rectangle size itself around the text
+                width: coordText.implicitWidth + 8
+                height: coordText.implicitHeight + 8
+
+                Text {
+                    id: coordTex
+                    anchors.centerIn: parent
+                    text: mapwindow.clickedCoordLabel
+                        ? mapwindow.clickedCoordLabel.latitude.toFixed(6) + ", " + mapwindow.clickedCoordLabel.longitude.toFixed(6)
+                        : ""
+                    color: "black"
+                    font.pixelSize: 14
+                }
+            }
+        }
         MapPolyline {
             line.width: 2
             line.color: "red"
@@ -189,9 +219,15 @@ Item {
         radius: 10
         z: 20  // always on top
 
+        // Column for title and drone list
         Column {
-            anchors.fill: parent
-            anchors.margins: 10
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+                bottom: cancelButton.top   // stop just above the Cancel button
+                margins: 10
+            }
             spacing: 10
 
             Text {
@@ -207,8 +243,11 @@ Item {
                 model: mapwindow.selectedDrone ? [mapwindow.selectedDrone] : []
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
+                anchors.left: parent.left
+                anchors.right: parent.right
+
                 delegate: Rectangle {
-                    width: parent.width
+                    width: ListView.view.width
                     height: 40
                     color: index % 2 === 0 ? "#eeeeee" : "#dddddd"
                     radius: 5
@@ -220,33 +259,49 @@ Item {
                     }
                 }
             }
+        }
 
-            Row {
-                spacing: 10
-                anchors.horizontalCenter: parent.horizontalCenter
+        // Select Points button
+        Button {
+            id: selectPointsButton
+            text: "Select Points"
+            enabled: mapwindow.selectedDrone !== null
+            anchors {
+                bottom: cancelButton.top
+                left: parent.left
+                right: parent.right
+                margins: 10
+                bottomMargin: 6
+            }
+            onClicked: {
+                console.log("Selecting points for drone:", mapwindow.selectedDrone.name)
+                mapwindow.wayPointingActive = true
+                mapwindow.clickedCoordLabel = null
+            }
+        }
 
-                Button {
-                    text: "Cancel"
-                    onClicked: {
-                        mapwindow.wayPointingActive = false
-                        mapwindow.selectedDrone = null
-                        mapwindow.waypointLineModel = []
-                    }
-                }
-
-                Button {
-                    text: "Select Points"
-                    enabled: mapwindow.selectedDrone !== null
-                    onClicked: {
-                        console.log("Selecting points for drone:", mapwindow.selectedDrone.name)
-                        mapwindow.wayPointingActive = true
-                    }
-                }
+        // Cancel button
+        Button {
+            id: cancelButton
+            text: "Cancel"
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+                margins: 10
+                bottomMargin: 10
+            }
+            onClicked: {
+                mapwindow.wayPointingActive = false
+                mapwindow.selectedDrone = null
+                mapwindow.waypointLineModel = []
+                mapwindow.clickedCoordLabel = null
             }
         }
 
         visible: mapwindow.selectedDrone !== null
     }
+
     // Scale Indicator
     Item {
         id: scaleBarContainer

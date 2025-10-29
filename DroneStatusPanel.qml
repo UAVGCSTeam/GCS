@@ -64,7 +64,7 @@ Rectangle {
                 model: activeDroneModel
 
                 delegate: Rectangle {
-                    width: parent.width
+                    width: ListView.view.width
                     height: GcsStyle.PanelStyle.listItemHeight
 
                     ColumnLayout {
