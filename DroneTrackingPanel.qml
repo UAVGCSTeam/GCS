@@ -232,6 +232,7 @@ Rectangle {
 
                     RowLayout {
                         anchors.fill: parent
+                        spacing: GcsStyle.PanelStyle.defaultSpacing
                         anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
                         anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
 
@@ -240,33 +241,33 @@ Rectangle {
                             source: "qrc:/resources/droneStatusSVG.svg"
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredWidth:  GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredHeight: GcsStyle.PanelStyle.statusIconSize
+                            Layout.alignment: Qt.AlignVCenter
                         }
 
                         ColumnLayout {
-                            anchors.left: statusIcon.right
+                            Layout.alignment: Qt.AlignLeft
                             spacing: 2
-                            anchors.leftMargin: GcsStyle.PanelStyle.defaultSpacing
 
                             Text {
-                                Layout.alignment: Qt.AlignLeft
                                 text: model.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
+                                Layout.alignment: Qt.AlignVCenter
                                 text: model.battery
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
 
-                        // This is where we can put the situation status icons
-                        // Text { 
-                        //     anchors.right: parent.right
-                        //     text: "LOL"
-                        // }
+                        Item { Layout.fillWidth: true } // spacer to push 
+                                                // items to right and column layout to left
+
+                        Text { 
+                            // This is where we can put the situation status icons
+                            text: "LOL"
+                        }
                     }
                 }
 
