@@ -98,11 +98,15 @@ Window {
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
     Connections {
         target: droneStatusPanel
-        onStatusHeightReady: telemetryPanel.setStatusHeight(h)
+        function onStatusHeightReady(h) {
+            telemetryPanel.setStatusHeight(h)
+        } 
     }
     Connections {
         target: droneTrackingPanel
-        onTrackingWidthReady: telemetryPanel.setTrackingWidth(w)
+        function onTrackingWidthReady(w) {
+            telemetryPanel.setTrackingWidth(w)
+        } 
     }
 
     // Once the component is fully loaded, run through our js file to grab the needed info
