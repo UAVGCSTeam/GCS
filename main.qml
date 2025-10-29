@@ -32,15 +32,6 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
-    DroneStatusPanel {
-        id: droneStatusPanel
-        anchors {
-            top: parent.top
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        visible: false
-    }
     // Menu bar above the drone tracking panel
     DroneMenuBar {
         id: menuBar
@@ -98,12 +89,13 @@ Window {
     */
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
-    Connections {
-        target: droneStatusPanel
-        function onStatusHeightReady(h) {
-            telemetryPanel.setStatusHeight(h)
-        } 
-    }
+    // TODO: update this to include the command panel instead in the future
+    // Connections {
+    //     target: droneStatusPanel
+    //     function onStatusHeightReady(h) {
+    //         telemetryPanel.setStatusHeight(h)
+    //     } 
+    // }
     Connections {
         target: droneTrackingPanel
         function onTrackingWidthReady(w) {
@@ -115,7 +107,7 @@ Window {
     Component.onCompleted: {
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-        droneStatusPanel.publishStatusHeight();
+        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
         droneTrackingPanel.publishTrackingWidth();
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
@@ -132,15 +124,13 @@ Window {
         function onDroneStateChanged(droneName) {
             // Refresh the displayed list
             fetch();
-
-            // If this is the currently selected drone, update its panel too
-            if (droneStatusPanel.visible) {
+            if (telemetryPanel.visible) {
                 // Find the updated drone
                 var drones = droneController.getAllDrones();
                 for (var i = 0; i < drones.length; i++) {
                     if (drones[i].name === droneName) {
-                        // Update the status panel
-                        droneStatusPanel.populateActiveDroneModel(drones[i]);
+                        // Update the telemetry panel
+                        telemetryPanel.populateActiveDroneModel(drones[i]);
                         break;
                     }
                 }

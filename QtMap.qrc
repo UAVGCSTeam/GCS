@@ -5,7 +5,6 @@
         <file>coordinates.js</file>
         <file>MapDisplayTypeButton.qml</file>
         <file>DroneTrackingPanel.qml</file>
-        <file>DroneStatusPanel.qml</file>
         <file>DroneMenuBar.qml</file>
         <file>manageDroneWindow.qml</file>
         <file>armWindow.qml</file>

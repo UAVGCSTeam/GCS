@@ -233,9 +233,10 @@ Rectangle {
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
-                        spacing: GcsStyle.PanelStyle.defaultSpacing
+                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
 
                         Image {
+                            id: statusIcon
                             source: "qrc:/resources/droneStatusSVG.svg"
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
@@ -244,28 +245,28 @@ Rectangle {
                         }
 
                         ColumnLayout {
-                            Layout.fillWidth: true
+                            anchors.left: statusIcon.right
                             spacing: 2
+                            anchors.leftMargin: GcsStyle.PanelStyle.defaultSpacing
 
                             Text {
+                                Layout.alignment: Qt.AlignLeft
                                 text: model.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
-                                text: model.status
+                                text: model.battery
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
 
-                        Text {
-                            text: model.battery
-                            color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor
-                                                      : (model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor
-                                                                            : GcsStyle.PanelStyle.batteryLowColor)
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                        }
+                        // This is where we can put the situation status icons
+                        // Text { 
+                        //     anchors.right: parent.right
+                        //     text: "LOL"
+                        // }
                     }
                 }
 
