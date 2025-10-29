@@ -67,20 +67,22 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onDroneClicked: {
+        onDroneClicked: function(drone) {
+            // function(drone) is used here to avoid implicit parameter passing. 
+            // In this case the implicit parameter passing was 'drone'
+            // Implicit parameter passing is not allowed for Qt 6.5+
             console.log("[main.qml] Clicked drone:", drone.name)
             if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
                 // Toggle the visability of the telemetry panel if same drone is clicked
                 telemetryPanel.visible = !telemetryPanel.visible
 
-                //If the drone telemetry panel is not visible, then clear selected color
+                // If the drone telemetry panel is not visible, then clear selected color
                 if (!telemetryPanel.visible) {
                     droneTrackingPanel.clearSelection()
                 }
             } else {
-                // update telemetry panel with different drone info
+                // This is the case when the drone that was clicked was not the currently selected drone
                 telemetryPanel.populateActiveDroneModel(drone)
-                // Ensure panel is visible for a new drone
                 telemetryPanel.visible = true
             }
         }

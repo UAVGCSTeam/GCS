@@ -244,7 +244,7 @@ Rectangle {
         property real maxWAtPress: 0
         property bool dragging: false
 
-        onPressed: {
+        onPressed: function(mouse) {
             startWidth = telemMain.width
             startHeight = telemMain.height
 
@@ -257,7 +257,7 @@ Rectangle {
             dragging = true
         }
 
-        onPositionChanged: {
+        onPositionChanged: function(mouse) {
             if (!(mouse.buttons & Qt.LeftButton)) return;
 
             var dx = mouse.x - pressX;
@@ -299,7 +299,7 @@ Rectangle {
 
             Connections {
                 target: topLeftResizeHandle
-                onDraggingChanged: {
+                function onDraggingChanged() {
                     if (topLeftResizeHandle.dragging) {
                         chevron.visible = false
                     } else {
