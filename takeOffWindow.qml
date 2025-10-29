@@ -1,7 +1,8 @@
+import ErrorHandler 1.0
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls 2.15
-import "qrc://gcsStyle/panelStyle.qml" as GcsStyle
+import "qrc://gcsStyle" as GcsStyle
 
 Window {
     id: takeOffWindow
@@ -12,7 +13,7 @@ Window {
     Rectangle {
         id: takeOffBackground
         anchors.fill: parent
-        color: GcsStyle.PanelStyle.primaryColor
+        color: ErrorHandler.requireDefined(GcsStyle.PanelStyle.primaryColor, "GcsStyle.PanelStyle.primaryColor")
 
         // A temporary button that logs a message when clicked
         Button {
@@ -21,5 +22,13 @@ Window {
             anchors.centerIn: parent
             onClicked: console.log("Take-off window button clicked")
         }
+    }
+
+    function requireDefined(value, name) {
+        if (value === undefined) {
+            Qt.quit()
+            throw "[QML Assertion] " + name + " is undefined"
+        }
+        return value
     }
 }

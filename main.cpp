@@ -9,6 +9,7 @@
 #include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
+#include "ErrorHandler.h"
 
 // Function to start the Python XBee script
 QProcess* startXbeeProcess() {
@@ -123,6 +124,14 @@ int main(int argc, char *argv[])
     // TODO: Intialize and make UI button click reach database
 
     QQmlApplicationEngine engine;
+
+    // Expose ErrorHandler as a singleton
+    qmlRegisterSingletonType<ErrorHandler>("ErrorHandler", 1, 0, "ErrorHandler", 
+        [](QQmlEngine*, QJSEngine*) -> QObject* {
+        return new ErrorHandler();
+    });
+    // ErrorHandler errorHandler;
+    // engine.rootContext()->setContextProperty("ErrorHandler", &errorHandler);
 
     // Create and register MapController as an object that the cpp can use
     MapController mapController;
