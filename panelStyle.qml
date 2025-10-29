@@ -30,6 +30,7 @@ QtObject {
     readonly property int buttonSize: 40
     readonly property int buttonRadius: 8
     readonly property color buttonColor: "transparent"
+    readonly property color buttonColor2: "#FFFFFF"
     readonly property color buttonActiveColor: "#4B88A2"
     readonly property color buttonHoverColor: "#e6f0ff"
     readonly property color buttonPressedColor: "#cfe0ff"

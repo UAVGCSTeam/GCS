@@ -288,10 +288,10 @@ Rectangle {
 
                 background: Rectangle {
                     // Sets a fixed background color for the button
-                    color: GcsStyle.ButtonPrimary.color
+                    color: GcsStyle.PanelStyle.buttonColor2
                     radius: 5
                     border.width: 1
-                    border.color: "darkgray"
+                    border.color: "lightgray"
                 }
 
                 contentItem: Text {
@@ -301,7 +301,7 @@ Rectangle {
                     text: parent.text
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: GcsStyle.ButtonPrimary.textColor
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pointSize: 12
                 }
 
