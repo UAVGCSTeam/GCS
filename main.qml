@@ -58,6 +58,7 @@ Window {
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+        visible: false
     }
     DroneTrackingPanel {
         id: droneTrackingPanel
@@ -67,20 +68,22 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         onDroneClicked: {
-                console.log("Clicked drone:", drone.name)
-                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
-                    // Toggle the visability of the status panel if same drone is clicked
-                    droneStatusPanel.visible = !droneStatusPanel.visible
-                } else {
-                    // update status panel with new info
-                    droneStatusPanel.populateActiveDroneModel(drone)
+            console.log("[main.qml] Clicked drone:", drone.name)
+            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
+                // Toggle the visability of the telemetry panel if same drone is clicked
+                telemetryPanel.visible = !telemetryPanel.visible
 
-                    // Ensure panel is visible for a new drone
-                    droneStatusPanel.visible = true
-                    telemetryPanel.populateActiveDroneModel(drone)
-                    telemetryPanel.visible = true
+                //If the drone telemetry panel is not visible, then clear selected color
+                if (!telemetryPanel.visible) {
+                    droneTrackingPanel.clearSelection()
                 }
+            } else {
+                // update telemetry panel with different drone info
+                telemetryPanel.populateActiveDroneModel(drone)
+                // Ensure panel is visible for a new drone
+                telemetryPanel.visible = true
             }
+        }
     }
 
     /*
@@ -111,7 +114,7 @@ Window {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
+            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
         fetch();
