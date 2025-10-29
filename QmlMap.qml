@@ -62,8 +62,9 @@ Item {
                     modelData.latitude > 0 ? modelData.latitude : latitude,
                     modelData.longitude > 0 ? modelData.longitude : longitude
                 )
-                anchorPoint.x: sourceItem.width / 2
-                anchorPoint.y: sourceItem.height
+                // center the icon
+                anchorPoint.x: sourceItem.width / 2 
+                anchorPoint.y: sourceItem.height / 2
 
                 sourceItem: Item {
                     width: markerImage.width
@@ -72,8 +73,8 @@ Item {
                     Image {
                         id: markerImage
                         source: "qrc:/resources/droneMapIconSVG.svg"
-                        width: 100
-                        height: 100
+                        width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
+                        fillMode: Image.PreserveAspectFit
                     }
 
                     DroneLabelComponent {
@@ -190,9 +191,11 @@ Item {
 
     Connections {
         target: mapController
+
         function onCenterPositionChanged(lat, lon) {
             mapview.center = QtPositioning.coordinate(lat, lon)
         }
+
         function onMapTypeChanged(index) {
             if (index < mapview.supportedMapTypes.length) {
                 mapview.activeMapType = mapview.supportedMapTypes[index]

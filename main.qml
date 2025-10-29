@@ -107,13 +107,16 @@ Window {
     Component.onCompleted: {
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
-        droneTrackingPanel.publishTrackingWidth();
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
             console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
+
+        // Get the width and height of the tracking panel and command panel
+        // used for the resizing limit on the telemetry panel
+        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
+        droneTrackingPanel.publishTrackingWidth();
 
         fetch();
     }

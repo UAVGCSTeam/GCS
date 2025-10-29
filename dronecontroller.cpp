@@ -429,35 +429,6 @@ QVariantList DroneController::getDrones() const { // DOUBLE CHECK THIS BRANDON
     return result;
 }
 
-// QVariantList DroneController::getAllDrones() const {
-//     QVariantList result;
-
-//     // Get all drones from the droneList (these are the active drone objects)
-//     for (const auto &drone : droneList) {
-//         QVariantMap droneMap;
-
-//         // Basic data
-//         droneMap["name"] = drone->getName();
-//         droneMap["role"] = drone->getRole();
-//         droneMap["xbeeId"] = drone->getXbeeID();
-//         droneMap["xbeeAddress"] = drone->getXbeeAddress();
-
-//         // Dynamic status info
-//         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
-//         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "NA";
-
-//         // Position data - used by the map component
-//         droneMap["latitude"] = drone->getLatitude();
-//         droneMap["longitude"] = drone->getLongitude();
-//         droneMap["altitude"] = drone->getAltitude();
-//         droneMap["airspeed"] = drone->getAirspeed();
-
-//         result.append(droneMap);
-//     }
-
-//     return result;
-// }
-
 DroneClass* DroneController::getDrone(int index) const {
     if (index < 0 || index >= droneList.size()) {
         qWarning() << "getDrone: index out of range" << index;
