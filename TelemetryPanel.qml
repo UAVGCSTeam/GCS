@@ -24,7 +24,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.bottom: parent.bottom
 
-    property var activeDrone: null // updated by the updateSelectedDroneModel function
+    property var activeDrone: null 
     property int minPanelWidth: 380
     property int minPanelHeight: 140
     property int resizeHandleSize: 20
