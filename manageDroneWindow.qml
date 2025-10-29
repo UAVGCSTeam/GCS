@@ -37,7 +37,7 @@ Window {
         target: droneController
 
         function onDronesChanged() {
-            console.log("dronesChanged signal received in QML");
+            console.log("[manageDroneWindow] dronesChanged signal received in QML");
 
             // Store the currently selected drone address if any
             var selectedDroneAddr = "";
@@ -47,7 +47,7 @@ Window {
 
             // Reload drones from database
             const drones = droneController.getDrones();
-            console.log("Fetched drones after change:", JSON.stringify(drones));
+            console.log("[manageDroneWindow] Fetched drones after change:", JSON.stringify(drones));
 
             // Track the index of the previously selected drone
             var newSelectedIndex = -1;
@@ -57,7 +57,7 @@ Window {
             if (drones && drones.length > 0) {
                 for (var i = 0; i < drones.length; i++) {
                     var drone = drones[i];
-                    console.log("Appending drone to model:", JSON.stringify(drone));
+                    console.log("[manageDroneWindow] Appending drone to model:", JSON.stringify(drone));
 
                     droneModel.append({
                         "name": drone.name || "",
@@ -71,7 +71,7 @@ Window {
                         newSelectedIndex = i;
                     }
                 }
-                console.log("Model count after reload:", droneModel.count);
+                console.log("[manageDroneWindow] Model count after reload:", droneModel.count);
 
                 // Update the selected index
                 selectedDroneIndex = newSelectedIndex;
@@ -81,7 +81,7 @@ Window {
                     populateFieldsWithSelectedDrone();
                 }
             } else {
-                console.log("No drones found after change signal");
+                console.log("[manageDroneWindow] No drones found after change signal");
             }
 
             // These three ensure the manage window works
@@ -91,7 +91,7 @@ Window {
         }
 
         function onXbeeConnectionChanged(connected) {
-            console.log("XBee connection status changed:", connected);
+            console.log("[manageDroneWindow] XBee connection status changed:", connected);
             xbeeConnected = connected;
         }
     }
@@ -102,12 +102,12 @@ Window {
             if (typeof droneController !== "undefined" &&
                 typeof droneController.isSimulationMode === "function") {
                 simulationMode = droneController.isSimulationMode();
-                console.log("Initialized simulation mode:", simulationMode);
+                console.log("[manageDroneWindow] Initialized simulation mode:", simulationMode);
             }
 
             // Different handling for simulation vs normal mode
             if (simulationMode) {
-                console.log("Simulation mode detected - setting up simulation environment");
+                console.log("[manageDroneWindow] Simulation mode detected - setting up simulation environment");
 
                 // Delete all existing drones to start clean
                 droneController.deleteALlDrones_UI();
@@ -122,7 +122,7 @@ Window {
 
                     // Start XBee monitoring for simulation
                     if (typeof droneController.startXbeeMonitoring === 'function') {
-                        console.log("Starting XBee monitoring for simulation");
+                        console.log("[manageDroneWindow] Starting XBee monitoring for simulation");
                         droneController.startXbeeMonitoring();
                     }
                 });
@@ -130,7 +130,7 @@ Window {
             } else {
                 // Normal mode - load drones from database
                 const drones = droneController.getDroneList()
-                console.log("Fetched drones:", drones.length, "drones");
+                console.log("[manageDroneWindow] Fetched drones:", drones.length, "drones");
 
                 if (drones.length > 0) {
                     drones.forEach(drone => {
@@ -148,14 +148,14 @@ Window {
 
                 // Start XBee monitoring for real hardware
                 if (typeof droneController.startXbeeMonitoring === 'function') {
-                    console.log("Starting XBee monitoring for real hardware");
+                    console.log("[manageDroneWindow] Starting XBee monitoring for real hardware");
                     droneController.startXbeeMonitoring();
                 } else {
-                    console.log("startXbeeMonitoring function not available");
+                    console.log("[manageDroneWindow] startXbeeMonitoring function not available");
                     // Create a dummy function to avoid errors
                     if (typeof droneController.startXbeeMonitoring === 'undefined') {
                         droneController.startXbeeMonitoring = function() {
-                            console.log("Dummy XBee monitoring function called");
+                            console.log("[manageDroneWindow] Dummy XBee monitoring function called");
                             xbeeConnected = false;
                         };
                     }
@@ -168,20 +168,20 @@ Window {
 
     // Function to sync the model with database
     function syncModelWithDatabase() {
-        console.log("Syncing model with database...");
+        console.log("[manageDroneWindow] Syncing model with database...");
 
         // Clear the current model
         droneModel.clear();
 
         // Fetch latest data from database
         const drones = droneController.getDrones();
-        console.log("Fetched drones:", JSON.stringify(drones));
+        console.log("[manageDroneWindow] Fetched drones:", JSON.stringify(drones));
 
         // Add each drone to the model
         if (drones && drones.length > 0) {
             for (var i = 0; i < drones.length; i++) {
                 var drone = drones[i];
-                console.log("Processing drone:", JSON.stringify(drone));
+                console.log("[manageDroneWindow] Processing drone:", JSON.stringify(drone));
 
                 droneModel.append({
                     "name": drone.name || "",
@@ -190,9 +190,9 @@ Window {
                     "xbeeAddress": drone.xbeeAddress || ""
                 });
             }
-            console.log("Model updated with", droneModel.count, "drones from database");
+            console.log("[manageDroneWindow] Model updated with", droneModel.count, "drones from database");
         } else {
-            console.log("No drones found in database");
+            console.log("[manageDroneWindow] No drones found in database");
         }
 
         // Force layout update
@@ -203,7 +203,7 @@ Window {
 
     // Adds simulated drone
     function addSimulationDrones() {
-        console.log("Adding simulation drones...");
+        console.log("[manageDroneWindow] Adding simulation drones...");
 
         const simulationDrones = [
             {
@@ -233,12 +233,12 @@ Window {
                     drone.xbeeAddress
                 );
             } catch (e) {
-                console.log("Error saving simulation drone:", e);
+                console.log("[manageDroneWindow] Error saving simulation drone:", e);
             }
         });
 
         syncModelWithDatabase();
-        console.log("Added simulation drones, model count:", droneModel.count);
+        console.log("[manageDroneWindow] Added simulation drones, model count:", droneModel.count);
     }
 
     // Clears simulated drones
@@ -258,9 +258,9 @@ Window {
             simDroneAddresses.forEach(address => {
                 try {
                     droneController.deleteDrone(address);
-                    console.log("Deleted simulation drone with address:", address);
+                    console.log("[manageDroneWindow] Deleted simulation drone with address:", address);
                 } catch (e) {
-                    console.log("Error removing simulation drone from database:", e);
+                    console.log("[manageDroneWindow] Error removing simulation drone from database:", e);
                 }
             });
 
@@ -272,35 +272,35 @@ Window {
     // Function to read and parse the JSON file
     function loadJson(fileUrl) {
         var filePath = fileUrl.toString().replace("file://", "");
-        console.log("Loading JSON from:", filePath);
+        console.log("[manageDroneWindow] Loading JSON from:", filePath);
 
         // Use fileHandler to read the file
         var fileContent = fileHandler.readFile(filePath);
-        console.log("File content read:", fileContent);
+        console.log("[manageDroneWindow] File content read:", fileContent);
 
         if (fileContent.length === 0) {
-            console.log("Failed to read JSON file or file is empty.");
+            console.log("[manageDroneWindow] Failed to read JSON file or file is empty.");
             return;
         }
 
         try {
             // Attempt to parse the JSON
             var jsonData = JSON.parse(fileContent);
-            console.log("Parsed JSON:", JSON.stringify(jsonData, null, 2));
+            console.log("[manageDroneWindow] Parsed JSON:", JSON.stringify(jsonData, null, 2));
 
             // Check if the drones array exists and iterate over it
             if (jsonData.drones) {
                 for (var i = 0; i < jsonData.drones.length; i++) {
-                    console.log("Drone Name: " + (jsonData.drones[i].name || "Unknown"));
-                    console.log("Drone ID: " + (jsonData.drones[i].id || "N/A"));
-                    console.log("Drone Xbee ID: " + (jsonData.drones[i].address || "N/A"));
-                    console.log("Drone Role: " + (jsonData.drones[i].role || "N/A"));
+                    console.log("[manageDroneWindow] Drone Name: " + (jsonData.drones[i].name || "Unknown"));
+                    console.log("[manageDroneWindow] Drone ID: " + (jsonData.drones[i].id || "N/A"));
+                    console.log("[manageDroneWindow] Drone Xbee ID: " + (jsonData.drones[i].address || "N/A"));
+                    console.log("[manageDroneWindow] Drone Role: " + (jsonData.drones[i].role || "N/A"));
                 }
             } else {
-                console.log("No drones found in the JSON data.");
+                console.log("[manageDroneWindow] No drones found in the JSON data.");
             }
         } catch (e) {
-            console.log("Error parsing JSON:", e);
+            console.log("[manageDroneWindow] Error parsing JSON:", e);
         }
     }
 
@@ -1033,7 +1033,7 @@ Window {
                 fileMode: FileDialog.OpenFile
                 nameFilters: ["JSON Files (*.json)", "All Files (*)"]
                 onAccepted: {
-                    console.log("Selected file:", fileDialog.file)
+                    console.log("[manageDroneWindow] Selected file:", fileDialog.file)
                     loadJson(fileDialog.file)
                 }
             }

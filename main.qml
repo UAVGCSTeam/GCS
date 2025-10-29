@@ -71,7 +71,7 @@ Window {
             // function(drone) is used here to avoid implicit parameter passing. 
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
-            console.log("[main.qml] Clicked drone:", drone.name)
+            console.log("[main] Clicked drone:", drone.name)
             if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
                 // Toggle the visability of the telemetry panel if same drone is clicked
                 telemetryPanel.visible = !telemetryPanel.visible
@@ -120,7 +120,7 @@ Window {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
+            console.log("[main] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
         fetch();

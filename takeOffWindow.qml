@@ -20,7 +20,7 @@ Window {
             id: takeOffButton
             text: qsTr("Take-off")
             anchors.centerIn: parent
-            onClicked: console.log("Take-off window button clicked")
+            onClicked: console.log("[takeOffWindow] Button clicked")
         }
     }
 }
