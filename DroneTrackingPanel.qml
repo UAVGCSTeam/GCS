@@ -200,7 +200,6 @@ Rectangle {
 
                     // local UI state
                     property bool hovered: false
-                    // treat the list's current item as "selected" for now
                     property bool selected: ListView.isCurrentItem //false
 
                     // dynamic background color rule:
@@ -214,7 +213,6 @@ Rectangle {
                                  : GcsStyle.PanelStyle.listItemOddColor))
 
                     MouseArea {
-                        //id: droneItem
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -223,7 +221,6 @@ Rectangle {
                         onExited:   parent.hovered = false
 
                         onClicked: {
-                            //Change to make the sle
                             // mark this delegate as the selected one in the ListView
                             droneListView.currentIndex = index
 
@@ -235,7 +232,7 @@ Rectangle {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: GcsStyle.PanelStyle.defaultMargin
+                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
                         spacing: GcsStyle.PanelStyle.defaultSpacing
 
                         Image {
@@ -274,6 +271,7 @@ Rectangle {
 
 
             }
+
             // Add Drone Button
             Button {
                 text: "Add Drone"
