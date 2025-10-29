@@ -17,17 +17,17 @@ When the user releases the mouse, the container is resized to fit the visible te
 Rectangle {
     // This is the container element
     id: mainPanel
-    height: 260
-    width: 360
+    height: 320
+    width: 420
     color: "transparent"
     visible: false
     anchors.right: parent.right
     anchors.bottom: parent.bottom
 
     property var activeDrone: null // updated by the updateSelectedDroneModel function
-    property int minPanelWidth: 300
-    property int minPanelHeight: 200
-    property int resizeHandleSize: 14
+    property int minPanelWidth: 420
+    property int minPanelHeight: 320
+    property int resizeHandleSize: 20
     property int statusHeight: 0
     property int trackingWidth: 0
 
@@ -65,108 +65,17 @@ Rectangle {
             ListElement { label: "Mode";          key: "mode" }
         }
 
-        Flickable {
-            id: flick
+        // Prevent wheel from bubbling to map behind
+        MouseArea {
             anchors.fill: parent
-            anchors.margins: 4
-            clip: true
-            interactive: true
-            boundsBehavior: Flickable.StopAtBounds
-            flickableDirection: Flickable.VerticalFlick
+            acceptedButtons: Qt.NoButton
+            propagateComposedEvents: false
+            onWheel: wheel.accepted = true
+        }
 
-            //compact
-            property int horizontalSpacing:6
-            property int verticalSpacing: 6
-            property int minCellWidth: 100
-            property int cellHeight: 60
-
-            contentWidth: width
-            contentHeight: flow.implicitHeight
-
-            Rectangle {
-                id: flickContent
-                width: flick.width
-                height: flow.implicitHeight
-                color: "transparent"
-
-                Flow {
-                    id: flow
-                    width: flickContent.width
-                    spacing: flick.horizontalSpacing
-                    flow: Flow.LeftToRight
-
-                    Repeater {
-                        model: fieldsModel
-
-                        delegate: Rectangle {
-                            color: "transparent"
-                            clip: true
-
-                            property int columns: Math.max(3, Math.floor((flow.width + flow.spacing) / (flick.minCellWidth + flow.spacing)))
-
-                            width: {
-                                const totalSpacing = (columns - 1) * flow.spacing
-                                const availableWidth = flow.width - totalSpacing
-                                return availableWidth / columns
-                            }
-
-                            height: flick.cellHeight
-
-                            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
-                            property var value: (row && row[key] !== undefined) ? row[key] : ""
-
-                            Column {
-                                anchors.fill: parent
-                                anchors.margins: 2
-                                spacing: 0
-
-                                Text { // telemetry label
-                                    text: label
-                                    color: "white"
-                                    opacity: 0.85
-                                    horizontalAlignment: Text.AlignHCenter
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    font.pixelSize: 11
-                                    wrapMode: Text.NoWrap
-                                    elide: Text.ElideRight
-                                }
-
-                                Text { // telemetry value
-                                    text: value
-                                    color: "white"
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    width: parent.width - 6
-                                    horizontalAlignment: Text.AlignHCenter
-                                    wrapMode: Text.NoWrap
-                                    elide: Text.ElideRight
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // // vertical scrollbar for flickable container
-            // ScrollBar.vertical: ScrollBar {
-            //     policy: ScrollBar.AsNeeded
-            //     interactive: true
-            //     anchors.top: parent.top
-            //     anchors.right: parent.right
-            //     anchors.bottom: parent.bottom
-
-            //     background: Rectangle {
-            //         color: "transparent"
-            //     }
-
-            //     contentItem: Rectangle {
-            //         implicitWidth: 8
-            //         radius: width
-            //         color: "#CCCCCC"
-            //     }
-            // }
-
+        // Double-click handler
+        Item {
+            anchors.fill: parent
             TapHandler {
                 acceptedDevices: PointerDevice.Mouse // listens for mouse taps
                 grabPermissions: PointerHandler.TakeOverForbidden
@@ -201,6 +110,111 @@ Rectangle {
                 }
             }
         }
+
+        // Main Content
+        Flickable {
+            id: flick
+            anchors.fill: parent
+            anchors.margins: 8
+            clip: true
+            interactive: false
+            boundsBehavior: Flickable.StopAtBounds
+            flickableDirection: Flickable.VerticalFlick
+            contentWidth: width
+            contentHeight: flow.implicitHeight
+
+            property int columns: 3
+            property int rowSpacing: 6
+            property int colSpacing: 10
+
+            // GridLayout
+            Item {
+                id: content
+                width: flick.width
+                height: grid.implicitHeight
+
+                property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+
+                GridLayout {
+                    id: grid
+                    anchors.fill: parent
+                    columns: flick.columns
+                    rowSpacing: flick.rowSpacing
+                    columnSpacing: flick.colSpacing
+
+                    Repeater {
+                        model: fieldsModel
+
+                        delegate: TelemetryItem {
+                            label: model.label
+
+                            value: {
+                                const r = content.row
+                                if (!r) return ""
+                                const k = model.key
+                                return (r[k] !== undefined && r[k] !== null && r[k] !== "") ? r[k] : ""
+                            }
+
+                            // contexual coloring
+                            valueColor: {
+                                const k = model.key
+                                const v = value ? value.toString() : ""
+                                if (k === "battery") {
+                                    var n = parseFloat(v.replace('%',''))
+                                    if (isNaN(n)) return "white"
+                                    if (n < 20) return "red"
+                                    if (n < 40) return "yellow"
+                                    return "green"
+                                }
+                                if (k === "FailSafeTriggered") {
+                                    const s = v.toLowerCase()
+                                    return (s === "true" || s === "triggered" || s === "1") ? "red" : "white"
+                                }
+                                return "white"
+                            }
+
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    component TelemetryItem: Rectangle {
+        property string label: ""
+        property string value: ""
+        property color valueColor: "white"
+
+        color: "transparent"
+        implicitHeight: 48
+        implicitWidth: 120
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 0
+            spacing: 1
+
+            Text {
+                text: label
+                color: "white"
+                font.pixelSize: 16
+                font.weight: Font.Normal
+                horizontalAlignment: Text.AlignLeft
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+            }
+
+            Text {
+                text: value || "-"
+                color: value ? valueColor : "white"
+                font.pixelSize: 12
+                font.weight: Font.DemiBold
+                horizontalAlignment: Text.AlignLeft
+                Layout.fillWidth: true
+                elide: Text.ElideRight
+            }
+        }
     }
 
     function populateActiveDroneModel(drone) {
@@ -233,8 +247,6 @@ Rectangle {
         height: resizeHandleSize
         hoverEnabled: true
         cursorShape: Qt.SizeFDiagCursor
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
 
         property real startWidth: 0
         property real startHeight: 0
