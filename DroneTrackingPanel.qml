@@ -246,6 +246,7 @@ Rectangle {
 
                         ColumnLayout {
                             Layout.alignment: Qt.AlignLeft
+                            Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
 
                             Text {
