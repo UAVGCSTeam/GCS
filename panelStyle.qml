@@ -50,6 +50,10 @@ QtObject {
     readonly property int sidebarTopMargin: 100
     readonly property double buttonSpacing: 5
 
+    // Borders 
+    readonly property double defaultBorderWidth: 0.5
+    readonly property color defaultBorderColor: "lightgray"
+
     // Icon properties
     readonly property int iconSize: 24
     readonly property int statusIconSize: 15

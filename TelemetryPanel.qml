@@ -40,6 +40,8 @@ Rectangle {
         height: parent.height
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        border.width: GcsStyle.panelStyle.defaultBorderWidth
+        border.color: GcsStyle.panelStyle.defaultBorderColor
 
         ListModel { id: activeDroneModel }
 

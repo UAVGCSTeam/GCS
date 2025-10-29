@@ -16,6 +16,8 @@ Rectangle {
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
+    border.color: GcsStyle.panelStyle.defaultBorderColor
+    border.width: GcsStyle.panelStyle.defaultBorderWidth
 
     signal droneClicked(var drone)
 
@@ -36,6 +38,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         spacing: 0
+        anchors.margins: parent.border.width
 
         // Left vertical bar
         Rectangle {
@@ -154,11 +157,21 @@ Rectangle {
 
             // Search Bar filters displayed drones in real time
             TextField {
+                // anchors.margins: 2
+                Layout.margins: 7
+                // Layout.alignment: horizontalCenter
                 id: searchField
-                placeholderText: "Search by drone name"
                 Layout.fillWidth: true
+                placeholderText: "Search by drone name"
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                 onTextChanged: filterDroneList(text)
+
+                background: Rectangle { 
+                    color: "white" 
+                    radius: 7
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
+                }
             }
 
             // Drone list view
@@ -293,8 +306,8 @@ Rectangle {
                     // Sets a fixed background color for the button
                     color: GcsStyle.PanelStyle.buttonColor2
                     radius: 5
-                    border.width: 1
-                    border.color: "lightgray"
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
                 }
 
                 contentItem: Text {
