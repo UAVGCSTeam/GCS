@@ -17,17 +17,17 @@ When the user releases the mouse, the container is resized to fit the visible te
 Rectangle {
     // This is the container element
     id: mainPanel
-    height: 140
-    width: 340
+    height: 260
+    width: 360
     color: "transparent"
     visible: false
     anchors.right: parent.right
     anchors.bottom: parent.bottom
 
-    property var activeDrone: null 
-    property int minPanelWidth: 380
-    property int minPanelHeight: 140
-    property int resizeHandleSize: 20
+    property var activeDrone: null // updated by the updateSelectedDroneModel function
+    property int minPanelWidth: 300
+    property int minPanelHeight: 200
+    property int resizeHandleSize: 14
     property int statusHeight: 0
     property int trackingWidth: 0
 
@@ -40,6 +40,8 @@ Rectangle {
         height: parent.height
         anchors.right: parent.right
         anchors.bottom: parent.bottom
+        border.color: "#22FFFFFF"
+        border.width: 1
 
         ListModel { id: activeDroneModel }
 
@@ -63,68 +65,24 @@ Rectangle {
             ListElement { label: "Mode";          key: "mode" }
         }
 
-        // invisible wheel-blocker to prevent map scrolling when over the telemetry panel
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            propagateComposedEvents: false
-            onWheel: wheel.accepted = true
-        }
-
-
-
         Flickable {
             id: flick
             anchors.fill: parent
-            anchors.margins: 10
+            anchors.margins: 4
             clip: true
             interactive: true
             boundsBehavior: Flickable.StopAtBounds
             flickableDirection: Flickable.VerticalFlick
+
+            //compact
+            property int horizontalSpacing:6
+            property int verticalSpacing: 6
+            property int minCellWidth: 100
+            property int cellHeight: 60
+
             contentWidth: width
             contentHeight: flow.implicitHeight
 
-            property int horizontalSpacing: 20
-            property int verticalSpacing: 20
-            property int minCellWidth: 160
-            property int cellHeight: 120
-            Item {
-                anchors.fill: parent
-
-                TapHandler {
-                    acceptedDevices: PointerDevice.Mouse // listens for mouse taps
-                    grabPermissions: PointerHandler.TakeOverForbidden
-
-                    onDoubleTapped: (eventPoint) => {
-                        const localPos = eventPoint.position;
-                        const handleSize = topLeftResizeHandle.width;
-
-                        if (localPos.x < handleSize && localPos.y < handleSize)
-                            return;
-
-                        const gap = GcsStyle.PanelStyle.applicationBorderMargin;
-                        const maxW = telemMain.parent.parent.width - trackingWidth - (3 * gap);
-                        const maxH = telemMain.parent.parent.height - statusHeight - (3 * gap);
-                        const minW = mainPanel.minPanelWidth;
-                        const minH = mainPanel.minPanelHeight;
-
-                        const midW = (minW + maxW) / 2;
-                        const midH = (minH + maxH) / 2;
-
-                        if (telemMain.width > midW || telemMain.height > midH) {
-                            telemMain.width = minW;
-                            telemMain.height = minH;
-                            mainPanel.width = minW;
-                            mainPanel.height = minH;
-                        } else {
-                            telemMain.width = maxW;
-                            telemMain.height = maxH;
-                            mainPanel.width = maxW;
-                            mainPanel.height = maxH;
-                        }
-                    }
-                }
-            }
             Rectangle {
                 id: flickContent
                 width: flick.width
@@ -133,19 +91,18 @@ Rectangle {
 
                 Flow {
                     id: flow
-                    width: flickContent.width - flick.anchors.margins * 2
+                    width: flickContent.width
                     spacing: flick.horizontalSpacing
                     flow: Flow.LeftToRight
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.margins: 0
-                    padding: 0
 
                     Repeater {
                         model: fieldsModel
 
                         delegate: Rectangle {
-                            property int columns: Math.max(1, Math.floor((flow.width + flow.spacing) / (flick.minCellWidth + flow.spacing)))
+                            color: "transparent"
+                            clip: true
+
+                            property int columns: Math.max(3, Math.floor((flow.width + flow.spacing) / (flick.minCellWidth + flow.spacing)))
 
                             width: {
                                 const totalSpacing = (columns - 1) * flow.spacing
@@ -154,52 +111,93 @@ Rectangle {
                             }
 
                             height: flick.cellHeight
-                            color: "transparent"
-                            clip: true
 
                             property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
                             property var value: (row && row[key] !== undefined) ? row[key] : ""
 
-                            Text { // telemetry label
-                                text: label
-                                anchors.top: parent.top
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                color: "white"
-                                font.pixelSize: 18
-                                wrapMode: Text.WordWrap
-                            }
+                            Column {
+                                anchors.fill: parent
+                                anchors.margins: 2
+                                spacing: 0
 
-                            Text { // telemetry value
-                                text: value
-                                anchors.centerIn: parent
-                                width: parent.width - 12
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                font.pixelSize: 24
-                                font.bold: true
-                                color: "white"
+                                Text { // telemetry label
+                                    text: label
+                                    color: "white"
+                                    opacity: 0.85
+                                    horizontalAlignment: Text.AlignHCenter
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    font.pixelSize: 11
+                                    wrapMode: Text.NoWrap
+                                    elide: Text.ElideRight
+                                }
+
+                                Text { // telemetry value
+                                    text: value
+                                    color: "white"
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    width: parent.width - 6
+                                    horizontalAlignment: Text.AlignHCenter
+                                    wrapMode: Text.NoWrap
+                                    elide: Text.ElideRight
+                                    font.pixelSize: 16
+                                    font.bold: true
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // vertical scrollbar for flickable container
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-                interactive: true
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
+            // // vertical scrollbar for flickable container
+            // ScrollBar.vertical: ScrollBar {
+            //     policy: ScrollBar.AsNeeded
+            //     interactive: true
+            //     anchors.top: parent.top
+            //     anchors.right: parent.right
+            //     anchors.bottom: parent.bottom
 
-                background: Rectangle {
-                    color: "transparent"
-                }
+            //     background: Rectangle {
+            //         color: "transparent"
+            //     }
 
-                contentItem: Rectangle {
-                    implicitWidth: 8
-                    radius: width
-                    color: "#CCCCCC"
+            //     contentItem: Rectangle {
+            //         implicitWidth: 8
+            //         radius: width
+            //         color: "#CCCCCC"
+            //     }
+            // }
+
+            TapHandler {
+                acceptedDevices: PointerDevice.Mouse // listens for mouse taps
+                grabPermissions: PointerHandler.TakeOverForbidden
+
+                onDoubleTapped: (eventPoint) => {
+                    const localPos = eventPoint.position;
+                    const handleSize = topLeftResizeHandle.width;
+
+                    if (localPos.x < handleSize && localPos.y < handleSize)
+                        return;
+
+                    const gap = GcsStyle.PanelStyle.applicationBorderMargin;
+                    const maxW = telemMain.parent.parent.width - trackingWidth - (3 * gap);
+                    const maxH = telemMain.parent.parent.height - statusHeight - (3 * gap);
+                    const minW = mainPanel.minPanelWidth;
+                    const minH = mainPanel.minPanelHeight;
+
+                    const midW = (minW + maxW) / 2;
+                    const midH = (minH + maxH) / 2;
+
+                    if (telemMain.width > midW || telemMain.height > midH) {
+                        telemMain.width = minW;
+                        telemMain.height = minH;
+                        mainPanel.width = minW;
+                        mainPanel.height = minH;
+                    } else {
+                        telemMain.width = maxW;
+                        telemMain.height = maxH;
+                        mainPanel.width = maxW;
+                        mainPanel.height = maxH;
+                    }
                 }
             }
         }
@@ -221,13 +219,13 @@ Rectangle {
         });
     }
 
-    function setStatusHeight(h) {
-        statusHeight = h
-    }
+    // function setStatusHeight(h) {
+    //     statusHeight = h
+    // }
 
-    function setTrackingWidth(w) {
-        trackingWidth = w
-    }
+    // function setTrackingWidth(w) {
+    //     trackingWidth = w
+    // }
 
     MouseArea {
         id: topLeftResizeHandle
@@ -235,6 +233,8 @@ Rectangle {
         height: resizeHandleSize
         hoverEnabled: true
         cursorShape: Qt.SizeFDiagCursor
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
 
         property real startWidth: 0
         property real startHeight: 0
@@ -266,14 +266,10 @@ Rectangle {
             var newW = startWidth - dx;
             var newH = startHeight - dy;
 
-            if (newW < minPanelWidth)
-                newW = minPanelWidth;
-            if (newW > maxWAtPress)
-                newW = maxWAtPress;
-            if (newH < minPanelHeight)
-                newH = minPanelHeight;
-            if (newH > maxHAtPress)
-                newH = maxHAtPress;
+            if (newW < minPanelWidth) newW = minPanelWidth;
+            if (newW > maxWAtPress) newW = maxWAtPress;
+            if (newH < minPanelHeight) newH = minPanelHeight;
+            if (newH > maxHAtPress) newH = maxHAtPress;
 
             telemMain.width = newW;
             telemMain.height = newH;
