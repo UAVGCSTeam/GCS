@@ -21,20 +21,48 @@ Window {
         // Reference by id not file name
         id: mapComponent
         anchors.fill: parent
+        onZoomScaleChanged: function(coord1, coord2, pixelLength) {  
+            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+        }
+        onMapInitialized: function(coord1, coord2, pixelLength) {  
+            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+        }
+    }
+
+    MapScaleBarIndicator {
+        id: mapScaleBar
+        anchors {
+            bottom: parent.bottom
+            left: mapTypeButton.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
     }
 
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
-            top: parent.top
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
+            bottom: parent.bottom
+            left: parent.left
+            leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
+            bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
         }
     }
-    DroneStatusPanel {
-        id: droneStatusPanel
+
+    // Menu bar above the drone tracking panel
+    DroneMenuBar {
+        id: droneMenuBar
         anchors {
             top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        z: 100
+    }
+
+    TelemetryPanel {
+        id: telemetryPanel
+        anchors {
+            bottom: parent.bottom
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
@@ -46,49 +74,32 @@ Window {
                 }
             }
     }
-    // Menu bar above the drone tracking panel
-    DroneMenuBar {
-        id: menuBar
-        anchors {
-            top: parent.top
-            left: parent.left
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-    }
-
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
-            top: menuBar.bottom
+            top: droneMenuBar.bottom
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onDroneClicked: {
-                console.log("Clicked drone:", drone.name)
-                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name && droneStatusPanel.visible) {
-                    // Toggle the visability of the status panel if same drone is clicked
-                    droneStatusPanel.visible = !droneStatusPanel.visible
+        onDroneClicked: function(drone) {
+            // function(drone) is used here to avoid implicit parameter passing. 
+            // In this case the implicit parameter passing was 'drone'
+            // Implicit parameter passing is not allowed for Qt 6.5+
+            console.log("[main.qml] Clicked drone:", drone.name)
+            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
+                // Toggle the visability of the telemetry panel if same drone is clicked
+                telemetryPanel.visible = !telemetryPanel.visible
 
-                    // Toggle following flags
-                    mapComponent.followedDroneName = ""
-                    mapComponent.followDrone = false
-                } else {
-                    // update status panel with new info
-                    droneStatusPanel.populateActiveDroneModel(drone)
-
-                    // Ensure panel is visible for a new drone
-                    droneStatusPanel.visible = true
-                    if (drone.latitude && drone.longitude) {
-                        mapComponent.followedDroneName = drone.name
-                        mapComponent.followDrone = true
-                        mapController.setCenterPosition(drone.latitude, drone.longitude)
-                        console.log("Map centered on drone:", drone.name, drone.latitude, drone.longitude)
-                    } else {
-                        mapComponent.followDrone = false
-                        console.warn("Drone has no position:", drone.name)
-                    }
+                // If the drone telemetry panel is not visible, then clear selected color
+                if (!telemetryPanel.visible) {
+                    droneTrackingPanel.clearSelection()
                 }
+            } else {
+                // This is the case when the drone that was clicked was not the currently selected drone
+                telemetryPanel.populateActiveDroneModel(drone)
+                telemetryPanel.visible = true
             }
+        }
     }
 
     /*
@@ -99,19 +110,45 @@ Window {
       We actually want certain UI to be self-contained as it becomes more modular.
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
+
+    // The following two connections are crucial for setting the limits of how much the telemetry window can expand
+    // TODO: update this to include the command panel instead in the future
+    // Connections {
+    //     target: droneStatusPanel
+    //     function onStatusHeightReady(h) {
+    //         telemetryPanel.setStatusHeight(h)
+    //     } 
+    // }
     Connections {
+        target: droneTrackingPanel
+        function onTrackingWidthReady(w) {
+            telemetryPanel.setTrackingWidth(w)
+        } 
     }
 
-    // Once the component is fully loaded, run through our js file to grab the needed info
+
+    // Connections {
+    //     target: MapScaleBarIndicator
+    //     function on(w) {
+    //         telemetryPanel.setTrackingWidth(w)
+    //     } 
+    // }
+    
+
     Component.onCompleted: {
+        // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
+            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
+
+        // Get the width and height of the tracking panel and command panel
+        // used for the resizing limit on the telemetry panel
+        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
+        droneTrackingPanel.publishTrackingWidth();
 
         fetch();
     }
@@ -122,15 +159,13 @@ Window {
         function onDroneStateChanged(droneName) {
             // Refresh the displayed list
             fetch();
-
-            // If this is the currently selected drone, update its panel too
-            if (droneStatusPanel.visible && droneStatusPanel.currentDroneName === droneName) {
+            if (telemetryPanel.visible && droneStatusPanel.currentDroneName === droneName) {
                 // Find the updated drone
                 var drones = droneController.getAllDrones();
                 for (var i = 0; i < drones.length; i++) {
                     if (drones[i].name === droneName) {
-                        // Update the status panel
-                        droneStatusPanel.populateActiveDroneModel(drones[i]);
+                        // Update the telemetry panel
+                        telemetryPanel.populateActiveDroneModel(drones[i]);
                         break;
                     }
                 }

@@ -4,6 +4,7 @@
 #include <QProcess>
 #include <QTimer>
 #include <QDir>
+#include <QtQuickControls2/QQuickStyle>
 #include "mapcontroller.h"
 #include "filehandler.h"
 #include "backend/dbmanager.h"
@@ -86,6 +87,9 @@ QProcess* startXbeeProcess() {
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+    
+    // Force a non-native style so customization is supported
+    QQuickStyle::setStyle("Basic");
 
     /*
      * We want to use QQmlApplicationEngine as it provides more resources for our use case

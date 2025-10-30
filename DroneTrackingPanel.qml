@@ -16,6 +16,8 @@ Rectangle {
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
+    border.color: GcsStyle.panelStyle.defaultBorderColor
+    border.width: GcsStyle.panelStyle.defaultBorderWidth
 
     signal droneClicked(var drone)
 
@@ -36,6 +38,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         spacing: 0
+        anchors.margins: parent.border.width
 
         // Left vertical bar
         Rectangle {
@@ -154,11 +157,21 @@ Rectangle {
 
             // Search Bar filters displayed drones in real time
             TextField {
+                // anchors.margins: 2
+                Layout.margins: 7
+                // Layout.alignment: horizontalCenter
                 id: searchField
-                placeholderText: "Search by drone name"
                 Layout.fillWidth: true
+                placeholderText: "Search by drone name"
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                 onTextChanged: filterDroneList(text)
+
+                background: Rectangle { 
+                    color: "white" 
+                    radius: 7
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
+                }
             }
 
             // Drone list view
@@ -168,6 +181,7 @@ Rectangle {
                 Layout.fillHeight: true
                 clip: true
                 visible: true
+                currentIndex: -1 //Sets currentIndex to -1 so that no item in the index is initially selected
                 /*
                   Eventually this will read from our cpp list of drones
                   We will be able to dynamically read this list and create what we need
@@ -196,32 +210,56 @@ Rectangle {
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
                     height: GcsStyle.PanelStyle.listItemHeight
-                    color: index % 2 == 0 ? GcsStyle.PanelStyle.listItemEvenColor : GcsStyle.PanelStyle.listItemOddColor
+
+                    // local UI state
+                    property bool hovered: false
+                    property bool selected: ListView.isCurrentItem //false
+
+                    // dynamic background color rule:
+                    // selected > hovered > alternating row color (unchanged)
+                    color: selected
+                           ? GcsStyle.PanelStyle.listItemSelectedColor
+                           : (hovered
+                              ? GcsStyle.PanelStyle.listItemHoverColor
+                              : (index % 2 === 0
+                                 ? GcsStyle.PanelStyle.listItemEvenColor
+                                 : GcsStyle.PanelStyle.listItemOddColor))
 
                     MouseArea {
-                        id: droneItem
                         anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onEntered:  parent.hovered = true
+                        onExited:   parent.hovered = false
+
                         onClicked: {
+                            // mark this delegate as the selected one in the ListView
+                            droneListView.currentIndex = index
+
+                            // keep your existing behavior (open/update the right panel)
                             var droneObj = model
-                                droneClicked(droneObj)
+                            droneClicked(droneObj)
                         }
                     }
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: GcsStyle.PanelStyle.defaultMargin
                         spacing: GcsStyle.PanelStyle.defaultSpacing
+                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
 
                         Image {
+                            id: statusIcon
                             source: "qrc:/resources/droneStatusSVG.svg"
-                            sourceSize.width: GcsStyle.PanelStyle.statusIconSize
+                            sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredWidth: GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredHeight: GcsStyle.PanelStyle.statusIconSize
+                            Layout.alignment: Qt.AlignVCenter
                         }
 
                         ColumnLayout {
-                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignLeft
+                            Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
 
                             Text {
@@ -230,22 +268,26 @@ Rectangle {
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
-                                text: model.status
+                                Layout.alignment: Qt.AlignVCenter
+                                text: model.battery
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
 
-                        Text {
-                            text: model.battery
-                            color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor :
-                                                        model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor :
-                                                                 GcsStyle.PanelStyle.batteryLowColor
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                        Item { Layout.fillWidth: true } // spacer to push 
+                                                // items to right and column layout to left
+
+                        Text { 
+                            // This is where we can put the situation status icons
+                            text: "LOL"
                         }
                     }
                 }
+
+
             }
+
             // Add Drone Button
             Button {
                 text: "Add Drone"
@@ -262,20 +304,20 @@ Rectangle {
 
                 background: Rectangle {
                     // Sets a fixed background color for the button
-                    color: GcsStyle.ButtonPrimary.color
+                    color: GcsStyle.PanelStyle.buttonColor2
                     radius: 5
-                    border.width: 1
-                    border.color: "darkgray"
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
                 }
 
                 contentItem: Text {
                     // This button is special because of this code.
-                    // The idea is that the font has a specific color now. The issue was that for 
+                    // The idea is that the font has a specific color now. The issue was that for
                     // systems that use dynamic light/dark mode, the font disappeared in dark mode.
                     text: parent.text
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: GcsStyle.ButtonPrimary.textColor
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pointSize: 12
                 }
 
@@ -339,5 +381,16 @@ Rectangle {
             var filteredList = fullDroneList.filter(drone => drone.name.toLowerCase().includes(searchText.toLowerCase()))
             updateDroneListModel(filteredList)
         }
+    }
+
+    // Function to clear current selection highlight
+    function clearSelection() {
+        droneListView.currentIndex = -1
+    }
+    
+    // this ties into the telemetry panel to control maximum width of the panel         
+    signal trackingWidthReady(int w)
+    function publishTrackingWidth() {
+        trackingWidthReady(width)
     }
 }
