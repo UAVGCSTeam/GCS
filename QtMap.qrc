@@ -7,14 +7,15 @@
         <file>DroneTrackingPanel.qml</file>
         <file>DroneStatusPanel.qml</file>
         <file>DroneMenuBar.qml</file>
-        <file>components/MenuButton.qml</file>
-        <file>components/PopupMenuItem.qml</file>
+        <file>./components/MenuButton.qml</file>
+        <file>./components/PopupMenuItem.qml</file>
         <file>manageDroneWindow.qml</file>
         <file>armWindow.qml</file>
         <file>coordinateNavigationWindow.qml</file>
         <file>goHomeLandingWindow.qml</file>
         <file>takeOffWindow.qml</file>
         <file>DroneLabelComponent.qml</file>
+        <file>TelemetryPanel.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>

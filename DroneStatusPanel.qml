@@ -7,7 +7,7 @@ import "qrc:/gcsStyle" as GcsStyle
 Rectangle {
     id: mainPanel
     width: 300
-    height: 600
+    height: 400
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
@@ -134,4 +134,12 @@ Rectangle {
                                     altitude: drone.altitude,
                                     airspeed: drone.airspeed            });
     }
+
+    signal statusHeightReady(int h)
+
+    function publishStatusHeight() {
+        statusHeightReady(height)
+    }
+
+
 }

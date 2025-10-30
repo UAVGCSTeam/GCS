@@ -57,6 +57,15 @@ Window {
         z: 100
     }
 
+    TelemetryPanel {
+        id: telemetryPanel
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: false
+    }
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -65,18 +74,22 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         onDroneClicked: {
-                console.log("Clicked drone:", drone.name)
-                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
-                    // Toggle the visability of the status panel if same drone is clicked
-                    droneStatusPanel.visible = !droneStatusPanel.visible
-                } else {
-                    // update status panel with new info
-                    droneStatusPanel.populateActiveDroneModel(drone)
+            console.log("[main.qml] Clicked drone:", drone.name)
+            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
+                // Toggle the visability of the telemetry panel if same drone is clicked
+                telemetryPanel.visible = !telemetryPanel.visible
 
-                    // Ensure panel is visible for a new drone
-                    droneStatusPanel.visible = true
+                //If the drone telemetry panel is not visible, then clear selected color
+                if (!telemetryPanel.visible) {
+                    droneTrackingPanel.clearSelection()
                 }
+            } else {
+                // update telemetry panel with different drone info
+                telemetryPanel.populateActiveDroneModel(drone)
+                // Ensure panel is visible for a new drone
+                telemetryPanel.visible = true
             }
+        }
     }
 
     /*
@@ -87,18 +100,27 @@ Window {
       We actually want certain UI to be self-contained as it becomes more modular.
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
+
+    // The following two connections are crucial for setting the limits of how much the telemetry window can expand
     Connections {
+        target: droneStatusPanel
+        onStatusHeightReady: telemetryPanel.setStatusHeight(h)
+    }
+    Connections {
+        target: droneTrackingPanel
+        onTrackingWidthReady: telemetryPanel.setTrackingWidth(w)
     }
 
     // Once the component is fully loaded, run through our js file to grab the needed info
     Component.onCompleted: {
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-
+        droneStatusPanel.publishStatusHeight();
+        droneTrackingPanel.publishTrackingWidth();
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
+            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
         fetch();

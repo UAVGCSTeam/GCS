@@ -3,6 +3,8 @@ import QtQuick 2.15
 
 QtObject {
     // Color scheme
+    readonly property color listItemHoverColor: "#EDF7FF"
+    readonly property color listItemSelectedColor: "#D0EAFF"
     readonly property color primaryColor: "#FFF9FB"
     readonly property color secondaryColor: "#ffffff"
     readonly property color accentColor: "#007bff"
