@@ -33,6 +33,12 @@ Rectangle {
             fullDroneList = updatedDrones;
             updateDroneListModel(fullDroneList);
         }
+        function onDronesChanged() { 
+            // Update the full drone list with latest data
+            var updatedDrones = droneController.getAllDrones();
+            fullDroneList = updatedDrones;
+            updateDroneListModel(fullDroneList);
+        }
     }
 
     RowLayout {
@@ -355,7 +361,6 @@ Rectangle {
         }
     }
 
-    // Function to populate the ListModel with the full list of drones (fetched from main.qml)
     function populateListModel(droneList) {
         fullDroneList = droneList
         updateDroneListModel(fullDroneList) // Initially display all drones
