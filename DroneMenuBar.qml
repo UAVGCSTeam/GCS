@@ -344,17 +344,20 @@ Rectangle {
                 width: parent.width
                 height: 30
                 text: "Way Pointing"
+                enabled: !mapComponent.wayPointingActive
 
                 background: Rectangle {
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
+                    color: !parent.enabled ? "#808080" :  // greyed out when disabled
+                           parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
                            parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
                            "transparent"
                     radius: 2
+                    opacity: parent.enabled ? 1.0 : 0.5   // dim the background when disabled
                 }
 
                 contentItem: Text {
                     text: parent.text
-                    color: GcsStyle.PanelStyle.textPrimaryColor
+                    color: parent.enabled ? GcsStyle.PanelStyle.textPrimaryColor : "#A0A0A0"
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: 11
@@ -363,8 +366,11 @@ Rectangle {
                 }
 
                 onClicked: {
-                    wayPointingRequested()
-                    commandMenu.close()
+                    // onClicked won't trigger if enabled = false, but safe to check
+                    if (parent.enabled) {
+                        wayPointingRequested()
+                        commandMenu.close()
+                    }
                 }
             }
             // Go Home Landing Menu item

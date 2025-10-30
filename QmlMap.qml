@@ -140,7 +140,6 @@ Item {
 
                     console.log("Waypoint set at:", clickedCoord.latitude.toFixed(6), clickedCoord.longitude.toFixed(6))
 
-                    // Optionally disable waypointing
                     mapwindow.wayPointingActive = false
                 }
             }

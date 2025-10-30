@@ -52,7 +52,7 @@ Window {
         onWayPointingRequested: {
             console.log("Waypointing mode activated")
             mapComponent.wayPointingActive = true
-            mapComponent.selectedDrone = null  // overlay shows once a drone is selected
+            mapComponent.clickedCoordLabel = null
         }
     }
 
