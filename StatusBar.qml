@@ -9,8 +9,8 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    height: 60
-    width: Math.min(parent.width * 0.5, 600)
+    height: 45
+    width: Math.min(parent.width * 0.5, 400)
     color: "black"
     radius: 4
 
