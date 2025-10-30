@@ -40,11 +40,6 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     // Set up timer connections but don't start yet
     connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
     connect(&reconnectTimer, &QTimer::timeout, this, &DroneController::tryConnectToDataFile);
-    // --- Simulated Drone Movement ---
-    connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
-    simulationTimer.start(250); // Move once per second
-    qDebug() << "Simulation timer started for drone movement.";
-
 }
 
 // method so QML can retrieve the drone list.
@@ -539,38 +534,4 @@ void DroneController::startXbeeMonitoring() {
     }
 }
 
-void DroneController::simulateDroneMovement() {
-    if (droneList.isEmpty()) {
-        qDebug() << "No drones in list — cannot simulate movement.";
-        return;
-    }
-
-    // Choose the first drone or a specific one by name
-    QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
-    if (drone.isNull()) {
-        // fallback: just take first drone
-        drone = droneList.first();
-    }
-
-    if (drone.isNull()) return;
-
-    // Current position (use default if none)
-    double lat = drone->getLatitude();
-    double lon = drone->getLongitude();
-
-    // Simple smooth movement pattern (circle)
-    static double angle = 0;
-    double radius = 0.0002; // small step distance
-    lat += radius * cos(angle);
-    lon += radius * sin(angle);
-    angle += 0.2;
-
-    drone->setLatitude(lat);
-    drone->setLongitude(lon);
-
-    qDebug() << "Simulating drone movement:" << drone->getName()
-             << "→ lat:" << lat << "lon:" << lon;
-
-    emit droneStateChanged(drone->getName());
-}
 

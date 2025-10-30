@@ -71,8 +71,6 @@ signals:
     void dronesChanged();
 
 private:
-    QTimer simulationTimer;              // Timer for simulated movement
-    void simulateDroneMovement();        // Function to move a drone periodically
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
     //DroneClass &droneClass;
