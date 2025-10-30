@@ -10,7 +10,7 @@ import "qrc:/gcsStyle" as GcsStyle
 Button {
     id: menuItem
     width: parent.width
-    height: 30
+    height: textOfButton.implicitHeight + 15
     flat: true
     
     property bool isDangerous: false
@@ -23,10 +23,11 @@ Button {
         color: parent.pressed || parent.hovered ? 
                (isDangerous ? GcsStyle.PanelStyle.buttonDangerHoverColor : GcsStyle.PanelStyle.buttonHoverColor) :
                "transparent"
-        radius: 2
+        radius: GcsStyle.PanelStyle.buttonRadius
     }
     
     contentItem: Text {
+        id: textOfButton
         text: parent.text
         color: isDangerous ? 
                (parent.pressed || parent.hovered ? GcsStyle.PanelStyle.buttonDangerTextColor : GcsStyle.PanelStyle.buttonDangerColor) : 

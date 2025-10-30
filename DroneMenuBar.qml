@@ -1,4 +1,5 @@
 import QtQuick 2.15
+import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import Qt.labs.platform
 import "qrc:/gcsStyle" as GcsStyle
@@ -15,23 +16,23 @@ import "./components"
 
 Rectangle {
     id: menuBar
-    height: 26
+    property int padding: 2 // padding between the menu bar and the buttons within it
+    height: 26 + padding * 2
     color: GcsStyle.PanelStyle.primaryColor
-    
+
     // Bottom border
     Rectangle {
         anchors.bottom: parent.bottom
-        width: parent.width
-        height: 1
+        height: GcsStyle.panelStyle.defaultBorderWidth // "width" of the border 
+        width: parent.width // span across the menu bar 
         color: GcsStyle.PanelStyle.buttonBorderColor
-        opacity: 0.5
     }
     
-    // Menu items row
-    Row {
+    RowLayout { 
         id: menuRow
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
+        anchors.margins: padding + 0.5 // 0.5 offset helps the visuals :)
         spacing: 0
         
         // GCS Menu Item
@@ -49,12 +50,14 @@ Rectangle {
         }
     }
     
+
     // Keyboard shortcuts
     Shortcut {
         sequence: "Ctrl+Shift+P"
         onActivated: commandMenu.open()
     }
     
+
     Shortcut {
         sequence: "Escape"
         onActivated: {
@@ -62,6 +65,7 @@ Rectangle {
             if (commandMenu.visible) commandMenu.close()
         }
     }
+
     
     // GCS Menu Popup
     Popup {
@@ -76,9 +80,9 @@ Rectangle {
         
         background: Rectangle {
             color: GcsStyle.PanelStyle.primaryColor
-            border.color: GcsStyle.PanelStyle.buttonBorderColor
-            border.width: 1
-            radius: 4
+            border.color: GcsStyle.PanelStyle.defaultBorderColor
+            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+            radius: GcsStyle.PanelStyle.buttonRadius + 3
         }
         
         Column {
@@ -93,6 +97,7 @@ Rectangle {
         }
     }
     
+
     // Command Menu Popup
     Popup {
         id: commandMenu
@@ -106,9 +111,9 @@ Rectangle {
         
         background: Rectangle {
             color: GcsStyle.PanelStyle.primaryColor
-            border.color: GcsStyle.PanelStyle.buttonBorderColor
-            border.width: 1
-            radius: 4
+            border.color: GcsStyle.PanelStyle.defaultBorderColor
+            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+            radius: GcsStyle.PanelStyle.buttonRadius + 3
         }
         
         Column {
@@ -147,6 +152,7 @@ Rectangle {
             }
         }
     }
+    
     
     // Delete confirmation popup
     Popup {
@@ -197,7 +203,8 @@ Rectangle {
             }
         }
     }
-    
+
+
     Popup {
         id: confirmWindow
         modal: true
