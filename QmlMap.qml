@@ -20,7 +20,7 @@ Item {
     }
 
     signal zoomScaleChanged(var coord1, var coord2, var pixelLength) // signal to change the scale bar indicator
-
+    signal mapInitialized(var coord1, var coord2, var pixelLength)
 
     Map {
         id: mapview
@@ -99,6 +99,18 @@ Item {
             var coord1 = mapview.toCoordinate(Qt.point(0, mapview.height - 50))
             var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
             zoomScaleChanged(coord1, coord2, pixelLength)
+        }
+
+        Component.onCompleted: { 
+            // This is the logic needed in order to update the scale bar indicator
+
+            // set fixed pixel length
+            var pixelLength = 100;
+
+            // Map two points on the same horizontal line
+            var coord1 = mapview.toCoordinate(Qt.point(0, mapview.height - 50))
+            var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
+            mapInitialized(coord1, coord2, pixelLength)
         }
     }
 

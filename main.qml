@@ -25,6 +25,9 @@ Window {
         onZoomScaleChanged: function(coord1, coord2, pixelLength) {  
             mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
         }
+        onMapInitialized: function(coord1, coord2, pixelLength) {  
+            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+        }
     }
 
     MapScaleBarIndicator {
@@ -126,8 +129,8 @@ Window {
     // }
     
 
-    // Once the component is fully loaded, run through our js file to grab the needed info
     Component.onCompleted: {
+        // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
         for (var i = 0; i < coords.length; i++) {
