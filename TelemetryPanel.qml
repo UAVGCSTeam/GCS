@@ -17,7 +17,7 @@ When the user releases the mouse, the container is resized to fit the visible te
 Rectangle {
     // This is the container element
     id: mainPanel
-    height: 320
+    height: 330
     width: 420
     color: "transparent"
     visible: false
@@ -25,8 +25,8 @@ Rectangle {
     anchors.bottom: parent.bottom
 
     property var activeDrone: null // updated by the updateSelectedDroneModel function
+    property int minPanelHeight: 330
     property int minPanelWidth: 420
-    property int minPanelHeight: 320
     property int resizeHandleSize: 20
     property int statusHeight: 0
     property int trackingWidth: 0
@@ -120,19 +120,19 @@ Rectangle {
                 }
                 TelemetryItem {
                     label: "Altitude"
-                    value: parent.parent.row ? (parent.parent.row.altitude || "") : ""
+                    value: parent.parent.row ? (parent.parent.row.altitude + "m"|| "") : ""
                     Layout.fillWidth: true
                 }
 
                 // Speed Section
                 TelemetryItem {
                     label: "Airspeed"
-                    value: parent.parent.row ? (parent.parent.row.airspeed || "") : ""
+                    value: parent.parent.row ? (parent.parent.row.airspeed + "m/s"|| "") : ""
                     Layout.fillWidth: true
                 }
                 TelemetryItem {
                     label: "Groundspeed"
-                    value: parent.parent.row ? (parent.parent.row.groundspeed || "") : ""
+                    value: parent.parent.row ? (parent.parent.row.groundspeed + "m/s"|| "") : ""
                     Layout.fillWidth: true
                 }
                 TelemetryItem {
@@ -201,7 +201,7 @@ Rectangle {
                     valueColor: {
                         if (!parent.parent.row || !parent.parent.row.FailSafeTriggered) return "white"
                         var val = parent.parent.row.FailSafeTriggered.toString().toLowerCase()
-                        return (val === "true" || val === "triggered") ? "" : "white"
+                        return (val === "true" || val === "triggered") ? "red" : "white"
                     }
                 }
             }
@@ -222,7 +222,7 @@ Rectangle {
 
             Text {
                 text: label
-                color: "#b0b0b0"
+                color: "#d2d2d2"
                 font.pixelSize: 12
                 font.weight: Font.Normal
                 horizontalAlignment: Text.AlignLeft
@@ -262,14 +262,6 @@ Rectangle {
             FailSafeTriggered: drone.FailSafeTriggered
         });
     }
-
-    // function setStatusHeight(h) {
-    //     statusHeight = h
-    // }
-
-    // function setTrackingWidth(w) {
-    //     trackingWidth = w
-    // }
 
     MouseArea {
         id: topLeftResizeHandle

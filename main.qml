@@ -60,6 +60,16 @@ Window {
         }
         visible: false
     }
+    
+    StatusBar {
+        id: statusBar
+        anchors {
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }   
+    }
+
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
