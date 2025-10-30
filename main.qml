@@ -22,16 +22,30 @@ Window {
         // Reference by id not file name
         id: mapComponent
         anchors.fill: parent
+        onZoomScaleChanged: function(coord1, coord2, pixelLength) {  
+            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+        }
+    }
+
+    MapScaleBarIndicator {
+        id: mapScaleBar
+        anchors {
+            bottom: parent.bottom
+            left: mapTypeButton.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
     }
 
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
-            top: parent.top
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
+            bottom: parent.bottom
+            left: parent.left
+            leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
+            bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
         }
     }
+
     // Menu bar above the drone tracking panel
     DroneMenuBar {
         id: menuBar
@@ -102,6 +116,15 @@ Window {
             telemetryPanel.setTrackingWidth(w)
         } 
     }
+
+
+    // Connections {
+    //     target: MapScaleBarIndicator
+    //     function on(w) {
+    //         telemetryPanel.setTrackingWidth(w)
+    //     } 
+    // }
+    
 
     // Once the component is fully loaded, run through our js file to grab the needed info
     Component.onCompleted: {
