@@ -51,12 +51,13 @@ Window {
 
     // Menu bar above the drone tracking panel
     DroneMenuBar {
-        id: menuBar
+        id: droneMenuBar
         anchors {
             top: parent.top
             left: parent.left
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
+            right: parent.right
         }
+        z: 100
     }
 
     TelemetryPanel {
@@ -71,7 +72,7 @@ Window {
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
-            top: menuBar.bottom
+            top: droneMenuBar.bottom
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }

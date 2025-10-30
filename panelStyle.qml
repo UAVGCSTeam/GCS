@@ -21,6 +21,8 @@ QtObject {
     readonly property int fontSizeLarge: 18
     readonly property int fontSizeMedium: 16
     readonly property int fontSizeSmall: 12
+    readonly property int fontSizeXS: 10
+    readonly property int fontSizeXXS: 10
 
     // Temporary Icons
     readonly property string droneIcon: "🚁"
@@ -28,13 +30,18 @@ QtObject {
 
     // Button properties
     readonly property int buttonSize: 40
-    readonly property int buttonRadius: 8
+    readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
     readonly property color buttonColor2: "#FFFFFF"
     readonly property color buttonActiveColor: "#4B88A2"
     readonly property color buttonHoverColor: "#e6f0ff"
     readonly property color buttonPressedColor: "#cfe0ff"
     readonly property color buttonBorderColor: "#c8c8c8"
+    
+    // Danger/warning button colors
+    readonly property color buttonDangerColor: "#ff4444"
+    readonly property color buttonDangerHoverColor: "#ff8e8e"
+    readonly property color buttonDangerTextColor: "#ffffff"
 
     // List view properties
     readonly property color listItemEvenColor: secondaryColor

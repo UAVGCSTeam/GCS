@@ -14,6 +14,8 @@
         <file>takeOffWindow.qml</file>
         <file>DroneLabelComponent.qml</file>
         <file>TelemetryPanel.qml</file>
+        <file>./components/MenuButton.qml</file>
+        <file>./components/PopupMenuItem.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>
