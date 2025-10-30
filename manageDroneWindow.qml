@@ -129,7 +129,7 @@ Window {
                 timer.start();
             } else {
                 // Normal mode - load drones from database
-                const drones = droneController.getDroneList()
+                const drones = droneController.getAllDrones()
                 console.log("Fetched drones:", drones.length, "drones");
 
                 if (drones.length > 0) {

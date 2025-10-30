@@ -43,7 +43,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
 }
 
 // method so QML can retrieve the drone list.
-QVariantList DroneController::getDroneList() const {
+QVariantList DroneController::getAllDrones() const {
     QVariantList list;
     for (const QSharedPointer<DroneClass> &drone : droneList) {
         QVariantMap droneMap;
@@ -53,14 +53,14 @@ QVariantList DroneController::getDroneList() const {
         droneMap["xbeeId"] = drone->getXbeeID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
-        droneMap["status"] = "Not Connected"; // or "Pending" or another placeholder
-        droneMap["battery"] = "NA"; // static placeholder battery percent
+        droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
+        droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 
-        // uncomment to leave blank (not needed)
-        /*droneMap["lattitude"] = ""; // leave as blank or add a default value
-        droneMap["longitude"] = "";
-        droneMap["altitude"] = "";
-        droneMap["airspeed"] = "";*/
+        // Position data - used by the map component
+        droneMap["latitude"] = drone->getLatitude();
+        droneMap["longitude"] = drone->getLongitude();
+        droneMap["altitude"] = drone->getAltitude();
+        droneMap["airspeed"] = drone->getAirspeed();
 
         list.append(droneMap);
     }
@@ -424,35 +424,6 @@ QVariantList DroneController::getDrones() const { // DOUBLE CHECK THIS BRANDON
         }
     } else {
         qWarning() << "Failed to fetch drones from database:" << query.lastError().text();
-    }
-
-    return result;
-}
-
-QVariantList DroneController::getAllDrones() const {
-    QVariantList result;
-
-    // Get all drones from the droneList (these are the active drone objects)
-    for (const auto &drone : droneList) {
-        QVariantMap droneMap;
-
-        // Basic data
-        droneMap["name"] = drone->getName();
-        droneMap["role"] = drone->getRole();
-        droneMap["xbeeId"] = drone->getXbeeID();
-        droneMap["xbeeAddress"] = drone->getXbeeAddress();
-
-        // Dynamic status info
-        droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
-        droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "NA";
-
-        // Position data - used by the map component
-        droneMap["latitude"] = drone->getLatitude();
-        droneMap["longitude"] = drone->getLongitude();
-        droneMap["altitude"] = drone->getAltitude();
-        droneMap["airspeed"] = drone->getAirspeed();
-
-        result.append(droneMap);
     }
 
     return result;

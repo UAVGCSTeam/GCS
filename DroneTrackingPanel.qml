@@ -16,6 +16,8 @@ Rectangle {
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
+    border.color: GcsStyle.panelStyle.defaultBorderColor
+    border.width: GcsStyle.panelStyle.defaultBorderWidth
 
     signal droneClicked(var drone)
 
@@ -36,6 +38,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         spacing: 0
+        anchors.margins: parent.border.width
 
         // Left vertical bar
         Rectangle {
@@ -154,11 +157,21 @@ Rectangle {
 
             // Search Bar filters displayed drones in real time
             TextField {
+                // anchors.margins: 2
+                Layout.margins: 7
+                // Layout.alignment: horizontalCenter
                 id: searchField
-                placeholderText: "Search by drone name"
                 Layout.fillWidth: true
+                placeholderText: "Search by drone name"
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                 onTextChanged: filterDroneList(text)
+
+                background: Rectangle { 
+                    color: "white" 
+                    radius: 7
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
+                }
             }
 
             // Drone list view
@@ -200,7 +213,6 @@ Rectangle {
 
                     // local UI state
                     property bool hovered: false
-                    // treat the list's current item as "selected" for now
                     property bool selected: ListView.isCurrentItem //false
 
                     // dynamic background color rule:
@@ -214,7 +226,6 @@ Rectangle {
                                  : GcsStyle.PanelStyle.listItemOddColor))
 
                     MouseArea {
-                        //id: droneItem
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
@@ -223,7 +234,6 @@ Rectangle {
                         onExited:   parent.hovered = false
 
                         onClicked: {
-                            //Change to make the sle
                             // mark this delegate as the selected one in the ListView
                             droneListView.currentIndex = index
 
@@ -235,19 +245,21 @@ Rectangle {
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: GcsStyle.PanelStyle.defaultMargin
                         spacing: GcsStyle.PanelStyle.defaultSpacing
+                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
 
                         Image {
+                            id: statusIcon
                             source: "qrc:/resources/droneStatusSVG.svg"
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredWidth:  GcsStyle.PanelStyle.statusIconSize
-                            Layout.preferredHeight: GcsStyle.PanelStyle.statusIconSize
+                            Layout.alignment: Qt.AlignVCenter
                         }
 
                         ColumnLayout {
-                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignLeft
+                            Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
 
                             Text {
@@ -256,24 +268,26 @@ Rectangle {
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
-                                text: model.status
+                                Layout.alignment: Qt.AlignVCenter
+                                text: model.battery
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
 
-                        Text {
-                            text: model.battery
-                            color: model.battery > 70 ? GcsStyle.PanelStyle.batteryHighColor
-                                                      : (model.battery > 30 ? GcsStyle.PanelStyle.batteryMediumColor
-                                                                            : GcsStyle.PanelStyle.batteryLowColor)
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                        Item { Layout.fillWidth: true } // spacer to push 
+                                                // items to right and column layout to left
+
+                        Text { 
+                            // This is where we can put the situation status icons
+                            text: "LOL"
                         }
                     }
                 }
 
 
             }
+
             // Add Drone Button
             Button {
                 text: "Add Drone"
@@ -290,10 +304,10 @@ Rectangle {
 
                 background: Rectangle {
                     // Sets a fixed background color for the button
-                    color: GcsStyle.ButtonPrimary.color
+                    color: GcsStyle.PanelStyle.buttonColor2
                     radius: 5
-                    border.width: 1
-                    border.color: "darkgray"
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
                 }
 
                 contentItem: Text {
@@ -303,7 +317,7 @@ Rectangle {
                     text: parent.text
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: GcsStyle.ButtonPrimary.textColor
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pointSize: 12
                 }
 

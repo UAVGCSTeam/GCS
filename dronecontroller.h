@@ -40,6 +40,8 @@ public:
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool isSimulationMode() const;
     Q_INVOKABLE DroneClass* getDrone(int index) const;
+    // Declaration for retrieving the drone list
+    Q_INVOKABLE QVariantList getAllDrones() const;
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
@@ -52,13 +54,8 @@ public slots:
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
 
-// Declaration for retrieving the drone list
-public:
-    Q_INVOKABLE QVariantList getDroneList() const;
-    // Process data recieved from XBee via shared memory
-    Q_INVOKABLE QVariantList getAllDrones() const;
-
 private slots:
+    // Process data recieved from XBee via shared memory
     void processXbeeData();
     void tryConnectToDataFile();
 
