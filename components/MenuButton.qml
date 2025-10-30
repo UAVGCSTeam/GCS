@@ -9,8 +9,9 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Button {
     id: menuButton
+    anchors.centerIn: parent.parent
     property var menuBar: parent.parent
-    height: menuBar.height
+    height: menuBar.height - 2
     leftPadding: 15
     rightPadding: 15
     flat: true
