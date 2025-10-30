@@ -174,8 +174,8 @@ Item {
             coordinate: mapwindow.clickedCoordLabel
             visible: mapwindow.clickedCoordLabel !== null
 
-            // offset label 15px right & 15px down from the actual coordinate
-            anchorPoint.x: labelRect.width / 2 - 15
+            // offset label 10px right & 15px down from the actual coordinate
+            anchorPoint.x: labelRect.width / 2 - 10
             anchorPoint.y: labelRect.height + 15
 
             sourceItem: Rectangle {
@@ -198,10 +198,56 @@ Item {
                 }
             }
         }
-        MapPolyline {
-            line.width: 2
-            line.color: "red"
-            path: mapwindow.waypointLineModel
+        Canvas {
+            id: waypointCanvas
+            anchors.fill: parent
+            z: 15
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+
+                if (mapwindow.waypointLineModel.length < 2)
+                    return
+
+                function geoToPixel(lat, lon) {
+                    var mapWidth = 256 * Math.pow(2, mapview.zoomLevel);
+                    var x = (lon + 180) / 360 * mapWidth
+                    var sinLat = Math.sin(lat * Math.PI / 180)
+                    var y = (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * mapWidth
+
+                    var centerX = (mapview.center.longitude + 180) / 360 * mapWidth
+                    var sinCenterLat = Math.sin(mapview.center.latitude * Math.PI / 180)
+                    var centerY = (0.5 - Math.log((1 + sinCenterLat) / (1 - sinCenterLat)) / (4 * Math.PI)) * mapWidth
+
+                    return { x: width / 2 + (x - centerX), y: height / 2 + (y - centerY) }
+                }
+
+                var start = geoToPixel(mapwindow.waypointLineModel[0].latitude,
+                                       mapwindow.waypointLineModel[0].longitude)
+                var end = geoToPixel(mapwindow.waypointLineModel[1].latitude,
+                                     mapwindow.waypointLineModel[1].longitude)
+
+                // Draw dotted line
+                ctx.beginPath()
+                ctx.setLineDash([5, 5])
+                ctx.moveTo(start.x, start.y)
+                ctx.lineTo(end.x, end.y)
+                ctx.lineWidth = 2
+                ctx.strokeStyle = "red"
+                ctx.stroke()
+                ctx.setLineDash([])
+
+                // Draw circle at the cursor (end of the line)
+                var radius = 6
+                ctx.beginPath()
+                ctx.arc(end.x, end.y, radius, 0, 2 * Math.PI)
+                ctx.fillStyle = "red"
+                ctx.fill()
+            }
+
+            Connections { target: mapwindow; onWaypointLineModelChanged: waypointCanvas.requestPaint() }
+            Connections { target: mapview; onCenterChanged: waypointCanvas.requestPaint(); onZoomLevelChanged: waypointCanvas.requestPaint() }
         }
         onZoomLevelChanged: updateScaleBar()
         onCenterChanged: updateScaleBar()
