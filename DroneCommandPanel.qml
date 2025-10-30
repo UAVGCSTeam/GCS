@@ -204,11 +204,9 @@ Rectangle {
                                     if (groundMenu.open)
                                     {
                                         groundBody.collapseGroundAni()
-                                        console.log("collapsebutt")
                                     }
                                     else {
                                         groundBody.expandGroundAni()
-                                        console.log("expandbutt")
                                     }
                                     groundMenu.open = !groundMenu.open
                                 }
