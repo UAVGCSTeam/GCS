@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import Qt.labs.platform
 import "qrc:/gcsStyle" as GcsStyle
+import "./components"
 
 /*
  * DroneMenuBar - Menu bar component to display various features and actions
@@ -34,58 +35,16 @@ Rectangle {
         spacing: 0
         
         // GCS Menu Item
-        Button {
+        MenuButton {
             id: gcsMenuItem
             text: "GCS"
-            height: menuBar.height - 1
-            leftPadding: 15
-            rightPadding: 15
-            flat: true
-            
-            background: Rectangle {
-                radius: 5
-                color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor : 
-                       parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor : 
-                       "transparent"
-            }
-            
-            contentItem: Text {
-                text: parent.text
-                color: GcsStyle.PanelStyle.textPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.fontSizeXS
-                font.weight: Font.Medium
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-            
             onClicked: gcsMenu.open()
         }
         
         // Command Menu Item
-        Button {
+        MenuButton {
             id: commandMenuItem
             text: "Command Menu"
-            height: menuBar.height - 1
-            leftPadding: 15
-            rightPadding: 15
-            flat: true
-            
-            background: Rectangle {
-                radius: 5
-                color: parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                       parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                       "transparent"
-            }
-            
-            contentItem: Text {
-                text: parent.text
-                color: GcsStyle.PanelStyle.textPrimaryColor
-                font.pointSize: GcsStyle.PanelStyle.fontSizeXS
-                font.weight: Font.Medium
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-            
             onClicked: commandMenu.open()
         }
     }
@@ -126,43 +85,10 @@ Rectangle {
             width: parent.width
             spacing: 2
             
-            Button {
-                width: parent.width
-                height: 30
+            PopupMenuItem {
                 text: "Manage Drones"
-                flat: true
-                
-                background: Rectangle {
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                           "transparent"
-                    radius: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-                
-                onClicked: {
-                    gcsMenu.close()
-                    var component = Qt.createComponent("manageDroneWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating object:", component.errorString());
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString());
-                    }
-                }
+                windowFile: "manageDroneWindow.qml"
+                menuPopup: gcsMenu
             }
         }
     }
@@ -189,189 +115,35 @@ Rectangle {
             width: parent.width
             spacing: 2
             
-            Button {
-                width: parent.width
-                height: 30
+            PopupMenuItem {
                 text: "ARM"
-                flat: true
-                
-                background: Rectangle {
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                           "transparent"
-                    radius: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-                
-                onClicked: {
-                    commandMenu.close()
-                    var component = Qt.createComponent("armWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating ARM window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
+                windowFile: "armWindow.qml"
+                menuPopup: commandMenu
             }
             
-            Button {
-                width: parent.width
-                height: 30
+            PopupMenuItem {
                 text: "Take-off"
-                flat: true
-                
-                background: Rectangle {
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                           "transparent"
-                    radius: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-                
-                onClicked: {
-                    commandMenu.close()
-                    var component = Qt.createComponent("takeOffWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Take-off window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
+                windowFile: "takeOffWindow.qml"
+                menuPopup: commandMenu
             }
             
-            Button {
-                width: parent.width
-                height: 30
+            PopupMenuItem {
                 text: "Coordinate Navigation"
-                flat: true
-                
-                background: Rectangle {
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                           "transparent"
-                    radius: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-                
-                onClicked: {
-                    commandMenu.close()
-                    var component = Qt.createComponent("coordinateNavigationWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Coordinate Navigation window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
+                windowFile: "coordinateNavigationWindow.qml"
+                menuPopup: commandMenu
             }
             
-            Button {
-                width: parent.width
-                height: 30
+            PopupMenuItem {
                 text: "Go Home Landing"
-                flat: true
-                
-                background: Rectangle {
-                    color: parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                           "transparent"
-                    radius: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-                
-                onClicked: {
-                    commandMenu.close()
-                    var component = Qt.createComponent("goHomeLandingWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating Go Home Landing window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
+                windowFile: "goHomeLandingWindow.qml"
+                menuPopup: commandMenu
             }
             
-            Button {
-                width: parent.width
-                height: 30
+            PopupMenuItem {
                 text: "Delete All Drones"
-                flat: true
-                
-                background: Rectangle {
-                    color: parent.pressed ? "#ff6b6b" :
-                           parent.hovered ? "#ff8e8e" :
-                           "transparent"
-                    radius: 2
-                }
-                
-                contentItem: Text {
-                    text: parent.text
-                    color: parent.pressed || parent.hovered ? "#ffffff" : "#ff4444"
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-                
-                onClicked: {
-                    commandMenu.close()
-                    deleteAllDronesWindow.open()
-                }
+                isDangerous: true
+                menuPopup: commandMenu
+                onMenuItemClicked: deleteAllDronesWindow.open()
             }
         }
     }
@@ -383,7 +155,7 @@ Rectangle {
         focus: true
         width: 200
         height: 200
-        x: 105
+        x: commandMenuItem.x + 2
         y: menuBar.height
         
         background: Rectangle {
@@ -393,16 +165,14 @@ Rectangle {
         }
         
         Column {
-            anchors.fill: parent
-            anchors.margins: 20
+            anchors.centerIn: parent
+            width: parent.width - 40
             spacing: 10
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
             
             Text {
                 text: "Are you sure you want to delete ALL drones?"
                 wrapMode: Text.WordWrap
-                width: parent.width - 20
+                width: parent.width 
                 horizontalAlignment: Text.AlignHCenter
                 font.pointSize: 12
                 color: GcsStyle.PanelStyle.textPrimaryColor
@@ -434,19 +204,19 @@ Rectangle {
         focus: true
         width: 200
         height: 200
-        x: 105
+        x: commandMenuItem.x + 2
         y: menuBar.height + 5
         
         Column {
-            anchors.fill: parent
-            anchors.margins: 20
+            anchors.centerIn: parent
+            width: parent.width - 40
             spacing: 10
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
             
             Text {
                 text: "Drone successfully deleted!"
                 color: GcsStyle.PanelStyle.textPrimaryColor
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
             }
             
             Button {

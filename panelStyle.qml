@@ -32,9 +32,13 @@ QtObject {
     readonly property color buttonColor: "transparent"
     readonly property color buttonActiveColor: "#4B88A2"
     readonly property color buttonHoverColor: "#e6f0ff"
-    readonly property color buttonPressedColor: "#cfe0ff"
     readonly property color buttonBorderColor: "#c8c8c8"
     readonly property color buttonCloseHoverColor: "#E81123"
+    
+    // Danger/warning button colors
+    readonly property color buttonDangerColor: "#ff4444"
+    readonly property color buttonDangerHoverColor: "#ff8e8e"
+    readonly property color buttonDangerTextColor: "#ffffff"
 
     // List view properties
     readonly property color listItemEvenColor: secondaryColor
