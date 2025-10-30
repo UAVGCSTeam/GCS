@@ -28,12 +28,13 @@ QtObject {
 
     // Button properties
     readonly property int buttonSize: 40
-    readonly property int buttonRadius: 8
+    readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
+    readonly property color buttonColor2: "#FFFFFF"
     readonly property color buttonActiveColor: "#4B88A2"
     readonly property color buttonHoverColor: "#e6f0ff"
+    readonly property color buttonPressedColor: "#cfe0ff"
     readonly property color buttonBorderColor: "#c8c8c8"
-    readonly property color buttonCloseHoverColor: "#E81123"
     
     // Danger/warning button colors
     readonly property color buttonDangerColor: "#ff4444"
@@ -53,6 +54,10 @@ QtObject {
     readonly property double iconRightMargin: 7.8
     readonly property int sidebarTopMargin: 100
     readonly property double buttonSpacing: 5
+
+    // Borders 
+    readonly property double defaultBorderWidth: 0.5
+    readonly property color defaultBorderColor: "lightgray"
 
     // Icon properties
     readonly property int iconSize: 24
