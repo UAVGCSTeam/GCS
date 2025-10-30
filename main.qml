@@ -91,7 +91,7 @@ Window {
                         droneCommandPanel.collapse()
                     }
                     else {
-                        droneCommandPanel.expanded()
+                        droneCommandPanel.expand()
                     }
                 }
                 else {

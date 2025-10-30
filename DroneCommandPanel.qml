@@ -16,7 +16,6 @@ Rectangle {
         // Right view
         ColumnLayout {
             Layout.fillWidth: true
-            //Layout.fillHeight: true
             spacing: 0
 
             // Header aka collapsed view
@@ -28,13 +27,6 @@ Rectangle {
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
-                /*Rectangle {
-                    anchors.left: parent.left
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    height: parent.height / 2
-                    color: parent.color
-                }*/
 
                 ColumnLayout {
                     anchors.fill:parent
@@ -68,7 +60,6 @@ Rectangle {
 
                             background: Rectangle {
                                 border.width: 0
-                                //border.color: transparent
                                 color: GcsStyle.PanelStyle.primaryColor
                             }
 
@@ -94,34 +85,34 @@ Rectangle {
                     Text {
                         text: "Commands"
                         font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                        //font.pixelSize: GcsStyle.PanelStyle.headerFontSize - 5
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
+
                 }
             }
+
             //expanded form
             Rectangle {
                 id: expandedBody
                 z: 1
                 color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
+                Layout.topMargin: -30   //so the expanded/collapse view overlap and dont show ugly rounded corner
                 Layout.fillWidth: true
-                Layout.topMargin: -30
-
-                height: 0
-                //opacity: height > 0 ? 1 : 0
+                Layout.preferredHeight: 0
                 clip: true
 
                 PropertyAnimation {
                     id: animation
                     target: expandedBody
-                    property: "height"
+                    property: "Layout.preferredHeight"
                     easing.type: Easing.InOutQuad
                     duration: 500
                 }
 
                 function expand() {
-                    animation.to = content.Layout.preferredHeight
+                    //animation.to = content.Layout.preferredHeight
+                    animation.to = 300
                     animation.running = true
                 }
 
@@ -134,27 +125,41 @@ Rectangle {
                     id: repeaterModel
 
                     ListElement {
-                        name: "Connect" //; destination:
+                        name: "Connect"; category: "ground" //; destination:
                     }
                     ListElement {
-                        name: "Arm Drone" //; destination:
+                        name: "Arm Drone"; category: "ground"//; destination:
                     }
                     ListElement {
-                        name: "Take Off" //; destination:
+                        name: "Take Off"; category: "ground" //; destination:
                     }
                     ListElement {
-                        name: "Waypointing" //; destination:
+                        name: "Waypointing"; category: "flight" //; destination:
                     }
                     ListElement {
-                        name: "Go Home" //; destination:
+                        name: "Go Home"; category: "flight" //; destination:
                     }
                     ListElement {
-                        name: "Hover" //; destination:
+                        name: "Hover"; category: "flight" //; destination:
                     }
+                }
+
+                //sorts the element by category
+                function categoryList(cat) {
+                    var arr = []
+                    for (var i = 0; i < repeaterModel.count; ++i) {
+                        var e = repeaterModel.get(i)
+
+                        if (e.category === cat) {
+                            arr.push(e.name)
+                        }
+                    }
+                    return arr
                 }
 
                 ColumnLayout {
                     id: content
+                    Layout.fillWidth: true
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.margins: GcsStyle.PanelStyle.defaultMargin
@@ -162,7 +167,115 @@ Rectangle {
 
                     Layout.preferredHeight: content.implicitHeight + 14
 
-                    Repeater {
+                    Item {
+                        id: groundMenu
+                        width: parent.width
+                        Layout.topMargin: GcsStyle.PanelStyle.defaultMargin + 10
+                        Layout.bottomMargin: GcsStyle.PanelStyle.defaultMargin
+                        //Layout.topMargin: index === 0 ? 30 : 0 //adding padding above first button
+
+                        property bool open: false
+
+                        //collapse/expand ground panel
+                        function expandGround() {
+                            groundBody.expandGround()
+                        }
+
+                        function collapseGround() {
+                            groundBody.collapseGround()
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Button {
+                                id: groundHeaderButton
+                                text: "Ground"
+                                Layout.fillWidth: true
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+
+                                background: Rectangle {
+                                    border.width: 0.2
+                                    radius: 1
+                                }
+
+                                onClicked: {
+                                    if (groundMenu.open)
+                                    {
+                                        groundBody.collapseGroundAni()
+                                        console.log("collapsebutt")
+                                    }
+                                    else {
+                                        groundBody.expandGroundAni()
+                                        console.log("expandbutt")
+                                    }
+                                    groundMenu.open = !groundMenu.open
+                                }
+                            }
+
+                            Rectangle {
+                                id: groundBody
+                                Layout.fillWidth: true
+                                radius: GcsStyle.PanelStyle.cornerRadius
+                                color: "transparent"
+                                Layout.preferredHeight: 0   //start collapsed
+                                clip: true
+
+                                PropertyAnimation {
+                                    id: animation2
+                                    target: groundBody
+                                    property: "Layout.preferredHeight"
+                                    easing.type: Easing.InOutQuad
+                                    duration: 500
+                                }
+
+
+                                function expandGroundAni() {
+                                    animation2.to = groundContent.implicitHeight
+                                    animation2.running = true
+                                }
+
+                                function collapseGroundAni() {
+                                    animation2.to = 0
+                                    animation2.running = true
+                                }
+
+
+                                ColumnLayout {
+                                    id: groundContent
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.margins: GcsStyle.PanelStyle.defaultMargin
+                                    //width: parent.width
+                                    spacing: 6
+
+                                    Layout.preferredHeight: groundContent.implicitHeight + 14
+
+                                    Repeater {
+                                        model: expandedBody.categoryList("ground")
+                                        delegate: Button {
+                                            text: modelData
+                                            Layout.fillWidth: true
+                                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                            Layout.topMargin: index === 0 ? 20 : 0 //adding padding above first button
+
+                                            background: Rectangle {
+                                                border.width: 0.05
+                                                radius: 1
+                                            }
+
+                                            onClicked: {
+                                                console.log ("opening", text)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    /*Repeater {
                         model: repeaterModel
                         delegate: Button {
                             text: name
@@ -179,7 +292,7 @@ Rectangle {
                                 console.log ("opening", name)
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
@@ -195,6 +308,7 @@ Rectangle {
     function collapse() {
         expandedBody.collapse()
     }
+
     property var activeDrone: null
 
     /*function populateActiveDroneModel(drone) {
