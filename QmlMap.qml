@@ -5,8 +5,8 @@ import QtPositioning
 Item {
     id: mapwindow
 
-    property string followedDroneName: ""
-    property bool followDrone: false
+    property string followDroneName: ""
+    property bool followingDrone: false
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
     property var supportedMapTypes: [
@@ -15,6 +15,7 @@ Item {
         { name: "Terrain", type: Map.TerrainMap },
     ]
     property int currentMapTypeIndex: 0
+    property var _pendingCenter: undefined
 
     Plugin {
         id: mapPlugin
@@ -31,6 +32,25 @@ Item {
         center: QtPositioning.coordinate(latitude, longitude)
         zoomLevel: 18
 
+        // Throttle timer (coalesce bursts)
+        Timer {
+            id: followTimer
+            interval: 50            // 20 Hz max
+            repeat: false
+            onTriggered: {
+                if (_pendingCenter) {
+                    // Option A: jump
+                    // mapview.center = _pendingCenter
+
+                    // Option B (nicer): animate to it
+                    coordAnim.from = mapview.center
+                    coordAnim.to   = _pendingCenter
+                    coordAnim.start()
+                    _pendingCenter = undefined
+                }
+            }
+        }
+
         // gives smooth transition for center changes
         Behavior on center {
                 CoordinateAnimation {
@@ -44,8 +64,10 @@ Item {
             grabPermissions: PointerHandler.TakeOverForbidden
             property geoCoordinate startCenteroid
             onActiveChanged: {
-                if (active)
+                if (active) {
                     startCenteroid = mapview.toCoordinate(centroid.position, false)
+                    turnOffFollowDrone()
+                }
             }
             onScaleChanged: (delta) => {
                 mapview.zoomLevel += Math.log(delta)
@@ -64,6 +86,7 @@ Item {
         DragHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
+            onActiveChanged: if (active) {turnOffFollowDrone()}
             onTranslationChanged: (delta) => { mapview.pan(-delta.x, -delta.y); }
         }
 
@@ -124,6 +147,34 @@ Item {
         }
     }
 
+    // Adding functionality to toggle following a drone 
+    // if called, it will swap from either following the current selected drone or stop following that drone
+    function toggleFollowDrone() {
+        if (followingDrone){
+            turnOffFollowDrone()
+        } else {
+            turnOnFollowDrone()
+        }
+    }
+
+    function turnOnFollowDrone() {
+        if(telemetryPanel.activeDrone !== null) {
+            followingDrone = true
+            followDroneName = telemetryPanel.activeDrone.name
+            if (!followTimer.running) followTimer.start()
+        } else {
+            console.warn("No drone is currently selected to toggle")
+        }
+    }
+
+    function turnOffFollowDrone() {
+        if (followingDrone){
+            console.log("Stop following current drone: ", followDroneName)
+            followingDrone = false;
+            followDroneName = ""
+            if (followTimer.running) followTimer.stop()
+        }
+    }
 
     // Connect to droneController to listen for drone state changes
     Connections {
@@ -132,11 +183,12 @@ Item {
         function onDroneStateChanged(droneName) {
             // Refresh the drone markers when a drone's state changes
             droneMarkerView.model = droneController.getAllDrones();
-            // Following drone funcitions
-            if (mapwindow.followDrone && droneName === mapwindow.followedDroneName) {
-                    var drone = droneController.getDrone(droneName)
-                    if (drone) {
-                        mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
+            // Following drone functions
+            if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
+                var drone = droneController.getDrone(droneName)
+                if (drone) {
+                    // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
+                    _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
                 }
             }
         }
@@ -147,6 +199,23 @@ Item {
         }
     }
 
+
+    Connections {
+        target: mapController
+
+        function onCenterPositionChanged(lat, lon) {
+            mapview.center = QtPositioning.coordinate(lat, lon)
+        }
+
+        function onMapTypeChanged(index) {
+            if (index < mapview.supportedMapTypes.length) {
+                mapview.activeMapType = mapview.supportedMapTypes[index]
+            }
+        }
+        function onZoomLevelChanged(level) {
+                mapview.zoomLevel = level
+        }
+    }
 
     Connections {
         target: mapController

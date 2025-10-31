@@ -19,7 +19,7 @@ Rectangle {
     border.color: GcsStyle.panelStyle.defaultBorderColor
     border.width: GcsStyle.panelStyle.defaultBorderWidth
 
-    signal droneClicked(var drone)
+    signal droneClicked(var drone, var cmdOrCtrlPressed)
 
     // Storing the full list of drones allows filtering
     property var fullDroneList: []
@@ -233,13 +233,25 @@ Rectangle {
                         onEntered:  parent.hovered = true
                         onExited:   parent.hovered = false
 
-                        onClicked: {
+                        onClicked: (mouse) => {
                             // mark this delegate as the selected one in the ListView
                             droneListView.currentIndex = index
+                            
+                            // Check to see if the user is holding cmd or ctrl key
+                            const isCmd = mouse.modifiers & Qt.MetaModifier      // Command key (macOS)
+                            const isCtrl = mouse.modifiers & Qt.ControlModifier  // Control key (Windows/Linux)
+                            var cmdOrCtrlPressed = null
 
+                            if (isCmd || isCtrl) {
+                                cmdOrCtrlPressed = true
+                            } else {
+                                cmdOrCtrlPressed = false
+                            }
+
+                            console.log("Cmd or Ctrl pressed:", cmdOrCtrlPressed)
                             // keep your existing behavior (open/update the right panel)
                             var droneObj = model
-                            droneClicked(droneObj)
+                            droneClicked(droneObj, cmdOrCtrlPressed)
                         }
                     }
 

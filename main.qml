@@ -68,9 +68,10 @@ Window {
         }
         visible: false
         onVisibleChanged: {
+                // TO-DO: do we actually need this. isn't there the same functionality below for the drone tracking panel?
                 if (!visible) {
-                    mapComponent.followDrone = false
-                    mapComponent.followedDroneName = ""
+                    console.log("Stop following current drone de-clicked:", mapComponent.followDroneName)
+                    mapComponent.turnOffFollowDrone()
                 }
             }
     }
@@ -81,12 +82,12 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onDroneClicked: function(drone) {
+        onDroneClicked: function(drone, cmdOrCtrlPressed) {
             // function(drone) is used here to avoid implicit parameter passing. 
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
             console.log("[main.qml] Clicked drone:", drone.name)
-            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
+            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name && telemetryPanel.visible) {
                 // Toggle the visability of the telemetry panel if same drone is clicked
                 telemetryPanel.visible = !telemetryPanel.visible
 
@@ -94,12 +95,37 @@ Window {
                 if (!telemetryPanel.visible) {
                     droneTrackingPanel.clearSelection()
                 }
+
             } else {
                 // This is the case when the drone that was clicked was not the currently selected drone
                 telemetryPanel.populateActiveDroneModel(drone)
                 telemetryPanel.visible = true
+
+                // Ensure that the applicaiton will no longer follow a drone
+                console.log("Stop following current drone when selecting another drone:", mapComponent.followDroneName)
+                mapComponent.turnOffFollowDrone()
+
+                // Check to see if command or ctrl key was pressed
+                if (cmdOrCtrlPressed) {
+                    mapComponent.turnOnFollowDrone()
+                    console.log("Cmd or Ctrl Pressed. Following :", mapComponent.followDroneName)
+                }
+
+                // add cetner drone functionality 
+                if (drone.latitude && drone.longitude){
+                    mapController.setCenterPosition(drone.latitude, drone.longitude)
+                    console.log("Map on centered drone:", drone.name, drone.latitude, drone.longitude)
+                } else {
+                    console.warn("Drone has no position")
+                }
             }
         }
+    }
+
+    // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
+    Shortcut {
+        sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
+        onActivated: mapComponent.toggleFollowDrone()
     }
 
     /*
@@ -159,7 +185,7 @@ Window {
         function onDroneStateChanged(droneName) {
             // Refresh the displayed list
             fetch();
-            if (telemetryPanel.visible && droneStatusPanel.currentDroneName === droneName) {
+            if (telemetryPanel.visible && telemetryPanel.activeDrone.name === droneName) {
                 // Find the updated drone
                 var drones = droneController.getAllDrones();
                 for (var i = 0; i < drones.length; i++) {
