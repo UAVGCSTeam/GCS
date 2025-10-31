@@ -27,12 +27,12 @@ Rectangle {
     Connections {
         target: droneController
 
-        function onDroneStateChanged(droneName) {
-            // Update the full drone list with latest data
-            var updatedDrones = droneController.getAllDrones();
-            fullDroneList = updatedDrones;
-            updateDroneListModel(fullDroneList);
-        }
+        // function onDroneStateChanged(droneName) {
+        //     // Update the full drone list with latest data
+        //     var updatedDrones = droneController.getAllDrones();
+        //     fullDroneList = updatedDrones;
+        //     updateDroneListModel(fullDroneList);
+        // }
     }
 
     RowLayout {

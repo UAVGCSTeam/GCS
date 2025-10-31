@@ -42,10 +42,10 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     // Set up timer connections but don't start yet
     connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
     connect(&reconnectTimer, &QTimer::timeout, this, &DroneController::tryConnectToDataFile);
-    // // --- Simulated Drone Movement ---
-    // connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
-    // simulationTimer.start(250); // Move once per second
-    // qDebug() << "Simulation timer started for drone movement.";
+    // --- Simulated Drone Movement ---
+    connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
+    simulationTimer.start(250); // Move once per second
+    qDebug() << "Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.
@@ -194,6 +194,8 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone)
         qDebug() << "About to emit dronesChanged and droneAdded signals after adding drone";
         emit droneAdded(drone); // right now this is not being used anywhere
         emit dronesChanged();
+        // Adding update to the new QML list
+        rebuildVariant();
         qDebug() << "dronesChanged signal emitted";
         qDebug() << "Drone saved:" << drone->getName();
     }
@@ -235,6 +237,8 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
 
             emit droneUpdated(drone);
             emit dronesChanged();
+            // Adding update to the new QML list
+            rebuildVariant();
             qDebug() << "Drone updated:" << drone->getName();
             break;
         }
@@ -268,6 +272,8 @@ void DroneController::deleteDrone(const QString &input_xbeeId)
     {
         qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
         emit dronesChanged();
+        // Adding update to the new QML list
+        rebuildVariant();
     }
     else
     {
@@ -276,6 +282,8 @@ void DroneController::deleteDrone(const QString &input_xbeeId)
         if (found)
         {
             emit dronesChanged();
+            // Adding update to the new QML list
+            rebuildVariant();
         }
     }
 }
@@ -290,6 +298,8 @@ void DroneController::deleteALlDrones_UI()
         qDebug() << "droneController: All drones deleted successfully!";
 
         emit dronesChanged();
+        // Adding update to the new QML list
+        rebuildVariant();
     }
     else
     {
@@ -589,41 +599,75 @@ void DroneController::startXbeeMonitoring()
     }
 }
 
-// void DroneController::simulateDroneMovement()
-// {
-//     if (droneList.isEmpty())
-//     {
-//         qDebug() << "No drones in list — cannot simulate movement.";
-//         return;
-//     }
+// Called when the droneList is updated
+void DroneController::rebuildVariant()
+{
+    m_dronesVariant.clear();
+    m_dronesVariant.reserve(droneList.size());
+    for (const auto &sp : droneList)
+    {
+        m_dronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
+    }
+}
 
-//     // Choose the first drone or a specific one by name
-//     QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
-//     if (drone.isNull())
-//     {
-//         // fallback: just take first drone
-//         drone = droneList.first();
-//     }
+// Telemetry update for ONE existing drone (same object pointer)
+void DroneController::onTelemetry(const QString &name, double lat, double lon)
+{
+    auto it = std::find_if(droneList.begin(), droneList.end(),
+                           [&](const QSharedPointer<DroneClass> &d)
+                           { return d->getName() == name; });
+    if (it == droneList.end())
+        return;
+    (*it)->setLatitude(lat);  // emits latitudeChanged → QML updates
+    (*it)->setLongitude(lon); // emits longitudeChanged
+}
 
-//     if (drone.isNull())
-//         return;
+void DroneController::simulateDroneMovement()
+{
+    if (droneList.isEmpty())
+    {
+        qDebug() << "No drones in list — cannot simulate movement.";
+        return;
+    }
 
-//     // Current position (use default if none)
-//     double lat = drone->getLatitude();
-//     double lon = drone->getLongitude();
+    // Choose the first drone or a specific one by name
+    QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
+    if (drone.isNull())
+    {
+        // fallback: just take first drone
+        drone = droneList.first();
+    }
 
-//     // Simple smooth movement pattern (circle)
-//     static double angle = 0;
-//     double radius = 0.0002; // small step distance
-//     lat += radius * cos(angle);
-//     lon += radius * sin(angle);
-//     angle += 0.2;
+    if (drone.isNull())
+        return;
 
-//     drone->setLatitude(lat);
-//     drone->setLongitude(lon);
+    // Current position (use default if none)
+    double lat = drone->getLatitude();
+    double lon = drone->getLongitude();
 
-//     qDebug() << "Simulating drone movement:" << drone->getName()
-//              << "→ lat:" << lat << "lon:" << lon;
+    // Simple smooth movement pattern (circle)
+    static double angle = 0;
+    double radius = 0.0002; // small step distance
+    lat += radius * cos(angle);
+    lon += radius * sin(angle);
+    angle += 0.2;
 
-//     emit droneStateChanged(drone->getName());
-// }
+    // drone->setLatitude(lat);
+    // drone->setLongitude(lon);
+
+    qDebug() << "Simulating drone movement:" << drone->getName()
+             << "→ lat:" << lat << "lon:" << lon;
+
+    emit droneStateChanged(drone->getName());
+    onTelemetry(drone->getName(), lat, lon);
+
+}
+
+QObject* DroneController::getDroneByNameQML(const QString &name) const {
+    qDebug() << "We are inside of the new function!";
+    for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>
+        if (sp && sp->getName() == name)                  // use your getter names
+            return static_cast<QObject*>(sp.data());   // expose raw QObject* to QML
+    }
+    return nullptr;
+}

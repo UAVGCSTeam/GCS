@@ -29,6 +29,7 @@
 class DroneController : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QVariantList drones READ drones NOTIFY dronesChanged)
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
@@ -42,6 +43,9 @@ public:
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
+    QVariantList drones() const { return m_dronesVariant; }
+    void rebuildVariant();
+    Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
@@ -67,8 +71,8 @@ signals:
     void dronesChanged();
 
 private:
-    // QTimer simulationTimer;       // Timer for simulated movement
-    // void simulateDroneMovement(); // Function to move a drone periodically
+    QTimer simulationTimer;       // Timer for simulated movement
+    void simulateDroneMovement(); // Function to move a drone periodically
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
     // DroneClass &droneClass;
@@ -84,6 +88,10 @@ private:
 
     QString getDataFilePath();
     QString getConfigFilePath() const;
+
+    // Trying out caching QVariantList for QML property usage
+    QVariantList m_dronesVariant; // cached QObject* view for QML
+    void onTelemetry(const QString& name, double lat, double lon);
 };
 
 #endif // DRONECONTROLLER_H

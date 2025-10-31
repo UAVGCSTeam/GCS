@@ -43,6 +43,10 @@ Item {
                     // mapview.center = _pendingCenter
 
                     // Option B (nicer): animate to it
+                    var drone = droneController.getDrone(followDroneName)
+                    if (drone) {
+                        _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
+                    }
                     coordAnim.from = mapview.center
                     coordAnim.to   = _pendingCenter
                     coordAnim.start()
@@ -92,7 +96,7 @@ Item {
 
         MapItemView {
             id: droneMarkerView
-            model: droneController ? droneController.getAllDrones() : []
+            model: droneController ? droneController.drones : []
             delegate: MapQuickItem {
                 coordinate: QtPositioning.coordinate(
                     modelData.latitude !== undefined ? modelData.latitude : latitude,
@@ -161,6 +165,7 @@ Item {
         if(telemetryPanel.activeDrone !== null) {
             followingDrone = true
             followDroneName = telemetryPanel.activeDrone.name
+            console.log("Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
             console.warn("No drone is currently selected to toggle")
@@ -180,18 +185,18 @@ Item {
     Connections {
         target: droneController
 
-        function onDroneStateChanged(droneName) {
-            // Refresh the drone markers when a drone's state changes
-            droneMarkerView.model = droneController.getAllDrones();
-            // Following drone functions
-            if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
-                var drone = droneController.getDrone(droneName)
-                if (drone) {
-                    // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
-                    _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
-                }
-            }
-        }
+        // function onDroneStateChanged(droneName) {
+        //     // Refresh the drone markers when a drone's state changes
+        //     droneMarkerView.model = droneController.getAllDrones();
+        //     // Following drone functions
+        //     if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
+        //         var drone = droneController.getDrone(droneName)
+        //         if (drone) {
+        //             // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
+        //             _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
+        //         }
+        //     }
+        // }
 
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
@@ -234,8 +239,8 @@ Item {
         }
     }
 
-    Component.onCompleted: {
-        // Initial drone marker setup
-        droneMarkerView.model = droneController.getAllDrones();
+    Component.onCompleted: {        
+        console.log("Number of drones in model:", droneController.drones.length)
+
     }
 }
