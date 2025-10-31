@@ -3,206 +3,320 @@ import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
 
-/**
-This telemetry panel works by making a container, and a visible telemetry window.
-This is necessary in order to have window scaling. When getting the mouse.x and mouse.y positions within MouseArea,
-those positions are relative to the coordinate system of the MouseArea. This means that when the
-MouseArea is moved, the coordinates of the user's mouse is affected.
-
-To get around this scaling issue, we've implemented a container around the visible telem panel.
-Now when scaling the panel, the mouse area stays static --- until the user releases the mouse.
-When the user releases the mouse, the container is resized to fit the visible telem panel.
-**/
-
 Rectangle {
     // This is the container element
-    id: mainPanel
-    height: 140
-    width: 340
-    color: "transparent"
-    visible: false
-    anchors.right: parent.right
+    id: statusBar
+    height: 45
+    width: Math.min(parent.width * 0.5, 400)
+    color: "#80000000"
+    radius: GcsStyle.PanelStyle.cornerRadius
+
+    anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
+    anchors.bottomMargin: 8
 
     property var activeDrone: null 
-    property int minPanelWidth: 380
-    property int minPanelHeight: 140
-    property int resizeHandleSize: 20
-    property int statusHeight: 0
-    property int trackingWidth: 0
+    property bool isExpanded: false
 
+    ListModel { id: activeDroneModel }
+
+    ListModel {
+        id: topRowFields
+        ListElement { label: "Altitude"; key: "altitude"; unit: "m" }
+        ListElement { label: "Climb Rate"; key: "climbRate"; unit: "m/s" }
+        ListElement { label: "Flight Time"; key: "flightTime"; unit: "" }
+    }
+
+    ListModel {
+        id: bottomRowFields
+        ListElement { label: "Distance From GCS"; key: "distanceFromGCS"; unit: "m" }
+        ListElement { label: "Air Speed"; key: "airspeed"; unit: "m/s" }
+        ListElement { label: "Ground Speed"; key: "groundspeed"; unit: "m/s" }
+    }
+
+    ListModel {
+        id: expandedFields
+        ListElement { label: "Latitude"; key: "latitude"; unit: "" }
+        ListElement { label: "Longitude"; key: "longitude"; unit: "" }
+        ListElement { label: "SatCount"; key: "satCount"; unit: "" }
+        
+        ListElement { label: "Yaw"; key: "yaw"; unit: "°" }
+        ListElement { label: "Pitch"; key: "pitch"; unit: "°" }
+        ListElement { label: "Latency"; key: "latency"; unit: "" }
+        
+        ListElement { label: "Status"; key: "status"; unit: "" }
+        ListElement { label: "Mode"; key: "mode"; unit: "" }
+        ListElement { label: "Fail Safe"; key: "FailSafe"; unit: "" }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            isExpanded = !isExpanded
+        }
+        cursorShape: Qt.PointingHandCursor
+    }
+
+    // Expanded Panel
     Rectangle {
-        // This is the visible telem container element
-        id: telemMain
+        // Expanded panel that appears above status bar
+        id: expandedPanel
         color: "#80000000"
         radius: GcsStyle.PanelStyle.cornerRadius
         width: parent.width
-        height: parent.height
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        border.width: GcsStyle.panelStyle.defaultBorderWidth
+        height: 80
+        visible: isExpanded
+        anchors.bottom: parent.top
+        anchors.bottomMargin: 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        
         border.color: GcsStyle.panelStyle.defaultBorderColor
 
-        ListModel { id: activeDroneModel }
-
-        ListModel {
-            id: fieldsModel
-            ListElement { label: "Longitude";     key: "longitude" }
-            ListElement { label: "Latitude";      key: "latitude" }
-            ListElement { label: "Altitude";      key: "altitude" }
-            ListElement { label: "Airspeed";      key: "airspeed" }
-            ListElement { label: "Battery";       key: "battery" }
-            ListElement { label: "Pitch";         key: "pitch" }
-            ListElement { label: "Yaw";           key: "yaw" }
-            ListElement { label: "Groundspeed";   key: "groundspeed" }
-            ListElement { label: "Status";        key: "status" }
-            ListElement { label: "Flight Time";   key: "flightTime" }
-            // default values to fill space
-            ListElement { label: "Latency";       key: "Latency" }
-            ListElement { label: "FailSafeTriggered"; key: "FailSafeTriggered" }
-            ListElement { label: "Climb Rate";    key: "climbRate" }
-            ListElement { label: "GPS Sats";      key: "satCount" }
-            ListElement { label: "Mode";          key: "mode" }
-        }
-
-        // invisible wheel-blocker to prevent map scrolling when over the telemetry panel
-        MouseArea {
+        Item {
             anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            propagateComposedEvents: false
-            onWheel: wheel.accepted = true
-        }
+            anchors.margins: 8
+            anchors.bottomMargin: 0
 
+            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
 
-
-        Flickable {
-            id: flick
-            anchors.fill: parent
-            anchors.margins: 10
-            clip: true
-            interactive: true
-            boundsBehavior: Flickable.StopAtBounds
-            flickableDirection: Flickable.VerticalFlick
-            contentWidth: width
-            contentHeight: flow.implicitHeight
-
-            property int horizontalSpacing: 20
-            property int verticalSpacing: 20
-            property int minCellWidth: 160
-            property int cellHeight: 120
-            Item {
+            GridLayout {
                 anchors.fill: parent
+                columns: 3
+                rowSpacing: 12
+                columnSpacing: 15
 
-                TapHandler {
-                    acceptedDevices: PointerDevice.Mouse // listens for mouse taps
-                    grabPermissions: PointerHandler.TakeOverForbidden
+                Repeater {
+                    model: expandedFields
 
-                    onDoubleTapped: (eventPoint) => {
-                        const localPos = eventPoint.position;
-                        const handleSize = topLeftResizeHandle.width;
+                    delegate: Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
 
-                        if (localPos.x < handleSize && localPos.y < handleSize)
-                            return;
+                        RowLayout {
+                            anchors.centerIn: parent
+                            spacing: 4
 
-                        const gap = GcsStyle.PanelStyle.applicationBorderMargin;
-                        const maxW = telemMain.parent.parent.width - trackingWidth - (3 * gap);
-                        const maxH = telemMain.parent.parent.height - statusHeight - (3 * gap);
-                        const minW = mainPanel.minPanelWidth;
-                        const minH = mainPanel.minPanelHeight;
-
-                        const midW = (minW + maxW) / 2;
-                        const midH = (minH + maxH) / 2;
-
-                        if (telemMain.width > midW || telemMain.height > midH) {
-                            telemMain.width = minW;
-                            telemMain.height = minH;
-                            mainPanel.width = minW;
-                            mainPanel.height = minH;
-                        } else {
-                            telemMain.width = maxW;
-                            telemMain.height = maxH;
-                            mainPanel.width = maxW;
-                            mainPanel.height = maxH;
-                        }
-                    }
-                }
-            }
-            Rectangle {
-                id: flickContent
-                width: flick.width
-                height: flow.implicitHeight
-                color: "transparent"
-
-                Flow {
-                    id: flow
-                    width: flickContent.width - flick.anchors.margins * 2
-                    spacing: flick.horizontalSpacing
-                    flow: Flow.LeftToRight
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.margins: 0
-                    padding: 0
-
-                    Repeater {
-                        model: fieldsModel
-
-                        delegate: Rectangle {
-                            property int columns: Math.max(1, Math.floor((flow.width + flow.spacing) / (flick.minCellWidth + flow.spacing)))
-
-                            width: {
-                                const totalSpacing = (columns - 1) * flow.spacing
-                                const availableWidth = flow.width - totalSpacing
-                                return availableWidth / columns
-                            }
-
-                            height: flick.cellHeight
-                            color: "transparent"
-                            clip: true
-
-                            property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
-                            property var value: (row && row[key] !== undefined) ? row[key] : ""
-
-                            Text { // telemetry label
+                            Text {
                                 text: label
-                                anchors.top: parent.top
-                                anchors.horizontalCenter: parent.horizontalCenter
                                 color: "white"
                                 font.pixelSize: 18
-                                wrapMode: Text.WordWrap
+                                font.bold: true
                             }
 
-                            Text { // telemetry value
-                                text: value
-                                anchors.centerIn: parent
-                                width: parent.width - 12
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                font.pixelSize: 24
-                                font.bold: true
+                            Text {
+                                property var droneRow: parent.parent.parent.parent.parent.row
+                                text: (droneRow && droneRow[key] !== undefined) ? droneRow[key] : "---"
                                 color: "white"
+                                font.pixelSize: 20
+                                font.bold: true
                             }
+                        }
+
+                        Rectangle {
+                            width: 1
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.topMargin: 6
+                            anchors.bottomMargin: 6
+                            color: "#404040"
+                            visible: index < displayFields.count - 1
                         }
                     }
                 }
             }
+        }
+    }
 
-            // vertical scrollbar for flickable container
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-                interactive: true
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: 8
+        spacing: 4
 
-                background: Rectangle {
-                    color: "transparent"
+        property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+
+        // Top Row
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 0
+
+            Repeater {
+                model: topRowFields
+
+                delegate: Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 4
+
+                        Text {
+                            text: label
+                            color: "white"
+                            font.pixelSize: 18
+                            font.bold: true
+                        }
+
+                        Text {
+                            property var droneRow: parent.parent.parent.parent.parent.row
+                            text: (droneRow && droneRow[key] !== undefined) ? droneRow[key] : "---"
+                            color: "white"
+                            font.pixelSize: 20
+                            font.bold: true
+                        }
+
+                        // add unit
+                    }
+
+                    // Separator
+                    Rectangle {
+                        width: 1
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.topMargin: 6
+                        anchors.bottomMargin: 6
+                        color: "#404040"
+                        visible: index < displayFields.count - 1
+                    }
                 }
+            }
+        }
 
-                contentItem: Rectangle {
-                    implicitWidth: 8
-                    radius: width
-                    color: "#CCCCCC"
+        // Horizontal Divider between two rows
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: "#404040"
+            Layout.leftMargin: 10
+            Layout.rightMargin: 10
+        }
+
+        // Bottom Row
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 0
+
+            Repeater {
+                model: bottomRowFields
+
+                delegate: Item {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    
+                    RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 6
+
+                        Text {
+                            text: label
+                            color: "white"
+                            font.pixelSize: 18
+                            font.bold: true
+                        }
+
+                        Text {
+                            property var droneRow: parent.parent.parent.parent.parent.row
+                            text: (droneRow && droneRow[key] !== undefined) ? droneRow[key] : "---"
+                            color: "white"
+                            font.pixelSize: 20
+                            font.bold: true
+                        }
+
+                        // add unit
+                    }
+
+                    // Separator
+                    Rectangle {
+                        width: 1
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.topMargin: 6
+                        anchors.bottomMargin: 6
+                        color: "#404040"
+                        visible: index < displayFields.count - 1
+                    }
                 }
+            }
+        }
+    }
+
+    // Rectangle {
+    //     id: statusBars
+    //     width: parent.width
+    //     height: parent.height
+    //     color: black
+    //     radius: GcsStyle.PanelStyle.cornerRadius
+    //     visible: true
+    //     anchors.horizontalCenter: parent.horizontalCenter
+    //     anchors.bottom: parent.bottom
+    //     anchors.bottomMargin: parent.bottomMargin
+
+    //     Item {
+    //         anchors.fill: parent
+    //         anchors.margins: 15
+    //         anchors.bottomMargin: 64
+
+    //         property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
+
+    //         GridLayout {
+    //             anchors.fill: parent
+    //             columns: 2
+    //             rowSpacing: 12
+    //             columnSpacing: 15
+
+    //             Repeater {
+    //                 model: statusBarFields
+
+    //                 delegate: TelemetryItem {
+    //                     label: model.label
+    //                     value: {
+    //                         var droneRow = parent.parent.row
+    //                         return (droneRow && droneRow[key] !== undefined) ? droneRow[key] : ""
+    //                     }
+    //                     valueColor: {
+    //                         return "white"
+    //                     }
+    //                     Layout.fillWidth: true
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    component TelemetryItem: Rectangle {
+        property string label: ""
+        property string value: "#b0b0b0"
+        property color valueColor: "white"
+
+        color: transparent
+        implicitHeight: 52
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 2
+
+            Text {
+                text: label
+                color: "white"
+                font.pixelSize: 18
+                font.weight: Font.Normal
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignLeft
+            }
+
+            Text {
+                text: value || "---"
+                color: value ? valueColor : "white"
+                font.pixelSize: 24
+                font.bold: true
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignLeft
+                elide: Text.ElideRight
             }
         }
     }
@@ -213,104 +327,33 @@ Rectangle {
 
         activeDroneModel.clear();
         activeDroneModel.append({
-            name: drone.name,
-            status: drone.status,
-            battery: drone.battery,
+            // Position & Navigation
+            altitude: drone.altitude,
             latitude: drone.latitude,
             longitude: drone.longitude,
-            altitude: drone.altitude,
-            airspeed: drone.airspeed
+            distanceFromGCS: drone.distanceFromGCS,
+
+            // Speed & Movement
+            airspeed: drone.airspeed,
+            groundspeed: drone.groundSpeed,
+            climbRate: drone.climbRate,
+
+            // Orientation
+            pitch: drone.pitch,
+            yaw: drone.yaw,
+
+            // System Settings
+            flightTime: drone.flightTime,
+            satCount: drone.satCount,
+            latency: drone.latency,
+            status: drone.status,
+            mode: drone.mode,
+            failSafe: drone.failSafe
         });
     }
 
-    function setStatusHeight(h) {
-        statusHeight = h
-    }
-
-    function setTrackingWidth(w) {
-        trackingWidth = w
-    }
-
-    MouseArea {
-        id: topLeftResizeHandle
-        width: resizeHandleSize
-        height: resizeHandleSize
-        hoverEnabled: true
-        cursorShape: Qt.SizeFDiagCursor
-
-        property real startWidth: 0
-        property real startHeight: 0
-        property real pressX: 0
-        property real pressY: 0
-        property real maxHAtPress: 0
-        property real maxWAtPress: 0
-        property bool dragging: false
-
-        onPressed: function(mouse) {
-            startWidth = telemMain.width
-            startHeight = telemMain.height
-
-            var gap = GcsStyle.PanelStyle.applicationBorderMargin
-            maxHAtPress = telemMain.parent.parent.height - statusHeight - (3 * gap)
-            maxWAtPress = telemMain.parent.parent.width - trackingWidth - (3 * gap)
-
-            pressX = mouse.x
-            pressY = mouse.y
-            dragging = true
-        }
-
-        onPositionChanged: function(mouse) {
-            if (!(mouse.buttons & Qt.LeftButton)) return;
-
-            var dx = mouse.x - pressX;
-            var dy = mouse.y - pressY;
-
-            var newW = startWidth - dx;
-            var newH = startHeight - dy;
-
-            if (newW < minPanelWidth)
-                newW = minPanelWidth;
-            if (newW > maxWAtPress)
-                newW = maxWAtPress;
-            if (newH < minPanelHeight)
-                newH = minPanelHeight;
-            if (newH > maxHAtPress)
-                newH = maxHAtPress;
-
-            telemMain.width = newW;
-            telemMain.height = newH;
-        }
-
-        onReleased: {
-            mainPanel.height = telemMain.height
-            mainPanel.width = telemMain.width
-            dragging = false
-        }
-
-        Text {
-            id: chevron
-            text: "≪"
-            color: "white"
-            font.pixelSize: 16
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.margins: 5
-            rotation: 45
-            visible: true
-            opacity: 0.6
-
-            Connections {
-                target: topLeftResizeHandle
-                function onDraggingChanged() {
-                    if (topLeftResizeHandle.dragging) {
-                        chevron.visible = false
-                    } else {
-                        chevron.visible = true
-                        chevron.opacity = 0.6
-                    }
-                }
-            }
-        }
+    function toggleExpanded() {
+        isExpanded = !isExpanded
     }
 }
 
