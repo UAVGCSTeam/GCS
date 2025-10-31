@@ -15,6 +15,41 @@ Rectangle {
     // Property to receive the drone name
     property string droneName: ""
 
+    //storing wayoint data for each drone
+    property var droneWaypoints: ({}) 
+
+    //tracking drone data 
+    property string previousDrone: ""
+
+    //when drone changes save old date and load new data 
+    onDroneNameChanged: {
+        console.log("Drone name changed to:", droneName)
+
+        //save the current field values for the previous drone if it exists
+        if(previousDrone !== "") {
+            droneWaypoints[previousDrone] = {
+                latitude: latitudeField.text,
+                longitude: longitudeField.text
+            }
+            console.log("Saved waypoints for", previousDrone, ":", droneWaypoints[previousDrone])
+        }
+
+        //load saved data for the new drone if it exists, otherwise clear the fields
+        if(droneName !== "" && droneWaypoints[droneName]) {
+            latitudeField.text = droneWaypoints[droneName].latitude
+            longitudeField.text = droneWaypoints[droneName].longitude
+            console.log("Loaded waypoints for", droneName, ":", droneWaypoints[droneName])
+        } else {
+            latitudeField.text = ""
+            longitudeField.text = ""
+            console.log("No saved waypoints for", droneName, "clearing fields.")
+        }
+
+        //update previousDrone to the current one
+        previousDrone = droneName
+
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 15
@@ -29,10 +64,6 @@ Rectangle {
             color: "black"
         }
 
-       
-
-
-        
         // Latitude input
         TextField {
             id: latitudeField
@@ -46,7 +77,20 @@ Rectangle {
                 border.color: "gray"
                 border.width: 2
             }
+
+
+            onTextChanged: {
+            if(droneName !== "") {
+                if(!droneWaypoints[droneName]){
+                    droneWaypoints[droneName] = {}
+                }
+                    
+                 droneWaypoints[droneName].latitude = text
+                }
+            }
         }
+
+        
 
         // Longitude input
         TextField {
@@ -61,7 +105,19 @@ Rectangle {
                 border.color: "gray"
                 border.width: 2
             }
+
+            // Auto-save as user types
+            onTextChanged: {
+                if (droneName !== "") {
+                    if (!droneWaypoints[droneName]) {
+                        droneWaypoints[droneName] = {}
+                    }
+                    droneWaypoints[droneName].longitude = text
+                }
+            }
         }
+
+         
 
         // Buttons row
         RowLayout {
