@@ -5,31 +5,34 @@ import QtQuick.Controls 2.15
 Rectangle {
     id: waypointWindow
     width: 300
-    height: 230
+    height: 280
     color: "white"
     radius: 10
     border.color: "lightgray"
     border.width: 2
     visible: false
 
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom
-    anchors.margins: 20
+    // Property to receive the drone name
+    property string droneName: ""
 
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 15
         spacing: 12
 
-        // Header
+        // Header with drone name
         Text {
-            text: "Set Waypoints"
+            text: "Set Waypoints" + (droneName ? " - " + droneName : "")
             font.pixelSize: 18
             horizontalAlignment: Text.AlignHCenter
             Layout.alignment: Qt.AlignHCenter
             color: "black"
         }
 
+       
+
+
+        
         // Latitude input
         TextField {
             id: latitudeField
@@ -83,7 +86,7 @@ Rectangle {
                     border.color: "gray"
                 }
                 onClicked: {
-                    console.log("Starting waypointing...")
+                    console.log("Starting waypointing for drone:", droneName)
                     console.log("Latitude:", latitudeField.text)
                     console.log("Longitude:", longitudeField.text)
                     waypointWindow.visible = false

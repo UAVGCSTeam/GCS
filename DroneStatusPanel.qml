@@ -129,10 +129,9 @@ Rectangle {
                 Layout.margins: GcsStyle.PanelStyle.defaultMargin
                 onClicked: {
                     console.log("Waypoint Button Clicked");
-                    //TODO: Open Waypoint Window/Show Waypoint Panel
                     waypointWindow.visible = true;
+                }
             }
-          }
         }
     }
 
@@ -142,10 +141,11 @@ Rectangle {
     // Single instance of WaypointWindow as a child of mainPanel
     WaypointWindow {
           id: waypointWindow
-          parent: Overlay.overlay // <-- makes it a child of the app overlay
+          parent: Overlay.overlay
           x: parent.width - width - 20
           y: parent.height - height - 20
           visible: false
+          droneName: activeDrone ? activeDrone.name : ""  // Bind it directly!
     }
     
     function populateActiveDroneModel(drone) {
