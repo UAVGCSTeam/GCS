@@ -295,8 +295,7 @@ void DroneController::deleteALlDrones_UI()
     {
         droneList.clear(); // also delete drones in C++ memory
 
-        qDebug() << "droneController: All drones deleted successfully!";
-
+        qDebug() << "[dronecontroller.cpp]: All drones deleted successfully!";
         emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
@@ -655,8 +654,8 @@ void DroneController::simulateDroneMovement()
     // drone->setLatitude(lat);
     // drone->setLongitude(lon);
 
-    qDebug() << "Simulating drone movement:" << drone->getName()
-             << "→ lat:" << lat << "lon:" << lon;
+    // qDebug() << "Simulating drone movement:" << drone->getName()
+    //          << "→ lat:" << lat << "lon:" << lon;
 
     emit droneStateChanged(drone.data()); // .data() returns the raw pointer from QSharedPointer
     onTelemetry(drone->getName(), lat, lon);

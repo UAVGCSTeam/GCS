@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <cmath>
 
+
+
 DroneClass::DroneClass(QObject *parent) :
     QObject(parent)
     , m_name("")
@@ -43,6 +45,9 @@ DroneClass::DroneClass(const QString &input_name,
 {
     qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
+
+
+
 void DroneClass::processXbeeMessage(const QString &message) {
     qDebug() << "Drone" << m_name << "received message:" << message;
 
@@ -109,12 +114,16 @@ void DroneClass::processXbeeMessage(const QString &message) {
     setPosition(m_longitude, m_latitude, m_altitude);
 }
 
+
 void DroneClass::setName(const QString &inputName){
     if (m_name != inputName){
         m_name = inputName;
         emit nameChanged();
     }
 }
+
+
+
 void DroneClass::setXbeeAddress(const QString &inputXbeeAddress){
     if (m_xbeeAddress != inputXbeeAddress){
         m_xbeeAddress = inputXbeeAddress;
@@ -185,17 +194,14 @@ void DroneClass::setOrientation(const QVector3D &ori){
         emit orientationChanged();
     }
 }
-
 void DroneClass::setPosition(float x, float y, float z)
 {
     setPosition(QVector3D(x, y, z));
 }
-
 void DroneClass::setVelocity(float x, float y, float z)
 {
     setVelocity(QVector3D(x, y, z));
 }
-
 void DroneClass::setOrientation(float x, float y, float z)
 {
     setOrientation(QVector3D(x, y, z));

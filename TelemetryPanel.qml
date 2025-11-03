@@ -73,8 +73,6 @@ Rectangle {
             onWheel: wheel.accepted = true
         }
 
-
-
         Flickable {
             id: flick
             anchors.fill: parent
@@ -209,9 +207,7 @@ Rectangle {
 
     Connections {
         target: droneController
-        onDroneStateChanged: function(drone) {
-            // console.log("[The drone Obj: ]", drone)
-            // console.log("[The drone name: ]", drone.name)
+        function onDroneStateChanged(drone) {
             populateActiveDroneModel(drone)
         }
     }
