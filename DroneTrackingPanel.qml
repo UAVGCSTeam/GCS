@@ -24,10 +24,6 @@ Rectangle {
     // Storing the full list of drones allows filtering
     property var fullDroneList: []
 
-    Connections {
-        target: droneController
-    }
-
     RowLayout {
         anchors.fill: parent
         spacing: 0

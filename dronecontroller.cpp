@@ -565,7 +565,7 @@ void DroneController::processXbeeData()
             drone->processXbeeMessage(message);
 
             // Emit signal that drone state has changed
-            emit droneStateChanged(drone->getName());
+            emit droneStateChanged(drone.data());
         }
         else
         {
@@ -658,7 +658,7 @@ void DroneController::simulateDroneMovement()
     qDebug() << "Simulating drone movement:" << drone->getName()
              << "→ lat:" << lat << "lon:" << lon;
 
-    emit droneStateChanged(drone->getName());
+    emit droneStateChanged(drone.data()); // .data() returns the raw pointer from QSharedPointer
     onTelemetry(drone->getName(), lat, lon);
 
 }

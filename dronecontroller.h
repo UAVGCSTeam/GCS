@@ -66,7 +66,7 @@ signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
     void droneUpdated(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
-    void droneStateChanged(const QString &droneName);
+    void droneStateChanged(const DroneClass *drone);
     void xbeeConnectionChanged(bool connected);
     void dronesChanged();
 
