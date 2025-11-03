@@ -250,8 +250,7 @@ void DroneController::deleteALlDrones_UI() {
     if (dbManager.deleteAllDrones()) {
         droneList.clear(); // also delete drones in C++ memory
 
-        qDebug() << "droneController: All drones deleted successfully!";
-
+        qDebug() << "[dronecontroller.cpp]: All drones deleted successfully!";
         emit dronesChanged();
     } else {
         qWarning() << "Failed to delete all drones.";
