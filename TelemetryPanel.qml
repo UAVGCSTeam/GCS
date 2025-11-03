@@ -69,20 +69,26 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 8
-        spacing: 0
+        spacing: 4
+
+        // Bar at top of panel
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: "#404040"
+        }
 
         Repeater {
-            id: rowsRepeater
             model: statusBar.fieldRows.length
 
-            delegate: ColumnLayout {
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                spacing: 0
-                visible: index < 2 || isExpanded // permanently leave last 2 rows visible
+                Layout.fillHeight: true
+                visible: index > 2 || isExpanded // permanently leave last 2 rows visible
+                spacing: 4
 
                 property var rowFields: statusBar.fieldRows[index]
-
+                
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -95,11 +101,10 @@ Rectangle {
                         delegate: Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            Layout.minimumWidth: 100
 
-                            ColumnLayout {
+                            RowLayout {
                                 anchors.centerIn: parent
-                                spacing: 2
+                                spacing: 6
 
                                 Text {
                                     text: modelData.label
@@ -108,24 +113,19 @@ Rectangle {
                                     Layout.alignment: Qt.AlignHCenter
                                 }
 
-                                RowLayout {
-                                    spacing: 3
-                                    Layout.alignment: Qt.AlignHCenter
-
-                                    Text {
-                                        text: (statusBar.row && statusBar.row[modelData.key] !== undefined) 
-                                            ? statusBar.row[modelData.key] : "---"
-                                        color: "white"
-                                        font.pixelSize: 14
-                                        font.bold: true
-                                    }
-                                    
-                                    Text {
-                                        text: modelData.unit || ""
-                                        color: "white"
-                                        font.pixelSize: 14
-                                        visible: !!modelData.unit
-                                    }
+                                Text {
+                                    text: (statusBar.row && statusBar.row[modelData.key] !== undefined) 
+                                        ? statusBar.row[modelData.key] : "---"
+                                    color: "white"
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                }
+                                
+                                Text {
+                                    text: modelData.unit || ""
+                                    color: "white"
+                                    font.pixelSize: 14
+                                    visible: !!modelData.unit
                                 }
                             }
 
@@ -147,6 +147,8 @@ Rectangle {
                 // Divider between rows
                 Rectangle {
                     Layout.fillWidth: true
+                    Layout.leftMargin: 10
+                    Layout.rightMargin: 10
                     height: 1
                     color: "#404040"
                     visible: index < rowsModel.count - 1 && (index < 1 || isExpanded)
