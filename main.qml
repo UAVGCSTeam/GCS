@@ -182,26 +182,13 @@ Window {
     Connections {
         target: droneController
 
-        // function onDroneStateChanged(droneName) {
-        //     // Refresh the displayed list
-        //     fetch();
-        //     if (telemetryPanel.visible && telemetryPanel.activeDrone.name === droneName) {
-        //         // Find the updated drone
-        //         var drones = droneController.getAllDrones();
-        //         for (var i = 0; i < drones.length; i++) {
-        //             if (drones[i].name === droneName) {
-        //                 // Update the telemetry panel
-        //                 telemetryPanel.populateActiveDroneModel(drones[i]);
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
     }
 
+    // NOT DYNAMIC: deleted functionality 
     function fetch() {
-        var drones = droneController.getAllDrones();
-        droneTrackingPanel.populateListModel(drones);
+        // changing between droneController.getAllDrones() and droneController.drones
+        // var drones = droneController.getAllDrones();
+        // droneTrackingPanel.populateListModel(drones);
         // uncomment these for populating the list based on the database
 
         /*const response = [

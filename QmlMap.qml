@@ -6,6 +6,7 @@ Item {
     id: mapwindow
 
     property string followDroneName: ""
+    property var followDrone: null
     property bool followingDrone: false
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
@@ -32,21 +33,27 @@ Item {
         center: QtPositioning.coordinate(latitude, longitude)
         zoomLevel: 18
 
+        Connections {
+            target: followDrone
+            enabled: followingDrone && !!followDrone
+            // These handler names come from your Q_PROPERTY NOTIFY signals
+            function onLatitudeChanged()  { mapview.queueCenterUpdate() }
+            function onLongitudeChanged() { mapview.queueCenterUpdate() }
+        }
+
+        function queueCenterUpdate() {
+            if (!followingDrone || !followDrone) return
+            _pendingCenter = QtPositioning.coordinate(followDrone.latitude, followDrone.longitude)
+        }
+
         // Throttle timer (coalesce bursts)
         Timer {
             id: followTimer
             interval: 50            // 20 Hz max
-            repeat: false
+            repeat: true
             onTriggered: {
                 if (_pendingCenter) {
-                    // Option A: jump
-                    // mapview.center = _pendingCenter
-
-                    // Option B (nicer): animate to it
-                    var drone = droneController.getDrone(followDroneName)
-                    if (drone) {
-                        _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
-                    }
+                    // console.log("we are in the timer: longitude", _pendingCenter)
                     coordAnim.from = mapview.center
                     coordAnim.to   = _pendingCenter
                     coordAnim.start()
@@ -55,13 +62,21 @@ Item {
             }
         }
 
+        CoordinateAnimation {
+            id: coordAnim
+            target: mapview
+            property: "center"
+            duration: 200
+            easing.type: Easing.InOutQuad
+        }
+
         // gives smooth transition for center changes
         Behavior on center {
-                CoordinateAnimation {
-                    duration: 1200
-                    easing.type: Easing.InOutQuad
-                }
+            CoordinateAnimation {
+                duration: 1200
+                easing.type: Easing.InOutQuad
             }
+        }
 
         PinchHandler {
             target: null
@@ -164,6 +179,7 @@ Item {
     function turnOnFollowDrone() {
         if(telemetryPanel.activeDrone !== null) {
             followingDrone = true
+            followDrone = telemetryPanel.activeDrone
             followDroneName = telemetryPanel.activeDrone.name
             console.log("Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
@@ -176,6 +192,7 @@ Item {
         if (followingDrone){
             console.log("Stop following current drone: ", followDroneName)
             followingDrone = false;
+            followDrone = null
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
@@ -204,23 +221,6 @@ Item {
         }
     }
 
-
-    Connections {
-        target: mapController
-
-        function onCenterPositionChanged(lat, lon) {
-            mapview.center = QtPositioning.coordinate(lat, lon)
-        }
-
-        function onMapTypeChanged(index) {
-            if (index < mapview.supportedMapTypes.length) {
-                mapview.activeMapType = mapview.supportedMapTypes[index]
-            }
-        }
-        function onZoomLevelChanged(level) {
-                mapview.zoomLevel = level
-        }
-    }
 
     Connections {
         target: mapController

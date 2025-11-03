@@ -26,13 +26,6 @@ Rectangle {
 
     Connections {
         target: droneController
-
-        // function onDroneStateChanged(droneName) {
-        //     // Update the full drone list with latest data
-        //     var updatedDrones = droneController.getAllDrones();
-        //     fullDroneList = updatedDrones;
-        //     updateDroneListModel(fullDroneList);
-        // }
     }
 
     RowLayout {
@@ -200,12 +193,12 @@ Rectangle {
 
                         Make drone symbols update based on status.
                 */
-                ListModel {
-                    // This ListModel gets its data from the fetch() JS function in main.qml
-                    id: droneListModel
-                }
+                // ListModel {
+                //     // This ListModel gets its data from the fetch() JS function in main.qml
+                //     id: droneListModel
+                // }
 
-                model: droneListModel
+                model: droneController ? droneController.drones : []
 
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
@@ -250,7 +243,8 @@ Rectangle {
 
                             console.log("Cmd or Ctrl pressed:", cmdOrCtrlPressed)
                             // keep your existing behavior (open/update the right panel)
-                            var droneObj = model
+                            // either changing between model and model data
+                            var droneObj = modelData
                             droneClicked(droneObj, cmdOrCtrlPressed)
                         }
                     }
@@ -275,13 +269,13 @@ Rectangle {
                             spacing: 2
 
                             Text {
-                                text: model.name
+                                text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
-                                text: model.battery
+                                text: modelData.battery ? modelData.battery : "Battery Not Found"
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
