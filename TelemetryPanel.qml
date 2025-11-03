@@ -73,8 +73,6 @@ Rectangle {
             onWheel: wheel.accepted = true
         }
 
-
-
         Flickable {
             id: flick
             anchors.fill: parent
@@ -207,19 +205,27 @@ Rectangle {
         }
     }
 
+    Connections {
+        target: droneController
+        function onDroneStateChanged(drone) {
+            populateActiveDroneModel(drone)
+        }
+    }
+
+
     function populateActiveDroneModel(drone) {
         if (!drone) return;
         activeDrone = drone;
 
         activeDroneModel.clear();
         activeDroneModel.append({
-            name: drone.name,
-            status: drone.status,
-            battery: drone.battery,
-            latitude: drone.latitude,
-            longitude: drone.longitude,
-            altitude: drone.altitude,
-            airspeed: drone.airspeed
+            name: drone.name ? drone.name : "",
+            status: drone.status ? drone.status : "",
+            battery: drone.battery ? drone.battery : "",
+            latitude: drone.latitude ? drone.latitude : "",
+            longitude: drone.longitude ? drone.longitude : "",
+            altitude: drone.altitude ? drone.altitude : "",
+            airspeed: drone.airspeed ? drone.airspeed : ""
         });
     }
 

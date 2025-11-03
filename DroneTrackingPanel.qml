@@ -19,27 +19,8 @@ Rectangle {
     border.color: GcsStyle.panelStyle.defaultBorderColor
     border.width: GcsStyle.panelStyle.defaultBorderWidth
 
-    signal droneClicked(var drone)
+    signal droneClicked(var drone, var cmdOrCtrlPressed)
 
-    // Storing the full list of drones allows filtering
-    property var fullDroneList: []
-
-    Connections {
-        target: droneController
-
-        function onDroneStateChanged(droneName) {
-            // Update the full drone list with latest data
-            var updatedDrones = droneController.getAllDrones();
-            fullDroneList = updatedDrones;
-            updateDroneListModel(fullDroneList);
-        }
-        function onDronesChanged() { 
-            // Update the full drone list with latest data
-            var updatedDrones = droneController.getAllDrones();
-            fullDroneList = updatedDrones;
-            updateDroneListModel(fullDroneList);
-        }
-    }
 
     RowLayout {
         anchors.fill: parent
@@ -168,9 +149,10 @@ Rectangle {
                 // Layout.alignment: horizontalCenter
                 id: searchField
                 Layout.fillWidth: true
-                placeholderText: "Search by drone name"
+                placeholderText: "SEARCH NOT WORK"
+                // placeholderText: "Search by drone name"
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                onTextChanged: filterDroneList(text)
+                // onTextChanged: filterDroneList(text)
 
                 background: Rectangle { 
                     color: "white" 
@@ -188,16 +170,13 @@ Rectangle {
                 clip: true
                 visible: true
                 currentIndex: -1 //Sets currentIndex to -1 so that no item in the index is initially selected
+                /* 
+                    This drone list should be dynamic because it uses the 
+                    dronecontroller.drones as the model for the drones 
+                    instead of copied one-time data. 
+                */
                 /*
-                  Eventually this will read from our cpp list of drones
-                  We will be able to dynamically read this list and create what we need
-
                   TODO:
-                        Based on read in data of the drones, create it so it updates the
-                        numbers like charge amount etc.
-                        This is as much as I could do right now without proper data
-                        or even drone connection.
-
                         Make drone list item selectable and display real data.
 
                         Make fire page as well-we need real time fire data for this page.
@@ -206,12 +185,8 @@ Rectangle {
 
                         Make drone symbols update based on status.
                 */
-                ListModel {
-                    // This ListModel gets its data from the fetch() JS function in main.qml
-                    id: droneListModel
-                }
 
-                model: droneListModel
+                model: droneController ? droneController.drones : []
 
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
@@ -239,13 +214,26 @@ Rectangle {
                         onEntered:  parent.hovered = true
                         onExited:   parent.hovered = false
 
-                        onClicked: {
+                        onClicked: (mouse) => {
                             // mark this delegate as the selected one in the ListView
                             droneListView.currentIndex = index
+                            
+                            // Check to see if the user is holding cmd or ctrl key
+                            const isCmd = mouse.modifiers & Qt.MetaModifier      // Command key (macOS)
+                            const isCtrl = mouse.modifiers & Qt.ControlModifier  // Control key (Windows/Linux)
+                            var cmdOrCtrlPressed = null
 
+                            if (isCmd || isCtrl) {
+                                cmdOrCtrlPressed = true
+                            } else {
+                                cmdOrCtrlPressed = false
+                            }
+
+                            console.log("Cmd or Ctrl pressed:", cmdOrCtrlPressed)
                             // keep your existing behavior (open/update the right panel)
-                            var droneObj = model
-                            droneClicked(droneObj)
+                            // either changing between model and model data
+                            var droneObj = modelData
+                            droneClicked(droneObj, cmdOrCtrlPressed)
                         }
                     }
 
@@ -269,13 +257,13 @@ Rectangle {
                             spacing: 2
 
                             Text {
-                                text: model.name
+                                text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
-                                text: model.battery
+                                text: modelData.battery ? modelData.battery : "Battery Not Found"
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
@@ -361,32 +349,6 @@ Rectangle {
         }
     }
 
-    function populateListModel(droneList) {
-        fullDroneList = droneList
-        updateDroneListModel(fullDroneList) // Initially display all drones
-    }
-
-    // Function to update the displayed ListModel based on a filtered list
-    function updateDroneListModel(filteredList) {
-        droneListModel.clear()
-        filteredList.forEach(drone => {
-            droneListModel.append({ name: drone.name, status: drone.status, battery: drone.battery,
-                                    latitude: drone.latitude, longitude: drone.longitude, altitude: drone.altitude,
-                                    airspeed: drone.airspeed})
-        })
-    }
-
-    // Function to filter drones by search text
-    function filterDroneList(searchText) {
-        if (searchText === "") {
-            // Display all drones if search text is empty
-            updateDroneListModel(fullDroneList)
-        } else {
-            // Filter and display drones matching search text
-            var filteredList = fullDroneList.filter(drone => drone.name.toLowerCase().includes(searchText.toLowerCase()))
-            updateDroneListModel(filteredList)
-        }
-    }
 
     // Function to clear current selection highlight
     function clearSelection() {

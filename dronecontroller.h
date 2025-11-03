@@ -14,8 +14,7 @@
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
  * It allows for communication between QML and C++.
  * https://doc.qt.io/qt-6/signalsandslots.html
-*/
-
+ */
 
 /*
  * Button Press:
@@ -23,12 +22,14 @@
  * 2. DroneManager -- Holds the list of Drone C++ objects and modifies it. -- vectorList
  * 3. DroneClass - Is the data model that can take real time updates
  * 4. DBManager -- Connects Drone Database
-*/
+ */
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
-class DroneController : public QObject {
+class DroneController : public QObject
+{
     Q_OBJECT
+    Q_PROPERTY(QVariantList drones READ drones NOTIFY dronesChanged)
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
@@ -39,17 +40,19 @@ public:
     void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool isSimulationMode() const;
-    Q_INVOKABLE DroneClass* getDrone(int index) const;
+    Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
+    QVariantList drones() const { return m_dronesVariant; }
+    void rebuildVariant();
+    Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
     void createDrone(const QString &name,
-                                 const QString &role,
-                                 const QString &xbeeId,
-                                 const QString &xbeeAddress
-                     );
+                     const QString &role,
+                     const QString &xbeeId,
+                     const QString &xbeeAddress);
     void updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
@@ -63,15 +66,17 @@ signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
     void droneUpdated(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
-    void droneStateChanged(const QString &droneName);
+    void droneStateChanged(const DroneClass *drone);
     void xbeeConnectionChanged(bool connected);
     void dronesChanged();
 
 private:
+    QTimer simulationTimer;       // Timer for simulated movement
+    void simulateDroneMovement(); // Function to move a drone periodically
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
-    //DroneClass &droneClass;
-    // Timers for data polling
+    // DroneClass &droneClass;
+    //  Timers for data polling
     QTimer xbeeDataTimer;
     QTimer reconnectTimer;
     // Method to find drone by name
@@ -83,7 +88,10 @@ private:
 
     QString getDataFilePath();
     QString getConfigFilePath() const;
-};
 
+    // Trying out caching QVariantList for QML property usage
+    QVariantList m_dronesVariant; // cached QObject* view for QML
+    void onTelemetry(const QString& name, double lat, double lon);
+};
 
 #endif // DRONECONTROLLER_H
