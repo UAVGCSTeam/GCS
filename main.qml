@@ -81,19 +81,8 @@ Window {
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
             console.log("[main.qml] Clicked drone:", drone.name)
-            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name) {
-                // Toggle the visability of the telemetry panel if same drone is clicked
-                telemetryPanel.visible = !telemetryPanel.visible
-
-                // If the drone telemetry panel is not visible, then clear selected color
-                if (!telemetryPanel.visible) {
-                    droneTrackingPanel.clearSelection()
-                }
-            } else {
-                // This is the case when the drone that was clicked was not the currently selected drone
-                telemetryPanel.populateActiveDroneModel(drone)
-                telemetryPanel.visible = true
-            }
+            telemetryPanel.populateActiveDroneModel(drone)
+            telemetryPanel.visible = true
         }
     }
 
