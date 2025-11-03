@@ -650,7 +650,7 @@ void DroneController::simulateDroneMovement()
     double radius = 0.0002; // small step distance
     lat += radius * cos(angle);
     lon += radius * sin(angle);
-    angle += 0.2;
+    angle += 0.03;
 
     // drone->setLatitude(lat);
     // drone->setLongitude(lon);

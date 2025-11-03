@@ -66,7 +66,7 @@ Item {
             id: coordAnim
             target: mapview
             property: "center"
-            duration: 200
+            duration: 45
             easing.type: Easing.InOutQuad
         }
 

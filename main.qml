@@ -109,14 +109,14 @@ Window {
                 if (cmdOrCtrlPressed) {
                     mapComponent.turnOnFollowDrone()
                     console.log("Cmd or Ctrl Pressed. Following :", mapComponent.followDroneName)
-                }
-
-                // add cetner drone functionality 
-                if (drone.latitude && drone.longitude){
-                    mapController.setCenterPosition(drone.latitude, drone.longitude)
-                    console.log("Map on centered drone:", drone.name, drone.latitude, drone.longitude)
                 } else {
-                    console.warn("Drone has no position")
+                    // add center drone functionality 
+                    if (drone.latitude && drone.longitude){
+                        mapController.setCenterPosition(drone.latitude, drone.longitude)
+                        console.log("Map on centered drone:", drone.name, drone.latitude, drone.longitude)
+                    } else {
+                        console.warn("Drone has no position")
+                    }
                 }
             }
         }
