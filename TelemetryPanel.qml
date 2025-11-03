@@ -5,7 +5,7 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     // This is the container element
-    id: statusBar
+    id: telemetryPanel
     height: isExpanded ? 225 : 90
     width: Math.min(parent.width * 0.5, 400)
     color: "#80000000"
@@ -79,7 +79,7 @@ Rectangle {
         }
 
         Repeater {
-            model: statusBar.fieldRows.length
+            model: telemetryPanel.fieldRows.length
 
             ColumnLayout {
                 Layout.fillWidth: true
@@ -87,7 +87,7 @@ Rectangle {
                 visible: index > 2 || isExpanded // permanently leave last 2 rows visible
                 spacing: 4
 
-                property var rowFields: statusBar.fieldRows[index]
+                property var rowFields: telemetryPanel.fieldRows[index]
                 
                 RowLayout {
                     Layout.fillWidth: true
@@ -114,8 +114,8 @@ Rectangle {
                                 }
 
                                 Text {
-                                    text: (statusBar.row && statusBar.row[modelData.key] !== undefined) 
-                                        ? statusBar.row[modelData.key] : "---"
+                                    text: (telemetryPanel.row && telemetryPanel.row[modelData.key] !== undefined) 
+                                        ? telemetryPanel.row[modelData.key] : "---"
                                     color: "white"
                                     font.pixelSize: 14
                                     font.bold: true
