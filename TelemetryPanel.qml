@@ -16,37 +16,53 @@ Rectangle {
     anchors.bottomMargin: 8
 
     property var activeDrone: null 
+    property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
     property bool isExpanded: false
 
     ListModel { id: activeDroneModel }
 
     ListModel {
-        id: topRowFields
-        ListElement { label: "Altitude"; key: "altitude"; unit: "m" }
-        ListElement { label: "Climb Rate"; key: "climbRate"; unit: "m/s" }
-        ListElement { label: "Flight Time"; key: "flightTime"; unit: "" }
-    }
+        id: rowsModel
 
-    ListModel {
-        id: bottomRowFields
-        ListElement { label: "Distance From GCS"; key: "distanceFromGCS"; unit: "m" }
-        ListElement { label: "Air Speed"; key: "airspeed"; unit: "m/s" }
-        ListElement { label: "Ground Speed"; key: "groundspeed"; unit: "m/s" }
-    }
+        ListModel {
+            fields: ListModel {
+                ListElement { label: "Latitude"; key: "latitude"; unit: "" }
+                ListElement { label: "Longitude"; key: "longitude"; unit: "" }
+                ListElement { label: "SatCount"; key: "satCount"; unit: "" }
+            }
+        }
 
-    ListModel {
-        id: expandedFields
-        ListElement { label: "Latitude"; key: "latitude"; unit: "" }
-        ListElement { label: "Longitude"; key: "longitude"; unit: "" }
-        ListElement { label: "SatCount"; key: "satCount"; unit: "" }
-        
-        ListElement { label: "Yaw"; key: "yaw"; unit: "°" }
-        ListElement { label: "Pitch"; key: "pitch"; unit: "°" }
-        ListElement { label: "Latency"; key: "latency"; unit: "" }
-        
-        ListElement { label: "Status"; key: "status"; unit: "" }
-        ListElement { label: "Mode"; key: "mode"; unit: "" }
-        ListElement { label: "Fail Safe"; key: "FailSafe"; unit: "" }
+        ListModel {
+            fields: ListModel {
+                ListElement { label: "Yaw"; key: "yaw"; unit: "°" }
+                ListElement { label: "Pitch"; key: "pitch"; unit: "°" }
+                ListElement { label: "Latency"; key: "latency"; unit: "" }
+            }
+        }
+            
+        ListModel {
+            fields: ListModel {
+                ListElement { label: "Status"; key: "status"; unit: "" }
+                ListElement { label: "Mode"; key: "mode"; unit: "" }
+                ListElement { label: "Fail Safe"; key: "FailSafe"; unit: "" }
+            }
+        }        
+
+        ListElement {
+            fields: ListModel {
+                ListElement { label: "Altitude"; key: "altitude"; unit: "m" }
+                ListElement { label: "Climb Rate"; key: "climbRate"; unit: "m/s" }
+                ListElement { label: "Flight Time"; key: "flightTime"; unit: "" }
+            }
+        }
+
+        ListModel {
+            fields: ListModel {
+                ListElement { label: "Distance From GCS"; key: "distanceFromGCS"; unit: "m" }
+                ListElement { label: "Air Speed"; key: "airspeed"; unit: "m/s" }
+                ListElement { label: "Ground Speed"; key: "groundspeed"; unit: "m/s" }
+            }
+        }
     }
 
     MouseArea {
