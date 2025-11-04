@@ -64,7 +64,6 @@ Window {
         id: telemetryPanel
         anchors {
             bottom: parent.bottom
-            right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
