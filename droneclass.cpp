@@ -5,8 +5,10 @@
 #include <QStringList>
 #include <cmath>
 
-DroneClass::DroneClass(QObject *parent)
-    : QObject(parent)
+
+
+DroneClass::DroneClass(QObject *parent) :
+    QObject(parent)
     , m_name("")
     , m_xbeeAddress("")
     , m_role("")
@@ -55,9 +57,9 @@ DroneClass::DroneClass(const QString &input_name,
     , m_xbeeID(input_xbeeID)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
-    , m_latitude(-1)    // temporary
-    , m_longitude(-1)   // temporary
-    , m_altitude(-1)    // temporary
+    , m_latitude(34.059333) //temporary
+    , m_longitude(-117.820611) //temporary
+    , m_altitude(-1)  //temporary
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
@@ -65,8 +67,9 @@ DroneClass::DroneClass(const QString &input_name,
     qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
-void DroneClass::processXbeeMessage(const QString &message)
-{
+
+
+void DroneClass::processXbeeMessage(const QString &message) {
     qDebug() << "Drone" << m_name << "received message:" << message;
 
     const QStringList lines = message.split('\n');
@@ -126,18 +129,21 @@ void DroneClass::processXbeeMessage(const QString &message)
     setPosition(m_longitude, m_latitude, m_altitude);
 }
 
-void DroneClass::setName(const QString &inputName)
-{
-    if (m_name == inputName) return;
-    m_name = inputName;
-    emit nameChanged();
+
+void DroneClass::setName(const QString &inputName){
+    if (m_name != inputName){
+        m_name = inputName;
+        emit nameChanged();
+    }
 }
 
-void DroneClass::setXbeeAddress(const QString &inputXbeeAddress)
-{
-    if (m_xbeeAddress == inputXbeeAddress) return;
-    m_xbeeAddress = inputXbeeAddress;
-    emit xbeeAddressChanged();
+
+
+void DroneClass::setXbeeAddress(const QString &inputXbeeAddress){
+    if (m_xbeeAddress != inputXbeeAddress){
+        m_xbeeAddress = inputXbeeAddress;
+        emit xbeeAddressChanged();
+    }
 }
 
 void DroneClass::setRole(const QString &inputRole)
@@ -268,12 +274,10 @@ void DroneClass::setPosition(float x, float y, float z)
 {
     setPosition(QVector3D(x, y, z));
 }
-
 void DroneClass::setVelocity(float x, float y, float z)
 {
     setVelocity(QVector3D(x, y, z));
 }
-
 void DroneClass::setOrientation(float x, float y, float z)
 {
     setOrientation(QVector3D(x, y, z));
