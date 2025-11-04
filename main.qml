@@ -81,7 +81,7 @@ Window {
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
             console.log("[main.qml] Clicked drone:", drone.name)
-            telemetryPanel.populateActiveDroneModel(drone)
+            telemetryPanel.setActiveDrone(drone)
             telemetryPanel.visible = true
         }
     }
@@ -110,15 +110,6 @@ Window {
         } 
     }
 
-
-    // Connections {
-    //     target: MapScaleBarIndicator
-    //     function on(w) {
-    //         telemetryPanel.setTrackingWidth(w)
-    //     } 
-    // }
-    
-
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
@@ -135,42 +126,5 @@ Window {
         droneTrackingPanel.publishTrackingWidth();
 
         fetch();
-    }
-
-    Connections {
-        target: droneController
-
-        function onDroneStateChanged(droneName) {
-            // Refresh the displayed list
-            fetch();
-            if (telemetryPanel.visible) {
-                // Find the updated drone
-                var drones = droneController.getAllDrones();
-                for (var i = 0; i < drones.length; i++) {
-                    if (drones[i].name === droneName) {
-                        // Update the telemetry panel
-                        telemetryPanel.populateActiveDroneModel(drones[i]);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    function fetch() {
-        var drones = droneController.getAllDrones();
-        droneTrackingPanel.populateListModel(drones);
-        // uncomment these for populating the list based on the database
-
-        /*const response = [
-                           {name: "Drone 1", status: "Flying", battery: 10, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 2", status: "Idle", battery: 54, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 3", status: "Stationy", battery: 70, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 4", status: "Dead", battery: 0, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 5", status: "Flying", battery: 90, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 6", status: "Ready", battery: 100, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45}
-                          ]
-        droneTrackingPanel.populateListModel(response)*/
-        // uncomment these for the original static response
     }
 }

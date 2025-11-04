@@ -139,6 +139,8 @@ int main(int argc, char *argv[])
     // Expose dronecontroller to QML
     qmlRegisterType<DroneController>("com.gcs.dronecontroller", 1, 0, "DroneController");
     DroneController droneController(gcs_db_manager);
+    // Populate the QML property cache
+    droneController.rebuildVariant();
     // Expose to QML
     engine.rootContext()->setContextProperty("droneController", &droneController);
 

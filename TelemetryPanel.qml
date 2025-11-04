@@ -16,46 +16,39 @@ Rectangle {
     anchors.bottomMargin: 8
 
     property var activeDrone: null 
-    property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
     property bool isExpanded: false
 
-    ListModel { id: activeDroneModel }
-
     property var fieldRows: [
+        /*
+        This is used to determine which piece of drone data to pull from the DroneClass object.
+        (The DroneClass object is stored in the activeDrone var)
+        */
         [
-            { label: "Latitude",    key: "latitude",    unit: "" },
-            { label: "Longitude",   key: "longitude",   unit: "" },
-            { label: "SatCount",    key: "satCount",    unit: "" }
+            { label: "Latitude", unit: "" },
+            { label: "Longitude", unit: "" },
+            { label: "SatCount", unit: "" }
         ],
         [
-            { label: "Yaw", key: "yaw", unit: "°" },
-            { label: "Pitch", key: "pitch", unit: "°" },
-            { label: "Latency", key: "latency", unit: "ms" }
+            { label: "Yaw", unit: "°" },
+            { label: "Pitch", unit: "°" },
+            { label: "Latency", unit: "ms" }
         ],
         [
-            { label: "Status", key: "status", unit: "" },
-            { label: "Mode", key: "mode", unit: "" },
-            { label: "Fail Safe", key: "failSafe", unit: "" }
+            { label: "Status", unit: "" },
+            { label: "Mode", unit: "" },
+            { label: "Fail Safe", unit: "" }
         ],
         [
-            { label: "Altitude", key: "altitude", unit: "m" },
-            { label: "Climb Rate", key: "climbRate", unit: "m/s" },
-            { label: "Flight Time", key: "flightTime", unit: "" }
+            { label: "Altitude", unit: "m" },
+            { label: "Climb Rate", unit: "m/s" },
+            { label: "Flight Time", unit: "" }
         ],
         [
-            { label: "Distance From GCS", key: "distanceFromGCS", unit: "m" },
-            { label: "Air Speed", key: "airspeed", unit: "m/s" },
-            { label: "Ground Speed", key: "groundspeed", unit: "m/s" }
+            { label: "Distance From GCS", unit: "m" },
+            { label: "Air Speed", unit: "m/s" },
+            { label: "Ground Speed", unit: "m/s" }
         ]
     ]
-
-    Component.onCompleted: {
-        rowsModel.append({ fields: row1Fields })
-        rowsModel.append({ fields: row2Fields })
-        rowsModel.append({ fields: row3Fields })
-        rowsModel.append({ fields: row4Fields })
-        rowsModel.append({ fields: row5Fields })
-    }
 
     MouseArea {
         anchors.fill: parent
@@ -114,8 +107,25 @@ Rectangle {
                                 }
 
                                 Text {
-                                    text: (statusBar.row && statusBar.row[modelData.key] !== undefined) 
-                                        ? statusBar.row[modelData.key] : "---"
+                                    text: {
+                                        if (activeDrone) {
+                                            if (modelData.label === "Latitude") { activeDrone.latitude }
+                                            else if (modelData.label === "Longitude") { activeDrone.longitude }
+                                            else if (modelData.label === "SatCount") { "---" }
+                                            else if (modelData.label === "Yaw") { "---" }
+                                            else if (modelData.label === "Pitch") { "---" }
+                                            else if (modelData.label === "Latency") { "---" }
+                                            else if (modelData.label === "Status") { "---" }
+                                            else if (modelData.label === "Mode") { "---" }
+                                            else if (modelData.label === "Fail Safe") { "---" }
+                                            else if (modelData.label === "Altitude") { "---" }
+                                            else if (modelData.label === "Climb Rate") { "---" }
+                                            else if (modelData.label === "Flight Time") { "---" }
+                                            else if (modelData.label === "Distance From GCS") { "---" }
+                                            else if (modelData.label === "Air Speed") { "---" }
+                                            else if (modelData.label === "Ground Speed") { "---" }
+                                        } else { "---" }
+                                    }
                                     color: "white"
                                     font.pixelSize: 14
                                     font.bold: true
@@ -138,7 +148,7 @@ Rectangle {
                                 anchors.topMargin: 6
                                 anchors.bottomMargin: 6
                                 color: "#404040"
-                                visible: index < fields.length - 1
+                                // visible: index < fields.length - 1
                             }
                         }
                     }
@@ -151,45 +161,23 @@ Rectangle {
                     Layout.rightMargin: 10
                     height: 1
                     color: "#404040"
-                    visible: index < rowsModel.count - 1 && (index < 1 || isExpanded)
+                    // visible: index < rowsModel.count - 1 && (index < 1 || isExpanded)
                 }
             }
         }
     }
 
-    function populateActiveDroneModel(drone) {
+    function setActiveDrone(drone) {
         if (!drone) return;
         activeDrone = drone;
-
-        activeDroneModel.clear();
-        activeDroneModel.append({
-            // Position & Navigation
-            altitude: drone.altitude,
-            latitude: drone.latitude,
-            longitude: drone.longitude,
-            distanceFromGCS: drone.distanceFromGCS,
-
-            // Speed & Movement
-            airspeed: drone.airspeed,
-            groundspeed: drone.groundSpeed,
-            climbRate: drone.climbRate,
-
-            // Orientation
-            pitch: drone.pitch,
-            yaw: drone.yaw,
-
-            // System Settings
-            flightTime: drone.flightTime,
-            satCount: drone.satCount,
-            latency: drone.latency,
-            status: drone.status,
-            mode: drone.mode,
-            failSafe: drone.failSafe
-        });
     }
 
     function toggleExpanded() {
         isExpanded = !isExpanded
+    }
+
+    function setTrackingWidth(w) {
+        
     }
 }
 

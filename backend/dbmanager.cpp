@@ -46,9 +46,9 @@ void DBManager::initDB() {
         qCritical() << "[dbmanager.cpp] Table creation failed!";
     }
 
-    // if (!createInitialDrones()) {
-    //     qWarning() << "Failed to create initial drones.";
-    // }
+    if (!createInitialDrones()) {
+        qWarning() << "Failed to create initial drones.";
+    }
 }
 
 
