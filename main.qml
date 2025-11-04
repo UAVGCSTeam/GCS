@@ -16,6 +16,27 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
+    // Keep a persistent ARM window so it doesn't get GC'd/closed
+    property var armWin: null
+
+    function openArmWindow() {
+        if (!armWin) {
+            const c = Qt.createComponent("armWindow.qml")   // or "qrc:/armWindow.qml" if you stored it in qrc
+            if (c.status !== Component.Ready) {
+                console.error("ARM component not ready:", c.errorString())
+                return
+            }
+            armWin = c.createObject(mainWindow)  // parent to root so it stays alive
+            if (!armWin) {
+                console.error("Failed to create ARM window:", c.errorString())
+                return
+            }
+        }
+        armWin.visible = true
+        if (armWin.raise) armWin.raise()
+        if (armWin.requestActivate) armWin.requestActivate()
+    }
+
 
     // Menu bar for the top of the application to display various features and actions
     MenuBar {
@@ -56,20 +77,7 @@ Window {
             MenuItem {
                 id: armMenuItem
                 text: qsTr("ARM")
-                onTriggered: {
-                    // Load and show armWindow.qml
-                    var component = Qt.createComponent("armWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating ARM window:", component.errorString())
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString())
-                    }
-                }
+                onTriggered: openArmWindow()
             }
             MenuItem {
                 id: takeOffMenuItem
@@ -270,7 +278,7 @@ Window {
             console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        droneController.openXbee("/dev/tty.placeho", 57600)
+        droneController.openXbee("/dev/ttys005", 57600)
         // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
 
         fetch();

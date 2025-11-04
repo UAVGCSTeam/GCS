@@ -10,6 +10,11 @@
 #include <QTimer>
 #include <memory>
 #include <cstdint>
+#include <QHash>
+#include <QVariant>
+#include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
+
+
 // #include "drone.h"
 
 /*
@@ -29,8 +34,12 @@
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
+
+
+
 class XbeeLink;
 class MavlinkSender;
+class MavlinkReceiver;
 
 class DroneController : public QObject {
     Q_OBJECT
@@ -42,7 +51,7 @@ public:
     // Initialize shared memory for XBee communication
     bool checkDataFileExists();
     void startXbeeMonitoring();
-    Q_INVOKABLE QVariantList getDrones() const;
+    Q_INVOKABLE QVariantList getDrones();
     Q_INVOKABLE bool isSimulationMode() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
@@ -64,6 +73,8 @@ public:
 private slots:
     void processXbeeData();
     void tryConnectToDataFile();
+    void onMavlinkMessage(const RxMavlinkMsg& msg);
+
 
 signals:
     void droneAdded();
@@ -75,7 +86,6 @@ signals:
 
 private:
     DBManager &dbManager;
-    static QList<QSharedPointer<DroneClass>> droneList;
     //DroneClass &droneClass;
     // Timers for data polling
     QTimer xbeeDataTimer;
@@ -92,6 +102,10 @@ private:
 
     std::unique_ptr<XbeeLink>    xbee_;
     std::unique_ptr<MavlinkSender> mav_;
+    std::unique_ptr<MavlinkReceiver> mavRx_;
+    void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
+    QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
+    QList<QSharedPointer<DroneClass>> droneList;
 
 };
 

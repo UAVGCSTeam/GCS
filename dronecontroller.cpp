@@ -1,10 +1,12 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
 #include "XbeeLink.h"
+#include "MavlinkReceiver.h"
 #include "MavlinkSender.h"
 #include <QDebug>
 #include <memory>
-
+#include "MavlinkReceiver.h"
+#include <QMetaType>
 #include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -22,12 +24,21 @@
 #define DEFAULT_DATA_FILE_PATH "/tmp/xbee_data.json"  // Unix/Mac path
 #endif
 
-QList<QSharedPointer<DroneClass>> DroneController::droneList;  // Define the static variable
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
 
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db) {
     // function loads all drones from the database on startup
+    qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
     QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
+
     for (const QVariantMap &record : droneRecords) {
         QString name = record["drone_name"].toString();
         QString role = record["drone_role"].toString();
@@ -36,7 +47,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
         // TODO: Change this, add xbee id?
-        droneList.push_back(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress));
+        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress));
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
 
@@ -160,7 +171,7 @@ void DroneController::saveDrone(const QString &input_name, const QString &input_
         qDebug() << "Drone created in DB successfully with ID:" << newDroneId;
 
         // Add to the in-memory list
-        droneList.push_back(QSharedPointer<DroneClass>::create(input_name, input_role, input_xbeeID, input_xbeeAddress));
+        droneList.append(QSharedPointer<DroneClass>::create(input_name, input_role, input_xbeeID, input_xbeeAddress));
 
         qDebug() << "About to emit dronesChanged signal after adding drone";
         emit dronesChanged();
@@ -369,7 +380,7 @@ QString DroneController::getLatestXbeeData() {
 }
 
 // Gets drones, but is used to REBUILD the drone list; so it refreshes and keeps the drone list up to date
-QVariantList DroneController::getDrones() const { // DOUBLE CHECK THIS BRANDON
+QVariantList DroneController::getDrones()  { // DOUBLE CHECK THIS BRANDON
     QVariantList result;
 
     // Ensure the database is open
@@ -397,7 +408,7 @@ QVariantList DroneController::getDrones() const { // DOUBLE CHECK THIS BRANDON
         droneList.clear();
         for (const QVariant& droneVar : result) {
             QVariantMap droneMap = droneVar.toMap();
-            droneList.push_back(QSharedPointer<DroneClass>::create(
+            droneList.append(QSharedPointer<DroneClass>::create(
                 droneMap["name"].toString(),
                 droneMap["role"].toString(),  // Changed from "type" to "role"
                 droneMap["xbeeId"].toString(),
@@ -512,6 +523,15 @@ bool DroneController::openXbee(const QString& port, int baud)
     if (!xbee_) xbee_ = std::make_unique<XbeeLink>(this);
     if (!mav_)  mav_  = std::make_unique<MavlinkSender>(xbee_.get(), this);
 
+    //  set up receiver & wire signals
+    if (!mavRx_) {
+        mavRx_ = std::make_unique<MavlinkReceiver>(this);
+        connect(xbee_.get(), &XbeeLink::bytesReceived,
+                mavRx_.get(), &MavlinkReceiver::onBytes);
+        connect(mavRx_.get(), &MavlinkReceiver::messageReceived,
+                this,        &DroneController::onMavlinkMessage);
+    }
+
     const bool ok = xbee_->open(port, baud);
     if (!ok) {
         qWarning() << "[DroneController] Failed to open XBee port" << port << "baud" << baud;
@@ -520,6 +540,7 @@ bool DroneController::openXbee(const QString& port, int baud)
     qInfo()  << "[DroneController] XBee opened on" << port << "@" << baud;
     return true;
 }
+
 
 bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 {
@@ -547,3 +568,117 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
     return ok;
 }
 
+// Helper: find (or lazily bind) a drone for a sysid.
+// Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
+QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysid,
+                                                  QList<QSharedPointer<DroneClass>>& list,
+                                                  QHash<uint8_t, QSharedPointer<DroneClass>>& map)
+{
+    if (map.contains(sysid)) return map.value(sysid);
+    if (!list.isEmpty()) {
+        // TEMP heuristic: bind first drone we have (until you provide a real mapping)
+        auto d = list.first();
+        map.insert(sysid, d);
+        qInfo() << "[DroneController] Bound sysid" << sysid << "to drone" << d->getName();
+        return d;
+    }
+    return {};
+}
+
+void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
+{
+    // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
+    mavlink_message_t msg{};
+    msg.sysid = m.sysid;
+    msg.compid = m.compid;
+    msg.msgid = static_cast<uint32_t>(m.msgid);
+    msg.len   = static_cast<uint8_t>(m.payload.size());
+    memcpy(_MAV_PAYLOAD_NON_CONST(&msg), m.payload.constData(), msg.len);
+
+    const uint8_t sysid = msg.sysid;
+
+    switch (msg.msgid) {
+    case MAVLINK_MSG_ID_HEARTBEAT: {
+        mavlink_heartbeat_t hb;
+        mavlink_msg_heartbeat_decode(&msg, &hb);
+        updateDroneTelem(sysid, "connected", true);
+        updateDroneTelem(sysid, "base_mode",   static_cast<int>(hb.base_mode));
+        updateDroneTelem(sysid, "custom_mode", static_cast<int>(hb.custom_mode));
+        break;
+    }
+    case MAVLINK_MSG_ID_SYS_STATUS: {
+        mavlink_sys_status_t s;
+        mavlink_msg_sys_status_decode(&msg, &s);
+        updateDroneTelem(sysid, "battery_v",   s.voltage_battery/1000.0);
+        updateDroneTelem(sysid, "battery_pct", static_cast<int>(s.battery_remaining));
+        break;
+    }
+    case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
+        mavlink_global_position_int_t p;
+        mavlink_msg_global_position_int_decode(&msg, &p);
+        updateDroneTelem(sysid, "lat",   p.lat/1e7);
+        updateDroneTelem(sysid, "lon",   p.lon/1e7);
+        updateDroneTelem(sysid, "alt_m", p.alt/1000.0);
+        break;
+    }
+    case MAVLINK_MSG_ID_ATTITUDE: {
+        mavlink_attitude_t a;
+        mavlink_msg_attitude_decode(&msg, &a);
+        updateDroneTelem(sysid, "roll", a.roll);
+        updateDroneTelem(sysid, "pitch", a.pitch);
+        updateDroneTelem(sysid, "yaw",  a.yaw);
+        break;
+    }
+    case MAVLINK_MSG_ID_COMMAND_ACK: {
+        mavlink_command_ack_t ack;
+        mavlink_msg_command_ack_decode(&msg, &ack);
+        qInfo().nospace()
+            << "[MAVRX] COMMAND_ACK cmd=" << ack.command
+            << " result=" << static_cast<int>(ack.result)
+            << " (sysid=" << static_cast<int>(sysid)
+            << ", compid=" << static_cast<int>(msg.compid) << ")";
+
+        updateDroneTelem(sysid, "last_command", static_cast<int>(ack.command));
+        updateDroneTelem(sysid, "last_result",  static_cast<int>(ack.result));
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+
+void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value)
+{
+    // NOTE: add 'sysMap_' as a private member in your header:
+    //   QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
+    auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
+    if (d.isNull()) return;
+
+    // Call whatever setters your DroneClass actually exposes.
+    // Adjust names if your class uses different ones.
+    if (field == "connected") {
+        d->setConnected(value.toBool());                 // if you have it
+    } else if (field == "battery_v") {
+        d->setBatteryVoltage(value.toDouble());          // or setBatteryLevel if that's what you track
+    } else if (field == "battery_pct") {
+        d->setBatteryLevel(value.toInt());               // 0–100
+    } else if (field == "lat") {
+        d->setLatitude(value.toDouble());
+    } else if (field == "lon") {
+        d->setLongitude(value.toDouble());
+    } else if (field == "alt_m") {
+        d->setAltitude(value.toDouble());
+    } else if (field == "roll") {
+        d->setRoll(value.toDouble());                    // if you surface attitude
+    } else if (field == "pitch") {
+        d->setPitch(value.toDouble());
+    } else if (field == "yaw") {
+        d->setYaw(value.toDouble());
+    } else if (field == "base_mode" || field == "custom_mode") {
+        d->setModeField(field, value);                   // generic hook if you prefer
+    }
+
+    emit droneStateChanged(d->getName());
+}

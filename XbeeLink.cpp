@@ -18,11 +18,14 @@ bool XbeeLink::open(const QString& port, int baud){
     return true;
 }
 void XbeeLink::close(){ serial_.close(); }
-bool XbeeLink::writeBytes(const QByteArray& b){
-    if(!serial_.isOpen()) return false;
-    auto n = serial_.write(b);
-    return n == b.size();
+qint64 XbeeLink::writeBytes(const QByteArray& b){
+    if (!serial_.isOpen()) return -1;
+    const qint64 n = serial_.write(b);      // QSerialPort::write returns qint64
+    if (n == -1) emit linkError(serial_.errorString());
+    return n;
 }
+
 void XbeeLink::onReadyRead(){
     emit bytesReceived(serial_.readAll());
+
 }

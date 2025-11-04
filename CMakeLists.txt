@@ -38,6 +38,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         XbeeLink.h
         MavlinkSender.cpp
         MavlinkSender.h
+        MavlinkReceiver.h
+        MavLinkReceiver.cpp
 
        # MavLinkUdp.h MavLinkUdp.cpp
     )
@@ -53,12 +55,32 @@ else()
     endif()
 endif()
 
-# MAVLink headers (handle both layouts)
-set(MAVLINK_DIR "${CMAKE_SOURCE_DIR}/external/mavlink" CACHE PATH "Path to MAVLink c_library_v2")
-target_include_directories(GCS PRIVATE
-    ${MAVLINK_DIR}
-    ${MAVLINK_DIR}/mavlink
+# --- MAVLink headers: support prefixed and flat layouts ---
+set(_MAV_CANDIDATES
+  "${CMAKE_SOURCE_DIR}/external/mavlink"
+  "${CMAKE_SOURCE_DIR}/external/mavlink/c_library_v2"
+  "${CMAKE_SOURCE_DIR}/external/c_library_v2"
 )
+
+unset(MAVLINK_INCLUDE_DIR)
+foreach(p IN LISTS _MAV_CANDIDATES)
+  if(EXISTS "${p}/mavlink/common/mavlink.h")
+    set(MAVLINK_INCLUDE_DIR "${p}")      # prefixed layout
+    break()
+  elseif(EXISTS "${p}/common/mavlink.h")
+    set(MAVLINK_INCLUDE_DIR "${p}")      # flat layout  <-- your case
+    break()
+  endif()
+endforeach()
+
+if(NOT MAVLINK_INCLUDE_DIR)
+  message(FATAL_ERROR "MAVLink headers not found. Put c_library_v2 under external/ or pass -DMAVLINK_INCLUDE_DIR=/abs/path")
+endif()
+
+message(STATUS "MAVLINK_INCLUDE_DIR = ${MAVLINK_INCLUDE_DIR}")
+target_include_directories(GCS PRIVATE "${MAVLINK_INCLUDE_DIR}")
+
+
 
 target_link_libraries(GCS PRIVATE
 Qt${QT_VERSION_MAJOR}::Widgets
