@@ -29,6 +29,7 @@
 // Serves as a middle man from UI and backend.
 class DroneController : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QVariantList drones READ drones NOTIFY dronesChanged)
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
@@ -42,6 +43,8 @@ public:
     Q_INVOKABLE DroneClass* getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
+    QVariantList drones() const { return m_dronesVariant; }
+    void rebuildVariant();
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
@@ -83,6 +86,9 @@ private:
 
     QString getDataFilePath();
     QString getConfigFilePath() const;
+
+    // Trying out caching QVariantList for QML property usage
+    QVariantList m_dronesVariant; // cached QObject* view for QML
 };
 
 

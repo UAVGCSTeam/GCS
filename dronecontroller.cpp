@@ -174,6 +174,8 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone) {
         qDebug() << "About to emit dronesChanged and droneAdded signals after adding drone";
         emit droneAdded(drone); // right now this is not being used anywhere
         emit dronesChanged();
+        // Adding update to the new QML list
+        rebuildVariant();
         qDebug() << "dronesChanged signal emitted";
         qDebug() << "Drone saved:" << drone->getName();
     } else {
@@ -208,6 +210,8 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone) {
 
             emit droneUpdated(drone);
             emit dronesChanged();
+            // Adding update to the new QML list
+            rebuildVariant();
             qDebug() << "Drone updated:" << drone->getName();
             break;
         }
@@ -236,11 +240,15 @@ void DroneController::deleteDrone(const QString &input_xbeeId) {
     if (dbManager.deleteDrone(input_xbeeId)) {
         qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
         emit dronesChanged();
+        // Adding update to the new QML list
+        rebuildVariant();
     } else {
         qWarning() << "Failed to delete drone from database:" << input_xbeeId;
         // If we removed from memory but failed to delete from DB, sync
         if (found) {
             emit dronesChanged();
+            // Adding update to the new QML list
+            rebuildVariant();
         }
     }
 }
@@ -250,9 +258,10 @@ void DroneController::deleteALlDrones_UI() {
     if (dbManager.deleteAllDrones()) {
         droneList.clear(); // also delete drones in C++ memory
 
-        qDebug() << "droneController: All drones deleted successfully!";
-
+        qDebug() << "[dronecontroller.cpp]: All drones deleted successfully!";
         emit dronesChanged();
+        // Adding update to the new QML list
+        rebuildVariant();
     } else {
         qWarning() << "Failed to delete all drones.";
     }
@@ -501,6 +510,18 @@ void DroneController::startXbeeMonitoring() {
         emit xbeeConnectionChanged(false);
 
         // Start reconnect timer
-        reconnectTimer.start(1000);  // Try every second
+        reconnectTimer.start(1000); // Try every second
     }
 }
+
+// Called when the droneList is updated
+void DroneController::rebuildVariant()
+{
+    m_dronesVariant.clear();
+    m_dronesVariant.reserve(droneList.size());
+    for (const auto &sp : droneList)
+    {
+        m_dronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
+    }
+}
+
