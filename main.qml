@@ -65,17 +65,8 @@ Window {
         id: telemetryPanel
         anchors {
             bottom: parent.bottom
-            right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        visible: false
-        onVisibleChanged: {
-                // TO-DO: do we actually need this. isn't there the same functionality below for the drone tracking panel?
-                if (!visible) {
-                    console.log("Stop following current drone de-clicked:", mapComponent.followDroneName)
-                    mapComponent.turnOffFollowDrone()
-                }
-            }
     }
     
     DroneTrackingPanel {
@@ -90,13 +81,11 @@ Window {
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
             if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name && telemetryPanel.visible) {
-                telemetryPanel.visible = false // Hide the telemetry panel if same drone is clicked
                 droneTrackingPanel.clearSelection() // clear selected color
 
             } else {
                 // This is the case when the drone that was clicked was not the currently selected drone
-                telemetryPanel.populateActiveDroneModel(drone)
-                telemetryPanel.visible = true
+                telemetryPanel.setActiveDrone(drone)
 
                 // Ensure that the applicaiton will no longer follow a drone
                 console.log("Stop following current drone when selecting another drone:", mapComponent.followDroneName)
@@ -135,7 +124,6 @@ Window {
     */
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
-
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
