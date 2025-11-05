@@ -689,10 +689,10 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr)
         return false;
     }
 
-    // TODO: make these configurable or read from DB later
-    // targetSys and targetComp are both 1 when dealing with ArduPilot SITL
     const uint8_t targetSys  = drone->getSysID();   
     const uint8_t targetComp = drone->getCompID();
+
+    const bool okRequestData = mav_->requestData(targetSys, targetComp);
     const bool okGuided = mav_->setGuidedMode(targetSys, targetComp);
     if (!okGuided) {
         qWarning() << "Guided mode not set";
@@ -769,10 +769,12 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         if (addNewDrone) { addSITLDroneToList(msg.sysid, msg.compid); }
     }
 
+    // const bool okRequestData = mav_->requestData(msg.sysid, msg.compid);
+    qInfo() << "The message id: " << msg.msgid;
     
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
-        qInfo() << "Got a heartbeat";
+        // qInfo() << "Got a heartbeat";
         mavlink_heartbeat_t hb;
         mavlink_msg_heartbeat_decode(&msg, &hb);
         updateDroneTelem(sysid, "connected", true);
@@ -781,7 +783,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
-        qInfo() << "Got a heartbeat";
+        // qInfo() << "Got sys stat";
         mavlink_sys_status_t s;
         mavlink_msg_sys_status_decode(&msg, &s);
         updateDroneTelem(sysid, "battery_v",   s.voltage_battery/1000.0);
@@ -789,7 +791,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
-        qInfo() << "Got a heartbeat";
+        // qInfo() << "Got telem global pos";
         mavlink_global_position_int_t p;
         mavlink_msg_global_position_int_decode(&msg, &p);
         updateDroneTelem(sysid, "lat",   p.lat/1e7);
@@ -798,7 +800,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
-        qInfo() << "Got a heartbeat";
+        // qInfo() << "Got altitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
         updateDroneTelem(sysid, "roll", a.roll);
@@ -807,7 +809,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_ACK: {
-        qInfo() << "Got a heartbeat";
+        // qInfo() << "Got msg id ack";
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
         qInfo().nospace()

@@ -51,16 +51,35 @@ bool MavlinkSender::sendArm(uint8_t sys, uint8_t comp, bool arm) {
 bool MavlinkSender::sendTakeoffCmd(uint8_t target_system, uint8_t target_component) {
     if(!link_ || !link_->isOpen()) return false;
     
-    // mavlink_message_t msg;
-    
-    // // === Send SET_MODE ===
-    // auto bytes = packCommandLong(
-    //     target_system, target_component, 
-    //     MAV_CMD_NAV_TAKEOFF, 
-    //     GUIDED                    // custom_mode = 4 (GUIDED)
-    // );
-    // return link_->writeBytes(bytes);
-    return true;
+    // MAV_CMD_NAV_TAKEOFF = 22
+    // param1–4 are unused for Copter, param7 is target altitude (m)
+    auto bytes = packCommandLong(
+        target_system,
+        target_component,
+        MAV_CMD_NAV_TAKEOFF,  // command ID (22)
+        0, 0, 0, 0,           // params 1–4 unused
+        0, 0, 12        // lat, lon, alt
+    );
+
+    return link_->writeBytes(bytes);
+}
+
+
+
+bool MavlinkSender::requestData(uint8_t target_system, uint8_t target_component) {
+    if(!link_ || !link_->isOpen()) return false;
+
+    // Request GLOBAL_POSITION_INT at 2 Hz
+    auto bytes = packCommandLong(
+        target_system,
+        target_component,
+        MAV_CMD_SET_MESSAGE_INTERVAL,       // 511
+        // MAVLINK_MSG_ID_GLOBAL_POSITION_INT, // param1 = message ID
+        MAV_DATA_STREAM_ALL, // param1 = …
+        500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
+        0, 0, 0, 0, 0                        // params 3–7 unused
+    );
+    return link_->writeBytes(bytes);
 }
 
 
