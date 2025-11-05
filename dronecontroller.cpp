@@ -45,11 +45,13 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         QString name = record["drone_name"].toString();
         QString role = record["drone_role"].toString();
         QString xbeeID = record["xbee_id"].toString();
+        int sysID = -1;
+        int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
         // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
         // TODO: Change this, add xbee id?
-        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress));
+        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID,compID, xbeeAddress));
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
 
@@ -73,6 +75,8 @@ QVariantList DroneController::getAllDrones() const
         droneMap["name"] = drone->getName();
         droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
+        // droneMap["sysId"] = drone->getSysID();
+        // droneMap["compId"] = drone->getCompID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
@@ -160,24 +164,31 @@ QString DroneController::getDataFilePath()
 // new function so the QML can create a drone using strings
 void DroneController::createDrone(const QString &name,
                                   const QString &role,
-                                  const QString &xbeeId,
+                                  const QString &xbeeID,
+                                  const int &sysID,
+                                  const int &compID,
                                   const QString &xbeeAddress)
 {
     auto drone = QSharedPointer<DroneClass>::create();
     drone->setName(name);
     drone->setRole(role);
-    drone->setXbeeID(xbeeId);
+    drone->setXbeeID(xbeeID);
+    drone->setSysID(sysID);
+    drone->setCompID(compID);
     drone->setXbeeAddress(xbeeAddress);
 
-    saveDrone(drone); // call the internal method
+    saveDroneToDB(drone); // call the internal method
 }
 
-void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone)
+
+void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
 {
+    // TODO: Save drone to db with sysID and compID 
+    // remmber to update db appropriately as well
     if (!drone)
         return;
 
-    qDebug() << "saveDrone called with:" << drone->getName()
+    qDebug() << "saveDroneToDB called with:" << drone->getName()
              << drone->getRole()
              << drone->getXbeeID()
              << drone->getXbeeAddress();
@@ -193,14 +204,14 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone)
     }
 
     // Add Drone to Database
-    int newDroneId = -1;
+    int newDroneID = -1;
     if (dbManager.createDrone(drone->getName(),
                               drone->getRole(),
                               drone->getXbeeID(),
                               drone->getXbeeAddress(),
-                              &newDroneId))
+                              &newDroneID))
     {
-        qDebug() << "Drone created in DB successfully with ID:" << newDroneId;
+        qDebug() << "Drone created in DB successfully with ID:" << newDroneID;
 
         // Add to the in-memory list
         droneList.push_back(drone);
@@ -241,8 +252,8 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
             query.bindValue(":xbeeId", drone->getXbeeID());
             if (query.exec() && query.next())
             {
-                int droneId = query.value(0).toInt();
-                dbManager.editDrone(droneId,
+                int droneID = query.value(0).toInt();
+                dbManager.editDrone(droneID,
                                     drone->getName(),
                                     drone->getRole(),
                                     drone->getXbeeID(),
@@ -259,11 +270,11 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
     }
 }
 
-void DroneController::deleteDrone(const QString &input_xbeeId)
+void DroneController::deleteDrone(const QString &input_xbeeID)
 {
-    if (input_xbeeId.isEmpty())
+    if (input_xbeeID.isEmpty())
     {
-        qWarning() << "Drone Controller: xbeeId not passed by UI.";
+        qWarning() << "Drone Controller: xbeeID not passed by UI.";
         return;
     }
 
@@ -271,27 +282,27 @@ void DroneController::deleteDrone(const QString &input_xbeeId)
     bool found = false;
     for (int i = 0; i < droneList.size(); i++)
     {
-        if (droneList[i]->getXbeeID() == input_xbeeId ||
-            droneList[i]->getXbeeAddress() == input_xbeeId)
+        if (droneList[i]->getXbeeID() == input_xbeeID ||
+            droneList[i]->getXbeeAddress() == input_xbeeID)
         {
             droneList.removeAt(i);
             found = true;
-            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeId;
+            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeID;
             break;
         }
     }
 
     // Now delete from database, even if not found in memory
-    if (dbManager.deleteDrone(input_xbeeId))
+    if (dbManager.deleteDrone(input_xbeeID))
     {
-        qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
+        qDebug() << "Drone deleted successfully from database:" << input_xbeeID;
         emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
     }
     else
     {
-        qWarning() << "Failed to delete drone from database:" << input_xbeeId;
+        qWarning() << "Failed to delete drone from database:" << input_xbeeID;
         // If we removed from memory but failed to delete from DB, sync
         if (found)
         {
@@ -310,9 +321,11 @@ void DroneController::deleteALlDrones_UI()
         droneList.clear(); // also delete drones in C++ memory
 
         qDebug() << "[dronecontroller.cpp]: All drones deleted successfully!";
-        emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
+        emit dronesChanged();
+
+        addNewDrone = true; // DELETE THIS -- DEMO
     }
     else
     {
@@ -397,7 +410,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
         }
     }
 
-    // If not found, try xbeeId match
+    // If not found, try xbeeID match
     for (const auto &drone : droneList)
     {
         if (drone->getXbeeID() == address)
@@ -691,6 +704,22 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 
     const uint8_t sysid = msg.sysid;
 
+    if (addNewDrone) { 
+        for (const auto &drone : droneList) {
+            if (msg.sysid == drone->getSysID() && msg.compid == drone->getCompID()) {
+                qInfo() << "[onMavlinkMessage] adding a drone";
+                addNewDrone = false;
+            } else {}
+            
+            
+            qInfo() << "[onMavlinkMessage] drone: " << drone->getName() << ", " << drone->getSysID() << ", " << drone->getCompID();
+        }
+        
+        if (addNewDrone) { addSITLDroneToList(msg.sysid, msg.compid); }
+    }
+
+
+
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
         mavlink_heartbeat_t hb;
@@ -789,6 +818,7 @@ void DroneController::rebuildVariant()
     }
 }
 
+
 // Telemetry update for ONE existing drone (same object pointer)
 void DroneController::onTelemetry(const QString &name, double lat, double lon)
 {
@@ -843,10 +873,27 @@ void DroneController::simulateDroneMovement()
 }
 
 QObject* DroneController::getDroneByNameQML(const QString &name) const {
-    qDebug() << "We are inside of the new function!";
     for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>
         if (sp && sp->getName() == name)                  // use your getter names
-            return static_cast<QObject*>(sp.data());   // expose raw QObject* to QML
+        return static_cast<QObject*>(sp.data());   // expose raw QObject* to QML
     }
     return nullptr;
+}
+
+
+void DroneController::addSITLDroneToList(int sysID, int compID) {
+    qDebug() << "[addSITLDroneToList] ADDING NEW DRONE";
+    QSharedPointer<DroneClass> drone = QSharedPointer<DroneClass>::create(
+        "SITL Drone!",
+        "demo",
+        "64656C6574656D79706172656E74",
+        sysID, 
+        compID, 
+        "64656C6574656D79706172656E74",
+        nullptr
+    );
+    droneList.push_back(drone);
+    
+    rebuildVariant();
+    emit dronesChanged();
 }

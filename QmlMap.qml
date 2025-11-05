@@ -240,7 +240,7 @@ Item {
     }
 
     Component.onCompleted: {        
-        console.log("Number of drones in model:", droneController.drones.length)
+        console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
 
     }
 }

@@ -17,6 +17,8 @@ class DroneClass : public QObject
     Q_PROPERTY(double    batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged  FINAL)
     Q_PROPERTY(QString   role        READ getRole        WRITE setRole        NOTIFY roleChanged        FINAL)
     Q_PROPERTY(QString   xbeeID      READ getXbeeID      WRITE setXbeeID      NOTIFY xbeeIDChanged      FINAL)
+    Q_PROPERTY(int       sysID       READ getSysID       WRITE setSysID       NOTIFY sysIDChanged       FINAL)
+    Q_PROPERTY(int       compID      READ getCompID      WRITE setCompID      NOTIFY compIDChanged      FINAL)
     Q_PROPERTY(QVector3D position    READ getPosition    WRITE setPosition    NOTIFY positionChanged    FINAL)
     Q_PROPERTY(double    latitude    READ getLatitude    WRITE setLatitude    NOTIFY latitudeChanged    FINAL)  // temporary
     Q_PROPERTY(double    longitude   READ getLongitude   WRITE setLongitude   NOTIFY longitudeChanged   FINAL)  // temporary
@@ -30,6 +32,15 @@ public:
 
     DroneClass(const QString &input_name,
                const QString &input_role,
+               const QString &input_xbeeAddress,
+               QObject *parent = nullptr);
+
+    // overload function to create with XBee-ID && sys and comp id
+    DroneClass(const QString &input_name,
+               const QString &input_role,
+               const QString &input_xbeeID,
+               const int &input_sysID,
+               const int &input_compID,
                const QString &input_xbeeAddress,
                QObject *parent = nullptr);
 
@@ -55,6 +66,12 @@ public:
 
     QString   getXbeeID()      const { return m_xbeeID; }
     void      setXbeeID(const QString &inputXbeeID);
+
+    int   getSysID()      const { return m_sysID; }
+    void      setSysID(const int &inputSysID);
+
+    int   getCompID()      const { return m_compID; }
+    void      setCompID(const int &inputCompID);
 
     double    getBatteryLevel() const { return m_batteryLevel; }
     void      setBatteryLevel(double batteryLevel);
@@ -100,6 +117,8 @@ signals:
     void xbeeAddressChanged();
     void roleChanged();
     void xbeeIDChanged();
+    void sysIDChanged();
+    void compIDChanged();
     void batteryChanged();
     void positionChanged();
     void latitudeChanged();    // temporary
@@ -115,6 +134,8 @@ private:
     QString   m_xbeeAddress;
     QString   m_role;
     QString   m_xbeeID;
+    int   m_sysID;
+    int   m_compID;
     double    m_batteryLevel;
     QVector3D m_position;
     double    m_latitude;      // temporary

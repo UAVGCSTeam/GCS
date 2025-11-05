@@ -186,7 +186,8 @@ Rectangle {
                         Make drone symbols update based on status.
                 */
 
-                model: droneController ? droneController.drones : []
+                model: droneController.drones
+                // model: droneController ? droneController.drones : []
 
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
@@ -279,7 +280,10 @@ Rectangle {
                     }
                 }
 
-
+                Connections {
+                    target: droneController
+                    onDronesChanged: droneListView.model = droneController.drones
+                }
             }
 
             // Add Drone Button
@@ -353,11 +357,5 @@ Rectangle {
     // Function to clear current selection highlight
     function clearSelection() {
         droneListView.currentIndex = -1
-    }
-    
-    // this ties into the telemetry panel to control maximum width of the panel         
-    signal trackingWidthReady(int w)
-    function publishTrackingWidth() {
-        trackingWidthReady(width)
     }
 }

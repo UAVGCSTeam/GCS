@@ -45,8 +45,8 @@ Rectangle {
         ],
         [
             { label: "Dist GCS", unit: "m" },
-            { label: "Air Speed", unit: "m/s" },
-            { label: "Gnd Speed", unit: "m/s" }
+            { label: "SYS ID", unit: "" },
+            { label: "COMP ID", unit: "" }
         ]
     ]
 
@@ -132,9 +132,10 @@ Rectangle {
                                             else if (modelData.label === "Altitude") { "---" }
                                             else if (modelData.label === "Climb Rate") { "---" }
                                             else if (modelData.label === "Flight Time") { "---" }
-                                            else if (modelData.label === "Distance GCS") { "---" }
-                                            else if (modelData.label === "Air Speed") { "---" }
-                                            else if (modelData.label === "Gnd Speed") { "---" }
+                                            else if (modelData.label === "Dist GCS") { droneController.drones.length }
+                                            else if (modelData.label === "SYS ID") { activeDrone.sysID}
+                                            else if (modelData.label === "COMP ID") { activeDrone.compID}
+                                            else { "---" }
                                         } else { "---" }
                                     }
                                     color: "white"

@@ -13,6 +13,8 @@ DroneClass::DroneClass(QObject *parent) :
     , m_xbeeAddress("")
     , m_role("")
     , m_xbeeID("")
+    , m_sysID(-1)
+    , m_compID(-1)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_latitude(-1)    // temporary
@@ -33,6 +35,8 @@ DroneClass::DroneClass(const QString &input_name,
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_xbeeID("")
+    , m_sysID(-1)
+    , m_compID(-1)
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_latitude(-1)
@@ -46,6 +50,35 @@ DroneClass::DroneClass(const QString &input_name,
 }
 
 DroneClass::DroneClass(const QString &input_name,
+    // A: merge this with constructor B at some point
+                       const QString &input_role,
+                       const QString &input_xbeeID,
+                       const int &input_sysID,
+                       const int &input_compID,
+                       const QString &input_xbeeAddress,
+                       QObject *parent)
+    : QObject(parent)
+    , m_name(input_name)
+    , m_xbeeAddress(input_xbeeAddress)
+    , m_role(input_role)
+    , m_xbeeID(input_xbeeID)
+    , m_sysID(input_sysID)
+    , m_compID(input_compID)
+    , m_batteryLevel(-1)
+    , m_position(QVector3D(-1, -1, -1))
+    , m_latitude(34.059333) //temporary
+    , m_longitude(-117.820611) //temporary
+    , m_altitude(-1)  //temporary
+    , m_velocity(QVector3D(-1, -1, -1))
+    , m_airspeed(-1)    // temporary
+    , m_orientation(QVector3D(-1, -1, -1))
+{
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+}
+
+
+DroneClass::DroneClass(const QString &input_name,
+    // B: merge this with constructor A at some point
                        const QString &input_role,
                        const QString &input_xbeeID,
                        const QString &input_xbeeAddress,
@@ -158,6 +191,20 @@ void DroneClass::setXbeeID(const QString &inputXbeeID)
     if (m_xbeeID == inputXbeeID) return;
     m_xbeeID = inputXbeeID;
     emit xbeeIDChanged();
+}
+
+void DroneClass::setSysID(const int &inputSysID)
+{
+    if (m_sysID == inputSysID) return;
+    m_sysID = inputSysID;
+    emit sysIDChanged();
+}
+
+void DroneClass::setCompID(const int &inputCompID)
+{
+    if (m_compID == inputCompID) return;
+    m_compID = inputCompID;
+    emit compIDChanged();
 }
 
 void DroneClass::setBatteryLevel(double inputBatteryLevel)
