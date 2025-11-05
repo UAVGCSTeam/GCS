@@ -6,7 +6,7 @@ import "qrc:/gcsStyle" as GcsStyle
 Rectangle {
     // This is the container element
     id: telemetryPanel
-    height: isExpanded ? 225 : 90
+    height: isExpanded ? 199 : 90
     width: Math.min(parent.width * 0.5, 400)
     color: "#80000000"
     radius: GcsStyle.PanelStyle.cornerRadius
@@ -24,8 +24,8 @@ Rectangle {
         (The DroneClass object is stored in the activeDrone var)
         */
         [
-            { label: "Latitude", unit: "" },
-            { label: "Longitude", unit: "" },
+            { label: "Climb Rt", unit: "m/s" },
+            { label: "Flight Time", unit: "" },
             { label: "SatCount", unit: "" }
         ],
         [
@@ -39,14 +39,14 @@ Rectangle {
             { label: "Fail Safe", unit: "" }
         ],
         [
-            { label: "Altitude", unit: "m" },
-            { label: "Climb Rate", unit: "m/s" },
-            { label: "Flight Time", unit: "" }
+            { label: "Latitude", unit: "" },
+            { label: "Longitude", unit: "" },
+            { label: "Altitude", unit: "m" }
         ],
         [
-            { label: "Distance From GCS", unit: "m" },
+            { label: "Dist GCS", unit: "m" },
             { label: "Air Speed", unit: "m/s" },
-            { label: "Ground Speed", unit: "m/s" }
+            { label: "Gnd Speed", unit: "m/s" }
         ]
     ]
 
@@ -64,7 +64,7 @@ Rectangle {
         anchors.margins: 8
         spacing: 4
 
-        // Bar at top of panel
+        // Top edge of panel
         Rectangle {
             Layout.fillWidth: true
             height: 1
@@ -86,6 +86,17 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: 0
+
+                    // Left Edge of Panel
+                    Rectangle {
+                        width: 1
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.topMargin: -4
+                        anchors.bottomMargin: -4
+                        color: "#404040"
+                    }
 
                     // Repeater for each field in row
                     Repeater {
@@ -109,8 +120,8 @@ Rectangle {
                                 Text {
                                     text: {
                                         if (activeDrone) {
-                                            if (modelData.label === "Latitude") { activeDrone.latitude }
-                                            else if (modelData.label === "Longitude") { activeDrone.longitude }
+                                            if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
+                                            else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
                                             else if (modelData.label === "SatCount") { "---" }
                                             else if (modelData.label === "Yaw") { "---" }
                                             else if (modelData.label === "Pitch") { "---" }
@@ -121,9 +132,9 @@ Rectangle {
                                             else if (modelData.label === "Altitude") { "---" }
                                             else if (modelData.label === "Climb Rate") { "---" }
                                             else if (modelData.label === "Flight Time") { "---" }
-                                            else if (modelData.label === "Distance From GCS") { "---" }
+                                            else if (modelData.label === "Distance GCS") { "---" }
                                             else if (modelData.label === "Air Speed") { "---" }
-                                            else if (modelData.label === "Ground Speed") { "---" }
+                                            else if (modelData.label === "Gnd Speed") { "---" }
                                         } else { "---" }
                                     }
                                     color: "white"
@@ -145,10 +156,9 @@ Rectangle {
                                 anchors.right: parent.right
                                 anchors.top: parent.top
                                 anchors.bottom: parent.bottom
-                                anchors.topMargin: 6
-                                anchors.bottomMargin: 6
+                                anchors.topMargin: -4
+                                anchors.bottomMargin: -4
                                 color: "#404040"
-                                // visible: index < fields.length - 1
                             }
                         }
                     }
@@ -157,11 +167,8 @@ Rectangle {
                 // Divider between rows
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.leftMargin: 10
-                    Layout.rightMargin: 10
                     height: 1
                     color: "#404040"
-                    // visible: index < rowsModel.count - 1 && (index < 1 || isExpanded)
                 }
             }
         }
