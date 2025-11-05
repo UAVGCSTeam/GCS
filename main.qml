@@ -16,6 +16,7 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
+    property var selectedDrones: []
     // These are our components that sit on top of our Window object
     QmlMap {
         // Reference by id not file name
@@ -82,38 +83,23 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onDroneClicked: function(drone, cmdOrCtrlPressed) {
-            // function(drone) is used here to avoid implicit parameter passing. 
-            // In this case the implicit parameter passing was 'drone'
-            // Implicit parameter passing is not allowed for Qt 6.5+
-            console.log("[main.qml] Clicked drone:", drone.name)
-            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name && telemetryPanel.visible) {
-                telemetryPanel.visible = false // Hide the telemetry panel if same drone is clicked
-                droneTrackingPanel.clearSelection() // clear selected color
-
-            } else {
-                // This is the case when the drone that was clicked was not the currently selected drone
-                telemetryPanel.populateActiveDroneModel(drone)
-                telemetryPanel.visible = true
-
-                // Ensure that the applicaiton will no longer follow a drone
-                console.log("Stop following current drone when selecting another drone:", mapComponent.followDroneName)
-                mapComponent.turnOffFollowDrone()
-
-                // Check to see if command or ctrl key was pressed
-                if (cmdOrCtrlPressed) {
-                    mapComponent.turnOnFollowDrone()
-                    console.log("Cmd or Ctrl Pressed. Following :", mapComponent.followDroneName)
-                } else {
-                    // add center drone functionality 
-                    if (drone.latitude && drone.longitude){
-                        mapController.setCenterPosition(drone.latitude, drone.longitude)
-                        console.log("Map on centered drone:", drone.name, drone.latitude, drone.longitude)
-                    } else {
-                        console.warn("Drone has no position")
-                    }
-                }
+        onSelectionChanged: function(selected) {
+            // function(selected) is used here to avoid implicit parameter passing
+            // In this case the implicit parameter was passing was 'selected'
+            // Implicit parameter passing is not allowed for QT 6.5+
+            handleSelectedDrones(selected)
+        }
+        onFollowRequested: function(drone) {
+            if (!drone) {
+                console.warn("Follow requested without a drone reference")
+                return
             }
+
+            console.log("[main.qml] Follow requested via modifier click:", drone.name)
+            // Reset the current follow target so the map component doesn't keep the old pointer
+            mapComponent.turnOffFollowDrone()
+            // Immediately re-enable follow mode. map component will use telemetryPanel.activeDrone
+            mapComponent.turnOnFollowDrone()
         }
     }
 
@@ -196,5 +182,30 @@ Window {
                           ]
         droneTrackingPanel.populateListModel(response)*/
         // uncomment these for the original static response
+    }
+
+    // Syncs telemetry visibility and follow state whenever the selection array updates
+    function handleSelectedDrones(selected) {
+        selectedDrones = selected
+
+        console.log("Selection count:", selected.length)
+        for (var i = 0; i < selected.length; ++i) {
+            var drone = selected[i]
+            var name = drone && drone.name !== undefined ? drone.name : "<unknown>"
+            console.log("Selected drone: ", name)
+        }
+
+        if (selected.length === 1) {
+            var drone = selected[0]
+            telemetryPanel.populateActiveDroneModel(drone)
+            telemetryPanel.visible = true
+
+        } else {
+            // No selection or multiple selection: hide telemetry panel and stop following
+            if (telemetryPanel.visible) {
+                telemetryPanel.visible = false
+            }
+            mapComponent.turnOffFollowDrone()
+        }
     }
 }
