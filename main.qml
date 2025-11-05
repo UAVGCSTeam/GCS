@@ -67,14 +67,6 @@ Window {
             bottom: parent.bottom
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        visible: false
-        onVisibleChanged: {
-                // TO-DO: do we actually need this. isn't there the same functionality below for the drone tracking panel?
-                if (!visible) {
-                    console.log("Stop following current drone de-clicked:", mapComponent.followDroneName)
-                    mapComponent.turnOffFollowDrone()
-                }
-            }
     }
     
     DroneTrackingPanel {
@@ -93,7 +85,7 @@ Window {
 
             } else {
                 // This is the case when the drone that was clicked was not the currently selected drone
-                telemetryPanel.populateActiveDroneModel(drone)
+                telemetryPanel.setActiveDrone(drone)
 
                 // Ensure that the applicaiton will no longer follow a drone
                 console.log("Stop following current drone when selecting another drone:", mapComponent.followDroneName)
