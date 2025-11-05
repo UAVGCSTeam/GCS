@@ -6,7 +6,7 @@ import "qrc:/gcsStyle" as GcsStyle
 Rectangle {
     // This is the container element
     id: telemetryPanel
-    height: isExpanded ? 199 : 90
+    height: isExpanded ? 199 : 90  // 2.21 : 1
     width: Math.min(parent.width * 0.5, 400)
     color: "#80000000"
     radius: GcsStyle.PanelStyle.cornerRadius
@@ -58,7 +58,6 @@ Rectangle {
         cursorShape: Qt.PointingHandCursor
     }
 
-    // Repeater for each row
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 8
@@ -71,6 +70,7 @@ Rectangle {
             color: "#404040"
         }
 
+        // Repeater for each row
         Repeater {
             model: telemetryPanel.fieldRows.length
 
@@ -181,10 +181,6 @@ Rectangle {
 
     function toggleExpanded() {
         isExpanded = !isExpanded
-    }
-
-    function setTrackingWidth(w) {
-        
     }
 }
 
