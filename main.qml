@@ -16,8 +16,9 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
-
     // These are our components that sit on top of our Window object
+
+
     QmlMap {
         // Reference by id not file name
         id: mapComponent
@@ -67,7 +68,15 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
+        onVisibleChanged: {
+                // TO-DO: do we actually need this. isn't there the same functionality below for the drone tracking panel?
+                if (!visible) {
+                    console.log("Stop following current drone de-clicked:", mapComponent.followDroneName)
+                    mapComponent.turnOffFollowDrone()
+                }
+            }
     }
+    
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -75,14 +84,42 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onDroneClicked: function(drone) {
+        onDroneClicked: function(drone, cmdOrCtrlPressed) {
             // function(drone) is used here to avoid implicit parameter passing. 
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
-            console.log("[main.qml] Clicked drone:", drone.name)
-            telemetryPanel.setActiveDrone(drone)
-            telemetryPanel.visible = true
+            if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name && telemetryPanel.visible) {
+                droneTrackingPanel.clearSelection() // clear selected color
+
+            } else {
+                // This is the case when the drone that was clicked was not the currently selected drone
+                telemetryPanel.populateActiveDroneModel(drone)
+
+                // Ensure that the applicaiton will no longer follow a drone
+                console.log("Stop following current drone when selecting another drone:", mapComponent.followDroneName)
+                mapComponent.turnOffFollowDrone()
+
+                // Check to see if command or ctrl key was pressed
+                if (cmdOrCtrlPressed) {
+                    mapComponent.turnOnFollowDrone()
+                    console.log("Cmd or Ctrl Pressed. Following :", mapComponent.followDroneName)
+                } else {
+                    // add center drone functionality 
+                    if (drone.latitude && drone.longitude){
+                        mapController.setCenterPosition(drone.latitude, drone.longitude)
+                        console.log("Map on centered drone:", drone.name, drone.latitude, drone.longitude)
+                    } else {
+                        console.warn("Drone has no position")
+                    }
+                }
+            }
         }
+    }
+
+    // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
+    Shortcut {
+        sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
+        onActivated: mapComponent.toggleFollowDrone()
     }
 
     /*
@@ -95,19 +132,6 @@ Window {
     */
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
-    // TODO: update this to include the command panel instead in the future
-    // Connections {
-    //     target: droneStatusPanel
-    //     function onStatusHeightReady(h) {
-    //         telemetryPanel.setStatusHeight(h)
-    //     } 
-    // }
-    Connections {
-        target: droneTrackingPanel
-        function onTrackingWidthReady(w) {
-            telemetryPanel.setTrackingWidth(w)
-        } 
-    }
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
@@ -116,14 +140,9 @@ Window {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        // Get the width and height of the tracking panel and command panel
-        // used for the resizing limit on the telemetry panel
-        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
-        droneTrackingPanel.publishTrackingWidth();
-
-        fetch();
+        droneController.openXbee("/dev/ttys005", 57600)
+        // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
     }
 }
