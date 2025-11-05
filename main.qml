@@ -18,6 +18,8 @@ Window {
     title: qsTr("GCS - Cal Poly Pomona")
     property var selectedDrones: []
     // These are our components that sit on top of our Window object
+
+
     QmlMap {
         // Reference by id not file name
         id: mapComponent
@@ -64,18 +66,10 @@ Window {
         id: telemetryPanel
         anchors {
             bottom: parent.bottom
-            right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        visible: false
-        onVisibleChanged: {
-                // TO-DO: do we actually need this. isn't there the same functionality below for the drone tracking panel?
-                if (!visible) {
-                    console.log("Stop following current drone de-clicked:", mapComponent.followDroneName)
-                    mapComponent.turnOffFollowDrone()
-                }
-            }
     }
+    
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -119,28 +113,6 @@ Window {
     */
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
-    // TODO: update this to include the command panel instead in the future
-    // Connections {
-    //     target: droneStatusPanel
-    //     function onStatusHeightReady(h) {
-    //         telemetryPanel.setStatusHeight(h)
-    //     } 
-    // }
-    Connections {
-        target: droneTrackingPanel
-        function onTrackingWidthReady(w) {
-            telemetryPanel.setTrackingWidth(w)
-        } 
-    }
-
-
-    // Connections {
-    //     target: MapScaleBarIndicator
-    //     function on(w) {
-    //         telemetryPanel.setTrackingWidth(w)
-    //     } 
-    // }
-    
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
@@ -149,39 +121,10 @@ Window {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        // Get the width and height of the tracking panel and command panel
-        // used for the resizing limit on the telemetry panel
-        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
-        droneTrackingPanel.publishTrackingWidth();
-
-        fetch();
-    }
-
-    Connections {
-        target: droneController
-
-    }
-
-    // NOT DYNAMIC: deleted functionality 
-    function fetch() {
-        // changing between droneController.getAllDrones() and droneController.drones
-        // var drones = droneController.getAllDrones();
-        // droneTrackingPanel.populateListModel(drones);
-        // uncomment these for populating the list based on the database
-
-        /*const response = [
-                           {name: "Drone 1", status: "Flying", battery: 10, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 2", status: "Idle", battery: 54, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 3", status: "Stationy", battery: 70, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 4", status: "Dead", battery: 0, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 5", status: "Flying", battery: 90, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 6", status: "Ready", battery: 100, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45}
-                          ]
-        droneTrackingPanel.populateListModel(response)*/
-        // uncomment these for the original static response
+        droneController.openXbee("/dev/ttys005", 57600)
+        // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
     }
 
     // Syncs telemetry visibility and follow state whenever the selection array updates
@@ -197,7 +140,7 @@ Window {
 
         if (selected.length === 1) {
             var drone = selected[0]
-            telemetryPanel.populateActiveDroneModel(drone)
+            telemetryPanel.setActiveDrone(drone)
             telemetryPanel.visible = true
 
         } else {
