@@ -17,6 +17,8 @@ Window {
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
     // These are our components that sit on top of our Window object
+
+
     QmlMap {
         // Reference by id not file name
         id: mapComponent
@@ -75,6 +77,7 @@ Window {
                 }
             }
     }
+    
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -86,7 +89,6 @@ Window {
             // function(drone) is used here to avoid implicit parameter passing. 
             // In this case the implicit parameter passing was 'drone'
             // Implicit parameter passing is not allowed for Qt 6.5+
-            console.log("[main.qml] Clicked drone:", drone.name)
             if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name && telemetryPanel.visible) {
                 telemetryPanel.visible = false // Hide the telemetry panel if same drone is clicked
                 droneTrackingPanel.clearSelection() // clear selected color
@@ -133,28 +135,7 @@ Window {
     */
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
-    // TODO: update this to include the command panel instead in the future
-    // Connections {
-    //     target: droneStatusPanel
-    //     function onStatusHeightReady(h) {
-    //         telemetryPanel.setStatusHeight(h)
-    //     } 
-    // }
-    Connections {
-        target: droneTrackingPanel
-        function onTrackingWidthReady(w) {
-            telemetryPanel.setTrackingWidth(w)
-        } 
-    }
 
-
-    // Connections {
-    //     target: MapScaleBarIndicator
-    //     function on(w) {
-    //         telemetryPanel.setTrackingWidth(w)
-    //     } 
-    // }
-    
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
@@ -163,38 +144,9 @@ Window {
         for (var i = 0; i < coords.length; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("[main.qml] Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        // Get the width and height of the tracking panel and command panel
-        // used for the resizing limit on the telemetry panel
-        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
-        droneTrackingPanel.publishTrackingWidth();
-
-        fetch();
-    }
-
-    Connections {
-        target: droneController
-
-    }
-
-    // NOT DYNAMIC: deleted functionality 
-    function fetch() {
-        // changing between droneController.getAllDrones() and droneController.drones
-        // var drones = droneController.getAllDrones();
-        // droneTrackingPanel.populateListModel(drones);
-        // uncomment these for populating the list based on the database
-
-        /*const response = [
-                           {name: "Drone 1", status: "Flying", battery: 10, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 2", status: "Idle", battery: 54, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 3", status: "Stationy", battery: 70, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 4", status: "Dead", battery: 0, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 5", status: "Flying", battery: 90, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 6", status: "Ready", battery: 100, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45}
-                          ]
-        droneTrackingPanel.populateListModel(response)*/
-        // uncomment these for the original static response
+        droneController.openXbee("/dev/ttys005", 57600)
+        // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
     }
 }

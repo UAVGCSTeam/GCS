@@ -8,6 +8,13 @@
 #include <QSharedPointer>
 #include <QSharedMemory>
 #include <QTimer>
+#include <memory>
+#include <cstdint>
+#include <QHash>
+#include <QVariant>
+#include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
+
+
 // #include "drone.h"
 
 /*
@@ -26,7 +33,14 @@
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
-class DroneController : public QObject
+
+
+
+class XbeeLink;
+class MavlinkSender;
+class MavlinkReceiver;
+
+class DroneController : public QObject 
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList drones READ drones NOTIFY dronesChanged)
@@ -40,6 +54,9 @@ public:
     void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool isSimulationMode() const;
+    Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
+    Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
+
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
@@ -61,6 +78,8 @@ private slots:
     // Process data recieved from XBee via shared memory
     void processXbeeData();
     void tryConnectToDataFile();
+    void onMavlinkMessage(const RxMavlinkMsg& msg);
+
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
@@ -75,8 +94,7 @@ private:
     void simulateDroneMovement(); // Function to move a drone periodically
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
-    // DroneClass &droneClass;
-    //  Timers for data polling
+    // Timers for data polling
     QTimer xbeeDataTimer;
     QTimer reconnectTimer;
     // Method to find drone by name
@@ -88,6 +106,12 @@ private:
 
     QString getDataFilePath();
     QString getConfigFilePath() const;
+
+    std::unique_ptr<XbeeLink>    xbee_;
+    std::unique_ptr<MavlinkSender> mav_;
+    std::unique_ptr<MavlinkReceiver> mavRx_;
+    void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
+    QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
