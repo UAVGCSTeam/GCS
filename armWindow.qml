@@ -25,7 +25,7 @@ Window {
             anchors.centerIn: parent
             onClicked: {
                 // TEMP: hardcode a target; replace with your real XBee address or ID later
-                const target = "0013A20041D365C4"
+            const target = "11062025" // the custom SITL drone
                 const ok = droneController.sendArm(target, true)   // true = arm, false = disarm
                 console.log("ARM ->", target, ok)
             }

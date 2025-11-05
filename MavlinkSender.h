@@ -9,6 +9,9 @@ public:
     explicit MavlinkSender(XbeeLink* link, QObject* parent=nullptr);
     // sys/comp are target IDs on the drone
     bool sendArm(uint8_t sys, uint8_t comp, bool arm);
+    bool sendTakeoffCmd(uint8_t target_system, uint8_t target_component);
+    bool setGuidedMode(uint8_t target_system, uint8_t target_component);
+
 private:
     XbeeLink* link_;
     QByteArray packCommandLong(uint8_t sys, uint8_t comp,

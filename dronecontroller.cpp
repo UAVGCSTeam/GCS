@@ -665,14 +665,51 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 
     // TODO: make these configurable or read from DB later
     // targetSys and targetComp are both 0 when dealing with ArduPilot SITL
-    const uint8_t targetSys  = 0;   
-    const uint8_t targetComp = 0;   // MAV_COMP_ID_AUTOPILOT1
+    const uint8_t targetSys  = 1;   
+    const uint8_t targetComp = 1;   // MAV_COMP_ID_AUTOPILOT1
 
     const bool ok = mav_->sendArm(targetSys, targetComp, arm);
     qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
             << "->" << drone->getName() << drone->getXbeeAddress()
             << "sent=" << ok;
     return ok;
+}
+
+bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr)
+{
+    // Use your existing resolver so callers can pass either address or ID
+    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController] sendTakeoffCmd: unknown drone/address:" << droneKeyOrAddr;
+        return false;
+    }
+
+    if (!mav_) {
+        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        return false;
+    }
+
+    // TODO: make these configurable or read from DB later
+    // targetSys and targetComp are both 1 when dealing with ArduPilot SITL
+    const uint8_t targetSys  = drone->getSysID();   
+    const uint8_t targetComp = drone->getCompID();
+    const bool okGuided = mav_->setGuidedMode(targetSys, targetComp);
+    if (!okGuided) {
+        qWarning() << "Guided mode not set";
+        return false;
+    }
+    const bool okArm = mav_->sendArm(targetSys, targetComp, true);
+    if (!okArm) {
+        qWarning() << "Arm mode not set";
+        return false;
+    }
+    const bool okTakeoff = mav_->sendTakeoffCmd(targetSys, targetComp);
+    qInfo() << "[DroneController] TAKEOFF"
+            << "->" << drone->getName() << drone->getXbeeAddress()
+            << "sent guided=" << okGuided
+            << "sent arm=" << okArm
+            << "sent takeoff=" << okTakeoff;
+    return okTakeoff;
 }
 
 // Helper: find (or lazily bind) a drone for a sysid.
@@ -692,6 +729,19 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysid,
     return {};
 }
 
+
+// Helper: find (or lazily bind) a drone for a sysid.
+// Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
+QSharedPointer<DroneClass> DroneController::demo_lazybinding(int sysid) {
+    for (const auto &drone : droneList) {
+        if (sysid == drone->getSysID()) {
+            return drone;
+        }
+    }
+    return nullptr;
+}
+
+
 void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 {
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
@@ -704,6 +754,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 
     const uint8_t sysid = msg.sysid;
 
+    // this logic checks to see whether the received data is from a new drone
     if (addNewDrone) { 
         for (const auto &drone : droneList) {
             if (msg.sysid == drone->getSysID() && msg.compid == drone->getCompID()) {
@@ -718,10 +769,10 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         if (addNewDrone) { addSITLDroneToList(msg.sysid, msg.compid); }
     }
 
-
-
+    
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
+        qInfo() << "Got a heartbeat";
         mavlink_heartbeat_t hb;
         mavlink_msg_heartbeat_decode(&msg, &hb);
         updateDroneTelem(sysid, "connected", true);
@@ -730,6 +781,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
+        qInfo() << "Got a heartbeat";
         mavlink_sys_status_t s;
         mavlink_msg_sys_status_decode(&msg, &s);
         updateDroneTelem(sysid, "battery_v",   s.voltage_battery/1000.0);
@@ -737,6 +789,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
+        qInfo() << "Got a heartbeat";
         mavlink_global_position_int_t p;
         mavlink_msg_global_position_int_decode(&msg, &p);
         updateDroneTelem(sysid, "lat",   p.lat/1e7);
@@ -745,6 +798,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
+        qInfo() << "Got a heartbeat";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
         updateDroneTelem(sysid, "roll", a.roll);
@@ -753,6 +807,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_ACK: {
+        qInfo() << "Got a heartbeat";
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
         qInfo().nospace()
@@ -776,11 +831,10 @@ void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, cons
 {
     // NOTE: add 'sysMap_' as a private member in your header:
     //   QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
-    auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
+    // auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
+    auto d = demo_lazybinding(sysid);
     if (d.isNull()) return;
 
-    // Call whatever setters your DroneClass actually exposes.
-    // Adjust names if your class uses different ones.
     if (field == "connected") {
         d->setConnected(value.toBool());                 // if you have it
     } else if (field == "battery_v") {
@@ -886,10 +940,10 @@ void DroneController::addSITLDroneToList(int sysID, int compID) {
     QSharedPointer<DroneClass> drone = QSharedPointer<DroneClass>::create(
         "SITL Drone!",
         "demo",
-        "64656C6574656D79706172656E74",
+        "11062025",
         sysID, 
         compID, 
-        "64656C6574656D79706172656E74",
+        "11062025",
         nullptr
     );
     droneList.push_back(drone);

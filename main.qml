@@ -135,7 +135,6 @@ Window {
         }
 
         // droneController.openXbee("/dev/ttys005", 57600)
-        // droneController.openXbee("PORT", 57600)
         droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 }

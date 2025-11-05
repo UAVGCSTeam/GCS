@@ -127,7 +127,7 @@ Rectangle {
             }
             
             PopupMenuItem {
-                text: "Take-off"
+                text: "Takeoff"
                 windowFile: "takeOffWindow.qml"
                 menuPopup: commandMenu
             }

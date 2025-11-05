@@ -57,6 +57,7 @@ public:
     Q_INVOKABLE bool isSimulationMode() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
+    Q_INVOKABLE bool sendTakeoffCmd(const QString& droneKeyOrAddr);
 
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
@@ -117,6 +118,7 @@ private:
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
 
+    QSharedPointer<DroneClass> demo_lazybinding(int sysid); // DELETE --- DEMO
 };
 
 #endif // DRONECONTROLLER_H
