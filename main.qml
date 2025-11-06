@@ -68,7 +68,17 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
-    
+    AttitudeIndicator {
+        id: attitudeIndicator
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            bottomMargin: GcsStyle.PanelStyle.applicationBorderMargin
+            rightMargin: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: true
+    }
+
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -112,6 +122,27 @@ Window {
     */
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
+    // TODO: update this to include the command panel instead in the future
+    // Connections {
+    //     target: droneStatusPanel
+    //     function onStatusHeightReady(h) {
+    //         telemetryPanel.setStatusHeight(h)
+    //     } 
+    // }
+    Connections {
+        target: droneTrackingPanel
+        function onTrackingWidthReady(w) {
+            telemetryPanel.setTrackingWidth(w)
+
+        } 
+    }
+
+    Connections {
+        target: attitudeIndicator
+        function onAttitudeWidthReady(w) {
+            telemetryPanel.setAttitudeWidth(w)
+        }
+    }
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
@@ -124,6 +155,12 @@ Window {
 
         // droneController.openXbee("/dev/ttys005", 57600)
         droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
+        // Get the width and height of the tracking panel and command panel
+        // used for the resizing limit on the telemetry panel
+        // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
+        droneTrackingPanel.publishTrackingWidth();
+        attitudeIndicator.publishAttitudeWidth()
+        fetch();
     }
 
     // Syncs telemetry visibility and follow state whenever the selection array updates
@@ -140,7 +177,8 @@ Window {
         if (selected.length === 1) {
             var drone = selected[0]
             telemetryPanel.setActiveDrone(drone)
-            telemetryPanel.visible = true
+            attitudeIndicator.setActiveDrone(drone)
+            attitudeIndicator.visible = true
 
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following

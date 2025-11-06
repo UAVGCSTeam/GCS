@@ -14,8 +14,9 @@
         <file>takeOffWindow.qml</file>
         <file>DroneLabelComponent.qml</file>
         <file>TelemetryPanel.qml</file>
-        <file>./components/MenuButton.qml</file>
-        <file>./components/PopupMenuItem.qml</file>
+        <file>components/MenuButton.qml</file>
+        <file>components/PopupMenuItem.qml</file>
+        <file>AttitudeIndicator.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>
@@ -26,6 +27,10 @@
         <file>droneSVG.svg</file>
         <file>fireSVG.svg</file>
         <file>droneMapIconSVG.svg</file>
+        <file>skyBackground.jpg</file>
+        <file>green-field-and-blue-sky-1446458468c5i.jpg</file>
+        <file>Untitled_Artwork.JPG</file>
+        <file>horizon.JPG</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>

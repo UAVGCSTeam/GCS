@@ -1,6 +1,16 @@
 #include "MavlinkSender.h"
 #include "XbeeLink.h"
 #include <QDebug>
+#include <chrono>
+
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
 
 
 
@@ -89,6 +99,7 @@ bool MavlinkSender::sendWaypointCmd(double lat, double lon, uint8_t target_syste
 
 
 
+
 bool MavlinkSender::requestData(uint8_t target_system, uint8_t target_component) {
     if(!link_ || !link_->isOpen()) return false;
     bool response = false;
@@ -105,12 +116,24 @@ bool MavlinkSender::requestData(uint8_t target_system, uint8_t target_component)
     response = link_->writeBytes(bytes);
     if (!response) { return response; }
     
+
     // Request GLOBAL_POSITION_INT at 2 Hz
     bytes = packCommandLong(
         target_system,
         target_component,
         MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
         MAVLINK_MSG_ID_SYS_STATUS,  // param1 = message ID
+        500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
+        0, 0, 0, 0, 0                        // params 3–7 unused
+    );
+    response = link_->writeBytes(bytes);
+
+
+    bytes = packCommandLong(
+        target_system,
+        target_component,
+        MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
+        MAVLINK_MSG_ID_ATTITUDE,             // param1 = message ID
         500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
         0, 0, 0, 0, 0                        // params 3–7 unused
     );

@@ -802,7 +802,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         addNewDrone = false;
     }
         
-    // qInfo() << "[onMavlinkMessage] The message id: " << msg.msgid;
+    // qInfo() << "[onMavlinkMessage] Orientation: " << droneList[0]->getOrientation();
 
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
@@ -831,7 +831,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
-        // qInfo() << "Got altitude";
+        qInfo() << "Got attitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
         updateDroneTelem(sysid, "roll", a.roll);

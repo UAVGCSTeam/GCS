@@ -31,7 +31,7 @@ Rectangle {
         [
             { label: "Yaw", unit: "°" },
             { label: "Pitch", unit: "°" },
-            { label: "Latency", unit: "ms" }
+            { label: "Roll", unit: "°" }
         ],
         [
             { label: "Status", unit: "" },
@@ -49,6 +49,10 @@ Rectangle {
             { label: "Gnd Speed", unit: "m/s" }
         ]
     ]
+
+    function setAttitudeWidth(w) {
+        attitudeWidth = w
+    }
 
     MouseArea {
         anchors.fill: parent
@@ -125,9 +129,9 @@ Rectangle {
                                             else if (modelData.label === "SYS ID") { activeDrone.sysID }
                                             else if (modelData.label === "COMP ID") { activeDrone.compID }
                                             else if (modelData.label === "Flight Time") { "---" }
-                                            else if (modelData.label === "Yaw") { "---" }
-                                            else if (modelData.label === "Pitch") { "---" }
-                                            else if (modelData.label === "Latency") { "---" }
+                                            else if (modelData.label === "Yaw") { activeDrone.orientation.z.toFixed(3) }
+                                            else if (modelData.label === "Pitch") { activeDrone.orientation.y.toFixed(3) }
+                                            else if (modelData.label === "Roll") {  activeDrone.orientation.x.toFixed(3) }
                                             else if (modelData.label === "Fail Safe") { "---" }
                                             else if (modelData.label === "Status") { "---" }
                                             else if (modelData.label === "Mode") { "---" }
@@ -188,4 +192,3 @@ Rectangle {
         isExpanded = !isExpanded
     }
 }
-
