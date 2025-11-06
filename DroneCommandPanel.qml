@@ -27,9 +27,8 @@ Rectangle {
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
-
                 ColumnLayout {
-                    anchors.fill:parent
+                    anchors.fill: parent
                     anchors.margins: GcsStyle.PanelStyle.defaultMargin
                     spacing: 0
 
@@ -97,7 +96,7 @@ Rectangle {
                 z: 1
                 color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
-                Layout.topMargin: -30   //so the expanded/collapse view overlap and dont show ugly rounded corner
+                Layout.topMargin: -20   //so the expanded/collapse view overlap and dont show ugly rounded corner
                 Layout.fillWidth: true
                 Layout.preferredHeight: 0
                 clip: true
@@ -111,7 +110,6 @@ Rectangle {
                 }
 
                 function expand() {
-                    //animation.to = content.Layout.preferredHeight
                     animation.to = 300
                     animation.running = true
                 }
@@ -157,22 +155,24 @@ Rectangle {
                     return arr
                 }
 
+                // mock status for testing
+                property var buttonStatuses: ({
+                    "Connect": statusAvailable, "Arm Drone": statusNotAvailable, "Take Off": statusAvailable, "Waypointing": statusNotAvailable, "Go Home": statusAvailable, "Hover": statusAvailable
+                })
+
                 ColumnLayout {
                     id: content
-                    Layout.fillWidth: true
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.margins: GcsStyle.PanelStyle.defaultMargin
+                    anchors.fill: parent
+                    anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                    anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                    anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
+                    anchors.topMargin: 20
                     spacing: 5
-
-                    Layout.preferredHeight: content.implicitHeight + 14
 
                     Item {
                         id: groundMenu
-                        width: parent.width
-                        Layout.topMargin: GcsStyle.PanelStyle.defaultMargin + 10
-                        Layout.bottomMargin: GcsStyle.PanelStyle.defaultMargin
-                        //Layout.topMargin: index === 0 ? 30 : 0 //adding padding above first button
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignTop
 
                         property bool open: false
 
@@ -186,18 +186,24 @@ Rectangle {
                         }
 
                         ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
+                            id: groundMenuCol
+                            anchors.fill: parent
+                            spacing: buttonSpacing
 
                             Button {
                                 id: groundHeaderButton
-                                text: "Ground"
                                 Layout.fillWidth: true
-                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+
+                                contentItem: Text {
+                                    text: "Ground"
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                    horizontalAlignment: Text.AlignLeft
+                                }
 
                                 background: Rectangle {
                                     border.width: 0.2
-                                    radius: 1
+                                    color: "#e3e3e3"
+                                    radius: 2
                                 }
 
                                 onClicked: {
@@ -225,12 +231,11 @@ Rectangle {
                                     target: groundBody
                                     property: "Layout.preferredHeight"
                                     easing.type: Easing.InOutQuad
-                                    duration: 500
+                                    duration: 250
                                 }
 
-
                                 function expandGroundAni() {
-                                    animation2.to = groundContent.implicitHeight
+                                    animation2.to = groundContent.implicitHeight + 10
                                     animation2.running = true
                                 }
 
@@ -239,24 +244,42 @@ Rectangle {
                                     animation2.running = true
                                 }
 
-
                                 ColumnLayout {
                                     id: groundContent
-                                    anchors.left: parent.left
-                                    anchors.right: parent.right
-                                    anchors.margins: GcsStyle.PanelStyle.defaultMargin
-                                    //width: parent.width
-                                    spacing: 6
-
-                                    Layout.preferredHeight: groundContent.implicitHeight + 14
+                                    anchors.fill: parent
+                                    anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                                    anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                                    anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
+                                    anchors.topMargin: 0
+                                    spacing: 2
 
                                     Repeater {
                                         model: expandedBody.categoryList("ground")
                                         delegate: Button {
-                                            text: modelData
                                             Layout.fillWidth: true
-                                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                            Layout.topMargin: index === 0 ? 20 : 0 //adding padding above first button
+
+                                            // gets button status
+                                            property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
+
+                                            enabled: status === statusAvailable     // button only clickable for when status is available
+                                            hoverEnabled: enabled
+
+                                            //changing text color
+                                            contentItem: Text {
+                                                text: modelData
+                                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+
+                                                color: {
+                                                    if (status === statusNotAvailable)
+                                                        return "#d1d0c9"
+                                                    else if (status === statusInProgress)
+                                                        return "#e3ca10"
+                                                    else
+                                                        return GcsStyle.PanelStyle.textPrimaryColor
+                                                }
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
 
                                             background: Rectangle {
                                                 border.width: 0.05
@@ -265,6 +288,12 @@ Rectangle {
 
                                             onClicked: {
                                                 console.log ("opening", text)
+
+                                                if (status === statusAvailable) {
+                                                    status = statusInProgress
+
+                                                    console.log ("Action started:", text)
+                                                }
                                             }
                                         }
                                     }
@@ -273,30 +302,145 @@ Rectangle {
                         }
                     }
 
-                    /*Repeater {
-                        model: repeaterModel
-                        delegate: Button {
-                            text: name
-                            Layout.fillWidth: true
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                            Layout.topMargin: index === 0 ? 20 : 0 //adding padding above first button
+                    Item {
+                        id: flightMenu
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignTop
 
-                            background: Rectangle {
-                                border.width: 0.05
-                                radius: 1
+                        property bool open: false
+
+                        //collapse/expand flight panel
+                        function expandFlight() {
+                            flightBody.expandFlight()
+                        }
+
+                        function collapseFlight() {
+                            flightBody.collapseFlight()
+                        }
+
+                        ColumnLayout {
+                            id: flightMenuCol
+                            anchors.fill: parent
+                            spacing: buttonSpacing
+
+                            Button {
+                                id: flightHeaderButton
+                                Layout.fillWidth: true
+
+                                contentItem: Text {
+                                    text: "In-Flight"
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                    horizontalAlignment: Text.AlignLeft
+                                }
+
+                                background: Rectangle {
+                                    border.width: 0.2
+                                    color: "#e3e3e3"
+                                    radius: 1
+                                }
+
+                                onClicked: {
+                                    if (flightMenu.open)
+                                    {
+                                        flightBody.collapseFlightAni()
+                                    }
+                                    else {z
+                                        flightBody.expandFlightAni()
+                                    }
+                                    flightMenu.open = !flightMenu.open
+                                }
                             }
 
-                            onClicked: {
-                                console.log ("opening", name)
+                            Rectangle {
+                                id: flightBody
+                                Layout.fillWidth: true
+                                radius: GcsStyle.PanelStyle.cornerRadius
+                                color: "transparent"
+                                Layout.preferredHeight: 0   //start collapsed
+                                clip: true
+
+                                PropertyAnimation {
+                                    id: animation3
+                                    target: flightBody
+                                    property: "Layout.preferredHeight"
+                                    easing.type: Easing.InOutQuad
+                                    duration: 250
+                                }
+
+                                function expandFlightAni() {
+                                    animation3.to = flightContent.implicitHeight + 10
+                                    animation3.running = true
+                                }
+
+                                function collapseFlightAni() {
+                                    animation3.to = 0
+                                    animation3.running = true
+                                }
+
+                                ColumnLayout {
+                                    id: flightContent
+                                    anchors.fill: parent
+                                    anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                                    anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                                    anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
+                                    anchors.topMargin: 0
+                                    spacing: 2
+
+                                    Repeater {
+                                        model: expandedBody.categoryList("flight")
+                                        delegate: Button {
+                                            Layout.fillWidth: true
+
+                                            // gets button status
+                                            property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
+
+                                            enabled: status === statusAvailable     // button only clickable for when status is available
+                                            hoverEnabled: enabled
+
+                                            //changing text color
+                                            contentItem: Text {
+                                                text: modelData
+                                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+
+                                                color: {
+                                                    if (status === statusNotAvailable)
+                                                        return "#d1d0c9"
+                                                    else if (status === statusInProgress)
+                                                        return "#e3ca10"
+                                                    else
+                                                        return GcsStyle.PanelStyle.textPrimaryColor
+                                                }
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                                leftPadding: 8
+                                            }
+
+                                            background: Rectangle {
+                                                border.width: 0.05
+                                                radius: 2
+                                            }
+
+                                            onClicked: {
+                                                console.log ("opening", text)
+
+                                                if (status === statusAvailable) {
+                                                    status = statusInProgress
+
+                                                    console.log ("Action started:", text)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }*/
+                    }
                 }
             }
         }
     }
 
-    // has the collapsed form opened by default
+    // has the collapsed form opened by default for main panel
     property bool expanded: false
 
     function expand() {
@@ -308,6 +452,11 @@ Rectangle {
     }
 
     property var activeDrone: null
+
+    //drone status for buttons
+    readonly property int statusNotAvailable: 0
+    readonly property int statusInProgress: 1
+    readonly property int statusAvailable: 2
 
     /*function populateActiveDroneModel(drone) {
         if (!drone) return;
