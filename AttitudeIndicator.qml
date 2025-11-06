@@ -5,10 +5,13 @@ Rectangle {
     width: 200
     height: 200
     color: "black"
-    radius : 1000000
+    radius : width/2
     clip: true
     focus: true
-
+    signal attitudeWidthReady(int w)
+    function publishAttitudeWidth() {
+        attitudeWidthReady(width)
+    }
     property real pitch: 0
     property real bank: 0
 
@@ -46,7 +49,7 @@ Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width
-            height: 2
+            height: 3
             color: "white"
             radius: 1
         }
@@ -54,7 +57,7 @@ Rectangle {
         // reference bars to right and left of the horizon line
         Rectangle {
             width: parent.width * 0.25
-            height: 3
+            height: 4
             color: "white"
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.horizontalCenter
@@ -62,14 +65,14 @@ Rectangle {
         }
         Rectangle {
             width: parent.width * 0.25
-            height: 3
+            height: 4
             color: "white"
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.horizontalCenter
             anchors.rightMargin: 4
         }
 
-        // Short vertical center line (nose reference)
+        // Short vertical center line
         Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
@@ -79,34 +82,11 @@ Rectangle {
             radius: 1
             opacity: 5
         }
-
-        // Pitch ladder marks
-        Repeater {
-            model: 4
-            delegate: Rectangle {
-                width: parent.width * 0.25
-                height: 5
-                color: "white"
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenterOffset: (index + 1) * 20
-                opacity: 0.7
-
-
-                Rectangle {
-                    width: parent.width * 0.25
-                    height: 1.5
-                    color: "white"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenterOffset: -(index + 1) * 20
-                    opacity: 0.7
-                }
-            }
-        }
     }
 
     Image {
         id: background
-        source: "qrc:/resources/green-field-and-blue-sky-1446458468c5i"
+        source: "qrc:/resources/horizon.JPG"
         anchors.centerIn: parent
         width: parent.width * 2
         height: parent.height * 2

@@ -23,13 +23,15 @@ Rectangle {
     visible: false
     anchors.right: parent.right
     anchors.bottom: parent.bottom
+    anchors.rightMargin: attitudeWidth
 
-    property var activeDrone: null 
+    property var activeDrone: null
     property int minPanelWidth: 380
     property int minPanelHeight: 140
     property int resizeHandleSize: 20
     property int statusHeight: 0
     property int trackingWidth: 0
+    property int attitudeWidth: 0
 
     Rectangle {
         // This is the visible telem container element
@@ -65,7 +67,6 @@ Rectangle {
             ListElement { label: "Mode";          key: "mode" }
         }
 
-        // invisible wheel-blocker to prevent map scrolling when over the telemetry panel
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
@@ -92,7 +93,7 @@ Rectangle {
                 anchors.fill: parent
 
                 TapHandler {
-                    acceptedDevices: PointerDevice.Mouse // listens for mouse taps
+                    acceptedDevices: PointerDevice.Mouse
                     grabPermissions: PointerHandler.TakeOverForbidden
 
                     onDoubleTapped: (eventPoint) => {
@@ -125,6 +126,7 @@ Rectangle {
                     }
                 }
             }
+
             Rectangle {
                 id: flickContent
                 width: flick.width
@@ -160,7 +162,7 @@ Rectangle {
                             property var row: (activeDroneModel.count > 0 ? activeDroneModel.get(0) : null)
                             property var value: (row && row[key] !== undefined) ? row[key] : ""
 
-                            Text { // telemetry label
+                            Text {
                                 text: label
                                 anchors.top: parent.top
                                 anchors.horizontalCenter: parent.horizontalCenter
@@ -169,7 +171,7 @@ Rectangle {
                                 wrapMode: Text.WordWrap
                             }
 
-                            Text { // telemetry value
+                            Text {
                                 text: value
                                 anchors.centerIn: parent
                                 width: parent.width - 12
@@ -184,7 +186,6 @@ Rectangle {
                 }
             }
 
-            // vertical scrollbar for flickable container
             ScrollBar.vertical: ScrollBar {
                 policy: ScrollBar.AsNeeded
                 interactive: true
@@ -192,10 +193,7 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
 
-                background: Rectangle {
-                    color: "transparent"
-                }
-
+                background: Rectangle { color: "transparent" }
                 contentItem: Rectangle {
                     implicitWidth: 8
                     radius: width
@@ -229,8 +227,8 @@ Rectangle {
         trackingWidth = w
     }
 
-    function attidudeIndicator(w){
-
+    function setAttitudeWidth(w) {
+        attitudeWidth = w
     }
 
     MouseArea {
@@ -315,4 +313,3 @@ Rectangle {
         }
     }
 }
-

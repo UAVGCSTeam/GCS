@@ -133,7 +133,12 @@ Window {
         } 
     }
 
-
+    Connections {
+        target: attitudeIndicator
+        function onAttitudeWidthReady(w) {
+            telemetryPanel.setAttitudeWidth(w)
+        }
+    }
     // Connections {
     //     target: MapScaleBarIndicator
     //     function on(w) {
@@ -156,7 +161,7 @@ Window {
         // used for the resizing limit on the telemetry panel
         // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
         droneTrackingPanel.publishTrackingWidth();
-
+        attitudeIndicator.publishAttitudeWidth()
         fetch();
     }
 
