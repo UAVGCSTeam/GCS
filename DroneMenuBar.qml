@@ -33,7 +33,6 @@ Rectangle {
     radius: GcsStyle.PanelStyle.cornerRadius - 3
         // This radius of the ENTIRE menu bar controls the radius of 
         // all the menu bar buttons
-    signal wayPointingRequested()
     Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
@@ -335,41 +334,6 @@ Rectangle {
                         }
                     } else {
                         console.error("Component not ready:", component.errorString())
-                    }
-                }
-            }
-
-            // Way Pointing Menu item
-            Button {
-                width: parent.width
-                height: 30
-                text: "Way Pointing"
-                enabled: !mapComponent.wayPointingActive
-
-                background: Rectangle {
-                    color: !parent.enabled ? "#808080" :  // greyed out when disabled
-                           parent.pressed ? GcsStyle.PanelStyle.buttonPressedColor :
-                           parent.hovered ? GcsStyle.PanelStyle.buttonHoverColor :
-                           "transparent"
-                    radius: 2
-                    opacity: parent.enabled ? 1.0 : 0.5   // dim the background when disabled
-                }
-
-                contentItem: Text {
-                    text: parent.text
-                    color: parent.enabled ? GcsStyle.PanelStyle.textPrimaryColor : "#A0A0A0"
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    font.pixelSize: 11
-                    anchors.left: parent.left
-                    anchors.leftMargin: 10
-                }
-
-                onClicked: {
-                    // onClicked won't trigger if enabled = false, but safe to check
-                    if (parent.enabled) {
-                        wayPointingRequested()
-                        commandMenu.close()
                     }
                 }
             }

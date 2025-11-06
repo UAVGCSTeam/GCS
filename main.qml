@@ -48,12 +48,6 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-
-        onWayPointingRequested: {
-            console.log("Waypointing mode activated")
-            mapComponent.wayPointingActive = true
-            mapComponent.clickedCoordLabel = null
-        }
     }
 
     DroneTrackingPanel {
@@ -65,10 +59,6 @@ Window {
         }
         onDroneClicked: function(drone) {
                 console.log("Clicked drone:", drone.name)
-                if (mapComponent.wayPointingActive) {
-                    mapComponent.selectedDrone = drone  // <-- Set selectedDrone here
-                    console.log("Drone selected for way pointing:", drone.name)
-                }
                 if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
                     // Toggle the visability of the status panel if same drone is clicked
                     droneStatusPanel.visible = !droneStatusPanel.visible

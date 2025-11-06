@@ -56,13 +56,7 @@ Item {
         DragHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
-            acceptedButtons: Qt.LeftButton | Qt.RightButton  // allow both buttons
-            onActiveChanged: {
-                // Disable left-drag if waypointing is active
-                if (active && Qt.application.mouseButtons === Qt.LeftButton && mapwindow.wayPointingActive) {
-                    active = false;
-                }
-            }
+            acceptedButtons: Qt.LeftButton
             onTranslationChanged: (delta) => {
                 mapview.pan(-delta.x, -delta.y);
             }
@@ -100,72 +94,62 @@ Item {
             }
         }
         MouseArea {
-            id: mapMouseArea
+            id: rightClickMenuArea
             anchors.fill: parent
-            hoverEnabled: true
-            acceptedButtons: Qt.LeftButton
-            enabled: mapwindow.wayPointingActive  // only active during waypoint mode
+            acceptedButtons: Qt.RightButton
+            propagateComposedEvents: true
 
-            // start null so "visible" can depend on it
-            property var cursorCoord: null
+            // store last right-click coordinate
+            property var lastRightClickCoord: null
 
-            onPositionChanged: {
-                if (!mapwindow.selectedDrone) {
-                    cursorCoord = null
-                    return
+            onPressed: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+
+                    // convert pixel → geo coordinate
+                    lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
+
+                    if (droneStatusPanel.activeDrone) {
+                        contextMenu.x = mouse.x
+                        contextMenu.y = mouse.y
+                        contextMenu.open()
+                    }
                 }
-                // use mouseX/mouseY (MouseArea properties) to avoid deprecated implicit mouse param
-                cursorCoord = mapview.toCoordinate(Qt.point(mouseX, mouseY))
-
-                var droneCoord = QtPositioning.coordinate(
-                    mapwindow.selectedDrone.latitude,
-                    mapwindow.selectedDrone.longitude
-                )
-                mapwindow.waypointLineModel = [droneCoord, cursorCoord]
             }
+        }
+        // Context menu for waypointing
+        Menu {
+            id: contextMenu
 
-            onClicked: {
-                if (mapwindow.wayPointingActive && mapwindow.selectedDrone) {
-                    var clickedCoord = mapview.toCoordinate(Qt.point(mouseX, mouseY))
+            MenuItem {
+                text: "Go-To"
 
-                    // Draw the line
+                enabled: droneStatusPanel.activeDrone
+
+                onTriggered: {
+                    console.log("To-Go clicked for drone:", droneStatusPanel.activeDrone.name)
+
+                    mapwindow.selectedDrone = droneStatusPanel.activeDrone
+
+                    // Use the saved right-click coordinate
+                    var clicked = rightClickMenuArea.lastRightClickCoord
                     var droneCoord = QtPositioning.coordinate(
                         mapwindow.selectedDrone.latitude,
                         mapwindow.selectedDrone.longitude
                     )
-                    mapwindow.waypointLineModel = [droneCoord, clickedCoord]
 
-                    // Save the clicked coordinate for the label
-                    mapwindow.clickedCoordLabel = clickedCoord
+                    // Immediately draw dashed line
+                    mapwindow.waypointLineModel = [droneCoord, clicked]
 
-                    console.log("Waypoint set at:", clickedCoord.latitude.toFixed(6), clickedCoord.longitude.toFixed(6))
+                    // Save the label
+                    mapwindow.clickedCoordLabel = clicked
 
+                    // Disable waypointing (since we already processed it)
                     mapwindow.wayPointingActive = false
-                }
-            }
 
-            // Coordinate display near the mouse
-            Item {
-                id: coordDisplayWrapper
-                visible: mapwindow.wayPointingActive && mapMouseArea.cursorCoord !== null
-                x: mapMouseArea.mouseX + 15
-                y: mapMouseArea.mouseY + 15
-                Rectangle {
-                    id: coordBackground
-                    color: "#ffffffff"  // semi-transparent white
-                    radius: 5
-                    anchors.fill: coordText
-                    anchors.margins: -4  // padding around text
-                }
+                    console.log("Waypoint set at:", clicked.latitude, clicked.longitude)
 
-                Text {
-                    id: coordText
-                    text: {
-                        var c = mapMouseArea.cursorCoord
-                        return c ? (c.latitude.toFixed(6) + ", " + c.longitude.toFixed(6)) : ""
-                    }
-                    color: "black"
-                    font.pixelSize: 14
+                    // repaint dashed line
+                    waypointCanvas.requestPaint()
                 }
             }
         }
@@ -184,8 +168,8 @@ Item {
                 radius: 5
 
                 // Let the rectangle size itself around the text
-                width: coordText.implicitWidth + 8
-                height: coordText.implicitHeight + 8
+                width: coordTex.implicitWidth + 8
+                height: coordTex.implicitHeight + 8
 
                 Text {
                     id: coordTex
@@ -252,101 +236,6 @@ Item {
         onZoomLevelChanged: updateScaleBar()
         onCenterChanged: updateScaleBar()
     }
-    // Floating overlay for selected drones and actions
-    Rectangle {
-        id: selectedDronesOverlay
-        width: 200
-        height: 300
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: 20
-        color: "#ffffffff"   // semi-transparent white
-        radius: 10
-        z: 20  // always on top
-
-        // Column for title and drone list
-        Column {
-            anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
-                bottom: cancelButton.top   // stop just above the Cancel button
-                margins: 10
-            }
-            spacing: 10
-
-            Text {
-                text: "Waypointing"
-                font.bold: true
-                font.pointSize: 14
-                horizontalAlignment: Text.AlignHCenter
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            ListView {
-                id: selectedDronesList
-                model: mapwindow.selectedDrone ? [mapwindow.selectedDrone] : []
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                anchors.left: parent.left
-                anchors.right: parent.right
-
-                delegate: Rectangle {
-                    width: ListView.view.width
-                    height: 40
-                    color: index % 2 === 0 ? "#eeeeee" : "#dddddd"
-                    radius: 5
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: modelData.name
-                        font.pointSize: 12
-                    }
-                }
-            }
-        }
-
-        // Select Points button
-        Button {
-            id: selectPointsButton
-            text: "Select Points"
-            enabled: mapwindow.selectedDrone !== null
-            anchors {
-                bottom: cancelButton.top
-                left: parent.left
-                right: parent.right
-                margins: 10
-                bottomMargin: 6
-            }
-            onClicked: {
-                console.log("Selecting points for drone:", mapwindow.selectedDrone.name)
-                mapwindow.wayPointingActive = true
-                mapwindow.clickedCoordLabel = null
-            }
-        }
-
-        // Cancel button
-        Button {
-            id: cancelButton
-            text: "Cancel"
-            anchors {
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-                margins: 10
-                bottomMargin: 10
-            }
-            onClicked: {
-                mapwindow.wayPointingActive = false
-                mapwindow.selectedDrone = null
-                mapwindow.waypointLineModel = []
-                mapwindow.clickedCoordLabel = null
-            }
-        }
-
-        visible: mapwindow.selectedDrone !== null
-    }
-
     // Scale Indicator
     Item {
         id: scaleBarContainer
@@ -436,7 +325,6 @@ Item {
         target: droneController
 
         function onDroneStateChanged(droneName) {
-            // Refresh the drone markers when a drone's state changes
             droneMarkerView.model = droneController.getAllDrones();
         }
 
