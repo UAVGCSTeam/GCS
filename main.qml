@@ -69,6 +69,16 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
+    DroneCommandPanel {
+        id: droneCommandPanel
+        anchors {
+            top: droneMenuBar.bottom
+            right: parent.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: false
+    }
     
     DroneTrackingPanel {
         id: droneTrackingPanel
@@ -143,12 +153,22 @@ Window {
             telemetryPanel.setActiveDrone(drone)
             telemetryPanel.visible = true
 
+            droneCommandPanel.activeDrone = drone
+            droneCommandPanel.visible = true
+            droneCommandPanel.expand()
+
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
             if (telemetryPanel.visible) {
                 telemetryPanel.visible = false
             }
             mapComponent.turnOffFollowDrone()
+
+            if (droneCommandPanel.visible) {
+                droneCommandPanel.collapse()
+                droneCommandPanel.visible = false
+            }
+            droneCommandPanel.activeDrone = null
         }
     }
 }
