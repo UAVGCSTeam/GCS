@@ -5,7 +5,7 @@ import QtQuick.Controls
 import Qt.labs.platform
 import com.gcs.filehandler
 import QtQuick.Controls.Basic 2.15
-import "qrc://gcsStyle/panelStyle.qml" as GcsStyle
+import "qrc:/gcsStyle" as GcsStyle
 
 Window {
     id: coordinateNavigationWindow

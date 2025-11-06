@@ -1,5 +1,7 @@
 # Ignore build directory
 /build/
+.vscode
+.cache
 
 # Ignore venv
 venv/

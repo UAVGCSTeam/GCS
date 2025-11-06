@@ -4,25 +4,27 @@
 #include <QProcess>
 #include <QTimer>
 #include <QDir>
+#include <QtQuickControls2/QQuickStyle>
 #include "mapcontroller.h"
 #include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
 
 // Function to start the Python XBee script
-QProcess* startXbeeProcess() {
-    QProcess* pythonProcess = new QProcess();
+QProcess *startXbeeProcess()
+{
+    QProcess *pythonProcess = new QProcess();
 
     // Connect signals to handle process output and errors
-    QObject::connect(pythonProcess, &QProcess::readyReadStandardOutput, [pythonProcess]() {
+    QObject::connect(pythonProcess, &QProcess::readyReadStandardOutput, [pythonProcess]()
+                     {
         QByteArray output = pythonProcess->readAllStandardOutput();
-        qDebug() << "Python output:" << output;
-    });
+        qDebug() << "Python output:" << output; });
 
-    QObject::connect(pythonProcess, &QProcess::readyReadStandardError, [pythonProcess]() {
+    QObject::connect(pythonProcess, &QProcess::readyReadStandardError, [pythonProcess]()
+                     {
         QByteArray error = pythonProcess->readAllStandardError();
-        qWarning() << "Python error:" << error;
-    });
+        qWarning() << "Python error:" << error; });
 
     // Find the bootstrap script
     QStringList possiblePaths = {
@@ -41,20 +43,24 @@ QProcess* startXbeeProcess() {
 
     // Debug: Print all paths being checked
     qDebug() << "Searching for bootstrap script in the following locations:";
-    for (const QString &path : possiblePaths) {
+    for (const QString &path : possiblePaths)
+    {
         qDebug() << "  " << path << (QFileInfo::exists(path) ? " (exists)" : " (not found)");
     }
 
     QString scriptPath;
-    for (const QString &path : possiblePaths) {
+    for (const QString &path : possiblePaths)
+    {
         QFileInfo fileInfo(path);
-        if (fileInfo.exists() && fileInfo.isReadable()) {
+        if (fileInfo.exists() && fileInfo.isReadable())
+        {
             scriptPath = path;
             break;
         }
     }
 
-    if (scriptPath.isEmpty()) {
+    if (scriptPath.isEmpty())
+    {
         qWarning() << "Bootstrap script not found";
         delete pythonProcess;
         return nullptr;
@@ -74,7 +80,8 @@ QProcess* startXbeeProcess() {
 #endif
 
     // Wait for it to start
-    if (!pythonProcess->waitForStarted(5000)) {
+    if (!pythonProcess->waitForStarted(5000))
+    {
         qWarning() << "Failed to start Python process:" << pythonProcess->errorString();
         delete pythonProcess;
         return nullptr;
@@ -87,27 +94,33 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    // Force a non-native style so customization is supported
+    QQuickStyle::setStyle("Basic");
+
     /*
      * We want to use QQmlApplicationEngine as it provides more resources for our use case
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
-    */
+     */
 
     // Start the Python XBee script
-    QProcess* pythonProcess = startXbeeProcess();
-    if (pythonProcess) {
+    QProcess *pythonProcess = startXbeeProcess();
+    if (pythonProcess)
+    {
         qDebug() << "XBee Python script started successfully";
 
         // Clean up when the application exits
-        QObject::connect(&app, &QCoreApplication::aboutToQuit, [pythonProcess]() {
+        QObject::connect(&app, &QCoreApplication::aboutToQuit, [pythonProcess]()
+                         {
             if (pythonProcess->state() == QProcess::Running) {
                 pythonProcess->terminate();
                 if (!pythonProcess->waitForFinished(3000)) {
                     pythonProcess->kill();
                 }
             }
-            delete pythonProcess;
-        });
-    } else {
+            delete pythonProcess; });
+    }
+    else
+    {
         qWarning() << "Failed to start XBee Python script";
     }
 
@@ -135,11 +148,14 @@ int main(int argc, char *argv[])
     // Expose dronecontroller to QML
     qmlRegisterType<DroneController>("com.gcs.dronecontroller", 1, 0, "DroneController");
     DroneController droneController(gcs_db_manager);
+    // Populate the QML property cache
+    droneController.rebuildVariant();
     // Expose to QML
     engine.rootContext()->setContextProperty("droneController", &droneController);
 
     // Start XBee monitoring after Python script has started
-    if (pythonProcess) {
+    if (pythonProcess)
+    {
         QTimer::singleShot(1000, &droneController, &DroneController::startXbeeMonitoring);
     }
 
@@ -148,14 +164,13 @@ int main(int argc, char *argv[])
      * main.qml is our entry point for all of our UI/GUI resources.
      * It calls all of our QML files needed to create and display our GUI
      * As such, it allows for us to create very modular UI displays
-    */
+     */
 
     // Creates the root object, which is the engine that runs the program
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
-                     &app, [url](QObject *obj, const QUrl &objUrl) {
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated, &app, [url](QObject *obj, const QUrl &objUrl)
+                     {
                          if (!obj && url == objUrl)
-                             QCoreApplication::exit(-1);
-                     }, Qt::QueuedConnection);
+                             QCoreApplication::exit(-1); }, Qt::QueuedConnection);
     engine.load(url);
 
     return app.exec();

@@ -6,6 +6,9 @@ import QtQuick.Controls
 Item {
     id: mapwindow
 
+    property string followDroneName: ""
+    property var followDrone: null
+    property bool followingDrone: false
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
     property var supportedMapTypes: [
@@ -18,11 +21,15 @@ Item {
     property var selectedDrone: null
     property var waypointLineModel: []
     property var clickedCoordLabel: null
+    property var _pendingCenter: undefined
 
     Plugin {
         id: mapPlugin
         name: "osm"
     }
+
+    signal zoomScaleChanged(var coord1, var coord2, var pixelLength) // signal to change the scale bar indicator
+    signal mapInitialized(var coord1, var coord2, var pixelLength)
 
     Map {
         id: mapview
@@ -31,13 +38,60 @@ Item {
         center: QtPositioning.coordinate(latitude, longitude)
         zoomLevel: 18
 
+        Connections {
+            target: followDrone
+            enabled: followingDrone && !!followDrone
+            // These handler names come from your Q_PROPERTY NOTIFY signals
+            function onLatitudeChanged()  { mapview.queueCenterUpdate() }
+            function onLongitudeChanged() { mapview.queueCenterUpdate() }
+        }
+
+        function queueCenterUpdate() {
+            if (!followingDrone || !followDrone) return
+            _pendingCenter = QtPositioning.coordinate(followDrone.latitude, followDrone.longitude)
+        }
+
+        // Throttle timer (coalesce bursts)
+        Timer {
+            id: followTimer
+            interval: 50            // 20 Hz max
+            repeat: true
+            onTriggered: {
+                if (_pendingCenter) {
+                    // console.log("we are in the timer: longitude", _pendingCenter)
+                    coordAnim.from = mapview.center
+                    coordAnim.to   = _pendingCenter
+                    coordAnim.start()
+                    _pendingCenter = undefined
+                }
+            }
+        }
+
+        CoordinateAnimation {
+            id: coordAnim
+            target: mapview
+            property: "center"
+            duration: 45
+            easing.type: Easing.InOutQuad
+        }
+
+        // gives smooth transition for center changes
+        Behavior on center {
+            CoordinateAnimation {
+                duration: 1200
+                easing.type: Easing.InOutQuad
+            }
+        }
+
         PinchHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
             property geoCoordinate startCenteroid
             onActiveChanged: {
-                if (active)
+                if (active) {
                     startCenteroid = mapview.toCoordinate(centroid.position, false)
+                    turnOffFollowDrone()
+                }
             }
             onScaleChanged: (delta) => {
                 mapview.zoomLevel += Math.log(delta)
@@ -60,18 +114,20 @@ Item {
             onTranslationChanged: (delta) => {
                 mapview.pan(-delta.x, -delta.y);
             }
+            onActiveChanged: if (active) {turnOffFollowDrone()}
         }
 
         MapItemView {
             id: droneMarkerView
-            model: droneController ? droneController.getAllDrones() : []
+            model: droneController ? droneController.drones : []
             delegate: MapQuickItem {
                 coordinate: QtPositioning.coordinate(
-                    modelData.latitude > 0 ? modelData.latitude : latitude,
-                    modelData.longitude > 0 ? modelData.longitude : longitude
+                    modelData.latitude !== undefined ? modelData.latitude : latitude,
+                    modelData.longitude !== undefined ? modelData.longitude : longitude
                 )
-                anchorPoint.x: sourceItem.width / 2
-                anchorPoint.y: sourceItem.height
+                // center the icon
+                anchorPoint.x: markerImage.width / 2
+                anchorPoint.y: markerImage.height / 2
 
                 sourceItem: Item {
                     width: markerImage.width
@@ -80,8 +136,8 @@ Item {
                     Image {
                         id: markerImage
                         source: "qrc:/resources/droneMapIconSVG.svg"
-                        width: 100
-                        height: 100
+                        width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
+                        fillMode: Image.PreserveAspectFit
                     }
 
                     DroneLabelComponent {
@@ -233,121 +289,104 @@ Item {
             Connections { target: mapwindow; onWaypointLineModelChanged: waypointCanvas.requestPaint() }
             Connections { target: mapview; onCenterChanged: waypointCanvas.requestPaint(); onZoomLevelChanged: waypointCanvas.requestPaint() }
         }
-        onZoomLevelChanged: updateScaleBar()
-        onCenterChanged: updateScaleBar()
-    }
-    // Scale Indicator
-    Item {
-        id: scaleBarContainer
-        anchors {
-                    left: parent.left
-                    bottom: parent.bottom
-                    leftMargin: 50
-                    bottomMargin: 20
-                }
-        width: 160
-        height: 30
+        onZoomLevelChanged: {
+            // This is the logic needed in order to update the scale bar indicator
 
-        // Horizontal scale line
-        Rectangle {
-            id: scaleBarLine
-            anchors.verticalCenter: parent.verticalCenter
-            x: 10
-            height: 2
-            width: 100   // will update dynamically
-            color: "black"
+            // set fixed pixel length
+            var pixelLength = 100;
+
+            // Map two points on the same horizontal line
+            var coord1 = mapview.toCoordinate(Qt.point(0, mapview.height - 50))
+            var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
+            zoomScaleChanged(coord1, coord2, pixelLength)
         }
 
-        // Left bracket
-        Rectangle {
-            anchors.left: scaleBarLine.left
-            anchors.verticalCenter: scaleBarLine.verticalCenter
-            width: 2
-            height: 10
-            color: "black"
-        }
+        Component.onCompleted: {
+            // This is the logic needed in order to update the scale bar indicator
 
-        // Right bracket
-        Rectangle {
-            anchors.left: scaleBarLine.right
-            anchors.verticalCenter: scaleBarLine.verticalCenter
-            width: 2
-            height: 10
-            color: "black"
-        }
+            // set fixed pixel length
+            var pixelLength = 100;
 
-        Text {
-            id: scaleText
-            anchors.verticalCenter: scaleBarLine.verticalCenter
-            anchors.right: scaleBarLine.left
-            anchors.rightMargin: 5
-            color: "black"
-            font.pixelSize: 14
-            text: ""  // will dynamically update
+            // Map two points on the same horizontal line
+            var coord1 = mapview.toCoordinate(Qt.point(0, mapview.height - 50))
+            var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
+            mapInitialized(coord1, coord2, pixelLength)
         }
     }
 
-    // Dynamically updates scale bar when zoom level is changed
-    function updateScaleBar() {
-        // set fixed pixel length
-        var pixelLength = 100;
-
-        // Map two points on the same horizontal line
-        var coord1 = mapview.toCoordinate(Qt.point(0, mapview.height - 50))
-        var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
-
-        var distance = coord1.distanceTo(coord2)
-
-        // get the distance in a nice value
-        var niceDistance = getNiceDistance(distance)
-        var scaleWidth = pixelLength * niceDistance / distance
-
-        scaleBarLine.width = scaleWidth
-
-        if (niceDistance >= 1000)
-            scaleText.text = (niceDistance / 1000).toFixed(0) + " km"
-        else
-            scaleText.text = Math.round(niceDistance) + " m"
+    // Adding functionality to toggle following a drone
+    // if called, it will swap from either following the current selected drone or stop following that drone
+    function toggleFollowDrone() {
+        if (followingDrone){
+            turnOffFollowDrone()
+        } else {
+            turnOnFollowDrone()
+        }
     }
 
-    // helper to round distances to multiples of 1, 2, 5 * 10^n
-    function getNiceDistance(d){
-        var pow10 = Math.pow(10, Math.floor(Math.log10(d)))
-        var n = d / pow10
-        if (n < 1.5) return 1 * pow10
-        else if (n < 3) return 2 * pow10
-        else if (n < 7) return 5 * pow10
-        else return 10 * pow10
+    function turnOnFollowDrone() {
+        if(telemetryPanel.activeDrone !== null) {
+            followingDrone = true
+            followDrone = telemetryPanel.activeDrone
+            followDroneName = telemetryPanel.activeDrone.name
+            console.log("Starting to follow the drone!: ", followDroneName)
+            if (!followTimer.running) followTimer.start()
+        } else {
+            console.warn("No drone is currently selected to toggle")
+        }
+    }
+
+    function turnOffFollowDrone() {
+        if (followingDrone){
+            console.log("Stop following current drone: ", followDroneName)
+            followingDrone = false;
+            followDrone = null
+            followDroneName = ""
+            if (followTimer.running) followTimer.stop()
+        }
     }
 
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
-
-        function onDroneStateChanged(droneName) {
-            droneMarkerView.model = droneController.getAllDrones();
-        }
-
+        // function onDroneStateChanged(droneName) {
+        //     // Refresh the drone markers when a drone's state changes
+        //     droneMarkerView.model = droneController.getAllDrones();
+        //     // Following drone functions
+        //     if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
+        //         var drone = droneController.getDrone(droneName)
+        //         if (drone) {
+        //             // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
+        //             _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
+        //         }
+        //     }
+        // }
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
             droneMarkerView.model = droneController.getAllDrones();
         }
     }
 
+
     Connections {
         target: mapController
+
         function onCenterPositionChanged(lat, lon) {
             mapview.center = QtPositioning.coordinate(lat, lon)
         }
+
         function onMapTypeChanged(index) {
             if (index < mapview.supportedMapTypes.length) {
                 mapview.activeMapType = mapview.supportedMapTypes[index]
             }
         }
+        function onZoomLevelChanged(level) {
+                mapview.zoomLevel = level
+        }
     }
 
     Component.onCompleted: {
-        // Initial drone marker setup
-        droneMarkerView.model = droneController.getAllDrones();
+        console.log("Number of drones in model:", droneController.drones.length)
+
     }
 }

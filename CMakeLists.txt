@@ -9,11 +9,10 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 6.7.3 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickWidgets Core Sql)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Quick QuickControls2 QuickWidgets Core Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickControls2 Core QuickWidgets Sql SerialPort)
 
 set(PROJECT_SOURCES
-
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
@@ -33,18 +32,20 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         xbeeHandler.py
         requirements.txt
         setup_and_run_xbee.py
+        XbeeLink.cpp
+        XbeeLink.h
+        MavlinkSender.cpp
+        MavlinkSender.h
+        MavlinkReceiver.h
+        MavLinkReceiver.cpp
+
+       # MavLinkUdp.h MavLinkUdp.cpp
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET GCS APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
         add_library(GCS SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(GCS
             ${PROJECT_SOURCES}
@@ -52,12 +53,42 @@ else()
     endif()
 endif()
 
+# --- MAVLink headers: support prefixed and flat layouts ---
+set(_MAV_CANDIDATES
+  "${CMAKE_SOURCE_DIR}/external/mavlink"
+  "${CMAKE_SOURCE_DIR}/external/mavlink/c_library_v2"
+  "${CMAKE_SOURCE_DIR}/external/c_library_v2"
+)
+
+unset(MAVLINK_INCLUDE_DIR)
+foreach(p IN LISTS _MAV_CANDIDATES)
+  if(EXISTS "${p}/mavlink/common/mavlink.h")
+    set(MAVLINK_INCLUDE_DIR "${p}")      # prefixed layout
+    break()
+  elseif(EXISTS "${p}/common/mavlink.h")
+    set(MAVLINK_INCLUDE_DIR "${p}")      # flat layout  <-- your case
+    break()
+  endif()
+endforeach()
+
+if(NOT MAVLINK_INCLUDE_DIR)
+  message(FATAL_ERROR "MAVLink headers not found. Put c_library_v2 under external/ or pass -DMAVLINK_INCLUDE_DIR=/abs/path")
+endif()
+
+message(STATUS "MAVLINK_INCLUDE_DIR = ${MAVLINK_INCLUDE_DIR}")
+target_include_directories(GCS PRIVATE "${MAVLINK_INCLUDE_DIR}")
+
+
+
 target_link_libraries(GCS PRIVATE
-Qt${QT_VERSION_MAJOR}::Widgets
-Qt${QT_VERSION_MAJOR}::Quick
-Qt${QT_VERSION_MAJOR}::QuickWidgets
-Qt${QT_VERSION_MAJOR}::Core
-Qt${QT_VERSION_MAJOR}::Sql)
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Quick
+    Qt${QT_VERSION_MAJOR}::QuickControls2
+    Qt${QT_VERSION_MAJOR}::QuickWidgets
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Sql
+    Qt${QT_VERSION_MAJOR}::SerialPort
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
