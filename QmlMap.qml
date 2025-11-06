@@ -201,23 +201,9 @@ Item {
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
-
-        // function onDroneStateChanged(droneName) {
-        //     // Refresh the drone markers when a drone's state changes
-        //     droneMarkerView.model = droneController.getAllDrones();
-        //     // Following drone functions
-        //     if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
-        //         var drone = droneController.getDrone(droneName)
-        //         if (drone) {
-        //             // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
-        //             _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
-        //         }
-        //     }
-        // }
-
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
-            droneMarkerView.model = droneController.getAllDrones();
+            droneMarkerView.model = droneController.drones;
         }
     }
 

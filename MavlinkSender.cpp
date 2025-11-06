@@ -68,20 +68,33 @@ bool MavlinkSender::sendTakeoffCmd(uint8_t target_system, uint8_t target_compone
 
 bool MavlinkSender::requestData(uint8_t target_system, uint8_t target_component) {
     if(!link_ || !link_->isOpen()) return false;
+    bool response = false;
 
     // Request GLOBAL_POSITION_INT at 2 Hz
     auto bytes = packCommandLong(
         target_system,
         target_component,
-        MAV_CMD_SET_MESSAGE_INTERVAL,       // 511
-        // MAVLINK_MSG_ID_GLOBAL_POSITION_INT, // param1 = message ID
-        MAV_DATA_STREAM_ALL, // param1 = …
+        MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
+        MAVLINK_MSG_ID_GLOBAL_POSITION_INT,  // param1 = message ID
         500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
         0, 0, 0, 0, 0                        // params 3–7 unused
     );
-    return link_->writeBytes(bytes);
-}
+    response = link_->writeBytes(bytes);
+    if (!response) { return response; }
+    
+    // Request GLOBAL_POSITION_INT at 2 Hz
+    bytes = packCommandLong(
+        target_system,
+        target_component,
+        MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
+        MAVLINK_MSG_ID_SYS_STATUS,  // param1 = message ID
+        500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
+        0, 0, 0, 0, 0                        // params 3–7 unused
+    );
+    response = link_->writeBytes(bytes);
+    if (!response) { return response; }
 
+}
 
 
 bool MavlinkSender::setGuidedMode(uint8_t target_system, uint8_t target_component) {

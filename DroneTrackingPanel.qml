@@ -135,32 +135,13 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                     Text {
-                        text: "4 drones in fleet : 3 active"
+                        text: {droneController.drones.length + " drones in fleet"}
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
             }
 
-            // Search Bar filters displayed drones in real time
-            TextField {
-                // anchors.margins: 2
-                Layout.margins: 7
-                // Layout.alignment: horizontalCenter
-                id: searchField
-                Layout.fillWidth: true
-                placeholderText: "SEARCH NOT WORK"
-                // placeholderText: "Search by drone name"
-                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                // onTextChanged: filterDroneList(text)
-
-                background: Rectangle { 
-                    color: "white" 
-                    radius: 7
-                    border.width: GcsStyle.panelStyle.defaultBorderWidth
-                    border.color: GcsStyle.panelStyle.defaultBorderColor
-                }
-            }
 
             // Drone list view
             ListView {
@@ -230,10 +211,8 @@ Rectangle {
                                 cmdOrCtrlPressed = false
                             }
 
-                            console.log("Cmd or Ctrl pressed:", cmdOrCtrlPressed)
-                            // keep your existing behavior (open/update the right panel)
-                            // either changing between model and model data
-                            var droneObj = modelData
+                            // console.log("Cmd or Ctrl pressed:", cmdOrCtrlPressed)
+                            var droneObj = modelData // modelData comes from the qml model
                             droneClicked(droneObj, cmdOrCtrlPressed)
                         }
                     }
@@ -264,7 +243,7 @@ Rectangle {
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
-                                text: modelData.battery ? modelData.battery : "Battery Not Found"
+                                text: modelData.batteryLevel ? modelData.batteryLevel : "Battery Not Found"
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
@@ -282,7 +261,9 @@ Rectangle {
 
                 Connections {
                     target: droneController
-                    onDronesChanged: droneListView.model = droneController.drones
+                    function onDronesChanged() {
+                        droneListView.model = droneController.drones
+                    } 
                 }
             }
 

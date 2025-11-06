@@ -692,7 +692,6 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr)
     const uint8_t targetSys  = drone->getSysID();   
     const uint8_t targetComp = drone->getCompID();
 
-    const bool okRequestData = mav_->requestData(targetSys, targetComp);
     const bool okGuided = mav_->setGuidedMode(targetSys, targetComp);
     if (!okGuided) {
         qWarning() << "Guided mode not set";
@@ -752,26 +751,28 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     msg.len   = static_cast<uint8_t>(m.payload.size());
     memcpy(_MAV_PAYLOAD_NON_CONST(&msg), m.payload.constData(), msg.len);
 
-    const uint8_t sysid = msg.sysid;
+    uint8_t sysid = msg.sysid; 
+    // qInfo() << "[onMavlinkMessage] received message";
 
     // this logic checks to see whether the received data is from a new drone
     if (addNewDrone) { 
-        for (const auto &drone : droneList) {
-            if (msg.sysid == drone->getSysID() && msg.compid == drone->getCompID()) {
-                qInfo() << "[onMavlinkMessage] adding a drone";
-                addNewDrone = false;
-            } else {}
-            
-            
-            qInfo() << "[onMavlinkMessage] drone: " << drone->getName() << ", " << drone->getSysID() << ", " << drone->getCompID();
-        }
-        
-        if (addNewDrone) { addSITLDroneToList(msg.sysid, msg.compid); }
-    }
+        const bool okRequestData0 = mav_->requestData(msg.sysid, msg.compid); // request ROBUST data stream from the ardupilot
+        qInfo() << "[onMavlinkMessage] Response from data streaming request: " << okRequestData0;
 
-    // const bool okRequestData = mav_->requestData(msg.sysid, msg.compid);
-    qInfo() << "The message id: " << msg.msgid;
-    
+        for (const auto &drone : droneList) { // check if the received data is already from a drone in the droneList
+            if (msg.sysid == drone->getSysID()) {
+                qInfo() << "[onMavlinkMessage] signal: " << drone->getName() << ", " << drone->getSysID();
+                qInfo() << "[onMavlinkMessage] don't add this signal";
+                addNewDrone = false;
+            } else { }
+        }
+        qInfo() << "[onMavlinkMessage] found a new signal";
+        addSITLDroneToList(msg.sysid, msg.compid);
+        addNewDrone = false;
+    }
+        
+    qInfo() << "[onMavlinkMessage] The message id: " << msg.msgid;
+
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
         // qInfo() << "Got a heartbeat";
@@ -791,12 +792,13 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
-        // qInfo() << "Got telem global pos";
+        qInfo() << "Got telem global pos";
         mavlink_global_position_int_t p;
         mavlink_msg_global_position_int_decode(&msg, &p);
         updateDroneTelem(sysid, "lat",   p.lat/1e7);
         updateDroneTelem(sysid, "lon",   p.lon/1e7);
-        updateDroneTelem(sysid, "alt_m", p.alt/1000.0);
+        // updateDroneTelem(sysid, "alt_m", p.alt/1000.0);
+        updateDroneTelem(sysid, "alt_m", p.relative_alt / 1000.0);
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
@@ -822,7 +824,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         updateDroneTelem(sysid, "last_result",  static_cast<int>(ack.result));
         break;
     }
-
     default:
         break;
     }
@@ -859,6 +860,7 @@ void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, cons
         d->setModeField(field, value);                   // generic hook if you prefer
     }
 
+    emit dronesChanged();
     // emit droneStateChanged(d->getName());
 } 
 
@@ -889,42 +891,42 @@ void DroneController::onTelemetry(const QString &name, double lat, double lon)
 
 void DroneController::simulateDroneMovement()
 {
-    if (droneList.isEmpty())
-    {
-        qDebug() << "No drones in list — cannot simulate movement.";
-        return;
-    }
+    // if (droneList.isEmpty())
+    // {
+    //     qDebug() << "No drones in list — cannot simulate movement.";
+    //     return;
+    // }
 
-    // Choose the first drone or a specific one by name
-    QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
-    if (drone.isNull())
-    {
-        // fallback: just take first drone
-        drone = droneList.first();
-    }
+    // // Choose the first drone or a specific one by name
+    // QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
+    // if (drone.isNull())
+    // {
+    //     // fallback: just take first drone
+    //     drone = droneList.first();
+    // }
 
-    if (drone.isNull())
-        return;
+    // if (drone.isNull())
+    //     return;
 
-    // Current position (use default if none)
-    double lat = drone->getLatitude();
-    double lon = drone->getLongitude();
+    // // Current position (use default if none)
+    // double lat = drone->getLatitude();
+    // double lon = drone->getLongitude();
 
-    // Simple smooth movement pattern (circle)
-    static double angle = 0;
-    double radius = 0.0002; // small step distance
-    lat += radius * cos(angle);
-    lon += radius * sin(angle);
-    angle += 0.03;
+    // // Simple smooth movement pattern (circle)
+    // static double angle = 0;
+    // double radius = 0.0002; // small step distance
+    // lat += radius * cos(angle);
+    // lon += radius * sin(angle);
+    // angle += 0.03;
 
-    // drone->setLatitude(lat);
-    // drone->setLongitude(lon);
+    // // drone->setLatitude(lat);
+    // // drone->setLongitude(lon);
 
-    // qDebug() << "Simulating drone movement:" << drone->getName()
-    //          << "→ lat:" << lat << "lon:" << lon;
+    // // qDebug() << "Simulating drone movement:" << drone->getName()
+    // //          << "→ lat:" << lat << "lon:" << lon;
 
-    emit droneStateChanged(drone.data()); // .data() returns the raw pointer from QSharedPointer
-    onTelemetry(drone->getName(), lat, lon);
+    // emit droneStateChanged(drone.data()); // .data() returns the raw pointer from QSharedPointer
+    // onTelemetry(drone->getName(), lat, lon);
 
 }
 
@@ -948,6 +950,15 @@ void DroneController::addSITLDroneToList(int sysID, int compID) {
         "11062025",
         nullptr
     );
+    droneList.push_back(drone);
+    
+    rebuildVariant();
+    emit dronesChanged();
+}
+
+
+void DroneController::addSITLDroneToList(QSharedPointer<DroneClass> drone) {
+    qDebug() << "[addSITLDroneToList] ADDING NEW DRONE";
     droneList.push_back(drone);
     
     rebuildVariant();

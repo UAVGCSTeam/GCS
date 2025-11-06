@@ -83,7 +83,7 @@ public slots:
     void tryConnectToDataFile();
     void onMavlinkMessage(const RxMavlinkMsg& msg);
     void addSITLDroneToList(int sysID, int compID);
-
+    void addSITLDroneToList(QSharedPointer<DroneClass> drone);
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);

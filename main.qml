@@ -82,7 +82,7 @@ Window {
             // Implicit parameter passing is not allowed for Qt 6.5+
             if (telemetryPanel.activeDrone && telemetryPanel.activeDrone.name === drone.name && telemetryPanel.visible) {
                 droneTrackingPanel.clearSelection() // clear selected color
-
+                telemetryPanel.clearActiveDrone()
             } else {
                 // This is the case when the drone that was clicked was not the currently selected drone
                 telemetryPanel.setActiveDrone(drone)
@@ -135,6 +135,6 @@ Window {
         }
 
         // droneController.openXbee("/dev/ttys005", 57600)
-        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
+        droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
     }
 }

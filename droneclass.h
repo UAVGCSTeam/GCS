@@ -51,6 +51,21 @@ public:
                const QString &input_xbeeAddress,
                QObject *parent = nullptr);
 
+
+               // DELETE ---- DEMO
+    DroneClass(const QString &input_name, 
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const int &input_sysID,
+                const int &input_compID,
+                const QString &input_xbeeAddress,
+                QObject *parent,
+                double batteryLevel,
+                double latitude,
+                double longitude,
+                double altitude);
+
+
     // For handling the shared memory communication between the python and each INDIVIDUAL drone
     void processXbeeMessage(const QString &message);
 

@@ -102,6 +102,39 @@ DroneClass::DroneClass(const QString &input_name,
 
 
 
+DroneClass::DroneClass(const QString &input_name,
+    // DELETE ---- DEMO
+                       const QString &input_role,
+                       const QString &input_xbeeID,
+                       const int &input_sysID,
+                       const int &input_compID,
+                       const QString &input_xbeeAddress,
+                       QObject *parent,
+                       double batteryLevel,
+                       double latitude,
+                       double longitude,
+                       double altitude)
+    : QObject(parent)
+    , m_name(input_name)
+    , m_xbeeAddress(input_xbeeAddress)
+    , m_role(input_role)
+    , m_xbeeID(input_xbeeID)
+    , m_sysID(input_sysID)
+    , m_compID(input_compID)
+    , m_batteryLevel(batteryLevel)
+    , m_position(QVector3D(-1, -1, -1))
+    , m_latitude(latitude) //temporary
+    , m_longitude(longitude) //temporary
+    , m_altitude(altitude)  //temporary
+    , m_velocity(QVector3D(-1, -1, -1))
+    , m_airspeed(-1)    // temporary
+    , m_orientation(QVector3D(-1, -1, -1))
+{
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+}
+
+
+
 void DroneClass::processXbeeMessage(const QString &message) {
     qDebug() << "Drone" << m_name << "received message:" << message;
 
