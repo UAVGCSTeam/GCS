@@ -15,6 +15,7 @@
 #include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
 
 
+
 // #include "drone.h"
 
 /*
@@ -58,6 +59,8 @@ public:
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
     Q_INVOKABLE bool sendTakeoffCmd(const QString& droneKeyOrAddr);
+    Q_INVOKABLE bool sendWaypointCmd(double lat, double lon, const QString& droneKeyOrAddr);
+
 
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list

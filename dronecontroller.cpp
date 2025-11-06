@@ -675,6 +675,35 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
     return ok;
 }
 
+
+
+bool DroneController::sendWaypointCmd(double lat, double lon, const QString& droneKeyOrAddr)
+{
+    // Use your existing resolver so callers can pass either address or ID
+    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController] sendWaypoint: unknown drone/address:" << droneKeyOrAddr;
+        return false;
+    }
+
+    if (!mav_) {
+        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        return false;
+    }
+
+    const bool ok = mav_->sendWaypointCmd(lat, lon, drone->getSysID(), drone->getCompID());
+    qInfo() << "[DroneController] Waypoint"
+            << "->" << drone->getName()
+            << "sent=" << ok;
+    
+    // if (ok == 3) { 
+    //     qInfo
+    // }
+    return ok;
+}
+
+
+
 bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr)
 {
     // Use your existing resolver so callers can pass either address or ID
@@ -710,6 +739,8 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr)
             << "sent takeoff=" << okTakeoff;
     return okTakeoff;
 }
+
+
 
 // Helper: find (or lazily bind) a drone for a sysid.
 // Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
@@ -771,7 +802,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         addNewDrone = false;
     }
         
-    qInfo() << "[onMavlinkMessage] The message id: " << msg.msgid;
+    // qInfo() << "[onMavlinkMessage] The message id: " << msg.msgid;
 
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
@@ -791,7 +822,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
-        qInfo() << "Got telem global pos";
         mavlink_global_position_int_t p;
         mavlink_msg_global_position_int_decode(&msg, &p);
         updateDroneTelem(sysid, "lat",   p.lat/1e7);

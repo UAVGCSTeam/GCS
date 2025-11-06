@@ -2,6 +2,8 @@
 #include "XbeeLink.h"
 #include <QDebug>
 
+
+
 // include mavlink (common dialect), handle both folder layouts
 #if __has_include(<mavlink/common/mavlink.h>)
 extern "C" {
@@ -60,7 +62,28 @@ bool MavlinkSender::sendTakeoffCmd(uint8_t target_system, uint8_t target_compone
         0, 0, 0, 0,           // params 1–4 unused
         0, 0, 12        // lat, lon, alt
     );
+    return link_->writeBytes(bytes);
+}
 
+
+
+bool MavlinkSender::sendWaypointCmd(double lat, double lon, uint8_t target_system, uint8_t target_component) {
+    if(!link_ || !link_->isOpen()) return false;
+
+    qInfo() << "[mavlink sender] Sending waypoint: " << lat << lon;
+
+    auto bytes = packCommandLong(
+        target_system,
+        target_component,
+        MAV_CMD_DO_REPOSITION,
+        0,          // param1: ground speed (0 = current)
+        1,          // param2: relative altitude
+        0,          // param3: unused
+        NAN,        // param4: yaw (keep current)
+        lat,        // param5
+        lon,        // param6
+        20          // param7: altitude relative to home
+    );
     return link_->writeBytes(bytes);
 }
 

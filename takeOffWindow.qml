@@ -24,6 +24,7 @@ Window {
                 const target = "11062025" // the custom SITL drone
                 const ok = droneController.sendTakeoffCmd(target)   // true = arm, false = disarm
                 console.log("TAKEOFF ->", target, ok)
+                takeOffWindow.close()
             }
         }
     }

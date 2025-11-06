@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QByteArray>
 
+
+
 class XbeeLink;
 class MavlinkSender : public QObject {
     Q_OBJECT
@@ -11,6 +13,7 @@ public:
     bool sendArm(uint8_t sys, uint8_t comp, bool arm);
     bool sendTakeoffCmd(uint8_t target_system, uint8_t target_component);
     bool setGuidedMode(uint8_t target_system, uint8_t target_component);
+    bool sendWaypointCmd(double lat, double lon, uint8_t target_system, uint8_t target_component);
     bool requestData(uint8_t target_system, uint8_t target_component);
 
 private:

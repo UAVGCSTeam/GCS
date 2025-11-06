@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtLocation
 import QtPositioning
+import QtQuick.Controls
 
 Item {
     id: mapwindow
@@ -8,14 +9,20 @@ Item {
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
-    property double latitude: 34.059174611493965
-    property double longitude: -117.82051240067321
+    // property double latitude: 34.059174611493965
+    // property double longitude: -117.82051240067321
+    property double latitude: -35.363
+    property double longitude: 149.165
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },
         { name: "Terrain", type: Map.TerrainMap },
     ]
     property int currentMapTypeIndex: 0
+    property bool wayPointingActive: false
+    property var selectedDrone: null
+    property var waypointLineModel: []
+    property var clickedCoordLabel: null
     property var _pendingCenter: undefined
 
     Plugin {
@@ -105,8 +112,11 @@ Item {
         DragHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
+            acceptedButtons: Qt.LeftButton
+            onTranslationChanged: (delta) => {
+                mapview.pan(-delta.x, -delta.y);
+            }
             onActiveChanged: if (active) {turnOffFollowDrone()}
-            onTranslationChanged: (delta) => { mapview.pan(-delta.x, -delta.y); }
         }
 
         MapItemView {
@@ -118,7 +128,7 @@ Item {
                     modelData.longitude !== undefined ? modelData.longitude : longitude
                 )
                 // center the icon
-                anchorPoint.x: markerImage.width / 2 
+                anchorPoint.x: markerImage.width / 2
                 anchorPoint.y: markerImage.height / 2
 
                 sourceItem: Item {
@@ -141,6 +151,153 @@ Item {
                 }
             }
         }
+        MouseArea {
+            id: rightClickMenuArea
+            anchors.fill: parent
+            acceptedButtons: Qt.RightButton
+            propagateComposedEvents: true
+
+            // store last right-click coordinate
+            property var lastRightClickCoord: null
+
+            onPressed: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+
+                    // convert pixel → geo coordinate
+                    lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
+
+                    if (telemetryPanel.activeDrone) {
+                        contextMenu.x = mouse.x
+                        contextMenu.y = mouse.y
+                        contextMenu.open()
+                    }
+                }
+            }
+        }
+        // Context menu for waypointing
+        Menu {
+            id: contextMenu
+            
+            MenuItem {
+                text: "Go to"
+
+                //enabled: telemetryPanel.activeDrone
+
+                onTriggered: {
+                    console.log("Go to clicked for drone:", telemetryPanel.activeDrone.name)
+
+                    mapwindow.selectedDrone = telemetryPanel.activeDrone
+
+                    // Use the saved right-click coordinate
+                    var clicked = rightClickMenuArea.lastRightClickCoord
+                    var droneCoord = QtPositioning.coordinate(
+                        mapwindow.selectedDrone.latitude,
+                        mapwindow.selectedDrone.longitude
+                    )
+
+                    // Immediately draw dashed line
+                    mapwindow.waypointLineModel = [droneCoord, clicked]
+
+                    // Save the label
+                    mapwindow.clickedCoordLabel = clicked
+
+                    // Disable waypointing (since we already processed it)
+                    mapwindow.wayPointingActive = false
+
+                    console.log("Waypoint set at:", clicked.latitude, clicked.longitude)
+                    droneController.sendWaypointCmd(clicked.latitude, clicked.longitude, telemetryPanel.activeDrone.xbeeAddress)
+
+                    // repaint dashed line
+                    waypointCanvas.requestPaint()
+                }
+            }
+        }
+        MapQuickItem {
+            id: clickedCoordLabelItem
+            coordinate: mapwindow.clickedCoordLabel
+            visible: mapwindow.clickedCoordLabel !== null
+
+            // offset label 10px right & 15px down from the actual coordinate
+            anchorPoint.x: labelRect.width / 2 - 10
+            anchorPoint.y: labelRect.height + 15
+
+            sourceItem: Rectangle {
+                id: labelRect
+                color: "#ffffff"
+                radius: 5
+
+                // Let the rectangle size itself around the text
+                width: coordTex.implicitWidth + 8
+                height: coordTex.implicitHeight + 8
+
+                Text {
+                    id: coordTex
+                    anchors.centerIn: parent
+                    text: mapwindow.clickedCoordLabel
+                        ? mapwindow.clickedCoordLabel.latitude.toFixed(6) + ", " + mapwindow.clickedCoordLabel.longitude.toFixed(6)
+                        : ""
+                    color: "black"
+                    font.pixelSize: 14
+                }
+            }
+        }
+        Canvas {
+            id: waypointCanvas
+            anchors.fill: parent
+            z: 15
+
+            onPaint: {
+                var ctx = getContext("2d")
+                ctx.clearRect(0, 0, width, height)
+
+                if (mapwindow.waypointLineModel.length < 2)
+                    return
+
+                function geoToPixel(lat, lon) {
+                    var mapWidth = 256 * Math.pow(2, mapview.zoomLevel);
+                    var x = (lon + 180) / 360 * mapWidth
+                    var sinLat = Math.sin(lat * Math.PI / 180)
+                    var y = (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * mapWidth
+
+                    var centerX = (mapview.center.longitude + 180) / 360 * mapWidth
+                    var sinCenterLat = Math.sin(mapview.center.latitude * Math.PI / 180)
+                    var centerY = (0.5 - Math.log((1 + sinCenterLat) / (1 - sinCenterLat)) / (4 * Math.PI)) * mapWidth
+
+                    return { x: width / 2 + (x - centerX), y: height / 2 + (y - centerY) }
+                }
+
+                var start = geoToPixel(mapwindow.waypointLineModel[0].latitude,
+                                       mapwindow.waypointLineModel[0].longitude)
+                var end = geoToPixel(mapwindow.waypointLineModel[1].latitude,
+                                     mapwindow.waypointLineModel[1].longitude)
+
+                // Draw dotted line
+                ctx.beginPath()
+                ctx.setLineDash([5, 5])
+                ctx.moveTo(start.x, start.y)
+                ctx.lineTo(end.x, end.y)
+                ctx.lineWidth = 2
+                ctx.strokeStyle = "red"
+                ctx.stroke()
+                ctx.setLineDash([])
+
+                // Draw circle at the end of the line)
+                var radius = 6
+                ctx.beginPath()
+                ctx.arc(end.x, end.y, radius, 0, 2 * Math.PI)
+                ctx.fillStyle = "red"
+                ctx.fill()
+
+                // Draw circle at the start (where the drone was)
+                ctx.beginPath()
+                ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI)
+                ctx.fillStyle = "red"
+                ctx.fill()
+            }
+
+            Connections { target: mapwindow; function onWaypointLineModelChanged() {waypointCanvas.requestPaint()}}
+            Connections { target: mapview; function onCenterChanged() {waypointCanvas.requestPaint()} function onZoomLevelChanged() {waypointCanvas.requestPaint()}}
+        }
         onZoomLevelChanged: {
             // This is the logic needed in order to update the scale bar indicator
 
@@ -153,7 +310,7 @@ Item {
             zoomScaleChanged(coord1, coord2, pixelLength)
         }
 
-        Component.onCompleted: { 
+        Component.onCompleted: {
             // This is the logic needed in order to update the scale bar indicator
 
             // set fixed pixel length
@@ -166,7 +323,7 @@ Item {
         }
     }
 
-    // Adding functionality to toggle following a drone 
+    // Adding functionality to toggle following a drone
     // if called, it will swap from either following the current selected drone or stop following that drone
     function toggleFollowDrone() {
         if (followingDrone){
@@ -227,6 +384,5 @@ Item {
 
     Component.onCompleted: {        
         console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
-
     }
 }
