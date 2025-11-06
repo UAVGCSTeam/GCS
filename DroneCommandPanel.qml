@@ -50,6 +50,11 @@ Rectangle {
         "Go Home": function() {
             if (!activeDrone) return false
             setCommandStatus("Connect", statusInProgress)
+            // A temporary button that logs a message when clicked
+            id: takeOffButton
+            text: qsTr("Take-off")
+            anchors.centerIn: parent
+            onClicked: console.log("Take-off window button clicked")
         },
         "Hover": function() {       // unavailable
             if (!activeDrone) return false
@@ -141,7 +146,18 @@ Rectangle {
     function handleCommandInvoked(commandName) {
         console.log("Command invoked:", commandName)
         commandActivated(commandName)
-        setCommandStatus(commandName, statusInProgress)
+        
+        const fn = commandHandlers[commandName]
+        if (fn) {
+            const accepted = fn()
+            if (accepted === false) {
+                // roll back if call wasn't accepted
+                setCommandStatus(commandName, statusAvailable)
+            }
+            // status in progress
+        } else {
+            console.warn("No handler for command:", commandName)
+        }
     }
 
     function expand() {
@@ -154,6 +170,21 @@ Rectangle {
     function collapse() {
         expanded = false
         expandedBody.collapse()
+    }
+
+    Connections: {
+        target: droneController
+
+        // signal connectResult(string droneId, bool ok, string message)
+        function onConnectResult(droneID, ok, message) {
+            if (!activeDrone) return
+            if (droneId === activeDrone.id) {
+                mainPanel.setCommandStatus("Connect", mainPanel.statusAvailable)
+                console.log("Connec result: ", ok, message)
+            }
+        }
+
+        // s
     }
 
     ColumnLayout {
