@@ -225,7 +225,9 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: "qrc:/resources/droneStatusSVG.svg"
+                            source: { 
+                                modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : ""
+                            } 
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
                             Layout.alignment: Qt.AlignVCenter
@@ -243,7 +245,7 @@ Rectangle {
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
-                                text: modelData.batteryLevel ? modelData.batteryLevel : "Battery Not Found"
+                                text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
                                 color: GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
@@ -251,10 +253,14 @@ Rectangle {
 
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
-
-                        Text { 
-                            // This is where we can put the situation status icons
-                            text: "LOL"
+                        Image {
+                            id: warningIcon
+                            source: {
+                                modelData.batteryLevel < 70 ? "qrc:/resources/warning.png" : ""
+                            }
+                            sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
+                            sourceSize.height: GcsStyle.PanelStyle.statusIconSize
+                            Layout.alignment: Qt.AlignVCenter
                         }
                     }
                 }

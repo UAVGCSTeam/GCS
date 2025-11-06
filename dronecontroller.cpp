@@ -784,7 +784,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
-        // qInfo() << "Got sys stat";
         mavlink_sys_status_t s;
         mavlink_msg_sys_status_decode(&msg, &s);
         updateDroneTelem(sysid, "battery_v",   s.voltage_battery/1000.0);
