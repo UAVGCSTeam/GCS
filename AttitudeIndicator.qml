@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 Rectangle {
+    id: horizon
     width: 200
     height: 200
     color: "black"
@@ -88,8 +89,8 @@ Rectangle {
         id: background
         source: "qrc:/resources/horizon.JPG"
         anchors.centerIn: parent
-        width: parent.width * 2
-        height: parent.height * 2
+        width: horizon.cover
+        height: horizon.cover
         smooth: true
 
         transform: [
