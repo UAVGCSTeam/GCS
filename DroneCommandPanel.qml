@@ -19,6 +19,44 @@ Rectangle {
         { title: "In-Flight", commands: ["Waypointing", "Go Home", "Hover"] }
     ]
 
+    property var commandHandlers: ({
+        "Connect": function() {
+            if (!activeDrone) return false
+            setCommandStatus("Connect", statusInProgress)
+            // function to connect
+        },
+        "Arm Drone": function() {
+            if (!activeDrone) return false
+            setCommandStatus("Connect", statusInProgress)
+            // TEMP: hardcode a target; replace with your real XBee address or ID later
+            // A temporary button that logs a message when clicked
+            const target = "0013A20041D365C4"
+            const ok = droneController.sendArm(target, true)   // true = arm, false = disarm
+            console.log("ARM ->", target, ok)
+        },
+        "Take Off": function() {
+            if (!activeDrone) return false
+            setCommandStatus("Connect", statusInProgress)
+            // A temporary button that logs a message when clicked
+            id: takeOffButton
+            text: qsTr("Take-off")
+            anchors.centerIn: parent
+            onClicked: console.log("Take-off window button clicked")
+        },
+        "Waypointing": function() {     // unavailable
+            if (!activeDrone) return false
+            setCommandStatus("Connect", statusInProgress)
+        },
+        "Go Home": function() {
+            if (!activeDrone) return false
+            setCommandStatus("Connect", statusInProgress)
+        },
+        "Hover": function() {       // unavailable
+            if (!activeDrone) return false
+            setCommandStatus("Connect", statusInProgress)
+        },
+    })
+
     readonly property int statusNotAvailable: 0
     readonly property int statusInProgress: 1
     readonly property int statusAvailable: 2
