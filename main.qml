@@ -69,6 +69,17 @@ Window {
         }
         visible: false
     }
+    AttitudeIndicator {
+        id: attitudeIndicator
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            bottomMargin: GcsStyle.PanelStyle.applicationBorderMargin
+            rightMargin: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: true
+    }
+
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -118,6 +129,7 @@ Window {
         target: droneTrackingPanel
         function onTrackingWidthReady(w) {
             telemetryPanel.setTrackingWidth(w)
+
         } 
     }
 

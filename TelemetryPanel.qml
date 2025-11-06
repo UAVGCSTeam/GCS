@@ -73,8 +73,6 @@ Rectangle {
             onWheel: wheel.accepted = true
         }
 
-
-
         Flickable {
             id: flick
             anchors.fill: parent
@@ -229,6 +227,10 @@ Rectangle {
 
     function setTrackingWidth(w) {
         trackingWidth = w
+    }
+
+    function attidudeIndicator(w){
+
     }
 
     MouseArea {
