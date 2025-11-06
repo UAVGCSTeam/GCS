@@ -164,7 +164,7 @@ Item {
                     // convert pixel → geo coordinate
                     lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
 
-                    if (droneStatusPanel.activeDrone) {
+                    if (telemetryPanel.activeDrone) {
                         contextMenu.x = mouse.x
                         contextMenu.y = mouse.y
                         contextMenu.open()
@@ -179,12 +179,12 @@ Item {
             MenuItem {
                 text: "Go-To"
 
-                enabled: droneStatusPanel.activeDrone
+                //enabled: telemetryPanel.activeDrone
 
                 onTriggered: {
-                    console.log("To-Go clicked for drone:", droneStatusPanel.activeDrone.name)
+                    console.log("To-Go clicked for drone:", telemetryPanel.activeDrone.name)
 
-                    mapwindow.selectedDrone = droneStatusPanel.activeDrone
+                    mapwindow.selectedDrone = telemetryPanel.activeDrone
 
                     // Use the saved right-click coordinate
                     var clicked = rightClickMenuArea.lastRightClickCoord
