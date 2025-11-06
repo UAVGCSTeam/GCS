@@ -278,16 +278,22 @@ Item {
                 ctx.stroke()
                 ctx.setLineDash([])
 
-                // Draw circle at the cursor (end of the line)
+                // Draw circle at the end of the line)
                 var radius = 6
                 ctx.beginPath()
                 ctx.arc(end.x, end.y, radius, 0, 2 * Math.PI)
                 ctx.fillStyle = "red"
                 ctx.fill()
+
+                // Draw circle at the start (where the drone was)
+                ctx.beginPath()
+                ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI)
+                ctx.fillStyle = "red"
+                ctx.fill()
             }
 
-            Connections { target: mapwindow; onWaypointLineModelChanged: waypointCanvas.requestPaint() }
-            Connections { target: mapview; onCenterChanged: waypointCanvas.requestPaint(); onZoomLevelChanged: waypointCanvas.requestPaint() }
+            Connections { target: mapwindow; function onWaypointLineModelChanged() {waypointCanvas.requestPaint()}}
+            Connections { target: mapview; function onCenterChanged() {waypointCanvas.requestPaint()} function onZoomLevelChanged() {waypointCanvas.requestPaint()}}
         }
         onZoomLevelChanged: {
             // This is the logic needed in order to update the scale bar indicator
