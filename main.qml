@@ -89,7 +89,11 @@ Window {
                 return
             }
 
-            console.log("[main.qml] Follow requested via modifier click:", drone.name)
+            if (Array.isArray(drone)) {
+                console.log("[main.qml] Follow requested via modifier click:", drone)
+            } else {
+                console.log("[main.qml] Follow requested via modifier click:", drone.name)
+            }
             // Reset the current follow target so the map component doesn't keep the old pointer
             mapComponent.turnOffFollowDrone()
             // Immediately re-enable follow mode. map component will use telemetryPanel.activeDrone
@@ -101,6 +105,11 @@ Window {
     Shortcut {
         sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
         onActivated: mapComponent.toggleFollowDrone()
+    }
+
+    Shortcut {
+        sequence: "F"
+        onActivated: mapComponent.nextDrone()
     }
 
     /*
@@ -139,16 +148,26 @@ Window {
         }
 
         if (selected.length === 1) {
+            console.log("single drone selected")
             var drone = selected[0]
-            telemetryPanel.setActiveDrone(drone)
+            telemetryPanel.setActiveDrone(drone, -1)
             telemetryPanel.visible = true
 
+        } else if (selected.length > 1) {
+            console.log("Multiple drones selected")
+            var drone = selected
+            var index = drone.length
+            telemetryPanel.setActiveDrone(drone, index)
+            if (telemetryPanel.visible) {
+                telemetryPanel.visible = false
+            }
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
             if (telemetryPanel.visible) {
                 telemetryPanel.visible = false
             }
-            mapComponent.turnOffFollowDrone()
+
+            mapComponent.turnOffFollowDrone()       // Set to follow Multiple
         }
     }
 }

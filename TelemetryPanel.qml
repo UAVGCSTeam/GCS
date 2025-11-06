@@ -16,6 +16,7 @@ Rectangle {
     anchors.bottomMargin: 8
 
     property var activeDrone: null 
+    property var activeIndex: -1
     property bool isExpanded: false
 
     property var fieldRows: [
@@ -61,7 +62,7 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 8
-        spacing: 4
+        spacing: 0
 
         // Top edge of panel
         Rectangle {
@@ -78,7 +79,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 visible: index > 2 || isExpanded // permanently leave last 2 rows visible
-                spacing: 4
+                spacing: 0
 
                 property var rowFields: telemetryPanel.fieldRows[index]
                 
@@ -90,11 +91,8 @@ Rectangle {
                     // Left Edge of Panel
                     Rectangle {
                         width: 1
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.topMargin: -4
-                        anchors.bottomMargin: -4
+                        Layout.alignment: Qt.AlignLeft
+                        Layout.fillHeight: true
                         color: "#404040"
                     }
 
@@ -119,7 +117,7 @@ Rectangle {
 
                                 Text {
                                     text: {
-                                        if (activeDrone) {
+                                        if (activeIndex === -1) {
                                             if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
                                             else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
                                             else if (modelData.label === "SatCount") { "---" }
@@ -156,8 +154,6 @@ Rectangle {
                                 anchors.right: parent.right
                                 anchors.top: parent.top
                                 anchors.bottom: parent.bottom
-                                anchors.topMargin: -4
-                                anchors.bottomMargin: -4
                                 color: "#404040"
                             }
                         }
@@ -174,9 +170,13 @@ Rectangle {
         }
     }
 
-    function setActiveDrone(drone) {
+    function setActiveDrone(drone, index) {
         if (!drone) return;
-        activeDrone = drone;
+        activeDrone = drone
+        activeIndex = index
+
+        console.log("activeDrone: ", activeDrone)
+        console.log("activeIndex: ", activeIndex)
     }
 
     function toggleExpanded() {

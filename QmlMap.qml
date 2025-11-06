@@ -7,6 +7,7 @@ Item {
 
     property string followDroneName: ""
     property var followDrone: null
+    property var followIndex: -1
     property bool followingDrone: false
     property double latitude: 34.059174611493965
     property double longitude: -117.82051240067321
@@ -43,7 +44,33 @@ Item {
 
         function queueCenterUpdate() {
             if (!followingDrone || !followDrone) return
-            _pendingCenter = QtPositioning.coordinate(followDrone.latitude, followDrone.longitude)
+            
+            // Only one drone selected
+            if (followIndex === -1) {
+                console.log("[QmlMap.qml] followDrone: ", followDrone.name)
+                console.log("[QmlMap.qml] followIndex: ", followIndex)
+                _pendingCenter = QtPositioning.coordinate(followDrone.latitude, followDrone.longitude)
+            // List of Drones
+            } else {
+                // Average of all drone locations
+                console.log("[QmlMap.qml] followIndex: ", followIndex)
+                if (followIndex === telemetryPanel.activeDrone.length) {
+                    latitude = 0
+                    longitude = 0
+
+                    for (var i = 0; i < followDrone.length; i++) {
+                        latitude += followDrone[i].latitude
+                        longitude += followDrone[i].longitude
+                    }
+                    latitude /= followDrone.length
+                    longitude /= followDrone.length
+
+                    _pendingCenter = QtPositioning.coordinate(lattitude, longitude)
+                // Location of specific drone
+                } else {
+                    _pendingCenter = QtPositioning.coordinate(followDrone[followIndex].latitude, followDrone[followIndex].longitude)
+                }
+            }
         }
 
         // Throttle timer (coalesce bursts)
@@ -176,12 +203,36 @@ Item {
         }
     }
 
+    function nextDrone() {
+        if (followingDrone) {
+            if (followIndex === -1) return
+            // Average of all drones
+            if (telemetryPanel.index === telemetryPanel.activeDrone.length) {
+                followIndex = 0
+                console.log("followIndex set to 0")
+            } else {
+                followIndex += 1
+                console.log("followIndex set to: ", followIndex)
+            }
+        }
+    }
+
     function turnOnFollowDrone() {
         if(telemetryPanel.activeDrone !== null) {
             followingDrone = true
             followDrone = telemetryPanel.activeDrone
-            followDroneName = telemetryPanel.activeDrone.name
-            console.log("Starting to follow the drone!: ", followDroneName)
+
+            if (followIndex !== -1) {
+                followIndex = telemetryPanel.activeIndex
+
+                console.log("Starting to follow multiple drones")
+                console.log("followIndex set to: ", followIndex)
+            } else {
+                followDroneName = telemetryPanel.activeDrone.name
+                followIndex = -1
+                console.log("Starting to follow the drone!: ", followDroneName)
+                console.log("follow index set to: ", followIndex)
+            }
             if (!followTimer.running) followTimer.start()
         } else {
             console.warn("No drone is currently selected to toggle")
@@ -190,9 +241,15 @@ Item {
 
     function turnOffFollowDrone() {
         if (followingDrone){
-            console.log("Stop following current drone: ", followDroneName)
+            if (followIndex !== -1) {
+                console.log("Stop following multiple drones.")
+            } else {
+                console.log("Stop following current drone: ", followDroneName)
+            }
             followingDrone = false;
             followDrone = null
+            followIndex = -1
+            console.log("[QmlMap.qml] followIndex set to: ", followIndex)
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
