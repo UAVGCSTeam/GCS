@@ -40,7 +40,6 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
-
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
