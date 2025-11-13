@@ -47,7 +47,7 @@ QtObject {
     // List view properties
     readonly property color listItemEvenColor: primaryColor
     readonly property color listItemOddColor: "#202029"
-    readonly property int listItemHeight: 50
+    readonly property int listItemHeight: 40
 
     // Margin and spacing
     readonly property int defaultMargin: 10
