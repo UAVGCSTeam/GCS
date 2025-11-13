@@ -49,6 +49,10 @@ QtObject {
     readonly property color listItemOddColor: "#202029"
     readonly property int listItemHeight: 40
 
+    // Command Menu
+    readonly property int commandPanelWidth: 215
+    readonly property int commandButtonHeight: 18
+
     // Margin and spacing
     readonly property int defaultMargin: 10
     readonly property int applicationBorderMargin: 8

@@ -5,7 +5,7 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    width: 320
+    width: GcsStyle.PanelStyle.commandPanelWidth
     color: GcsStyle.PanelStyle.secondaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
@@ -268,7 +268,7 @@ Rectangle {
 
                 Item {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 12
+                    Layout.preferredHeight: GcsStyle.PanelStyle.commandButtonHeight
                 }
 
                 Repeater {
