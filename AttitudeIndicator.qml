@@ -95,30 +95,30 @@ Rectangle {
         smooth: true
         clip: true
 
-        transform: [
-            Rotation {
-                id: roll
-                axis { x: 0; y: 0; z: 1 }
-                origin.x: background.width / 2
-                origin.y: background.height / 2
-                angle: activeDrone.orientation.x * 100
-                Behavior on angle { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-            },
-            Scale {
-                id: tilt
-                origin.x: background.width / 2
-                origin.y: background.height / 2
-                yScale: 1.0 - Math.abs(activeDrone.orientation.y * 100) / 300
-                Behavior on yScale { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-            },
-            Translate {
-                id: parallax
-                x: activeDrone.orientation.x * 100 / 85 * 80
-                y: -activeDrone.orientation.y * 100 / 85 * 100
-                Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-                Behavior on y { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
-            }
-        ]
+        // transform: [
+        //     Rotation {
+        //         id: roll
+        //         axis { x: 0; y: 0; z: 1 }
+        //         origin.x: background.width / 2
+        //         origin.y: background.height / 2
+        //         angle: activeDrone.orientation.x * 100
+        //         Behavior on angle { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+        //     },
+        //     Scale {
+        //         id: tilt
+        //         origin.x: background.width / 2
+        //         origin.y: background.height / 2
+        //         yScale: 1.0 - Math.abs(activeDrone.orientation.y * 100) / 300
+        //         Behavior on yScale { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+        //     },
+        //     Translate {
+        //         id: parallax
+        //         x: activeDrone.orientation.x * 100 / 85 * 80
+        //         y: -activeDrone.orientation.y * 100 / 85 * 100
+        //         Behavior on x { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+        //         Behavior on y { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+        //     }
+        // ]
     }
 
     Text {
