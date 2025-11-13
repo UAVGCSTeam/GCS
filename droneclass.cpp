@@ -78,6 +78,36 @@ DroneClass::DroneClass(const QString &input_name,
 
 
 DroneClass::DroneClass(const QString &input_name,
+                       const QString &input_role,
+                       const QString &input_xbeeID,
+                       const int &input_sysID,
+                       const int &input_compID,
+                       const double &input_latitude,
+                       const double &input_longitude,
+                       const QString &input_xbeeAddress,
+                       QObject *parent)
+    : QObject(parent)
+    , m_name(input_name)
+    , m_xbeeAddress(input_xbeeAddress)
+    , m_role(input_role)
+    , m_xbeeID(input_xbeeID)
+    , m_sysID(input_sysID)
+    , m_compID(input_compID)
+    , m_batteryLevel(-1)
+    , m_position(QVector3D(-1, -1, -1))
+    , m_latitude(input_latitude)
+    , m_longitude(input_longitude)
+    , m_altitude(-1)  //temporary
+    , m_velocity(QVector3D(-1, -1, -1))
+    , m_airspeed(-1)    // temporary
+    , m_orientation(QVector3D(-1, -1, -1))
+{
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Location:" << m_latitude << "," << m_longitude;
+}
+
+
+DroneClass::DroneClass(const QString &input_name,
     // B: merge this with constructor A at some point
                        const QString &input_role,
                        const QString &input_xbeeID,

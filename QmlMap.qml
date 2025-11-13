@@ -9,10 +9,10 @@ Item {
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
-    // property double latitude: 34.059174611493965
-    // property double longitude: -117.82051240067321
-    property double latitude: -35.363
-    property double longitude: 149.165
+    property double latitude: 34.059174611493965
+    property double longitude: -117.82051240067321
+    // property double latitude: -35.363
+    // property double longitude: 149.165
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },

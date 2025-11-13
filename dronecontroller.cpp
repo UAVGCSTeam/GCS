@@ -37,6 +37,8 @@ QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the stat
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db)
 {
+    int index = 0; 
+
     // function loads all drones from the database on startup
     qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
     QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
@@ -51,7 +53,26 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
         // TODO: Change this, add xbee id?
-        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID,compID, xbeeAddress));
+        
+        if (index == 0) { 
+            qInfo() << "INDEX 0" << Qt::endl;
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06051761840614, -117.82066371534313,  xbeeAddress, nullptr));
+            
+        } else if (index == 1) { 
+            qInfo() << "INDEX 1" << Qt::endl;
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.059593233678214, -117.8191616783339,  xbeeAddress, nullptr));
+            
+        } else if (index == 2) { 
+            qInfo() << "INDEX 2" << Qt::endl;
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.05893549225196, -117.82177951426428,  xbeeAddress, nullptr));
+            
+        } else { 
+            qInfo() << "UNEXPECTED INDEX" << Qt::endl;
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.059174611493965, -117.82051240067321,  xbeeAddress, nullptr));
+
+        }
+        
+        index++;
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
 
@@ -67,6 +88,8 @@ DroneController::DroneController(DBManager &db, QObject *parent)
 // method so QML can retrieve the drone list.
 QVariantList DroneController::getAllDrones() const
 {
+    // qInfo() << "DEBUGGING" << Qt::endl;
+    // int index = 0;
     QVariantList list;
     for (const QSharedPointer<DroneClass> &drone : droneList)
     {
@@ -82,13 +105,20 @@ QVariantList DroneController::getAllDrones() const
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 
-        // Position data - used by the map component
+        // // Position data - used by the map component
+        // if (index == 0) { 
+        //     qInfo() << "Drone 0" << Qt::endl;
+        //     droneMap["latitude"] = 35.053333;
+        //     droneMap["longitude"] = -118.823611;
+        // } else {
         droneMap["latitude"] = drone->getLatitude();
         droneMap["longitude"] = drone->getLongitude();
+        // }
         droneMap["altitude"] = drone->getAltitude();
         droneMap["airspeed"] = drone->getAirspeed();
 
         list.append(droneMap);
+        // index++;
     }
     return list;
 }
@@ -831,7 +861,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
-        qInfo() << "Got attitude";
+        // qInfo() << "Got attitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
         updateDroneTelem(sysid, "roll", a.roll);

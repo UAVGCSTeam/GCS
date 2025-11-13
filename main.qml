@@ -68,6 +68,8 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
+    
     AttitudeIndicator {
         id: attitudeIndicator
         anchors {
@@ -79,6 +81,17 @@ Window {
         visible: true
     }
 
+
+    DroneCommandPanel {
+        id: droneCommandPanel
+        anchors {
+            top: droneMenuBar.bottom
+            right: parent.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: false
+    }
+    
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -146,15 +159,15 @@ Window {
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
-        // var coords = Coordinates.getAllCoordinates();
-        // mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-        // for (var i = 0; i < coords.length; i++) {
-        //     var coord = coords[i]
-        //     mapController.setLocationMarking(coord.lat, coord.lon)
-        // }
+        var coords = Coordinates.getAllCoordinates();
+        mapController.setCenterPosition(coords[0].lat, coords[0].lon)
+        for (var i = 0; i < 3; i++) {
+            var coord = coords[i]
+            mapController.setLocationMarking(coord.lat, coord.lon)
+        }
 
         // droneController.openXbee("/dev/ttys005", 57600)
-        droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
+        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
         // Get the width and height of the tracking panel and command panel
         // used for the resizing limit on the telemetry panel
         // droneStatusPanel.publishStatusHeight(); // TODO: update this to include the command panel instead in the future
@@ -162,6 +175,32 @@ Window {
         attitudeIndicator.publishAttitudeWidth()
         fetch();
     }
+
+    // // Syncs telemetry visibility and follow state whenever the selection array updates
+    // function handleSelectedDrones(selected) {
+    //     selectedDrones = selected
+
+    //     console.log("Selection count:", selected.length)
+    //     for (var i = 0; i < selected.length; ++i) {
+    //         var drone = selected[i]
+    //         var name = drone && drone.name !== undefined ? drone.name : "<unknown>"
+    //         console.log("Selected drone: ", name)
+    //     }
+
+    //     if (selected.length === 1) {
+    //         var drone = selected[0]
+    //         telemetryPanel.setActiveDrone(drone)
+    //         attitudeIndicator.setActiveDrone(drone)
+    //         attitudeIndicator.visible = true
+
+    //     } else {
+    //         // No selection or multiple selection: hide telemetry panel and stop following
+    //         if (telemetryPanel.visible) {
+    //             telemetryPanel.visible = false
+    //         }
+    //         mapComponent.turnOffFollowDrone()
+    //     }
+    // }
 
     // Syncs telemetry visibility and follow state whenever the selection array updates
     function handleSelectedDrones(selected) {
@@ -178,7 +217,11 @@ Window {
             var drone = selected[0]
             telemetryPanel.setActiveDrone(drone)
             attitudeIndicator.setActiveDrone(drone)
-            attitudeIndicator.visible = true
+            telemetryPanel.visible = true
+
+            droneCommandPanel.activeDrone = drone
+            droneCommandPanel.visible = true
+            droneCommandPanel.expand()
 
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
@@ -186,6 +229,12 @@ Window {
                 telemetryPanel.visible = false
             }
             mapComponent.turnOffFollowDrone()
+
+            if (droneCommandPanel.visible) {
+                droneCommandPanel.collapse()
+                droneCommandPanel.visible = false
+            }
+            droneCommandPanel.activeDrone = null
         }
     }
 }

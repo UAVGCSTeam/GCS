@@ -44,6 +44,16 @@ public:
                const QString &input_xbeeAddress,
                QObject *parent = nullptr);
 
+    DroneClass(const QString &input_name,
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const int &input_sysID,
+                const int &input_compID,
+                const double &input_latitude,
+                const double &input_longitude,
+                const QString &input_xbeeAddress,
+                QObject *parent);
+
     // overload function to create with XBee-ID
     DroneClass(const QString &input_name,
                const QString &input_role,

@@ -36,6 +36,7 @@ QtObject {
     readonly property color buttonActiveColor: "#4B88A2"
     readonly property color buttonHoverColor: "#e6f0ff"
     readonly property color buttonPressedColor: "#cfe0ff"
+    readonly property color buttonUnavailableColor: "#fefafb"
     readonly property color buttonBorderColor: "#c8c8c8"
     
     // Danger/warning button colors

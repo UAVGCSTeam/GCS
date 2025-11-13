@@ -84,6 +84,7 @@ public slots:
     // Process data recieved from XBee via shared memory
     void processXbeeData();
     void tryConnectToDataFile();
+    
     void onMavlinkMessage(const RxMavlinkMsg& msg);
     void addSITLDroneToList(int sysID, int compID);
     void addSITLDroneToList(QSharedPointer<DroneClass> drone);

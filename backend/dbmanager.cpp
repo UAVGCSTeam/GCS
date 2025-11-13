@@ -52,9 +52,9 @@ void DBManager::initDB() {
         qCritical() << "[dbmanager.cpp] Table creation failed!";
     }
 
-    // if (!createInitialDrones()) {
-    //     qWarning() << "[dbmanager.cpp] Failed to create initial drones.";
-    // }
+    if (!createInitialDrones()) {
+        qWarning() << "[dbmanager.cpp] Failed to create initial drones.";
+    }
 }
 
 
@@ -329,6 +329,8 @@ bool DBManager::createInitialDrones() {
         qDebug() << "[dbmanager.cpp] Initial drones not created: table already contains drones.";
         return false;
     }
+
+
     // Insert first drone
     QSqlQuery insertQuery(gcs_db_connection);
     insertQuery.prepare(R"(
@@ -348,6 +350,7 @@ bool DBManager::createInitialDrones() {
         qDebug() << "[dbmanager.cpp] Firehawk inserted successfully.";
     }
 
+
     // Insert second drone
     insertQuery.bindValue(":droneName", "Octoquad");
     insertQuery.bindValue(":droneRole", "Detection");
@@ -362,8 +365,26 @@ bool DBManager::createInitialDrones() {
     }
 
     qDebug() << "[dbmanager.cpp] Both initial drones created successfully.";
+
+
+    // Insert Third drone
+    insertQuery.bindValue(":droneName", "Firebuddy");
+    insertQuery.bindValue(":droneRole", "Detection");
+    insertQuery.bindValue(":xbeeID", "C");
+    insertQuery.bindValue(":xbeeAddress", "0013A200422F2FD1");
+
+    if (!insertQuery.exec()) {
+        qCritical() << "[dbmanager.cpp] Failed to insert Octoquad:" << insertQuery.lastError().text();
+        return false;
+    } else {
+        qDebug() << "[dbmanager.cpp] Octoquad inserted successfully.";
+    }
+
+    qDebug() << "[dbmanager.cpp] Both initial drones created successfully.";
     return true;
 }
+
+
 
 
 
@@ -393,6 +414,3 @@ QList<QVariantMap> DBManager::fetchAllDrones() {
     }
     return drones;
 }
-
-
-
