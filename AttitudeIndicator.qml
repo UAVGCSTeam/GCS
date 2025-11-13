@@ -3,8 +3,8 @@ import QtQuick.Controls
 
 Rectangle {
     id: horizon
-    width: 200
-    height: 200
+    width: 180
+    height: 180
     color: "black"
     radius : width/2
     clip: true
@@ -47,52 +47,53 @@ Rectangle {
         height: parent.height
         z: 2
         // horizon line
-        Rectangle {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
-            height: 3
-            color: "white"
-            radius: 1
-        }
+        // Rectangle {
+        //     anchors.horizontalCenter: parent.horizontalCenter
+        //     anchors.verticalCenter: parent.verticalCenter
+        //     width: parent.width
+        //     height: 3
+        //     color: "white"
+        //     radius: 1
+        // }
 
-        // reference bars to right and left of the horizon line
-        Rectangle {
-            width: parent.width * 0.25
-            height: 4
-            color: "white"
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.left: parent.horizontalCenter
-            anchors.leftMargin: 4
-        }
-        Rectangle {
-            width: parent.width * 0.25
-            height: 4
-            color: "white"
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.right: parent.horizontalCenter
-            anchors.rightMargin: 4
-        }
+        // // reference bars to right and left of the horizon line
+        // Rectangle {
+        //     width: parent.width * 0.25
+        //     height: 4
+        //     color: "white"
+        //     anchors.verticalCenter: parent.verticalCenter
+        //     anchors.left: parent.horizontalCenter
+        //     anchors.leftMargin: 4
+        // }
+        // Rectangle {
+        //     width: parent.width * 0.25
+        //     height: 4
+        //     color: "white"
+        //     anchors.verticalCenter: parent.verticalCenter
+        //     anchors.right: parent.horizontalCenter
+        //     anchors.rightMargin: 4
+        // }
 
-        // Short vertical center line
-        Rectangle {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            width: 2
-            height: 10
-            color: "white"
-            radius: 1
-            opacity: 5
-        }
+        // // Short vertical center line
+        // Rectangle {
+        //     anchors.horizontalCenter: parent.horizontalCenter
+        //     anchors.verticalCenter: parent.verticalCenter
+        //     width: 2
+        //     height: 10
+        //     color: "white"
+        //     radius: 1
+        //     opacity: 5
+        // }
     }
 
     Image {
         id: background
-        source: "qrc:/resources/horizon.JPG"
+        source: "qrc:/resources/attitude-indicator.png"
         anchors.centerIn: parent
-        width: horizon.cover
-        height: horizon.cover
+        width: 180
+        height: 180
         smooth: true
+        clip: true
 
         transform: [
             Rotation {
