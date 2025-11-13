@@ -68,16 +68,16 @@ Rectangle {
         if (state === "unavailable")
             return GcsStyle.PanelStyle.buttonUnavailableColor
         if (state === "loading")
-            return GcsStyle.PanelStyle.primaryColor   // keep loading on primary
+            return GcsStyle.PanelStyle.secondaryColor   // keep loading on primary
         // selectable
-        return hovered ? GcsStyle.PanelStyle.buttonHoverColor : GcsStyle.PanelStyle.primaryColor
+        return hovered ? GcsStyle.PanelStyle.buttonHoverColor : GcsStyle.PanelStyle.secondaryColor
     }
 
 
     function textColorFor(state) {
         if (state === "unavailable")
             // lighter gray text
-            return "#C7C7C7"
+            return "#959595"
         if (state === "loading")
             return "#A67400"
         return GcsStyle.PanelStyle.textPrimaryColor
@@ -135,7 +135,7 @@ Rectangle {
             id: headerPanel
             Layout.fillWidth: true
             height: GcsStyle.PanelStyle.headerHeight + 10
-            color: GcsStyle.PanelStyle.secondaryColor
+            color: GcsStyle.PanelStyle.primaryColor
             radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
             border.width: 0
@@ -155,7 +155,7 @@ Rectangle {
                         text: activeDrone ? activeDrone.name : "No drone selected"
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
                         font.bold: true
-                        color: activeDrone ? "#006480" : "#9E9E9E"
+                        color: activeDrone ? "#DFECFF" : "#9E9E9E"
                         wrapMode: Text.WrapAnywhere
                         Layout.fillWidth: true
                     }
@@ -164,14 +164,16 @@ Rectangle {
                         id: collapseButton
                         enabled: activeDrone !== null
                         opacity: enabled ? 1 : 0.25
-                        icon.source: "https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/4/sidebar-collapse-wa8mq2uy2zwwo4sv7h6j8.png/sidebar-collapse-2w3re62ix0sjmbcj645cho.png?_a=DATAg1AAZAA0"
                         Layout.alignment: Qt.AlignTop | Qt.AlignRight
                         implicitWidth: 28
                         implicitHeight: 24
 
                         background: Rectangle {
                             border.width: 0
-                            color: GcsStyle.PanelStyle.secondaryColor
+                            color: "white"
+                            height: 10
+                            width: 10
+                            radius: 7
                         }
 
                         MouseArea {
@@ -205,7 +207,7 @@ Rectangle {
             Layout.topMargin: -6
             Layout.fillWidth: true
             Layout.preferredHeight: 0
-            color: GcsStyle.PanelStyle.secondaryColor
+            color: GcsStyle.PanelStyle.primaryColor
             radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
             opacity: activeDrone ? 1 : 0.2
@@ -346,7 +348,7 @@ Rectangle {
 
                     Text {
                         text: commandName
-                        color: mainPanel.textColorFor(visualState)
+                        color:  mainPanel.textColorFor(visualState)
                         font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignVCenter

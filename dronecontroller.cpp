@@ -55,19 +55,15 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         // TODO: Change this, add xbee id?
         
         if (index == 0) { 
-            qInfo() << "INDEX 0" << Qt::endl;
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06051761840614, -117.82066371534313,  xbeeAddress, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06126372594308, -117.83284231468927,  xbeeAddress, nullptr));
             
         } else if (index == 1) { 
-            qInfo() << "INDEX 1" << Qt::endl;
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.059593233678214, -117.8191616783339,  xbeeAddress, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06202196849312, -117.82905560740794,  xbeeAddress, nullptr));
             
         } else if (index == 2) { 
-            qInfo() << "INDEX 2" << Qt::endl;
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.05893549225196, -117.82177951426428,  xbeeAddress, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06025272532348, -117.82775448760746,  xbeeAddress, nullptr));
             
         } else { 
-            qInfo() << "UNEXPECTED INDEX" << Qt::endl;
             droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.059174611493965, -117.82051240067321,  xbeeAddress, nullptr));
 
         }

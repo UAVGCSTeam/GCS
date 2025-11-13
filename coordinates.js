@@ -12,7 +12,7 @@
 */
 
 var coordinatePairs = [
-    { name: "Cal Poly Pomona", lat: 34.059174611493965, lon: -117.82051240067321 },
+    { name: "Cal Poly Pomona", lat: 34.060978616851145, lon: -117.83110213699356 }, // for centering the view
     // { name: "Cal Poly Pomona", lat: 34.05893549225196, lon: -117.82177951426428 },
     { name: "Los Angeles", lat: 34.0522, lon: -118.2437 },
     { name: "San Francisco", lat: 37.7749, lon: -122.4194 }

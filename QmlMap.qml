@@ -9,8 +9,8 @@ Item {
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
-    property double latitude: 34.059174611493965
-    property double longitude: -117.82051240067321
+    property double latitude: 34.060978616851145 // for centering the view
+    property double longitude: -117.83110213699356 // for centering the view
     // property double latitude: -35.363
     // property double longitude: 149.165
     property var supportedMapTypes: [

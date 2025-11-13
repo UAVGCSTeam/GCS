@@ -354,7 +354,7 @@ bool DBManager::createInitialDrones() {
     // Insert second drone
     insertQuery.bindValue(":droneName", "Octoquad");
     insertQuery.bindValue(":droneRole", "Detection");
-    insertQuery.bindValue(":xbeeID", "C");
+    insertQuery.bindValue(":xbeeID", "B");
     insertQuery.bindValue(":xbeeAddress", "0013A200422F2FDF");
 
     if (!insertQuery.exec()) {
@@ -368,8 +368,8 @@ bool DBManager::createInitialDrones() {
 
 
     // Insert Third drone
-    insertQuery.bindValue(":droneName", "Firebuddy");
-    insertQuery.bindValue(":droneRole", "Detection");
+    insertQuery.bindValue(":droneName", "Hexacopter");
+    insertQuery.bindValue(":droneRole", "Suppression");
     insertQuery.bindValue(":xbeeID", "C");
     insertQuery.bindValue(":xbeeAddress", "0013A200422F2FD1");
 
