@@ -135,7 +135,7 @@ Rectangle {
         Rectangle {
             id: headerPanel
             Layout.fillWidth: true
-            height: GcsStyle.PanelStyle.headerHeight + 10
+            height: GcsStyle.PanelStyle.headerHeight + 18
             color: GcsStyle.PanelStyle.primaryColor
             radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
@@ -255,7 +255,7 @@ Rectangle {
 
         Rectangle {
             id: expandedBody
-            Layout.topMargin: -6
+            Layout.topMargin: -16
             Layout.fillWidth: true
             Layout.preferredHeight: 0
             color: GcsStyle.PanelStyle.primaryColor
