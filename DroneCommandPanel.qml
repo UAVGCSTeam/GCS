@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
+import "./components"
 
 Rectangle {
     id: mainPanel
@@ -134,7 +135,7 @@ Rectangle {
         Rectangle {
             id: headerPanel
             Layout.fillWidth: true
-            height: GcsStyle.PanelStyle.headerHeight + 10
+            height: GcsStyle.PanelStyle.headerHeight + 18
             color: GcsStyle.PanelStyle.primaryColor
             radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
@@ -194,6 +195,56 @@ Rectangle {
                     }
                 }
 
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Text {
+                        id: commandHeader
+                        text: "Commands"
+                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                        color: activeDrone ? "#DFECFF" : "#9E9E9E"
+                        wrapMode: Text.WrapAnywhere
+                        Layout.fillWidth: true
+                    }
+
+                    Button {
+                        id: configButton
+                        height: parent.fill
+                        width: parent.fill
+                        
+                        background: Rectangle {
+                            radius: GcsStyle.PanelStyle.buttonRadius
+                            color: (parent.hovered || parent.pressed)
+                                ? GcsStyle.PanelStyle.buttonHoverColor
+                                : "transparent"
+                        }
+    
+                        contentItem: Text {
+                            id: configButtonText
+                            text: "Configure Drone"
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pointSize: GcsStyle.PanelStyle.fontSizeSmall
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            var component = Qt.createComponent("configureDroneWindow.qml")
+                            if (component.status === Component.Ready) {
+                                var window = component.createObject(null)
+                                if (window !== null) {
+                                    window.show()
+                                } else {
+                                    console.error("Error creating object:", component.errorString());
+                                }
+                            } else {
+                                console.error("Component not ready:", component.errorString());
+                            }
+                        }
+                    }
+                }
+
                 Text {
                     text: activeDrone ? "Commands" : "Select a drone to view commands"
                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
@@ -204,7 +255,7 @@ Rectangle {
 
         Rectangle {
             id: expandedBody
-            Layout.topMargin: -6
+            Layout.topMargin: -16
             Layout.fillWidth: true
             Layout.preferredHeight: 0
             color: GcsStyle.PanelStyle.primaryColor
@@ -356,6 +407,30 @@ Rectangle {
                         opacity: 1
                     }
                 }
+            }
+        }
+    }
+
+    Popup {
+        id: configWindow
+        modal: true
+        focus: true
+        width: 200
+        height: 200
+        x: commandMenuItem.x + 2
+        y: menuBar.height + 5
+        closePolicy: Popup.CloseOnPressOutside
+        
+        Column {
+            anchors.centerIn: parent
+            width: parent.width - 40
+            spacing: 10
+            
+            Text {
+                text: "Configure Drone!"
+                color: GcsStyle.PanelStyle.textPrimaryColor
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
             }
         }
     }
