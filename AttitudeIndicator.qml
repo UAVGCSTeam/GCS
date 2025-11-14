@@ -3,8 +3,8 @@ import QtQuick.Controls
 
 Rectangle {
     id: horizon
-    width: 180
-    height: 180
+    width: 200
+    height: 200
     color: "black"
     radius : width/2
     clip: true
@@ -90,8 +90,8 @@ Rectangle {
         id: background
         source: "qrc:/resources/attitude-indicator.png"
         anchors.centerIn: parent
-        width: 180
-        height: 180
+        width: parent.width
+        height: parent.height
         smooth: true
         clip: true
 
@@ -122,9 +122,10 @@ Rectangle {
     }
 
     Text {
-        text: "Pitch: " + activeDrone.orientation.y.toFixed(3)+ "° | Bank: " + activeDrone.orientation.x.toFixed(3) + "°"
+        text: "Pitch: " + activeDrone.orientation.y.toFixed(3)+ "°\nBank: " + activeDrone.orientation.x.toFixed(3) + "°"
         color: "white"
         anchors.bottom: parent.bottom
+        anchors.bottomMargin: 10
         anchors.horizontalCenter: parent.horizontalCenter
         font.pixelSize: 14
     }

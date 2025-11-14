@@ -24,7 +24,7 @@
         <file>cppLOGO.svg</file>
         <file>droneStatusSVG.svg</file>
         <file>warning.png</file>
-        <file>attitude-indicator.png</file>
+        <file>attitude-indicator-old.png</file>
         <file>satelliteMap.png</file>
         <file>down-arrow.png</file>
         <file>grounded.png</file>
@@ -37,6 +37,7 @@
         <file>green-field-and-blue-sky-1446458468c5i.jpg</file>
         <file>Untitled_Artwork.JPG</file>
         <file>horizon.JPG</file>
+        <file>attitude-indicator.png</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
