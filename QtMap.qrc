@@ -18,6 +18,7 @@
         <file>components/MenuButton.qml</file>
         <file>components/PopupMenuItem.qml</file>
         <file>AttitudeIndicator.qml</file>
+        <file>configureDroneWindow.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>
