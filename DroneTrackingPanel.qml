@@ -19,7 +19,6 @@ Rectangle {
     border.color: GcsStyle.panelStyle.defaultBorderColor
     border.width: GcsStyle.panelStyle.defaultBorderWidth
 
-    signal droneClicked(var drone, var cmdOrCtrlPressed)
     signal selectionChanged(var selectedDrones)     // Broadcast the current selection so other components (telemetry, commands, etc.) stay in sync
 
     // for multi-drone selection
@@ -287,7 +286,15 @@ Rectangle {
 
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
-
+                        Image {
+                            id: warningIcon
+                            source: {
+                                modelData.batteryLevel < 70 ? "qrc:/resources/warning.png" : ""
+                            }
+                            sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
+                            sourceSize.height: GcsStyle.PanelStyle.statusIconSize
+                            Layout.alignment: Qt.AlignVCenter
+                         }
                     }
                 }
                 Connections {
