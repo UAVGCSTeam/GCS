@@ -51,7 +51,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         // TODO: Change this, add xbee id?
         droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress));
     }
-    qDebug() << "Loaded" << droneList.size() << "drones from the database.";
+    qDebug() << "[dronecontroller.cpp] Loaded" << droneList.size() << "drones from the database.";
 
     // Set up timer connections but don't start yet
     connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
@@ -59,7 +59,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     // --- Simulated Drone Movement ---
     connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
     simulationTimer.start(250); // Move once per second
-    qDebug() << "Simulation timer started for drone movement.";
+    qDebug() << "[dronecontroller.cpp] Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.

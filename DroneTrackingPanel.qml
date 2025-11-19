@@ -288,14 +288,14 @@ Rectangle {
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
-                        Text { 
-                            // This is where we can put the situation status icons
-                            text: "LOL"
-                        }
                     }
                 }
-
-
+                Connections {
+                    target: droneController
+                    function onDronesChanged() {
+                        droneListView.model = droneController.drones
+                    } 
+                }
             }
 
             // Add Drone Button
