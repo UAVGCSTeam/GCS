@@ -125,6 +125,7 @@ Window {
 
     // The following two connections are crucial for setting the limits of how much the telemetry window can expand
 
+
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();

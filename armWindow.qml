@@ -28,6 +28,7 @@ Window {
                 const target = "0013A20041D365C4"
                 const ok = droneController.sendArm(target, true)   // true = arm, false = disarm
                 console.log("ARM ->", target, ok)
+                armWindow.close()
             }
         }
     }
