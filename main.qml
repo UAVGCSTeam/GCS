@@ -76,6 +76,12 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+        onSelectionChanged: function(selected) {
+            // function(selected) is used here to avoid implicit parameter passing
+            // In this case the implicit parameter was passing was 'selected'
+            // Implicit parameter passing is not allowed for QT 6.5+
+            handleSelectedDrones(selected)
+        }
         onDroneClicked: function(drone, cmdOrCtrlPressed) {
             // function(drone) is used here to avoid implicit parameter passing. 
             // In this case the implicit parameter passing was 'drone'

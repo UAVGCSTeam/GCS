@@ -12,7 +12,7 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    width: 300
+    width: 250
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
@@ -20,6 +20,13 @@ Rectangle {
     border.width: GcsStyle.panelStyle.defaultBorderWidth
 
     signal droneClicked(var drone, var cmdOrCtrlPressed)
+    signal selectionChanged(var selectedDrones)     // Broadcast the current selection so other components (telemetry, commands, etc.) stay in sync
+
+    // for multi-drone selection
+    property var selectedIndexes: [] // Stores which rows are selected
+    property int lastSelectedIndex: -1 // Remembers last drone the user clicked (so Shift-click knows where to start)
+    property int selectionAnchorIndex: -1 // Anchor index used for Shift-range selections
+    property bool multiSelectActive: selectedIndexes.length > 1
 
 
     RowLayout {
@@ -135,30 +142,10 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                     Text {
-                        text: "4 drones in fleet : 3 active"
+                        text: {droneController.drones.length + " drones in fleet"}
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
-                }
-            }
-
-            // Search Bar filters displayed drones in real time
-            TextField {
-                // anchors.margins: 2
-                Layout.margins: 7
-                // Layout.alignment: horizontalCenter
-                id: searchField
-                Layout.fillWidth: true
-                placeholderText: "SEARCH NOT WORK"
-                // placeholderText: "Search by drone name"
-                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                // onTextChanged: filterDroneList(text)
-
-                background: Rectangle { 
-                    color: "white" 
-                    radius: 7
-                    border.width: GcsStyle.panelStyle.defaultBorderWidth
-                    border.color: GcsStyle.panelStyle.defaultBorderColor
                 }
             }
 
@@ -186,7 +173,7 @@ Rectangle {
                         Make drone symbols update based on status.
                 */
 
-                model: droneController ? droneController.drones : []
+                model: droneController.drones
 
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
@@ -194,7 +181,7 @@ Rectangle {
 
                     // local UI state
                     property bool hovered: false
-                    property bool selected: ListView.isCurrentItem //false
+                    property bool selected: mainPanel.isIndexSelected(index)
 
                     // dynamic background color rule:
                     // selected > hovered > alternating row color (unchanged)
@@ -215,25 +202,52 @@ Rectangle {
                         onExited:   parent.hovered = false
 
                         onClicked: (mouse) => {
-                            // mark this delegate as the selected one in the ListView
-                            droneListView.currentIndex = index
-                            
-                            // Check to see if the user is holding cmd or ctrl key
+                            // Check to see if the user is holding cmd/ctrl/shift key
+                            const isShift = mouse.modifiers & Qt.ShiftModifier
                             const isCmd = mouse.modifiers & Qt.MetaModifier      // Command key (macOS)
                             const isCtrl = mouse.modifiers & Qt.ControlModifier  // Control key (Windows/Linux)
-                            var cmdOrCtrlPressed = null
+                            const ctrlOrCmd = isCmd || isCtrl
+                            const hasModifier = isShift || ctrlOrCmd
 
-                            if (isCmd || isCtrl) {
-                                cmdOrCtrlPressed = true
-                            } else {
-                                cmdOrCtrlPressed = false
+                            // If drone is already selected, clear the selection (same behavior as e-mail clients)
+                            const alreadySelected = !hasModifier
+                                                    && mainPanel.selectedIndexes.length === 1
+                                                    && mainPanel.selectedIndexes[0] === index
+                            if (alreadySelected) {
+                                mainPanel.clearSelection()
+                                return
                             }
 
-                            console.log("Cmd or Ctrl pressed:", cmdOrCtrlPressed)
-                            // keep your existing behavior (open/update the right panel)
-                            // either changing between model and model data
-                            var droneObj = modelData
-                            droneClicked(droneObj, cmdOrCtrlPressed)
+                            if (isShift && ctrlOrCmd) {
+                                // Ctrl/Cmd + Shift + Click: single-select and request follow
+                                mainPanel.setSingleSelection(index)
+                                mainPanel.emitSelectionChanged()
+
+                                mainPanel.followRequested(modelData)
+                                return
+                            }
+
+                            // Checks for click modifiers and runs its respective helper function
+                            if (isShift) {
+                                var anchor = mainPanel.selectionAnchorIndex
+                                if (anchor === -1) {
+                                    if (mainPanel.selectedIndexes.length > 0) {
+                                        anchor = mainPanel.selectedIndexes[0]
+                                    } else if (mainPanel.lastSelectedIndex !== -1) {
+                                        anchor = mainPanel.lastSelectedIndex
+                                    } else {
+                                        anchor = index
+                                    }
+                                    mainPanel.selectionAnchorIndex = anchor
+                                }
+                                mainPanel.selectRange(anchor, index)
+                            } else if (ctrlOrCmd) { 
+                                mainPanel.toggleSelection(index) 
+                            } else { 
+                                mainPanel.setSingleSelection(index) 
+                            }
+
+                            mainPanel.emitSelectionChanged()
                         }
                     }
 
@@ -245,7 +259,9 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: "qrc:/resources/droneStatusSVG.svg"
+                            source: { 
+                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
+                            }
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
                             Layout.alignment: Qt.AlignVCenter
@@ -263,8 +279,8 @@ Rectangle {
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
-                                text: modelData.battery ? modelData.battery : "Battery Not Found"
-                                color: GcsStyle.PanelStyle.textSecondaryColor
+                                text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
+                                color: modelData.batteryLevel < 70 ? "red" : GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
@@ -349,15 +365,103 @@ Rectangle {
         }
     }
 
-
+//Helper Functions for drone selection
     // Function to clear current selection highlight
     function clearSelection() {
-        droneListView.currentIndex = -1
+        updateSelection([], -1)
+        selectionAnchorIndex = -1
+        emitSelectionChanged()
+    }
+
+    // Select exactly one row (used for normal clicks and follow shortcut)
+    function setSingleSelection(idx) {
+        updateSelection([idx], idx)
+        selectionAnchorIndex = idx
+    }
+
+    // Add/remove a row from the current selection while preserving order
+    function toggleSelection(idx) {
+        var newSelection = selectedIndexes.slice()
+        var existing = newSelection.indexOf(idx)
+
+        if (existing === -1) {
+            newSelection.push(idx)
+            updateSelection(newSelection, idx)
+            selectionAnchorIndex = idx
+        } else {
+            newSelection.splice(existing, 1)
+            var nextLast = newSelection.length > 0 ? newSelection[newSelection.length - 1] : -1
+            updateSelection(newSelection, nextLast)
+            if (selectionAnchorIndex === idx) {
+                selectionAnchorIndex = nextLast
+            }
+        }
+    }
+
+    // Build a contiguous selection between two indexes (shift-click behavior)
+    function selectRange(startIdx, endIdx) {
+        if (startIdx === -1) {
+            setSingleSelection(endIdx)
+            return
+        }
+
+        var from = Math.min(startIdx, endIdx)
+        var to = Math.max(startIdx, endIdx)
+        var rangeSelection = []
+
+        for (var i = from; i <= to; ++i) {
+            rangeSelection.push(i)
+        }
+
+        updateSelection(rangeSelection, endIdx)
+    }
+
+    // Normalize, de-duplicate, and store the new selection state
+    function updateSelection(selectionArray, lastIndex) {
+        var sorted = selectionArray.slice().sort(function(a, b) { return a - b })
+        var deduped = []
+
+        for (var i = 0; i < sorted.length; ++i) {
+            if (deduped.length === 0 || deduped[deduped.length - 1] !== sorted[i]) {
+                deduped.push(sorted[i])
+            }
+        }
+
+        selectedIndexes = deduped
+        lastSelectedIndex = lastIndex
+        syncCurrentIndex()
+    }
+
+    // Keep ListView's built-in currentIndex aligned with our selection rules
+    function syncCurrentIndex() {
+        if (selectedIndexes.length === 1) {
+            droneListView.currentIndex = selectedIndexes[0]
+        } else {
+            droneListView.currentIndex = -1
+        }
+    }
+
+    function isIndexSelected(idx) {
+        return selectedIndexes.indexOf(idx) !== -1
+    }
+
+    // Turn selected indexes into real drone objects and emit the public signal
+    function emitSelectionChanged() {
+        var selected = []
+        var model = droneListView.model
+
+        for (var i = 0; i < selectedIndexes.length; ++i) {
+            var idx = selectedIndexes[i]
+            if (idx >= 0 && idx < droneListView.count) {
+                var droneData = model && model[idx] !== undefined ? model[idx] : null
+                if (droneData) {
+                    selected.push(droneData)
+                }
+            }
+        }
+
+        selectionChanged(selected)
     }
     
-    // this ties into the telemetry panel to control maximum width of the panel         
-    signal trackingWidthReady(int w)
-    function publishTrackingWidth() {
-        trackingWidthReady(width)
-    }
+
 }
