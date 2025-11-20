@@ -75,10 +75,6 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     // Set up timer connections but don't start yet
     connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
     connect(&reconnectTimer, &QTimer::timeout, this, &DroneController::tryConnectToDataFile);
-    // --- Simulated Drone Movement ---
-    connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
-    simulationTimer.start(250); // Move once per second
-    qDebug() << "Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.
@@ -359,27 +355,6 @@ void DroneController::deleteALlDrones_UI()
     }
 }
 
-bool DroneController::isSimulationMode() const
-{
-    QString configPath = getConfigFilePath();
-    QFile configFile(configPath);
-
-    if (configFile.exists() && configFile.open(QIODevice::ReadOnly))
-    {
-        QJsonDocument doc = QJsonDocument::fromJson(configFile.readAll());
-        QJsonObject obj = doc.object();
-        bool simMode = obj["simulation_mode"].toBool();
-        configFile.close();
-        qDebug() << "Reading simulation mode from config:" << simMode;
-        return simMode;
-    }
-
-    qDebug() << "Could not find config file at:" << configPath;
-    qDebug() << "Defaulting to simulation mode";
-
-    // Default to simulation mode if can't read config
-    return true;
-}
 
 QString DroneController::getConfigFilePath() const
 {
@@ -631,25 +606,6 @@ void DroneController::processXbeeData()
     }
 }
 
-// Start monitoring for XBee data
-void DroneController::startXbeeMonitoring()
-{
-    // Try to connect immediately
-    if (checkDataFileExists())
-    {
-        qDebug() << "Successfully found XBee data file";
-        xbeeDataTimer.start(1000); // Check every 1000ms
-        emit xbeeConnectionChanged(true);
-    }
-    else
-    {
-        qDebug() << "Waiting for XBee data file to be created...";
-        emit xbeeConnectionChanged(false);
-
-        // Start reconnect timer
-        reconnectTimer.start(1000); // Try every second
-    }
-}
 
 bool DroneController::openXbee(const QString& port, int baud)
 {

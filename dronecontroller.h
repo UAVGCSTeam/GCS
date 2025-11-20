@@ -53,9 +53,7 @@ public:
     // Initialize shared memory for XBee communication
     bool checkDataFileExists();
     bool addNewDrone = true;
-    void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
-    Q_INVOKABLE bool isSimulationMode() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
     Q_INVOKABLE bool sendTakeoffCmd(const QString& droneKeyOrAddr);

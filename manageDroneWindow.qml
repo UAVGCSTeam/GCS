@@ -18,12 +18,6 @@ Window {
 
     // Property to track the currently selected drone
     property int selectedDroneIndex: -1
-    // Properties for simulation mode and connection status
-    property bool simulationMode: typeof droneController !== "undefined" &&
-                                 typeof droneController.isSimulationMode === "function" ?
-                                 droneController.isSimulationMode() : false
-    property bool xbeeConnected: false
-    property string simulationStatusText: simulationMode ? "SIMULATION MODE" : (xbeeConnected ? "CONNECTED" : "DISCONNECTED")
 
     ListModel {
         id: droneModel
@@ -89,78 +83,28 @@ Window {
             droneListView.positionViewAtBeginning();
             droneListView.forceLayout();
         }
-
-        function onXbeeConnectionChanged(connected) {
-            console.log("XBee connection status changed:", connected);
-            xbeeConnected = connected;
-        }
     }
 
     Component.onCompleted: {
         try {
-            // Initialize simulation mode first, so we know how to proceed
-            if (typeof droneController !== "undefined" &&
-                typeof droneController.isSimulationMode === "function") {
-                simulationMode = droneController.isSimulationMode();
-                console.log("Initialized simulation mode:", simulationMode);
-            }
+            // Normal mode - load drones from database
+            const drones = droneController.getAllDrones()
+            console.log("Fetched drones:", drones.length, "drones");
 
-            // Different handling for simulation vs normal mode
-            if (simulationMode) {
-                console.log("Simulation mode detected - setting up simulation environment");
-
-                // Delete all existing drones to start clean
-                droneController.deleteALlDrones_UI();
-
-                // Use a timer to wait for deletion to complete
-                let timer = Qt.createQmlObject("import QtQuick; Timer {}", this);
-                timer.interval = 500;
-                timer.repeat = false;
-                timer.triggered.connect(function() {
-                    // Add simulation drones
-                    addSimulationDrones();
-
-                    // Start XBee monitoring for simulation
-                    if (typeof droneController.startXbeeMonitoring === 'function') {
-                        console.log("Starting XBee monitoring for simulation");
-                        droneController.startXbeeMonitoring();
-                    }
-                });
-                timer.start();
-            } else {
-                // Normal mode - load drones from database
-                const drones = droneController.getAllDrones()
-                console.log("Fetched drones:", drones.length, "drones");
-
-                if (drones.length > 0) {
-                    drones.forEach(drone => {
-                        droneModel.append({
-                            "name": drone.name || "",
-                            "role": drone.role || "",
-                            "xbeeId": drone.xbeeId || "",
-                            "xbeeAddress": drone.xbeeAddress || ""
-                        });
+            if (drones.length > 0) {
+                drones.forEach(drone => {
+                    droneModel.append({
+                        "name": drone.name || "",
+                        "role": drone.role || "",
+                        "xbeeId": drone.xbeeId || "",
+                        "xbeeAddress": drone.xbeeAddress || ""
                     });
-                }
-
-                // Use the sync function for normal operation
-                syncModelWithDatabase();
-
-                // Start XBee monitoring for real hardware
-                if (typeof droneController.startXbeeMonitoring === 'function') {
-                    console.log("Starting XBee monitoring for real hardware");
-                    droneController.startXbeeMonitoring();
-                } else {
-                    console.log("startXbeeMonitoring function not available");
-                    // Create a dummy function to avoid errors
-                    if (typeof droneController.startXbeeMonitoring === 'undefined') {
-                        droneController.startXbeeMonitoring = function() {
-                            console.log("Dummy XBee monitoring function called");
-                            xbeeConnected = false;
-                        };
-                    }
-                }
+                });
             }
+
+            // Use the sync function for normal operation
+            syncModelWithDatabase();
+
         } catch (error) {
             console.error("Error in Component.onCompleted:", error);
         }
@@ -199,74 +143,6 @@ Window {
         droneListView.forceLayout();
         droneListView.positionViewAtBeginning();
         droneListView.forceLayout();
-    }
-
-    // Adds simulated drone
-    function addSimulationDrones() {
-        console.log("Adding simulation drones...");
-
-        const simulationDrones = [
-            {
-                "name": "Drone1",
-                "role": "Scout",
-                "xbeeId": "SIM001",
-                "xbeeAddress": "0013A20012345678"
-            },
-            {
-                "name": "Drone2",
-                "role": "Carrier",
-                "xbeeId": "SIM002",
-                "xbeeAddress": "0013A20087654321"
-            }
-        ];
-
-        clearSimulationDrones();
-
-        simulationDrones.forEach(drone => {
-
-            // Optionally save to database
-            try {
-                droneController.createDrone(
-                    drone.name,
-                    drone.role,
-                    drone.xbeeId,
-                    drone.xbeeAddress
-                );
-            } catch (e) {
-                console.log("Error saving simulation drone:", e);
-            }
-        });
-
-        syncModelWithDatabase();
-        console.log("Added simulation drones, model count:", droneModel.count);
-    }
-
-    // Clears simulated drones
-    function clearSimulationDrones() {
-        if (simulationMode && droneModel.count > 0) {
-            // Store addresses of all SIM drones to delete
-            let simDroneAddresses = [];
-
-            // Find drones with SIM prefix in xbeeId
-            for (let i = droneModel.count - 1; i >= 0; i--) {
-                if (droneModel.get(i).xbeeId.startsWith("SIM")) {
-                    simDroneAddresses.push(droneModel.get(i).xbeeAddress);
-                }
-            }
-
-            // Delete each simulation drone from database
-            simDroneAddresses.forEach(address => {
-                try {
-                    droneController.deleteDrone(address);
-                    console.log("Deleted simulation drone with address:", address);
-                } catch (e) {
-                    console.log("Error removing simulation drone from database:", e);
-                }
-            });
-
-            // Sync model with database after all deletions
-            syncModelWithDatabase();
-        }
     }
 
     // Function to read and parse the JSON file
@@ -450,28 +326,6 @@ Window {
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: successPopup.close()
             }
-        }
-    }
-
-    // Status indicator at the top
-    Rectangle {
-        id: statusIndicator
-        color: simulationMode ? "#FFF3CD" : (xbeeConnected ? "#D4EDDA" : "#F8D7DA")  // Yellow for sim, green for connected, red for disconnected
-        border.color: simulationMode ? "#FFECB5" : (xbeeConnected ? "#C3E6CB" : "#F5C6CB")
-        border.width: 1
-        radius: 4
-        height: statusText.height + 10
-        width: statusText.width + 20
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.margins: 10
-
-        Text {
-            id: statusText
-            text: simulationStatusText
-            font.bold: true
-            color: simulationMode ? "#856404" : (xbeeConnected ? "#155724" : "#721C24")  // Text color matching the background theme
-            anchors.centerIn: parent
         }
     }
 
@@ -1055,60 +909,6 @@ Window {
         Item {
                 width: parent.width
                 height: 20  // Small height or use Layout.fillHeight: true if using ColumnLayout
-            }
-
-
-        Row {
-            width: parent.width
-            anchors.right: parent.right
-            layoutDirection: Qt.RightToLeft
-            spacing: 10
-
-            // Button to start XBee monitoring - only visible in real hardware mode
-            Button {
-                id: xbeeConnectButton
-                text: xbeeConnected ? "Reconnect XBee" : "Connect XBee"
-                visible: !simulationMode  // Only show when NOT in simulation mode
-
-                background: Rectangle {
-                    color: xbeeConnected ? "#4CAF50" : "#e0e0e0"
-                    radius: 4
-                    border.color: xbeeConnected ? "#388E3C" : "#cccccc"
-                    border.width: 1
-                }
-
-                contentItem: Text {
-                    text: xbeeConnectButton.text
-                    color: xbeeConnected ? "#FFFFFF" : GcsStyle.PanelStyle.textPrimaryColor
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                onClicked: {
-                    if (typeof droneController.startXbeeMonitoring === 'function') {
-                        droneController.startXbeeMonitoring();
-                        connectionInitializationMessage.text = "XBee Connection Initialized.";
-                        connectionInitializationPopup.open();
-                    }
-                }
-            }
-
-            // Simulation mode label - only visible in simulation mode
-            Rectangle {
-                visible: simulationMode  // Only show when IN simulation mode
-                height: xbeeConnectButton.height
-                width: simulationModeLabel.width + 20
-                radius: 4
-                color: "#FFC107"
-                border.color: "#FFA000"
-
-                Text {
-                    id: simulationModeLabel
-                    text: "Simulation Mode Active"
-                    anchors.centerIn: parent
-                    color: "#000000"
-                }
-            }
         }
     }
 }
