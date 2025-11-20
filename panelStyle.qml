@@ -24,10 +24,6 @@ QtObject {
     readonly property int fontSizeXS: 10
     readonly property int fontSizeXXS: 10
 
-    // Temporary Icons
-    readonly property string droneIcon: "🚁"
-    readonly property string settingsIcon: "⚙️"
-
     // Button properties
     readonly property int buttonSize: 40
     readonly property int buttonRadius: 6

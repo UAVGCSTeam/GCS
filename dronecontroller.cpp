@@ -100,60 +100,10 @@ QVariantList DroneController::getAllDrones() const
 
 DroneController::~DroneController()
 {
-    // Cleanup code if needed
-    if (xbeeDataTimer.isActive())
-    {
-        xbeeDataTimer.stop();
-    }
-    if (reconnectTimer.isActive())
-    {
-        reconnectTimer.stop();
-    }
 }
 
-// Get the correct file path to check
-QString DroneController::getDataFilePath()
-{
-    // On Windows, always check user's TEMP folder first
-#ifdef _WIN32
-    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QString tempFilePath = tempPath + "/xbee_tmp/xbee_data.json";
 
-    QFile tempFile(tempFilePath);
-    if (tempFile.exists())
-    {
-        qDebug() << "Using Windows temp path:" << tempFilePath;
-        return tempFilePath;
-    }
 
-    // Log the paths we're checking to aid debugging
-    qDebug() << "Checked for XBee data file at:" << tempFilePath << "(not found)";
-#endif
-
-    // Original fallback paths
-    QFile file(DEFAULT_DATA_FILE_PATH);
-    if (file.exists())
-    {
-        qDebug() << "Using default path:" << DEFAULT_DATA_FILE_PATH;
-        return DEFAULT_DATA_FILE_PATH;
-    }
-    qDebug() << "Checked for XBee data file at:" << DEFAULT_DATA_FILE_PATH << "(not found)";
-
-#ifdef _WIN32
-    // Additional Windows fallbacks
-    QString fallbackPath = tempPath + "/xbee_data.json";
-    QFile fallbackFile(fallbackPath);
-    if (fallbackFile.exists())
-    {
-        qDebug() << "Using fallback path:" << fallbackPath;
-        return fallbackPath;
-    }
-    qDebug() << "Checked for XBee data file at:" << fallbackPath << "(not found)";
-#endif
-
-    // Return the default path if nothing else found
-    return DEFAULT_DATA_FILE_PATH;
-}
 
 // Steps in saving a drone.
 /* User Clicks button to save drone information
@@ -332,8 +282,6 @@ void DroneController::deleteALlDrones_UI()
         // Adding update to the new QML list
         rebuildVariant();
         emit dronesChanged();
-
-        addNewDrone = true; // DELETE THIS -- DEMO
     }
     else
     {
@@ -422,55 +370,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     return QSharedPointer<DroneClass>(); // Return null pointer if not found
 }
 
-// Check if the data file exists
-bool DroneController::checkDataFileExists()
-{
-    QString filePath = getDataFilePath();
-    QFile file(filePath);
-    if (file.exists())
-    {
-        qDebug() << "Found XBee data file at:" << filePath;
-        return true;
-    }
-    else
-    {
-        qDebug() << "XBee data file not found at:" << filePath;
-        return false;
-    }
-}
 
-// Try to connect to the data file
-void DroneController::tryConnectToDataFile()
-{
-    if (checkDataFileExists())
-    {
-        qDebug() << "Successfully found XBee data file";
-        reconnectTimer.stop(); // Stop trying to reconnect
-
-        // Start timer to check for XBee data
-        xbeeDataTimer.start(50); // Check every 50ms
-        emit xbeeConnectionChanged(true);
-    }
-}
-
-QString DroneController::getLatestXbeeData()
-{
-    QString result;
-    QString filePath = getDataFilePath();
-    QFile file(filePath);
-
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        result = QString::fromUtf8(file.readAll());
-        file.close();
-    }
-    else
-    {
-        qWarning() << "Failed to open XBee data file:" << file.errorString();
-    }
-
-    return result;
-}
 
 // Gets drones, but is used to REBUILD the drone list; so it refreshes and keeps the drone list up to date
 QVariantList DroneController::getDrones() const

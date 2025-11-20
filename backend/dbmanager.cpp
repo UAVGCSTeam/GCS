@@ -312,7 +312,7 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
 
 
 
-// Lets use this function to have "default" drones. This only happens if not in Simulation mode.
+// Lets use this function to have "default" drones. 
 bool DBManager::createInitialDrones() {
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot insert initial drones.";
@@ -368,13 +368,13 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "0013A200422F2FD1");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert Octoquad:" << insertQuery.lastError().text();
+        qCritical() << "[dbmanager.cpp] Failed to insert Hexacopter:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] Octoquad inserted successfully.";
+        qDebug() << "[dbmanager.cpp] Hexacopter inserted successfully.";
     }
 
-    qDebug() << "[dbmanager.cpp] Both initial drones created successfully.";
+    qDebug() << "[dbmanager.cpp] All initial drones created successfully.";
     return true;
 }
 

@@ -305,7 +305,8 @@ Rectangle {
                 Connections {
                     target: droneController
                     function onDronesChanged() {
-                        droneListView.model = dronecontroller ? droneController.drones : [] // TODO: check to see if telemetry data populates during simulation with ardupilot
+                        // TODO: check to see if telemetry data populates during simulation with ardupilot
+                        droneListView.model = dronecontroller ? droneController.drones : [] 
                     } 
                 }
             }

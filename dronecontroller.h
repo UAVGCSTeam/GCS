@@ -51,8 +51,6 @@ public:
     ~DroneController();
 
     // Initialize shared memory for XBee communication
-    bool checkDataFileExists();
-    bool addNewDrone = true;
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
@@ -78,10 +76,8 @@ public slots:
     void updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
-
-    // Process data recieved from XBee via shared memory
-    void tryConnectToDataFile();
     
+    // Functions for serial / MAVLink connections
     void onMavlinkMessage(const RxMavlinkMsg& msg);
 
 signals:
@@ -89,16 +85,11 @@ signals:
     void droneUpdated(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
-    void xbeeConnectionChanged(bool connected);
     void dronesChanged();
 
 private:
     DBManager &dbManager;
 
-    QTimer simulationTimer; // Timer for simulated movement
-    QTimer xbeeDataTimer;   // Timer for data polling
-    QTimer reconnectTimer;  // Timer for data polling
-    
     std::unique_ptr<XbeeLink>    xbee_;
     std::unique_ptr<MavlinkSender> mav_;
     std::unique_ptr<MavlinkReceiver> mavRx_;
@@ -107,8 +98,6 @@ private:
     
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
-    QString getLatestXbeeData(); // Get latest data from file (TODO: OUTDATED)
-    QString getDataFilePath();
     QString getConfigFilePath() const;
     void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
