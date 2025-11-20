@@ -290,33 +290,6 @@ void DroneController::deleteALlDrones_UI()
 }
 
 
-QString DroneController::getConfigFilePath() const
-{
-    QString configPath;
-
-#ifdef _WIN32
-    // Windows: User's AppData folder
-    configPath = QDir::homePath() + "/AppData/Local/GCS";
-#elif defined(__APPLE__)
-    // macOS
-    configPath = QDir::homePath() + "/Library/Application Support/GCS";
-#else
-    // Linux and other Unix systems
-    configPath = QDir::homePath() + "/.config/gcs";
-#endif
-
-    // Make sure the directory exists
-    QDir dir(configPath);
-    if (!dir.exists())
-    {
-        dir.mkpath(".");
-    }
-
-    configPath += "/xbee_config.json";
-    qDebug() << "Config file path:" << configPath;
-    return configPath;
-}
-
 // If want to query by name
 QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name)
 {

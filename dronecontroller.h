@@ -98,7 +98,6 @@ private:
     
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
-    QString getConfigFilePath() const;
     void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
 
