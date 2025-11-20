@@ -70,18 +70,6 @@ Window {
     }
 
     
-    AttitudeIndicator {
-        id: attitudeIndicator
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-            bottomMargin: GcsStyle.PanelStyle.applicationBorderMargin
-            rightMargin: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        visible: true
-    }
-    
-
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -136,7 +124,6 @@ Window {
 
         // droneController.openXbee("/dev/ttys005", 57600)
         droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
-        attitudeIndicator.publishAttitudeWidth()
     }
 
     // Syncs telemetry visibility and follow state whenever the selection array updates
@@ -153,7 +140,6 @@ Window {
         if (selected.length === 1) {
             var drone = selected[0]
             telemetryPanel.setActiveDrone(drone)
-            attitudeIndicator.setActiveDrone(drone)
             telemetryPanel.visible = true
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
