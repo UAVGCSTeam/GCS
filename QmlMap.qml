@@ -11,8 +11,6 @@ Item {
     property bool followingDrone: false
     property double latitude: 34.060978616851145 // for centering the view
     property double longitude: -117.83110213699356 // for centering the view
-    // property double latitude: -35.363
-    // property double longitude: 149.165
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },
@@ -118,26 +116,6 @@ Item {
             }
             onActiveChanged: if (active) {turnOffFollowDrone()}
         }
-
-        // this is where we overlay the satellite map
-        MapItemView {
-            id: satelliteMap
-            model: 1
-            delegate: MapQuickItem { 
-                coordinate: QtPositioning.coordinate(34.060978616851145, -117.83110213699356)
-                anchorPoint: Qt.point(sourceItem.width / 2, sourceItem.height / 2)
-                
-                scale: Math.pow(2, mapview.zoomLevel - 15)
-
-                sourceItem: Image {
-                    id: satelliteImage
-                    source: "qrc:/resources/satelliteMap.png"
-                    width: 269 // controlling w or h affects the whole image due to preserving the aspect fit
-                    fillMode: Image.PreserveAspectFit
-                }
-            }
-        }
-
         
         MapItemView {
             id: droneMarkerView
