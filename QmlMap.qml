@@ -104,6 +104,7 @@ Item {
                 mapview.alignCoordinateToPoint(loc, point.position)
             }
         }
+        // sorry for the inconvenience...
 
         DragHandler {
             target: null
