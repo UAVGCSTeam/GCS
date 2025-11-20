@@ -24,14 +24,14 @@ Rectangle {
         (The DroneClass object is stored in the activeDrone var)
         */
         [
-            { label: "Climb Rt", unit: "m/s" },
+            { label: "SYS ID", unit: "" },
+            { label: "COMP ID", unit: "" },
             { label: "Flight Time", unit: "" },
-            { label: "SatCount", unit: "" }
         ],
         [
             { label: "Yaw", unit: "°" },
             { label: "Pitch", unit: "°" },
-            { label: "Latency", unit: "ms" }
+            { label: "Roll", unit: "°" }
         ],
         [
             { label: "Status", unit: "" },
@@ -49,6 +49,10 @@ Rectangle {
             { label: "Gnd Speed", unit: "m/s" }
         ]
     ]
+
+    function setAttitudeWidth(w) {
+        attitudeWidth = w
+    }
 
     MouseArea {
         anchors.fill: parent
@@ -122,19 +126,20 @@ Rectangle {
                                         if (activeDrone) {
                                             if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
                                             else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
-                                            else if (modelData.label === "SatCount") { "---" }
-                                            else if (modelData.label === "Yaw") { "---" }
-                                            else if (modelData.label === "Pitch") { "---" }
-                                            else if (modelData.label === "Latency") { "---" }
+                                            else if (modelData.label === "SYS ID") { activeDrone.sysID }
+                                            else if (modelData.label === "COMP ID") { activeDrone.compID }
+                                            else if (modelData.label === "Flight Time") { "---" }
+                                            else if (modelData.label === "Yaw") { activeDrone.orientation.z.toFixed(3) }
+                                            else if (modelData.label === "Pitch") { activeDrone.orientation.y.toFixed(3) }
+                                            else if (modelData.label === "Roll") {  activeDrone.orientation.x.toFixed(3) }
+                                            else if (modelData.label === "Fail Safe") { "---" }
                                             else if (modelData.label === "Status") { "---" }
                                             else if (modelData.label === "Mode") { "---" }
-                                            else if (modelData.label === "Fail Safe") { "---" }
-                                            else if (modelData.label === "Altitude") { "---" }
-                                            else if (modelData.label === "Climb Rate") { "---" }
-                                            else if (modelData.label === "Flight Time") { "---" }
-                                            else if (modelData.label === "Distance GCS") { "---" }
+                                            else if (modelData.label === "Altitude") { activeDrone.altitude }
+                                            else if (modelData.label === "Dist GCS") { "---" }
                                             else if (modelData.label === "Air Speed") { "---" }
                                             else if (modelData.label === "Gnd Speed") { "---" }
+                                            else { "---" }
                                         } else { "---" }
                                     }
                                     color: "white"
@@ -179,8 +184,11 @@ Rectangle {
         activeDrone = drone;
     }
 
+    function clearActiveDrone() {
+        activeDrone = null;
+    }
+
     function toggleExpanded() {
         isExpanded = !isExpanded
     }
 }
-

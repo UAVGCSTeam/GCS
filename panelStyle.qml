@@ -3,12 +3,12 @@ import QtQuick 2.15
 
 QtObject {
     // Color scheme
-    readonly property color listItemHoverColor: "#EDF7FF"
-    readonly property color listItemSelectedColor: "#D0EAFF"
-    readonly property color primaryColor: "#FFF9FB"
-    readonly property color secondaryColor: "#ffffff"
+    readonly property color listItemHoverColor: "#384250"
+    readonly property color listItemSelectedColor: "#495B76"
+    readonly property color primaryColor: "#161720"
+    readonly property color secondaryColor: "#282831"
     readonly property color accentColor: "#007bff"
-    readonly property color textPrimaryColor: "#333333"
+    readonly property color textPrimaryColor: "#ffffff"
     readonly property color textSecondaryColor: "#666666"
 
     // Sizes
@@ -24,18 +24,15 @@ QtObject {
     readonly property int fontSizeXS: 10
     readonly property int fontSizeXXS: 10
 
-    // Temporary Icons
-    readonly property string droneIcon: "🚁"
-    readonly property string settingsIcon: "⚙️"
-
     // Button properties
     readonly property int buttonSize: 40
     readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
-    readonly property color buttonColor2: "#FFFFFF"
+    readonly property color buttonColor2: "#282830"
     readonly property color buttonActiveColor: "#4B88A2"
-    readonly property color buttonHoverColor: "#e6f0ff"
-    readonly property color buttonPressedColor: "#cfe0ff"
+    readonly property color buttonHoverColor: "#364357"
+    readonly property color buttonPressedColor: listItemHoverColor
+    readonly property color buttonUnavailableColor: "#212129"
     readonly property color buttonBorderColor: "#c8c8c8"
     
     // Danger/warning button colors
@@ -44,9 +41,12 @@ QtObject {
     readonly property color buttonDangerTextColor: "#ffffff"
 
     // List view properties
-    readonly property color listItemEvenColor: secondaryColor
-    readonly property color listItemOddColor: "#FFF9FB"
-    readonly property int listItemHeight: 50
+    readonly property color listItemEvenColor: primaryColor
+    readonly property color listItemOddColor: "#202029"
+    readonly property int listItemHeight: 40
+
+    // Command Menu
+    readonly property int commandButtonHeight: 18
 
     // Margin and spacing
     readonly property int defaultMargin: 10
@@ -60,14 +60,17 @@ QtObject {
 
     // Borders 
     readonly property double defaultBorderWidth: 0.5
-    readonly property color defaultBorderColor: "lightgray"
+    // readonly property color defaultBorderColor: "lightgray"
+    readonly property color defaultBorderColor: "#515151"
+    // readonly property color defaultBorderColor: "red"
 
     // Icon properties
     readonly property int iconSize: 24
     readonly property int statusIconSize: 15
 
     // Text colors for different backgrounds
-    readonly property color textOnPrimaryColor: "#000000"
+    // readonly property color textOnPrimaryColor: "#000000"
+    readonly property color textOnPrimaryColor: "#ffffff"
     readonly property color textOnSecondaryColor: textPrimaryColor
 
     // Header-specific properties

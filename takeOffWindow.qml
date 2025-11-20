@@ -17,9 +17,15 @@ Window {
         // A temporary button that logs a message when clicked
         Button {
             id: takeOffButton
-            text: qsTr("Take-off")
+            text: qsTr("Takeoff")
             anchors.centerIn: parent
-            onClicked: console.log("Take-off window button clicked")
+            onClicked: {
+            // TEMP: hardcode a target; replace with your real XBee address or ID later
+                const target = "11062025" // the custom SITL drone
+                const ok = droneController.sendTakeoffCmd(target)   // true = arm, false = disarm
+                console.log("TAKEOFF ->", target, ok)
+                takeOffWindow.close()
+            }
         }
     }
 }

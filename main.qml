@@ -40,7 +40,6 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
-
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
@@ -69,6 +68,7 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
     
     DroneTrackingPanel {
         id: droneTrackingPanel
@@ -112,19 +112,18 @@ Window {
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
 
-    // The following two connections are crucial for setting the limits of how much the telemetry window can expand
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-        for (var i = 0; i < coords.length; i++) {
+        for (var i = 0; i < 3; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
         }
 
-        droneController.openXbee("/dev/ttys005", 57600)
-        // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
+        // droneController.openXbee("/dev/ttys005", 57600)
+        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
     // Syncs telemetry visibility and follow state whenever the selection array updates
@@ -142,7 +141,6 @@ Window {
             var drone = selected[0]
             telemetryPanel.setActiveDrone(drone)
             telemetryPanel.visible = true
-
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
             if (telemetryPanel.visible) {

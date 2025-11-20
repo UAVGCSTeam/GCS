@@ -1,5 +1,18 @@
 #include "MavlinkSender.h"
 #include "XbeeLink.h"
+#include <QDebug>
+#include <chrono>
+
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
+
 
 // include mavlink (common dialect), handle both folder layouts
 #if __has_include(<mavlink/common/mavlink.h>)
@@ -35,6 +48,8 @@ QByteArray MavlinkSender::packCommandLong(uint8_t sys, uint8_t comp,
     const uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
     return QByteArray(reinterpret_cast<char*>(buf), len);
 }
+
+
 
 bool MavlinkSender::sendArm(uint8_t sys, uint8_t comp, bool arm) {
     if(!link_ || !link_->isOpen()) return false;

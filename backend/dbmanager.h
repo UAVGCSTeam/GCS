@@ -48,7 +48,7 @@ public:
     // A person can create a drone with just the droneName defined.
     bool createDrone(const QString& droneName, const QString& droneRole,
                      const QString& xbeeID, const QString& xbeeAddress,
-                     int* newDroneId = nullptr);
+                     int* newDroneID = nullptr);
     bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneRole = QString(),
                     const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool deleteDrone(const QString& xbeeId);

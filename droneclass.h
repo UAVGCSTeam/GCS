@@ -18,30 +18,35 @@ class DroneClass : public QObject
     Q_PROPERTY(QString   role        READ getRole        WRITE setRole        NOTIFY roleChanged        FINAL)
     Q_PROPERTY(QString   xbeeID      READ getXbeeID      WRITE setXbeeID      NOTIFY xbeeIDChanged      FINAL)
     Q_PROPERTY(QVector3D position    READ getPosition    WRITE setPosition    NOTIFY positionChanged    FINAL)
-    Q_PROPERTY(double    latitude    READ getLatitude    WRITE setLatitude    NOTIFY latitudeChanged    FINAL)  // temporary
-    Q_PROPERTY(double    longitude   READ getLongitude   WRITE setLongitude   NOTIFY longitudeChanged   FINAL)  // temporary
-    Q_PROPERTY(double    altitude    READ getAltitude    WRITE setAltitude    NOTIFY altitudeChanged    FINAL)  // temporary
+    Q_PROPERTY(double    latitude    READ getLatitude    WRITE setLatitude    NOTIFY latitudeChanged    FINAL)
+    Q_PROPERTY(double    longitude   READ getLongitude   WRITE setLongitude   NOTIFY longitudeChanged   FINAL)
+    Q_PROPERTY(double    altitude    READ getAltitude    WRITE setAltitude    NOTIFY altitudeChanged    FINAL)
     Q_PROPERTY(QVector3D velocity    READ getVelocity    WRITE setVelocity    NOTIFY velocityChanged    FINAL)
-    Q_PROPERTY(double    airspeed    READ getAirspeed    WRITE setAirspeed    NOTIFY airspeedChanged    FINAL)  // temporary
+    Q_PROPERTY(double    airspeed    READ getAirspeed    WRITE setAirspeed    NOTIFY airspeedChanged    FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation WRITE setOrientation NOTIFY orientationChanged FINAL)
 
 public:
     explicit DroneClass(QObject *parent = nullptr);
 
-    DroneClass(const QString &input_name,
-               const QString &input_role,
-               const QString &input_xbeeAddress,
-               QObject *parent = nullptr);
+    DroneClass(const QString &input_name, 
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const QString &input_xbeeAddress,
+                double input_batteryLevel,
+                double input_latitude,
+                double input_longitude,
+                double input_altitude,
+                QObject *parent);
 
-    // overload function to create with XBee-ID
-    DroneClass(const QString &input_name,
-               const QString &input_role,
-               const QString &input_xbeeID,
-               const QString &input_xbeeAddress,
-               QObject *parent = nullptr);
-
-    // For handling the shared memory communication between the python and each INDIVIDUAL drone
-    void processXbeeMessage(const QString &message);
+    /*
+    This constructor is used for creating drones based off information
+    that is stored persistently in the database.
+    */
+    DroneClass(const QString &input_name, 
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const QString &input_xbeeAddress,
+                QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
     QString   getName()        const { return m_name; }
@@ -68,17 +73,17 @@ public:
     QVector3D getOrientation() const { return m_orientation; }
     void      setOrientation(const QVector3D &ori);
 
-    double    getLatitude()    const { return m_latitude; }   // temporary
-    void      setLatitude(double latitude);                   // temporary
+    double    getLatitude()    const { return m_latitude; }
+    void      setLatitude(double latitude);  
 
-    double    getLongitude()   const { return m_longitude; }  // temporary
-    void      setLongitude(double longitude);                 // temporary
+    double    getLongitude()   const { return m_longitude; }
+    void      setLongitude(double longitude);
 
-    double    getAltitude()    const { return m_altitude; }   // temporary
-    void      setAltitude(double altitude);                   // temporary
+    double    getAltitude()    const { return m_altitude; }
+    void      setAltitude(double altitude);  
 
-    double    getAirspeed()    const { return m_airspeed; }   // temporary
-    void      setAirspeed(double airspeed);                   // temporary
+    double    getAirspeed()    const { return m_airspeed; }
+    void      setAirspeed(double airspeed);                 
 
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
@@ -100,13 +105,15 @@ signals:
     void xbeeAddressChanged();
     void roleChanged();
     void xbeeIDChanged();
+    void sysIDChanged();
+    void compIDChanged();
     void batteryChanged();
     void positionChanged();
-    void latitudeChanged();    // temporary
-    void longitudeChanged();   // temporary
-    void altitudeChanged();    // temporary
+    void latitudeChanged();  
+    void longitudeChanged(); 
+    void altitudeChanged();  
     void velocityChanged();
-    void airspeedChanged();    // temporary
+    void airspeedChanged();  
     void orientationChanged();
     void dataChanged();
 
@@ -115,13 +122,15 @@ private:
     QString   m_xbeeAddress;
     QString   m_role;
     QString   m_xbeeID;
+    int       m_sysID;
+    int       m_compID;
     double    m_batteryLevel;
     QVector3D m_position;
-    double    m_latitude;      // temporary
-    double    m_longitude;     // temporary
-    double    m_altitude;      // temporary
+    double    m_latitude;    
+    double    m_longitude;   
+    double    m_altitude;    
     QVector3D m_velocity;
-    double    m_airspeed;      // temporary
+    double    m_airspeed;    
     QVector3D m_orientation;
 
     // Newly added backing fields for adapters

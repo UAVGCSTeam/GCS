@@ -25,7 +25,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         height: GcsStyle.panelStyle.defaultBorderWidth // "width" of the border 
         width: parent.width // span across the menu bar 
-        color: GcsStyle.PanelStyle.buttonBorderColor
+        color: GcsStyle.PanelStyle.defaultBorderColor
     }
     
     RowLayout { 
@@ -127,7 +127,7 @@ Rectangle {
             }
             
             PopupMenuItem {
-                text: "Take-off"
+                text: "Takeoff"
                 windowFile: "takeOffWindow.qml"
                 menuPopup: commandMenu
             }

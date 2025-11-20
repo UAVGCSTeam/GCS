@@ -20,7 +20,7 @@ Button {
 
     background: Rectangle {
         // color: "white"
-        color: mapTypeButton.pressed ? "#f0f0f0" : "white" 
+        color: mapTypeButton.pressed ? GcsStyle.PanelStyle.secondaryColor : GcsStyle.PanelStyle.buttonColor2 
         border.color: GcsStyle.PanelStyle.defaultBorderColor
         border.width: GcsStyle.PanelStyle.defaultBorderWidth
         radius: GcsStyle.PanelStyle.buttonRadius
@@ -29,7 +29,7 @@ Button {
     contentItem: Text {
         text: mapTypeButton.text
         font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-        color: mapTypeButton.pressed ? "#404040" : "#202020"
+        color: mapTypeButton.pressed ? GcsStyle.PanelStyle.textPrimaryColor : "white"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

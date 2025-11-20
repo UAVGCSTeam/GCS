@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtLocation
 import QtPositioning
+import QtQuick.Controls
 
 Item {
     id: mapwindow
@@ -8,14 +9,16 @@ Item {
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
-    property double latitude: 34.059174611493965
-    property double longitude: -117.82051240067321
+    property double latitude: 34.060978616851145 // for centering the view
+    property double longitude: -117.83110213699356 // for centering the view
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },
         { name: "Terrain", type: Map.TerrainMap },
     ]
     property int currentMapTypeIndex: 0
+    property var selectedDrone: null
+    property var clickedCoordLabel: null
     property var _pendingCenter: undefined
 
     Plugin {
@@ -105,10 +108,13 @@ Item {
         DragHandler {
             target: null
             grabPermissions: PointerHandler.TakeOverForbidden
+            acceptedButtons: Qt.LeftButton
+            onTranslationChanged: (delta) => {
+                mapview.pan(-delta.x, -delta.y);
+            }
             onActiveChanged: if (active) {turnOffFollowDrone()}
-            onTranslationChanged: (delta) => { mapview.pan(-delta.x, -delta.y); }
         }
-
+        
         MapItemView {
             id: droneMarkerView
             model: droneController ? droneController.drones : []
@@ -118,7 +124,7 @@ Item {
                     modelData.longitude !== undefined ? modelData.longitude : longitude
                 )
                 // center the icon
-                anchorPoint.x: markerImage.width / 2 
+                anchorPoint.x: markerImage.width / 2
                 anchorPoint.y: markerImage.height / 2
 
                 sourceItem: Item {
@@ -153,7 +159,7 @@ Item {
             zoomScaleChanged(coord1, coord2, pixelLength)
         }
 
-        Component.onCompleted: { 
+        Component.onCompleted: {
             // This is the logic needed in order to update the scale bar indicator
 
             // set fixed pixel length
@@ -166,7 +172,7 @@ Item {
         }
     }
 
-    // Adding functionality to toggle following a drone 
+    // Adding functionality to toggle following a drone
     // if called, it will swap from either following the current selected drone or stop following that drone
     function toggleFollowDrone() {
         if (followingDrone){
@@ -201,23 +207,9 @@ Item {
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
-
-        // function onDroneStateChanged(droneName) {
-        //     // Refresh the drone markers when a drone's state changes
-        //     droneMarkerView.model = droneController.getAllDrones();
-        //     // Following drone functions
-        //     if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
-        //         var drone = droneController.getDrone(droneName)
-        //         if (drone) {
-        //             // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
-        //             _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
-        //         }
-        //     }
-        // }
-
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
-            droneMarkerView.model = droneController.getAllDrones();
+            droneMarkerView.model = droneController.drones;
         }
     }
 
@@ -240,7 +232,6 @@ Item {
     }
 
     Component.onCompleted: {        
-        console.log("Number of drones in model:", droneController.drones.length)
-
+        console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
     }
 }
