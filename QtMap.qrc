@@ -6,7 +6,6 @@
         <file>MapDisplayTypeButton.qml</file>
         <file>MapScaleBarIndicator.qml</file>
         <file>DroneTrackingPanel.qml</file>
-        <file>DroneCommandPanel.qml</file>
         <file>DroneMenuBar.qml</file>
         <file>manageDroneWindow.qml</file>
         <file>armWindow.qml</file>

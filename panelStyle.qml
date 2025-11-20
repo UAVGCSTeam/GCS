@@ -50,7 +50,6 @@ QtObject {
     readonly property int listItemHeight: 40
 
     // Command Menu
-    readonly property int commandPanelWidth: 215
     readonly property int commandButtonHeight: 18
 
     // Margin and spacing
