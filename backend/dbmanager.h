@@ -49,9 +49,6 @@ public:
     bool createDrone(const QString& droneName, const QString& droneRole,
                      const QString& xbeeID, const QString& xbeeAddress,
                      int* newDroneID = nullptr);
-    bool createDroneSYSCOMP(const QString& droneName, const QString& droneRole, /*temp*/
-                     const QString& xbeeID, const int& sysID, const int& compID, 
-                     const QString& xbeeAddress, int* newDroneID = nullptr);
     bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneRole = QString(),
                     const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
     bool deleteDrone(const QString& xbeeId);
@@ -60,8 +57,6 @@ public:
 
     // Declaration to fetch all drone records from the database
     QList<QVariantMap> fetchAllDrones();
-
-    void addPossibleDrones(); // temp
 
 private:
     QSqlDatabase gcs_db_connection;

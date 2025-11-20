@@ -55,26 +55,18 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         // TODO: Change this, add xbee id?
         
         if (index == 0) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06126372594308, -117.83284231468927,  xbeeAddress, nullptr));
-            
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
         } else if (index == 1) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06202196849312, -117.82905560740794,  xbeeAddress, nullptr));
-            
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
         } else if (index == 2) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.06025272532348, -117.82775448760746,  xbeeAddress, nullptr));
-            
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
         } else { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, sysID, compID, 34.059174611493965, -117.82051240067321,  xbeeAddress, nullptr));
-
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
         }
         
         index++;
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
-
-    // Set up timer connections but don't start yet
-    connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
-    connect(&reconnectTimer, &QTimer::timeout, this, &DroneController::tryConnectToDataFile);
 }
 
 // method so QML can retrieve the drone list.
@@ -90,22 +82,13 @@ QVariantList DroneController::getAllDrones() const
         droneMap["name"] = drone->getName();
         droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
-        // droneMap["sysId"] = drone->getSysID();
-        // droneMap["compId"] = drone->getCompID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 
-        // // Position data - used by the map component
-        // if (index == 0) { 
-        //     qInfo() << "Drone 0" << Qt::endl;
-        //     droneMap["latitude"] = 35.053333;
-        //     droneMap["longitude"] = -118.823611;
-        // } else {
         droneMap["latitude"] = drone->getLatitude();
         droneMap["longitude"] = drone->getLongitude();
-        // }
         droneMap["altitude"] = drone->getAltitude();
         droneMap["airspeed"] = drone->getAirspeed();
 
@@ -184,28 +167,31 @@ QString DroneController::getDataFilePath()
  */
 
 // new function so the QML can create a drone using strings
-void DroneController::createDrone(const QString &name,
-                                  const QString &role,
-                                  const QString &xbeeID,
-                                  const int &sysID,
-                                  const int &compID,
-                                  const QString &xbeeAddress)
+void DroneController::createDrone(const QString &input_name,
+                                const QString &input_role,
+                                const QString &input_xbeeID,
+                                const QString &input_xbeeAddress,
+                                double input_batteryLevel,
+                                double input_latitude,
+                                double input_longitude,
+                                double input_altitude,
+                                QObject *parent)
 {
     auto drone = QSharedPointer<DroneClass>::create();
-    drone->setName(name);
-    drone->setRole(role);
-    drone->setXbeeID(xbeeID);
-    drone->setSysID(sysID);
-    drone->setCompID(compID);
-    drone->setXbeeAddress(xbeeAddress);
-
+    drone->setName(input_name);
+    drone->setRole(input_role);
+    drone->setXbeeID(input_xbeeID);
+    drone->setXbeeAddress(input_xbeeAddress);
+    drone->setBatteryLevel(input_batteryLevel);
+    drone->setLatitude(input_latitude);
+    drone->setLongitude(input_longitude);
+    drone->setAltitude(input_altitude);
     saveDroneToDB(drone); // call the internal method
 }
 
 
 void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
 {
-    // TODO: Save drone to db with sysID and compID 
     // remmber to update db appropriately as well
     if (!drone)
         return;
@@ -535,6 +521,8 @@ QVariantList DroneController::getDrones() const
     return result;
 }
 
+
+
 DroneClass *DroneController::getDrone(int index) const
 {
     if (index < 0 || index >= droneList.size())
@@ -546,65 +534,6 @@ DroneClass *DroneController::getDrone(int index) const
     return droneList.at(index).data();
 }
 
-void DroneController::processXbeeData()
-{
-    QString data = getLatestXbeeData();
-    if (data.isEmpty())
-        return;
-
-    qDebug() << "Raw XBee data:" << data.left(100) << "..."; // Show first 100 chars
-
-    // Try to parse as JSON
-    QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8());
-    if (doc.isNull())
-    {
-        qWarning() << "Failed to parse XBee data as JSON";
-        return;
-    }
-
-    QJsonObject obj = doc.object();
-    QString messageType = obj["type"].toString();
-
-    // Handle heartbeat messages
-    if (messageType == "heartbeat")
-    {
-        // Handle heartbeat (existing code)
-        return;
-    }
-
-    // Handle drone data messages
-    if (messageType == "xbee_data")
-    {
-        QString droneName = obj["drone"].toString();
-        QString address = obj["address"].toString();
-        QString message = obj["message"].toString();
-
-        qDebug() << "Received XBee data for:" << droneName << "at address:" << address;
-        qDebug() << "Message content:" << message;
-
-        // First try to find drone by XBee address
-        QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(address);
-
-        if (!drone.isNull())
-        {
-            qDebug() << "Found matching drone:" << drone->getName();
-            // Update drone state based on XBee data
-            drone->processXbeeMessage(message);
-
-            // Emit signal that drone state has changed
-            emit droneStateChanged(drone.data());
-        }
-        else
-        {
-            qDebug() << "Received data for unknown drone at address:" << address;
-            qDebug() << "Available drones:";
-            for (const auto &d : droneList)
-            {
-                qDebug() << "  -" << d->getName() << ":" << d->getXbeeID() << "/" << d->getXbeeAddress();
-            }
-        }
-    }
-}
 
 
 bool DroneController::openXbee(const QString& port, int baud)
@@ -659,70 +588,6 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 
 
 
-bool DroneController::sendWaypointCmd(double lat, double lon, const QString& droneKeyOrAddr)
-{
-    // Use your existing resolver so callers can pass either address or ID
-    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
-    if (drone.isNull()) {
-        qWarning() << "[DroneController] sendWaypoint: unknown drone/address:" << droneKeyOrAddr;
-        return false;
-    }
-
-    if (!mav_) {
-        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
-        return false;
-    }
-
-    const bool ok = mav_->sendWaypointCmd(lat, lon, drone->getSysID(), drone->getCompID());
-    qInfo() << "[DroneController] Waypoint"
-            << "->" << drone->getName()
-            << "sent=" << ok;
-    
-    // if (ok == 3) { 
-    //     qInfo
-    // }
-    return ok;
-}
-
-
-
-bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr)
-{
-    // Use your existing resolver so callers can pass either address or ID
-    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
-    if (drone.isNull()) {
-        qWarning() << "[DroneController] sendTakeoffCmd: unknown drone/address:" << droneKeyOrAddr;
-        return false;
-    }
-
-    if (!mav_) {
-        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
-        return false;
-    }
-
-    const uint8_t targetSys  = drone->getSysID();   
-    const uint8_t targetComp = drone->getCompID();
-
-    const bool okGuided = mav_->setGuidedMode(targetSys, targetComp);
-    if (!okGuided) {
-        qWarning() << "Guided mode not set";
-        return false;
-    }
-    const bool okArm = mav_->sendArm(targetSys, targetComp, true);
-    if (!okArm) {
-        qWarning() << "Arm mode not set";
-        return false;
-    }
-    const bool okTakeoff = mav_->sendTakeoffCmd(targetSys, targetComp);
-    qInfo() << "[DroneController] TAKEOFF"
-            << "->" << drone->getName() << drone->getXbeeAddress()
-            << "sent guided=" << okGuided
-            << "sent arm=" << okArm
-            << "sent takeoff=" << okTakeoff;
-    return okTakeoff;
-}
-
-
 
 // Helper: find (or lazily bind) a drone for a sysid.
 // Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
@@ -742,16 +607,6 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysid,
 }
 
 
-// Helper: find (or lazily bind) a drone for a sysid.
-// Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
-QSharedPointer<DroneClass> DroneController::demo_lazybinding(int sysid) {
-    for (const auto &drone : droneList) {
-        if (sysid == drone->getSysID()) {
-            return drone;
-        }
-    }
-    return nullptr;
-}
 
 
 void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
@@ -766,23 +621,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 
     uint8_t sysid = msg.sysid; 
     // qInfo() << "[onMavlinkMessage] received message";
-
-    // this logic checks to see whether the received data is from a new drone
-    if (addNewDrone) { 
-        const bool okRequestData0 = mav_->requestData(msg.sysid, msg.compid); // request ROBUST data stream from the ardupilot
-        qInfo() << "[onMavlinkMessage] Response from data streaming request: " << okRequestData0;
-
-        for (const auto &drone : droneList) { // check if the received data is already from a drone in the droneList
-            if (msg.sysid == drone->getSysID()) {
-                qInfo() << "[onMavlinkMessage] signal: " << drone->getName() << ", " << drone->getSysID();
-                qInfo() << "[onMavlinkMessage] don't add this signal";
-                addNewDrone = false;
-            } else { }
-        }
-        qInfo() << "[onMavlinkMessage] found a new signal";
-        addSITLDroneToList(msg.sysid, msg.compid);
-        addNewDrone = false;
-    }
         
     // qInfo() << "[onMavlinkMessage] Orientation: " << droneList[0]->getOrientation();
 
@@ -845,8 +683,7 @@ void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, cons
 {
     // NOTE: add 'sysMap_' as a private member in your header:
     //   QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
-    // auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
-    auto d = demo_lazybinding(sysid);
+    auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
     if (d.isNull()) return;
 
     if (field == "connected") {
@@ -900,46 +737,7 @@ void DroneController::onTelemetry(const QString &name, double lat, double lon)
     (*it)->setLongitude(lon); // emits longitudeChanged
 }
 
-void DroneController::simulateDroneMovement()
-{
-    // if (droneList.isEmpty())
-    // {
-    //     qDebug() << "No drones in list — cannot simulate movement.";
-    //     return;
-    // }
 
-    // // Choose the first drone or a specific one by name
-    // QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
-    // if (drone.isNull())
-    // {
-    //     // fallback: just take first drone
-    //     drone = droneList.first();
-    // }
-
-    // if (drone.isNull())
-    //     return;
-
-    // // Current position (use default if none)
-    // double lat = drone->getLatitude();
-    // double lon = drone->getLongitude();
-
-    // // Simple smooth movement pattern (circle)
-    // static double angle = 0;
-    // double radius = 0.0002; // small step distance
-    // lat += radius * cos(angle);
-    // lon += radius * sin(angle);
-    // angle += 0.03;
-
-    // // drone->setLatitude(lat);
-    // // drone->setLongitude(lon);
-
-    // // qDebug() << "Simulating drone movement:" << drone->getName()
-    // //          << "→ lat:" << lat << "lon:" << lon;
-
-    // emit droneStateChanged(drone.data()); // .data() returns the raw pointer from QSharedPointer
-    // onTelemetry(drone->getName(), lat, lon);
-
-}
 
 QObject* DroneController::getDroneByNameQML(const QString &name) const {
     for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>
@@ -949,29 +747,3 @@ QObject* DroneController::getDroneByNameQML(const QString &name) const {
     return nullptr;
 }
 
-
-void DroneController::addSITLDroneToList(int sysID, int compID) {
-    qDebug() << "[addSITLDroneToList] ADDING NEW DRONE";
-    QSharedPointer<DroneClass> drone = QSharedPointer<DroneClass>::create(
-        "SITL Drone!",
-        "demo",
-        "11062025",
-        sysID, 
-        compID, 
-        "11062025",
-        nullptr
-    );
-    droneList.push_back(drone);
-    
-    rebuildVariant();
-    emit dronesChanged();
-}
-
-
-void DroneController::addSITLDroneToList(QSharedPointer<DroneClass> drone) {
-    qDebug() << "[addSITLDroneToList] ADDING NEW DRONE";
-    droneList.push_back(drone);
-    
-    rebuildVariant();
-    emit dronesChanged();
-}

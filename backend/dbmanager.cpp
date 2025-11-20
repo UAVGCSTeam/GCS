@@ -73,8 +73,6 @@ bool DBManager::createDroneTable() {
             drone_name TEXT NOT NULL UNIQUE,
             drone_role TEXT,
             xbee_id TEXT,
-            sys_id INTEGER,
-            comp_id INTEGER,
             xbee_address TEXT
         );
     )";
@@ -126,13 +124,10 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
         return false;
     }
 
-    const int sysID = 1;
-    const int compID = 1;
-
     // Insert new drone after duplicate checking
     insertQuery.prepare(R"(
-        INSERT INTO drones (drone_name, drone_role, xbee_id, sys_id, comp_id, xbee_address)
-        VALUES (:droneName, :droneRole, :xbeeID, :sysID, :compID, :xbeeAddress);
+        INSERT INTO drones (drone_name, drone_role, xbee_id, xbee_address)
+        VALUES (:droneName, :droneRole, :xbeeID, :xbeeAddress);
     )");
 
     insertQuery.bindValue(":droneName", droneName);
@@ -271,7 +266,7 @@ void DBManager::printDroneList() {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot fetch drones.";
     }
 
-    QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, sys_id, comp_id, xbee_address FROM drones", gcs_db_connection);
+    QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, xbee_address FROM drones", gcs_db_connection);
 
     qDebug() << "[dbmanager.cpp] ---- Drone List ----";
     bool hasData = false;
@@ -330,12 +325,11 @@ bool DBManager::createInitialDrones() {
         return false;
     }
 
-
     // Insert first drone
     QSqlQuery insertQuery(gcs_db_connection);
     insertQuery.prepare(R"(
-        INSERT INTO drones (drone_name, drone_role, xbee_id, sys_id, comp_id, xbee_address)
-        VALUES (:droneName, :droneRole, :xbeeID, :sysid, :compid, :xbeeAddress);
+        INSERT INTO drones (drone_name, drone_role, xbee_id, xbee_address)
+        VALUES (:droneName, :droneRole, :xbeeID, :xbeeAddress);
     )");
 
     insertQuery.bindValue(":droneName", "Firehawk");
@@ -397,15 +391,13 @@ QList<QVariantMap> DBManager::fetchAllDrones() {
     }
 
     QSqlQuery query(gcs_db_connection);
-    if(query.exec("SELECT drone_id, drone_name, drone_role, xbee_id, sys_id, comp_id, xbee_address FROM drones")) {
+    if(query.exec("SELECT drone_id, drone_name, drone_role, xbee_id, xbee_address FROM drones")) {
         while(query.next()) {
             QVariantMap drone;
             drone["drone_id"]    = query.value("drone_id").toInt();
             drone["drone_name"]  = query.value("drone_name").toString();
             drone["drone_role"]  = query.value("drone_role").toString();
             drone["xbee_id"]     = query.value("xbee_id").toString();
-            drone["sys_id"]     = query.value("sys_id").toString();
-            drone["comp_id"]     = query.value("comp_id").toString();
             drone["xbee_address"]= query.value("xbee_address").toString();
             drones.append(drone);
         }

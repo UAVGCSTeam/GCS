@@ -17,8 +17,6 @@ class DroneClass : public QObject
     Q_PROPERTY(double    batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged  FINAL)
     Q_PROPERTY(QString   role        READ getRole        WRITE setRole        NOTIFY roleChanged        FINAL)
     Q_PROPERTY(QString   xbeeID      READ getXbeeID      WRITE setXbeeID      NOTIFY xbeeIDChanged      FINAL)
-    Q_PROPERTY(int       sysID       READ getSysID       WRITE setSysID       NOTIFY sysIDChanged       FINAL)
-    Q_PROPERTY(int       compID      READ getCompID      WRITE setCompID      NOTIFY compIDChanged      FINAL)
     Q_PROPERTY(QVector3D position    READ getPosition    WRITE setPosition    NOTIFY positionChanged    FINAL)
     Q_PROPERTY(double    latitude    READ getLatitude    WRITE setLatitude    NOTIFY latitudeChanged    FINAL)  // temporary
     Q_PROPERTY(double    longitude   READ getLongitude   WRITE setLongitude   NOTIFY longitudeChanged   FINAL)  // temporary
@@ -30,54 +28,25 @@ class DroneClass : public QObject
 public:
     explicit DroneClass(QObject *parent = nullptr);
 
-    DroneClass(const QString &input_name,
-               const QString &input_role,
-               const QString &input_xbeeAddress,
-               QObject *parent = nullptr);
-
-    // overload function to create with XBee-ID && sys and comp id
-    DroneClass(const QString &input_name,
-               const QString &input_role,
-               const QString &input_xbeeID,
-               const int &input_sysID,
-               const int &input_compID,
-               const QString &input_xbeeAddress,
-               QObject *parent = nullptr);
-
-    DroneClass(const QString &input_name,
-                const QString &input_role,
-                const QString &input_xbeeID,
-                const int &input_sysID,
-                const int &input_compID,
-                const double &input_latitude,
-                const double &input_longitude,
-                const QString &input_xbeeAddress,
-                QObject *parent);
-
-    // overload function to create with XBee-ID
-    DroneClass(const QString &input_name,
-               const QString &input_role,
-               const QString &input_xbeeID,
-               const QString &input_xbeeAddress,
-               QObject *parent = nullptr);
-
-
-               // DELETE ---- DEMO
     DroneClass(const QString &input_name, 
                 const QString &input_role,
                 const QString &input_xbeeID,
-                const int &input_sysID,
-                const int &input_compID,
                 const QString &input_xbeeAddress,
-                QObject *parent,
-                double batteryLevel,
-                double latitude,
-                double longitude,
-                double altitude);
+                double input_batteryLevel,
+                double input_latitude,
+                double input_longitude,
+                double input_altitude,
+                QObject *parent);
 
-
-    // For handling the shared memory communication between the python and each INDIVIDUAL drone
-    void processXbeeMessage(const QString &message);
+    /*
+    This constructor is used for creating drones based off information
+    that is stored persistently in the database.
+    */
+    DroneClass(const QString &input_name, 
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const QString &input_xbeeAddress,
+                QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
     QString   getName()        const { return m_name; }
@@ -91,12 +60,6 @@ public:
 
     QString   getXbeeID()      const { return m_xbeeID; }
     void      setXbeeID(const QString &inputXbeeID);
-
-    int   getSysID()      const { return m_sysID; }
-    void      setSysID(const int &inputSysID);
-
-    int   getCompID()      const { return m_compID; }
-    void      setCompID(const int &inputCompID);
 
     double    getBatteryLevel() const { return m_batteryLevel; }
     void      setBatteryLevel(double batteryLevel);
@@ -159,8 +122,8 @@ private:
     QString   m_xbeeAddress;
     QString   m_role;
     QString   m_xbeeID;
-    int   m_sysID;
-    int   m_compID;
+    int       m_sysID;
+    int       m_compID;
     double    m_batteryLevel;
     QVector3D m_position;
     double    m_latitude;      // temporary

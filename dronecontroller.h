@@ -56,9 +56,6 @@ public:
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
-    Q_INVOKABLE bool sendTakeoffCmd(const QString& droneKeyOrAddr);
-    Q_INVOKABLE bool sendWaypointCmd(double lat, double lon, const QString& droneKeyOrAddr);
-
 
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
@@ -69,23 +66,23 @@ public:
 
 public slots:
     void saveDroneToDB(const QSharedPointer<DroneClass> &drone);
-    void createDrone(const QString &name,
-                     const QString &role,
-                     const QString &xbeeID,
-                     const int &sysID,
-                     const int &compID,
-                     const QString &xbeeAddress);
+    void createDrone(const QString &input_name,
+                       const QString &input_role,
+                       const QString &input_xbeeID,
+                       const QString &input_xbeeAddress,
+                       double input_batteryLevel,
+                       double input_latitude,
+                       double input_longitude,
+                       double input_altitude,
+                       QObject *parent);
     void updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
 
     // Process data recieved from XBee via shared memory
-    void processXbeeData();
     void tryConnectToDataFile();
     
     void onMavlinkMessage(const RxMavlinkMsg& msg);
-    void addSITLDroneToList(int sysID, int compID);
-    void addSITLDroneToList(QSharedPointer<DroneClass> drone);
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
@@ -113,14 +110,11 @@ private:
     QString getLatestXbeeData(); // Get latest data from file (TODO: OUTDATED)
     QString getDataFilePath();
     QString getConfigFilePath() const;
-    void simulateDroneMovement(); // Function to move a drone periodically
     void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
-
-    QSharedPointer<DroneClass> demo_lazybinding(int sysid); // DELETE --- DEMO
 };
 
 #endif // DRONECONTROLLER_H
