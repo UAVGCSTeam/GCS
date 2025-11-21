@@ -121,17 +121,41 @@ Rectangle {
                 }
             }
 
-            //WAYPPOINT BUTTON-=-=-
             Button {
-                id: waypointButton
                 text: "Set Waypoints"
-                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
                 Layout.margins: GcsStyle.PanelStyle.defaultMargin
-                onClicked: {
-                    console.log("Waypoint Button Clicked");
-                    waypointWindow.visible = true;
+
+                MouseArea {
+                    
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: parent.clicked()
                 }
-            }
+
+                background: Rectangle {
+                    
+                    color: GcsStyle.ButtonPrimary.color
+                    radius: 5
+                    border.width: 1
+                    border.color: "darkgray"
+                }
+
+                contentItem: Text {
+        
+                    text: parent.text
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: GcsStyle.ButtonPrimary.textColor
+                    font.pointSize: 12
+                }
+        
+        onClicked: {
+            console.log("Waypoint Button Clicked");
+            waypointWindow.visible = true;
+        }
+}
         }
     }
 
