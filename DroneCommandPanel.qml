@@ -123,36 +123,23 @@ Rectangle {
                     id: repeaterModel
 
                     ListElement {
-                        name: "Connect"; category: "ground" //; destination:
+                        name: "Connect"; //; destination:
                     }
                     ListElement {
-                        name: "Arm Drone"; category: "ground"//; destination:
+                        name: "Arm Drone";//; destination:
                     }
                     ListElement {
-                        name: "Take Off"; category: "ground" //; destination:
+                        name: "Take Off"; //; destination:
                     }
                     ListElement {
-                        name: "Waypointing"; category: "flight" //; destination:
+                        name: "Waypointing"; //; destination:
                     }
                     ListElement {
-                        name: "Go Home"; category: "flight" //; destination:
+                        name: "Go Home"; //; destination:
                     }
                     ListElement {
-                        name: "Hover"; category: "flight" //; destination:
+                        name: "Hover"; //; destination:
                     }
-                }
-
-                //sorts the element by category
-                function categoryList(cat) {
-                    var arr = []
-                    for (var i = 0; i < repeaterModel.count; ++i) {
-                        var e = repeaterModel.get(i)
-
-                        if (e.category === cat) {
-                            arr.push(e.name)
-                        }
-                    }
-                    return arr
                 }
 
                 // mock status for testing
@@ -167,9 +154,75 @@ Rectangle {
                     anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
                     anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
                     anchors.topMargin: 20
-                    spacing: 5
+                    spacing: 0
 
-                    Item {
+                    Repeater {
+                        model: repeaterModel
+                        delegate: Button {
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                            Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+
+                            background: Rectangle {
+                                border.width: 0.05
+                                radius: 1
+                            }
+
+                            // gets button status
+                            property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
+
+                            enabled: status === statusAvailable     // button only clickable for when status is available
+                            hoverEnabled: enabled
+
+                            contentItem: RowLayout {
+                                spacing: 2
+                                //anchors.fill: parent
+                                anchors.margins: 6
+
+                                Item {
+                                    Layout.preferredWidth: GcsStyle.PanelStyle.iconSize
+                                    height: GcsStyle.PanelStyle.iconSize
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    Image {
+                                        anchors.fill: parent
+                                        anchors.margins: 2
+                                        source: "https://supertails.com/cdn/shop/articles/360_f_681163919_71bp2aiyziip3l4j5mbphdxtipdtm2zh_e2c1dbbd-e3b0-4c7d-bc09-1ebff39513ef.jpg?v=1747293323"
+                                        fillMode: Image.PreserveAspectFit
+                                    }
+                                }
+
+                                //changing text color
+                                Text {
+                                    text: name
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Layout.fillWidth: true
+
+                                    color: {
+                                        if (status === statusNotAvailable)
+                                            return GcsStyle.PanelStyle.textSecondaryColor
+                                        else if (status === statusInProgress)
+                                            return GcsStyle.PanelStyle.batteryMediumColor
+                                        else
+                                            return GcsStyle.PanelStyle.textPrimaryColor
+                                    }
+                                }
+                            }
+
+                            onClicked: {
+                                console.log ("opening", text)
+
+                                if (status === statusAvailable) {
+                                    status = statusInProgress
+
+                                    console.log ("Action started:", text)
+                                }
+                            }
+                        }
+                    }
+
+                    /*Item {
                         id: groundMenu
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignTop
@@ -253,50 +306,7 @@ Rectangle {
                                     anchors.topMargin: 0
                                     spacing: 2
 
-                                    Repeater {
-                                        model: expandedBody.categoryList("ground")
-                                        delegate: Button {
-                                            Layout.fillWidth: true
 
-                                            // gets button status
-                                            property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
-
-                                            enabled: status === statusAvailable     // button only clickable for when status is available
-                                            hoverEnabled: enabled
-
-                                            //changing text color
-                                            contentItem: Text {
-                                                text: modelData
-                                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-
-                                                color: {
-                                                    if (status === statusNotAvailable)
-                                                        return "#d1d0c9"
-                                                    else if (status === statusInProgress)
-                                                        return "#e3ca10"
-                                                    else
-                                                        return GcsStyle.PanelStyle.textPrimaryColor
-                                                }
-                                                horizontalAlignment: Text.AlignHCenter
-                                                verticalAlignment: Text.AlignVCenter
-                                            }
-
-                                            background: Rectangle {
-                                                border.width: 0.05
-                                                radius: 1
-                                            }
-
-                                            onClicked: {
-                                                console.log ("opening", text)
-
-                                                if (status === statusAvailable) {
-                                                    status = statusInProgress
-
-                                                    console.log ("Action started:", text)
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -434,7 +444,7 @@ Rectangle {
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
