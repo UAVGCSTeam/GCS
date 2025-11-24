@@ -19,9 +19,11 @@ Item {
     property int currentMapTypeIndex: 0
     property bool wayPointingActive: false
     property var selectedDrone: null
-    property var waypointLineModel: []
+    //property var waypointLineModel: []
     property var clickedCoordLabel: null
     property var _pendingCenter: undefined
+    property var droneWaypoints: ({})
+
 
     Plugin {
         id: mapPlugin
@@ -183,28 +185,25 @@ Item {
 
                 onTriggered: {
                     console.log("To-Go clicked for drone:", telemetryPanel.activeDrone.name)
-
-                    mapwindow.selectedDrone = telemetryPanel.activeDrone
-
-                    // Use the saved right-click coordinate
+                    var name = telemetryPanel.activeDrone.name
                     var clicked = rightClickMenuArea.lastRightClickCoord
-                    var droneCoord = QtPositioning.coordinate(
-                        mapwindow.selectedDrone.latitude,
-                        mapwindow.selectedDrone.longitude
-                    )
+                    var drone = telemetryPanel.activeDrone
 
-                    // Immediately draw dashed line
-                    mapwindow.waypointLineModel = [droneCoord, clicked]
+                    if (!droneWaypoints[name])
+                        droneWaypoints[name] = []
 
-                    // Save the label
-                    mapwindow.clickedCoordLabel = clicked
+                    if (droneWaypoints[name].length === 0) {
+                        droneWaypoints[name].push({
+                            lat: drone.latitude,
+                            lon: drone.longitude
+                        })
+                    }
 
-                    // Disable waypointing (since we already processed it)
-                    mapwindow.wayPointingActive = false
+                    droneWaypoints[name].push({
+                        lat: clicked.latitude,
+                        lon: clicked.longitude
+                    })
 
-                    console.log("Waypoint set at:", clicked.latitude, clicked.longitude)
-
-                    // repaint dashed line
                     waypointCanvas.requestPaint()
                 }
             }
@@ -247,9 +246,6 @@ Item {
                 var ctx = getContext("2d")
                 ctx.clearRect(0, 0, width, height)
 
-                if (mapwindow.waypointLineModel.length < 2)
-                    return
-
                 function geoToPixel(lat, lon) {
                     var mapWidth = 256 * Math.pow(2, mapview.zoomLevel);
                     var x = (lon + 180) / 360 * mapWidth
@@ -263,37 +259,57 @@ Item {
                     return { x: width / 2 + (x - centerX), y: height / 2 + (y - centerY) }
                 }
 
-                var start = geoToPixel(mapwindow.waypointLineModel[0].latitude,
-                                       mapwindow.waypointLineModel[0].longitude)
-                var end = geoToPixel(mapwindow.waypointLineModel[1].latitude,
-                                     mapwindow.waypointLineModel[1].longitude)
+                var selected = telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
 
-                // Draw dotted line
-                ctx.beginPath()
-                ctx.setLineDash([5, 5])
-                ctx.moveTo(start.x, start.y)
-                ctx.lineTo(end.x, end.y)
-                ctx.lineWidth = 2
-                ctx.strokeStyle = "red"
-                ctx.stroke()
-                ctx.setLineDash([])
+                // Loop all drones
+                for (var droneName in droneWaypoints) {
+                    var wps = droneWaypoints[droneName]
+                    if (!wps || wps.length < 2)
+                        continue
 
-                // Draw circle at the end of the line)
-                var radius = 6
-                ctx.beginPath()
-                ctx.arc(end.x, end.y, radius, 0, 2 * Math.PI)
-                ctx.fillStyle = "red"
-                ctx.fill()
+                    // Set color
+                    var isSelected = (droneName === selected)
+                    ctx.strokeStyle = isSelected ? "red" : "#888"       // gray for non-selected
+                    ctx.fillStyle   = isSelected ? "red" : "#888"
 
-                // Draw circle at the start (where the drone was)
-                ctx.beginPath()
-                ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI)
-                ctx.fillStyle = "red"
-                ctx.fill()
+                    ctx.lineWidth = 2
+                    ctx.setLineDash([4, 4])
+
+                    ctx.beginPath()
+
+                    // Convert waypoints to pixel positions
+                    var start = geoToPixel(wps[0].lat, wps[0].lon)
+                    ctx.moveTo(start.x, start.y)
+
+                    for (var i = 1; i < wps.length; i++) {
+                        var p = geoToPixel(wps[i].lat, wps[i].lon)
+                        ctx.lineTo(p.x, p.y)
+                    }
+
+                    ctx.stroke()
+                    ctx.setLineDash([])
+
+                    // Draw circles
+                    for (var t = 0; t < wps.length; t++) {
+                        var s = geoToPixel(wps[t].lat, wps[t].lon)
+                        ctx.beginPath()
+                        ctx.arc(s.x, s.y, 6, 0, 2 * Math.PI)
+                        ctx.fill()
+                    }
+                }
             }
 
-            Connections { target: mapwindow; function onWaypointLineModelChanged() {waypointCanvas.requestPaint()}}
-            Connections { target: mapview; function onCenterChanged() {waypointCanvas.requestPaint()} function onZoomLevelChanged() {waypointCanvas.requestPaint()}}
+
+            Connections {
+                target: telemetryPanel
+                function onActiveDroneChanged() { waypointCanvas.requestPaint() }
+            }
+
+            Connections {
+                target: mapview
+                function onCenterChanged() { waypointCanvas.requestPaint() }
+                function onZoomLevelChanged() { waypointCanvas.requestPaint() }
+            }
         }
         onZoomLevelChanged: {
             // This is the logic needed in order to update the scale bar indicator
