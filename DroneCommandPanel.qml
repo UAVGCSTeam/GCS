@@ -23,7 +23,8 @@ Rectangle {
                 z: 2
                 Layout.fillWidth: true
                 height: GcsStyle.PanelStyle.headerHeight + 10
-                color: GcsStyle.PanelStyle.primaryColor
+                //color: GcsStyle.PanelStyle.primaryColor
+                color: "#17161e"
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
@@ -41,7 +42,7 @@ Rectangle {
                             text: activeDrone ? activeDrone.name: ""
                             font.pixelSize: GcsStyle.PanelStyle.headerFontSize
                             font.bold: true
-                            color: "#006480"
+                            color: "#d9e8f6"
                         }
 
                         // spacer
@@ -80,13 +81,6 @@ Rectangle {
                             }
                         }
                     }
-
-                    Text {
-                        text: "Commands"
-                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                        color: GcsStyle.PanelStyle.textOnPrimaryColor
-                    }
-
                 }
             }
 
@@ -123,22 +117,28 @@ Rectangle {
                     id: repeaterModel
 
                     ListElement {
-                        name: "Connect"; //; destination:
+                        name: "Go To"; //; destination:
                     }
                     ListElement {
-                        name: "Arm Drone";//; destination:
-                    }
-                    ListElement {
-                        name: "Take Off"; //; destination:
-                    }
-                    ListElement {
-                        name: "Waypointing"; //; destination:
-                    }
-                    ListElement {
-                        name: "Go Home"; //; destination:
+                        name: "Return Home";//; destination:
                     }
                     ListElement {
                         name: "Hover"; //; destination:
+                    }
+                    ListElement {
+                        name: "Do A Flip!"; //; destination:
+                    }
+                    ListElement {
+                        name: "Connect"; //; destination:
+                    }
+                    ListElement {
+                        name: "Evaluate Fleet"; //; destination:
+                    }
+                    ListElement {
+                        name: "Arm Motors"; //; destination:
+                    }
+                    ListElement {
+                        name: "Diagnose"; //; destination:
                     }
                 }
 
@@ -166,6 +166,7 @@ Rectangle {
                             background: Rectangle {
                                 border.width: 0.05
                                 radius: 1
+                                color: GcsStyle.PanelStyle.buttonColor
                             }
 
                             // gets button status
@@ -176,7 +177,6 @@ Rectangle {
 
                             contentItem: RowLayout {
                                 spacing: 2
-                                //anchors.fill: parent
                                 anchors.margins: 6
 
                                 Item {
@@ -221,230 +221,6 @@ Rectangle {
                             }
                         }
                     }
-
-                    /*Item {
-                        id: groundMenu
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignTop
-
-                        property bool open: false
-
-                        //collapse/expand ground panel
-                        function expandGround() {
-                            groundBody.expandGround()
-                        }
-
-                        function collapseGround() {
-                            groundBody.collapseGround()
-                        }
-
-                        ColumnLayout {
-                            id: groundMenuCol
-                            anchors.fill: parent
-                            spacing: buttonSpacing
-
-                            Button {
-                                id: groundHeaderButton
-                                Layout.fillWidth: true
-
-                                contentItem: Text {
-                                    text: "Ground"
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                    horizontalAlignment: Text.AlignLeft
-                                }
-
-                                background: Rectangle {
-                                    border.width: 0.2
-                                    color: "#e3e3e3"
-                                    radius: 2
-                                }
-
-                                onClicked: {
-                                    if (groundMenu.open)
-                                    {
-                                        groundBody.collapseGroundAni()
-                                    }
-                                    else {
-                                        groundBody.expandGroundAni()
-                                    }
-                                    groundMenu.open = !groundMenu.open
-                                }
-                            }
-
-                            Rectangle {
-                                id: groundBody
-                                Layout.fillWidth: true
-                                radius: GcsStyle.PanelStyle.cornerRadius
-                                color: "transparent"
-                                Layout.preferredHeight: 0   //start collapsed
-                                clip: true
-
-                                PropertyAnimation {
-                                    id: animation2
-                                    target: groundBody
-                                    property: "Layout.preferredHeight"
-                                    easing.type: Easing.InOutQuad
-                                    duration: 250
-                                }
-
-                                function expandGroundAni() {
-                                    animation2.to = groundContent.implicitHeight + 10
-                                    animation2.running = true
-                                }
-
-                                function collapseGroundAni() {
-                                    animation2.to = 0
-                                    animation2.running = true
-                                }
-
-                                ColumnLayout {
-                                    id: groundContent
-                                    anchors.fill: parent
-                                    anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
-                                    anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
-                                    anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
-                                    anchors.topMargin: 0
-                                    spacing: 2
-
-
-                                }
-                            }
-                        }
-                    }
-
-                    Item {
-                        id: flightMenu
-                        Layout.fillWidth: true
-                        Layout.alignment: Qt.AlignTop
-
-                        property bool open: false
-
-                        //collapse/expand flight panel
-                        function expandFlight() {
-                            flightBody.expandFlight()
-                        }
-
-                        function collapseFlight() {
-                            flightBody.collapseFlight()
-                        }
-
-                        ColumnLayout {
-                            id: flightMenuCol
-                            anchors.fill: parent
-                            spacing: buttonSpacing
-
-                            Button {
-                                id: flightHeaderButton
-                                Layout.fillWidth: true
-
-                                contentItem: Text {
-                                    text: "In-Flight"
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                    horizontalAlignment: Text.AlignLeft
-                                }
-
-                                background: Rectangle {
-                                    border.width: 0.2
-                                    color: "#e3e3e3"
-                                    radius: 1
-                                }
-
-                                onClicked: {
-                                    if (flightMenu.open)
-                                    {
-                                        flightBody.collapseFlightAni()
-                                    }
-                                    else {z
-                                        flightBody.expandFlightAni()
-                                    }
-                                    flightMenu.open = !flightMenu.open
-                                }
-                            }
-
-                            Rectangle {
-                                id: flightBody
-                                Layout.fillWidth: true
-                                radius: GcsStyle.PanelStyle.cornerRadius
-                                color: "transparent"
-                                Layout.preferredHeight: 0   //start collapsed
-                                clip: true
-
-                                PropertyAnimation {
-                                    id: animation3
-                                    target: flightBody
-                                    property: "Layout.preferredHeight"
-                                    easing.type: Easing.InOutQuad
-                                    duration: 250
-                                }
-
-                                function expandFlightAni() {
-                                    animation3.to = flightContent.implicitHeight + 10
-                                    animation3.running = true
-                                }
-
-                                function collapseFlightAni() {
-                                    animation3.to = 0
-                                    animation3.running = true
-                                }
-
-                                ColumnLayout {
-                                    id: flightContent
-                                    anchors.fill: parent
-                                    anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
-                                    anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
-                                    anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
-                                    anchors.topMargin: 0
-                                    spacing: 2
-
-                                    Repeater {
-                                        model: expandedBody.categoryList("flight")
-                                        delegate: Button {
-                                            Layout.fillWidth: true
-
-                                            // gets button status
-                                            property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
-
-                                            enabled: status === statusAvailable     // button only clickable for when status is available
-                                            hoverEnabled: enabled
-
-                                            //changing text color
-                                            contentItem: Text {
-                                                text: modelData
-                                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-
-                                                color: {
-                                                    if (status === statusNotAvailable)
-                                                        return "#d1d0c9"
-                                                    else if (status === statusInProgress)
-                                                        return "#e3ca10"
-                                                    else
-                                                        return GcsStyle.PanelStyle.textPrimaryColor
-                                                }
-                                                horizontalAlignment: Text.AlignHCenter
-                                                verticalAlignment: Text.AlignVCenter
-                                                leftPadding: 8
-                                            }
-
-                                            background: Rectangle {
-                                                border.width: 0.05
-                                                radius: 2
-                                            }
-
-                                            onClicked: {
-                                                console.log ("opening", text)
-
-                                                if (status === statusAvailable) {
-                                                    status = statusInProgress
-
-                                                    console.log ("Action started:", text)
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }*/
                 }
             }
         }
