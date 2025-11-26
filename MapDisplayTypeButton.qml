@@ -1,6 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Basic
+import "qrc:/gcsStyle" as GcsStyle
+
 
 Button {
     id: mapTypeButton
@@ -17,16 +19,17 @@ Button {
     }
 
     background: Rectangle {
-        color: mapTypeButton.pressed ? "#d0d0d0" : "#f0f0f0"
-        border.color: "#808080"
-        border.width: 1
-        radius: 5
+        // color: "white"
+        color: mapTypeButton.pressed ? GcsStyle.PanelStyle.secondaryColor : GcsStyle.PanelStyle.buttonColor2 
+        border.color: GcsStyle.PanelStyle.defaultBorderColor
+        border.width: GcsStyle.PanelStyle.defaultBorderWidth
+        radius: GcsStyle.PanelStyle.buttonRadius
     }
 
     contentItem: Text {
         text: mapTypeButton.text
-        font.pixelSize: 14
-        color: mapTypeButton.pressed ? "#404040" : "#202020"
+        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+        color: mapTypeButton.pressed ? GcsStyle.PanelStyle.textPrimaryColor : "white"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }

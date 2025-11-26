@@ -82,12 +82,12 @@ void MapController::setCenterPosition(const QVariant &lat, const QVariant &lon)
     updateCenter(newCenter);
 }
 
-void MapController::setLocationMarking(const QVariant &lat, const QVariant &lon)
-{
-    QPair<double, double> position(lat.toDouble(), lon.toDouble());
-    // addMarker below
-    addMarker(position);
-}
+    void MapController::setLocationMarking(const QVariant &lat, const QVariant &lon)
+    {
+        QPair<double, double> position(lat.toDouble(), lon.toDouble());
+        // addMarker below
+        addMarker(position);
+    }
 
 // emit sends the data that our cpp logic did to our QML files
 void MapController::changeMapType(int index)
@@ -103,10 +103,8 @@ void MapController::changeMapType(int index)
 
 void MapController::updateCenter(const QPair<double, double> &center)
 {
-    if (m_center != center) {
-        m_center = center;
-        emit centerPositionChanged(QVariant(center.first), QVariant(center.second));
-    }
+    // used to not emit the signal if the old center matches the new center
+    emit centerPositionChanged(QVariant(center.first), QVariant(center.second));
 }
 
 void MapController::addMarker(const QPair<double, double> &position)

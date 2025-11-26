@@ -16,92 +16,92 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
-
+    property var selectedDrones: []
     // These are our components that sit on top of our Window object
+
+
     QmlMap {
         // Reference by id not file name
         id: mapComponent
         anchors.fill: parent
+        onZoomScaleChanged: function(coord1, coord2, pixelLength) {  
+            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+        }
+        onMapInitialized: function(coord1, coord2, pixelLength) {  
+            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+        }
     }
 
+    MapScaleBarIndicator {
+        id: mapScaleBar
+        anchors {
+            bottom: parent.bottom
+            left: mapTypeButton.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+    }
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
-            top: parent.top
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
+            bottom: parent.bottom
+            left: parent.left
+            leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
+            bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
         }
-    }
-
-    DroneStatusPanel {
-        id: droneStatusPanel
-        anchors {
-            top: parent.top
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        visible: false
-    }
-
-    DroneCommandPanel {
-        id: droneCommandPanel
-        anchors {
-            top: mapTypeButton.bottom
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        visible: true
     }
 
     // Menu bar above the drone tracking panel
     DroneMenuBar {
-        id: menuBar
+        id: droneMenuBar
         anchors {
             top: parent.top
             left: parent.left
+            right: parent.right
+        }
+        z: 100
+    }
+
+    TelemetryPanel {
+        id: telemetryPanel
+        anchors {
+            bottom: parent.bottom
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
 
+    
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
-            top: menuBar.bottom
+            top: droneMenuBar.bottom
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onDroneClicked: {
-                console.log("Clicked drone:", drone.name)
-                if (droneStatusPanel.activeDrone && droneStatusPanel.activeDrone.name === drone.name) {
-                    // Toggle the visability of the status panel if same drone is clicked
-                    droneStatusPanel.visible = !droneStatusPanel.visible
-                } else {
-                    // update status panel with new info
-                    droneStatusPanel.populateActiveDroneModel(drone)
 
-                    // Ensure panel is visible for a new drone
-                    droneStatusPanel.visible = true
-                }
-
-                //droneCommandPanel
-                if(droneCommandPanel.activeDrone && droneCommandPanel.activeDrone.name === drone.name) {
-                    // Toggle the visability of the command panel if same drone is clicked
-                    if (droneCommandPanel.expanded)
-                    {
-                        droneCommandPanel.collapse()
-                    }
-                    else {
-                        droneCommandPanel.expand()
-                    }
-                }
-                else {
-                    droneCommandPanel.activeDrone = drone
-
-                    //droneCommandPanel.expand()
-                    droneCommandPanel.collapse()
-                    droneCommandPanel.expanded = false;
-                }
+        onSelectionChanged: function(selected) {
+            // function(selected) is used here to avoid implicit parameter passing
+            // In this case the implicit parameter was passing was 'selected'
+            // Implicit parameter passing is not allowed for QT 6.5+
+            handleSelectedDrones(selected)
+        }
+        onFollowRequested: function(drone) {
+            if (!drone) {
+                console.warn("Follow requested without a drone reference")
+                return
             }
+
+            console.log("[main.qml] Follow requested via modifier click:", drone.name)
+            // Reset the current follow target so the map component doesn't keep the old pointer
+            mapComponent.turnOffFollowDrone()
+            // Immediately re-enable follow mode. map component will use telemetryPanel.activeDrone
+            mapComponent.turnOnFollowDrone()
+        }
+    }
+
+    // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
+    Shortcut {
+        sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
+        onActivated: mapComponent.toggleFollowDrone()
     }
 
     /*
@@ -112,59 +112,42 @@ Window {
       We actually want certain UI to be self-contained as it becomes more modular.
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
-    Connections {
-    }
 
-    // Once the component is fully loaded, run through our js file to grab the needed info
+
     Component.onCompleted: {
+        // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-
-        for (var i = 0; i < coords.length; i++) {
+        for (var i = 0; i < 3; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
-            console.log("Marked location:", coord.name, "at", coord.lat, coord.lon)
         }
 
-        fetch();
+        // droneController.openXbee("/dev/ttys005", 57600)
+        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
-    Connections {
-        target: droneController
+    // Syncs telemetry visibility and follow state whenever the selection array updates
+    function handleSelectedDrones(selected) {
+        selectedDrones = selected
 
-        function onDroneStateChanged(droneName) {
-            // Refresh the displayed list
-            fetch();
+        console.log("Selection count:", selected.length)
+        for (var i = 0; i < selected.length; ++i) {
+            var drone = selected[i]
+            var name = drone && drone.name !== undefined ? drone.name : "<unknown>"
+            console.log("Selected drone: ", name)
+        }
 
-            // If this is the currently selected drone, update its panel too
-            if (droneStatusPanel.visible) {
-                // Find the updated drone
-                var drones = droneController.getAllDrones();
-                for (var i = 0; i < drones.length; i++) {
-                    if (drones[i].name === droneName) {
-                        // Update the status panel
-                        droneStatusPanel.populateActiveDroneModel(drones[i]);
-                        break;
-                    }
-                }
+        if (selected.length === 1) {
+            var drone = selected[0]
+            telemetryPanel.setActiveDrone(drone)
+            telemetryPanel.visible = true
+        } else {
+            // No selection or multiple selection: hide telemetry panel and stop following
+            if (telemetryPanel.visible) {
+                telemetryPanel.visible = false
             }
+            mapComponent.turnOffFollowDrone()
         }
-    }
-
-    function fetch() {
-        var drones = droneController.getAllDrones();
-        droneTrackingPanel.populateListModel(drones);
-        // uncomment these for populating the list based on the database
-
-        /*const response = [
-                           {name: "Drone 1", status: "Flying", battery: 10, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 2", status: "Idle", battery: 54, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 3", status: "Stationy", battery: 70, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 4", status: "Dead", battery: 0, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 5", status: "Flying", battery: 90, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45},
-                           {name: "Drone 6", status: "Ready", battery: 100, lattitude: 34.54345, longitude: -117.564345, altitude: 150.4, airspeed: 32.45}
-                          ]
-        droneTrackingPanel.populateListModel(response)*/
-        // uncomment these for the original static response
     }
 }

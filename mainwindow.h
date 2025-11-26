@@ -27,9 +27,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    // Method to start the XBee Python script
-    bool startXbeeProcess();
-
 private:
     Ui::MainWindow *ui;
     QProcess *pythonProcess;
