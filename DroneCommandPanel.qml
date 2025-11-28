@@ -5,9 +5,34 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    width: 300
+    width: 280
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
+
+    // has the collapsed form opened by default for main panel
+    property bool expanded: false
+    property var activeDrone: null
+    property string currentTab: "Commands"
+
+    function expand() {
+        expandedBody.expand()
+    }
+
+    function collapse() {
+        expandedBody.collapse()
+    }
+
+    //drone status for buttons
+    readonly property int statusNotAvailable: 0
+    readonly property int statusInProgress: 1
+    readonly property int statusAvailable: 2
+
+    onVisibleChanged: {
+        if (!visible) {
+            mainPanel.expanded = false
+            expandedBody.collapse()
+        }
+    }
 
     RowLayout {
         anchors.fill: parent
@@ -22,7 +47,6 @@ Rectangle {
                 z: 2
                 Layout.fillWidth: true
                 height: GcsStyle.PanelStyle.headerHeight + 10
-                //color: GcsStyle.PanelStyle.primaryColor
                 color: "#17161e"
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
@@ -73,6 +97,7 @@ Rectangle {
                                         expandedBody.collapse()
                                     }
                                     else {
+                                        mainPanel.currentTab = "Commands"
                                         expandedBody.expand()
                                     }
                                     mainPanel.expanded = !mainPanel.expanded
@@ -143,86 +168,144 @@ Rectangle {
 
                 // mock status for testing
                 property var buttonStatuses: ({
-                    "Go To": statusAvailable, "Return Home": statusAvailable, "Hover": statusAvailable, "Do A Flip!": statusNotAvailable, "Connect": statusAvailable, "Evaluate Fleet": statusAvailable, "Arm Motors": statusAvailable, "Diagnose": statusAvailable
+                    "Go To": statusAvailable, "Return Home": statusAvailable, "Hover": statusAvailable, "Do A Flip!": statusAvailable, "Connect": statusAvailable, "Evaluate Fleet": statusAvailable, "Arm Motors": statusAvailable, "Diagnose": statusAvailable
                 })
 
-                ColumnLayout {
-                    id: content
+                Loader {
+                    id: bodyLoader
                     anchors.fill: parent
                     anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
                     anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
                     anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
                     anchors.topMargin: 20
-                    spacing: 0
 
-                    Repeater {
-                        model: repeaterModel
-                        delegate: Button {
-                            Layout.fillWidth: true
-                            Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
-                            Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    sourceComponent: mainPanel.currentTab === "Commands" ? commandsBody : configBody
+                }
+            }
+        }
 
-                            background: Rectangle {
-                                border.width: 0.05
-                                radius: 1
-                                color: GcsStyle.PanelStyle.buttonColor
-                            }
+        Column {
+            id: tabColumn
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            Layout.preferredHeight: 0
+            width: 24
 
-                            // gets button status
-                            property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
+            Rectangle {
+                id: commandsTab
+                width: 24
+                height: 90
+                visible: mainPanel.expanded
+                color: mainPanel.currentTab === "Commands" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
 
-                            enabled: status === statusAvailable     // button only clickable for when status is available
-                            hoverEnabled: enabled
+                Text {
+                    anchors.centerIn: parent
+                    text: "Commands"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
+                    rotation: 90
+                }
 
-                            contentItem: RowLayout {
-                                spacing: 2
-                                anchors.margins: 6
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: mainPanel.currentTab = "Commands"
+                }
+            }
 
-                                Item {
-                                    Layout.preferredWidth: GcsStyle.PanelStyle.iconSize
-                                    height: GcsStyle.PanelStyle.iconSize
-                                    Layout.alignment: Qt.AlignVCenter
+            Rectangle {
+                id: configTab
+                width: 24
+                height: 60
+                visible: mainPanel.expanded
+                color: mainPanel.currentTab === "Config" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
 
-                                    Image {
-                                        anchors.fill: parent
-                                        anchors.margins: 2
-                                        //source: "https://supertails.com/cdn/shop/articles/360_f_681163919_71bp2aiyziip3l4j5mbphdxtipdtm2zh_e2c1dbbd-e3b0-4c7d-bc09-1ebff39513ef.jpg?v=1747293323"
-                                        fillMode: Image.PreserveAspectFit
-                                    }
-                                }
+                Text {
+                    anchors.centerIn: parent
+                    text: "Config"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
+                    rotation: 90
+                }
 
-                                //changing text color
-                                Text {
-                                    text: name
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                    Layout.alignment: Qt.AlignVCenter
-                                    Layout.fillWidth: true
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: mainPanel.currentTab = "Config"
+                }
+            }
+        }
+    }
 
-                                    color: {
-                                        if (status === statusNotAvailable)
-                                            return GcsStyle.PanelStyle.textSecondaryColor
-                                        else if (status === statusInProgress)
-                                            return GcsStyle.PanelStyle.batteryMediumColor
-                                        else
-                                            return GcsStyle.PanelStyle.textPrimaryColor
-                                    }
-                                }
-                            }
+    Component {
+        id: commandsBody
 
-                            MouseArea {
+        ColumnLayout {
+            spacing: 0
+
+            Repeater {
+                model: repeaterModel
+                delegate: Button {
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+
+                    background: Rectangle {
+                        border.width: 0.05
+                        radius: 1
+                        color: GcsStyle.PanelStyle.buttonColor
+                    }
+
+                    // gets button status
+                    property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
+
+                    enabled: status === statusAvailable     // button only clickable for when status is available
+                    hoverEnabled: enabled
+
+                    contentItem: RowLayout {
+                        spacing: 2
+                        anchors.margins: 6
+
+                        Item {
+                            Layout.preferredWidth: GcsStyle.PanelStyle.iconSize
+                            height: GcsStyle.PanelStyle.iconSize
+                            Layout.alignment: Qt.AlignVCenter
+
+                            Image {
                                 anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
+                                anchors.margins: 2
+                                //source: "https://supertails.com/cdn/shop/articles/360_f_681163919_71bp2aiyziip3l4j5mbphdxtipdtm2zh_e2c1dbbd-e3b0-4c7d-bc09-1ebff39513ef.jpg?v=1747293323"
+                                fillMode: Image.PreserveAspectFit
+                            }
+                        }
 
-                                onClicked: {
-                                    console.log ("opening", text)
+                        //changing text color
+                        Text {
+                            text: name
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                            Layout.alignment: Qt.AlignVCenter
+                            Layout.fillWidth: true
 
-                                    if (status === statusAvailable) {
-                                        status = statusInProgress
+                            color: {
+                                if (status === statusNotAvailable)
+                                    return GcsStyle.PanelStyle.commandNotAvailable
+                                else if (status === statusInProgress)
+                                    return GcsStyle.PanelStyle.commandInProgress
+                                else
+                                    return GcsStyle.PanelStyle.commandAvailable
+                            }
+                        }
+                    }
 
-                                        console.log ("Action started:", text)
-                                    }
-                                }
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            console.log ("opening", text)
+
+                            if (status === statusAvailable) {
+                                status = statusInProgress
+
+                                console.log ("Action started:", text)
                             }
                         }
                     }
@@ -231,21 +314,12 @@ Rectangle {
         }
     }
 
-    // has the collapsed form opened by default for main panel
-    property bool expanded: false
-    property var activeDrone: null
+    Component {
+        id: configBody
 
-    function expand() {
-        expandedBody.expand()
+        Text {
+            text: "hi"
+            color: GcsStyle.PanelStyle.textPrimaryColor
+        }
     }
-
-    function collapse() {
-        expandedBody.collapse()
-    }
-
-    //drone status for buttons
-    readonly property int statusNotAvailable: 0
-    readonly property int statusInProgress: 1
-    readonly property int statusAvailable: 2
 }
-
