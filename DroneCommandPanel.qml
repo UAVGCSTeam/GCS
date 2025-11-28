@@ -13,7 +13,6 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        // Right view
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
@@ -53,7 +52,7 @@ Rectangle {
 
                         Button {
                             id: collapseButton
-                            icon.source: "https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/4/sidebar-collapse-wa8mq2uy2zwwo4sv7h6j8.png/sidebar-collapse-2w3re62ix0sjmbcj645cho.png?_a=DATAg1AAZAA0"
+                            icon.source: "qrc:/resources/down-arrow.png"
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
                             implicitWidth: 28
                             implicitHeight: 24
@@ -144,7 +143,7 @@ Rectangle {
 
                 // mock status for testing
                 property var buttonStatuses: ({
-                    "Connect": statusAvailable, "Arm Drone": statusNotAvailable, "Take Off": statusAvailable, "Waypointing": statusNotAvailable, "Go Home": statusAvailable, "Hover": statusAvailable
+                    "Go To": statusAvailable, "Return Home": statusAvailable, "Hover": statusAvailable, "Do A Flip!": statusNotAvailable, "Connect": statusAvailable, "Evaluate Fleet": statusAvailable, "Arm Motors": statusAvailable, "Diagnose": statusAvailable
                 })
 
                 ColumnLayout {
@@ -187,7 +186,7 @@ Rectangle {
                                     Image {
                                         anchors.fill: parent
                                         anchors.margins: 2
-                                        source: "https://supertails.com/cdn/shop/articles/360_f_681163919_71bp2aiyziip3l4j5mbphdxtipdtm2zh_e2c1dbbd-e3b0-4c7d-bc09-1ebff39513ef.jpg?v=1747293323"
+                                        //source: "https://supertails.com/cdn/shop/articles/360_f_681163919_71bp2aiyziip3l4j5mbphdxtipdtm2zh_e2c1dbbd-e3b0-4c7d-bc09-1ebff39513ef.jpg?v=1747293323"
                                         fillMode: Image.PreserveAspectFit
                                     }
                                 }
@@ -210,13 +209,19 @@ Rectangle {
                                 }
                             }
 
-                            onClicked: {
-                                console.log ("opening", text)
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
 
-                                if (status === statusAvailable) {
-                                    status = statusInProgress
+                                onClicked: {
+                                    console.log ("opening", text)
 
-                                    console.log ("Action started:", text)
+                                    if (status === statusAvailable) {
+                                        status = statusInProgress
+
+                                        console.log ("Action started:", text)
+                                    }
                                 }
                             }
                         }
@@ -228,6 +233,7 @@ Rectangle {
 
     // has the collapsed form opened by default for main panel
     property bool expanded: false
+    property var activeDrone: null
 
     function expand() {
         expandedBody.expand()
@@ -237,20 +243,9 @@ Rectangle {
         expandedBody.collapse()
     }
 
-    property var activeDrone: null
-
     //drone status for buttons
     readonly property int statusNotAvailable: 0
     readonly property int statusInProgress: 1
     readonly property int statusAvailable: 2
-
-    /*function populateActiveDroneModel(drone) {
-        if (!drone) return;
-
-        activeDrone = drone; // store reference to currently active drone
-
-        // Update model
-        activeDroneModel.clear();
-    }*/
 }
 
