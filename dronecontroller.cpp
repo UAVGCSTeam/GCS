@@ -801,45 +801,63 @@ void DroneController::onTelemetry(const QString &name, double lat, double lon)
     (*it)->setLongitude(lon); // emits longitudeChanged
 }
 
+// Simple linear interpolation towards a target point
+void moveDroneTowards(double &lat, double &lon, double targetLat, double targetLon, double step)
+{
+    double dLat = targetLat - lat;
+    double dLon = targetLon - lon;
+
+    // Calculate distance
+    double distance = sqrt(dLat*dLat + dLon*dLon);
+    if (distance < 1e-6) return;  // Already there
+
+    // Move by step, but don't overshoot
+    double ratio = step / distance;
+    if (ratio > 1.0) ratio = 1.0;
+
+    lat += dLat * ratio;
+    lon += dLon * ratio;
+}
+
 void DroneController::simulateDroneMovement()
 {
-    if (droneList.isEmpty())
+    double step = 0.00005; // small step toward waypoint
+
+    for (auto &drone : droneList)
     {
-        qDebug() << "No drones in list — cannot simulate movement.";
-        return;
+        if (!drone) continue;
+
+        double lat = drone->getLatitude();
+        double lon = drone->getLongitude();
+
+        // Get the next waypoint for this drone
+        QList<QVariantMap> wps;
+        if (droneWaypoints.contains(drone->getName()) && !droneWaypoints[drone->getName()].isEmpty())
+        {
+            wps = droneWaypoints[drone->getName()];
+        }
+        if (wps.size() < 2)
+            continue; // nothing to move toward
+        double targetLat = wps[1]["lat"].toDouble();
+        double targetLon = wps[1]["lon"].toDouble();
+
+        // Move towards it
+        moveDroneTowards(lat, lon, targetLat, targetLon, step);
+
+        // Update drone position
+        drone->setLatitude(lat);
+        drone->setLongitude(lon);
+
+        // Check if we reached the waypoint
+        double distance = sqrt((targetLat - lat)*(targetLat - lat) + (targetLon - lon)*(targetLon - lon));
+        if (distance < 0.00001) // threshold for "reached"
+        {
+            // Remove waypoint
+            droneWaypoints[drone->getName()].removeFirst();
+        }
+
+        emit droneStateChanged(drone.data());
     }
-
-    // Choose the first drone or a specific one by name
-    QSharedPointer<DroneClass> drone = getDroneByName("Drone1");
-    if (drone.isNull())
-    {
-        // fallback: just take first drone
-        drone = droneList.first();
-    }
-
-    if (drone.isNull())
-        return;
-
-    // Current position (use default if none)
-    double lat = drone->getLatitude();
-    double lon = drone->getLongitude();
-
-    // Simple smooth movement pattern (circle)
-    static double angle = 0;
-    double radius = 0.0002; // small step distance
-    lat += radius * cos(angle);
-    lon += radius * sin(angle);
-    angle += 0.03;
-
-    // drone->setLatitude(lat);
-    // drone->setLongitude(lon);
-
-    // qDebug() << "Simulating drone movement:" << drone->getName()
-    //          << "→ lat:" << lat << "lon:" << lon;
-
-    emit droneStateChanged(drone.data()); // .data() returns the raw pointer from QSharedPointer
-    onTelemetry(drone->getName(), lat, lon);
-
 }
 
 QObject* DroneController::getDroneByNameQML(const QString &name) const {

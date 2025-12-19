@@ -31,7 +31,6 @@ Window {
             mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
         }
     }
-
     MapScaleBarIndicator {
         id: mapScaleBar
         anchors {

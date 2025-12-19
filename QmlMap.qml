@@ -6,6 +6,14 @@ import QtQuick.Controls
 Item {
     id: mapwindow
 
+    Waypoint {
+        id: waypointManager
+        mapview: mapview
+        activeDroneName: telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
+        anchors.fill: mapview
+        z: 15
+    }
+
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
@@ -19,11 +27,9 @@ Item {
     property int currentMapTypeIndex: 0
     property bool wayPointingActive: false
     property var selectedDrone: null
-    //property var waypointLineModel: []
     property var clickedCoordLabel: null
     property var _pendingCenter: undefined
-    property var droneWaypoints: ({})
-
+    //property var droneWaypoints: ({})
 
     Plugin {
         id: mapPlugin
@@ -151,6 +157,8 @@ Item {
                 }
             }
         }
+
+        // Context menu for waypointing
         MouseArea {
             id: rightClickMenuArea
             anchors.fill: parent
@@ -174,7 +182,6 @@ Item {
                 }
             }
         }
-        // Context menu for waypointing
         Menu {
             id: contextMenu
 
@@ -184,27 +191,18 @@ Item {
                 //enabled: telemetryPanel.activeDrone
 
                 onTriggered: {
-                    console.log("To-Go clicked for drone:", telemetryPanel.activeDrone.name)
-                    var name = telemetryPanel.activeDrone.name
-                    var clicked = rightClickMenuArea.lastRightClickCoord
                     var drone = telemetryPanel.activeDrone
+                    var name = drone.name
+                    var clicked = rightClickMenuArea.lastRightClickCoord
 
-                    if (!droneWaypoints[name])
-                        droneWaypoints[name] = []
-
-                    if (droneWaypoints[name].length === 0) {
-                        droneWaypoints[name].push({
-                            lat: drone.latitude,
-                            lon: drone.longitude
-                        })
-                    }
-
-                    droneWaypoints[name].push({
-                        lat: clicked.latitude,
-                        lon: clicked.longitude
-                    })
-
-                    waypointCanvas.requestPaint()
+                    waypointManager.addWaypoint(
+                        name,
+                        drone.latitude,
+                        drone.longitude,
+                        clicked.latitude,
+                        clicked.longitude
+                    )
+                    mapwindow.clickedCoordLabel = clicked
                 }
             }
         }
@@ -235,80 +233,6 @@ Item {
                     color: "black"
                     font.pixelSize: 14
                 }
-            }
-        }
-        Canvas {
-            id: waypointCanvas
-            anchors.fill: parent
-            z: 15
-
-            onPaint: {
-                var ctx = getContext("2d")
-                ctx.clearRect(0, 0, width, height)
-
-                function geoToPixel(lat, lon) {
-                    var mapWidth = 256 * Math.pow(2, mapview.zoomLevel);
-                    var x = (lon + 180) / 360 * mapWidth
-                    var sinLat = Math.sin(lat * Math.PI / 180)
-                    var y = (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * mapWidth
-
-                    var centerX = (mapview.center.longitude + 180) / 360 * mapWidth
-                    var sinCenterLat = Math.sin(mapview.center.latitude * Math.PI / 180)
-                    var centerY = (0.5 - Math.log((1 + sinCenterLat) / (1 - sinCenterLat)) / (4 * Math.PI)) * mapWidth
-
-                    return { x: width / 2 + (x - centerX), y: height / 2 + (y - centerY) }
-                }
-
-                var selected = telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
-
-                // Loop all drones
-                for (var droneName in droneWaypoints) {
-                    var wps = droneWaypoints[droneName]
-                    if (!wps || wps.length < 2)
-                        continue
-
-                    // Set color
-                    var isSelected = (droneName === selected)
-                    ctx.strokeStyle = isSelected ? "red" : "#888"       // gray for non-selected
-                    ctx.fillStyle   = isSelected ? "red" : "#888"
-
-                    ctx.lineWidth = 2
-                    ctx.setLineDash([4, 4])
-
-                    ctx.beginPath()
-
-                    // Convert waypoints to pixel positions
-                    var start = geoToPixel(wps[0].lat, wps[0].lon)
-                    ctx.moveTo(start.x, start.y)
-
-                    for (var i = 1; i < wps.length; i++) {
-                        var p = geoToPixel(wps[i].lat, wps[i].lon)
-                        ctx.lineTo(p.x, p.y)
-                    }
-
-                    ctx.stroke()
-                    ctx.setLineDash([])
-
-                    // Draw circles
-                    for (var t = 0; t < wps.length; t++) {
-                        var s = geoToPixel(wps[t].lat, wps[t].lon)
-                        ctx.beginPath()
-                        ctx.arc(s.x, s.y, 6, 0, 2 * Math.PI)
-                        ctx.fill()
-                    }
-                }
-            }
-
-
-            Connections {
-                target: telemetryPanel
-                function onActiveDroneChanged() { waypointCanvas.requestPaint() }
-            }
-
-            Connections {
-                target: mapview
-                function onCenterChanged() { waypointCanvas.requestPaint() }
-                function onZoomLevelChanged() { waypointCanvas.requestPaint() }
             }
         }
         onZoomLevelChanged: {

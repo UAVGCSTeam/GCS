@@ -63,6 +63,14 @@ public:
     QVariantList drones() const { return m_dronesVariant; }
     void rebuildVariant();
     Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
+    Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
+    {
+        QList<QVariantMap> list;
+        for (const QVariant &v : wps)
+            list.append(v.toMap());
+        droneWaypoints[droneName] = list;
+    }
+
 
 public slots:
     void saveDrone(const QSharedPointer<DroneClass> &drone);
@@ -92,6 +100,7 @@ signals:
 private:
     QTimer simulationTimer;       // Timer for simulated movement
     void simulateDroneMovement(); // Function to move a drone periodically
+    QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
     DBManager &dbManager;
     static QList<QSharedPointer<DroneClass>> droneList;
     // Timers for data polling
