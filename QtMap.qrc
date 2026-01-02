@@ -16,9 +16,11 @@
         <file>TelemetryPanel.qml</file>
         <file>components/MenuButton.qml</file>
         <file>components/PopupMenuItem.qml</file>
+        <file>components/UniversalPopup.qml</file>
         <file>configureDroneWindow.qml</file>
     </qresource>
     <qresource prefix="/resources">
+        <file>delete.svg</file>
         <file>mappin.svg</file>
         <file>cppLOGO.svg</file>
         <file>droneStatusSVG.svg</file>

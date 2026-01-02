@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 import Qt.labs.platform
 import "qrc:/gcsStyle" as GcsStyle
 import "./components"
+import "./components" as Components
 
 /*
  * DroneMenuBar - Menu bar component to display various features and actions
@@ -153,86 +154,29 @@ Rectangle {
         }
     }
     
-    
-    // Delete confirmation popup
-    Popup {
+    // Delete confirmation popup. Uses the UniversalPopup component to pass on properties
+    Components.UniversalPopup {
         id: deleteAllDronesWindow
-        modal: true
-        focus: true
-        width: 200
-        height: 200
-        x: commandMenuItem.x + 2
-        y: menuBar.height
-        
-        background: Rectangle {
-            color: "#f8d7da"
-            border.color: "#f5c6cb"
-            radius: 10
-        }
-        
-        Column {
-            anchors.centerIn: parent
-            width: parent.width - 40
-            spacing: 10
-            
-            Text {
-                text: "Are you sure you want to delete ALL drones?"
-                wrapMode: Text.WordWrap
-                width: parent.width 
-                horizontalAlignment: Text.AlignHCenter
-                font.pointSize: 12
-                color: GcsStyle.PanelStyle.textPrimaryColor
-            }
-            
-            Button {
-                text: "No"
-                width: parent.width
-                onClicked: {
-                    deleteAllDronesWindow.close()
-                }
-            }
-            
-            Button {
-                text: "Yes"
-                width: parent.width
-                onClicked: {
-                    droneController.deleteALlDrones_UI()
-                    deleteAllDronesWindow.close()
-                    confirmWindow.open()
-                }
-            }
+        modal: false
+        popupVariant: "destructive"
+        popupTitle: qsTr("Delete all drones?")
+        popupMessage: qsTr("Are you sure you want to delete ALL drones?")
+        popupWidth: 320
+        anchors.centerIn: Overlay.overlay
+        onAccepted: {
+            droneController.deleteALlDrones_UI()
+            confirmWindow.open()
         }
     }
 
-
-    Popup {
+    // Confirmation popup for successful drone deletion. Uses the UniversalPopup component to pass on properties
+    Components.UniversalPopup {
         id: confirmWindow
-        modal: true
-        focus: true
-        width: 200
-        height: 200
-        x: commandMenuItem.x + 2
-        y: menuBar.height + 5
-        
-        Column {
-            anchors.centerIn: parent
-            width: parent.width - 40
-            spacing: 10
-            
-            Text {
-                text: "Drone successfully deleted!"
-                color: GcsStyle.PanelStyle.textPrimaryColor
-                horizontalAlignment: Text.AlignHCenter
-                width: parent.width
-            }
-            
-            Button {
-                text: "Ok"
-                width: parent.width
-                onClicked: {
-                    confirmWindow.close();
-                }
-            }
-        }
+        modal: false
+        popupVariant: "success"
+        popupTitle: qsTr("Drone deletion")
+        popupMessage: qsTr("Drone successfully deleted!")
+        popupWidth: 260
+        anchors.centerIn: Overlay.overlay
     }
 }
