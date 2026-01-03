@@ -3,88 +3,60 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import "qrc:/gcsStyle" as GcsStyle
 
+/*
+ * UniversalPopup - Reusable popup component for messages, notifications, and user prompts
+ * Supports multiple variants: default, info, success, warning, error, confirm, destructive, custom
+ * Can function as auto-closing notifications (top-right) or centered popups with action buttons
+ * IMPORTANT: This component should be independent of its parents.
+ * For main configurability: set popupVariant, popupTitle, popupMessage. Use onAccepted/onRejected to handle button actions. Enable/disable isNotification to switch between notification and popup mode.
+ */
+ 
 Popup {
     id: popup
+
+    // ---------------------------------------------------------------------------
+    // COMPONENT PROPERTIES - Set or override these when using the component
+    // ---------------------------------------------------------------------------
     property string popupTitle: ""
     property string popupMessage: ""
-    property string popupVariant: "info" // info | success | warning | error | confirm | destructive | custom
+    property string popupVariant: "default" // default | info | success | warning | error | confirm | destructive | custom
     property int popupWidth: 360
-    property bool autoCloseOnAction: true
-    property var buttons: undefined
+    property var buttons: undefined // Determined by popupVariant
+    property bool isNotification: false     // Notification style: auto-closes, no buttons, positioned top-right
+    property int notificationDuration: 3000 // Time in ms before notification fades out
+    property int fadeDuration: 300          // Fade out animation duration in ms
+    // Smart defaults: showDimOverlay is false for info/success or notifications, true for destructive/confirm/error/warning
+    property bool showDimOverlay: !isNotification && (popupVariant === "destructive" || popupVariant === "confirm" || popupVariant === "error" || popupVariant === "warning")
 
+    // ---------------------------------------------------------------------------
+    // SIGNALS - Events emitted to parent components
+    // ---------------------------------------------------------------------------
     signal buttonTriggered(string role)
     signal accepted()
     signal rejected()
 
-    modal: true
-    focus: true
-    padding: 24
-    width: popupWidth
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    // ---------------------------------------------------------------------------
+    // INTERNAL - Computed/derived values based on public properties
+    // ---------------------------------------------------------------------------
 
-    readonly property var palette: ({
-    info: {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.defaultBorderColor,
-        text:  GcsStyle.PanelStyle.textPrimaryColor,
-        accent:GcsStyle.PanelStyle.buttonActiveColor
-    },
-    success: {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.defaultBorderColor,
-        text:  GcsStyle.PanelStyle.textPrimaryColor,
-        accent:GcsStyle.PanelStyle.statusFlyingColor
-    },
-    warning: {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.defaultBorderColor,
-        text:  GcsStyle.PanelStyle.textPrimaryColor,
-        accent:GcsStyle.PanelStyle.statusIdleColor
-    },
-    error: {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.buttonDangerColor,
-        text:  GcsStyle.PanelStyle.defaultBorderColor,
-        accent:GcsStyle.PanelStyle.buttonDangerColor
-    },
-    confirm: {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.defaultBorderColor,
-        text:  GcsStyle.PanelStyle.textPrimaryColor,
-        accent:GcsStyle.PanelStyle.buttonActiveColor
-    },
-    destructive: {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.defaultBorderColor,
-        text:  GcsStyle.PanelStyle.textPrimaryColor,
-        accent:GcsStyle.PanelStyle.buttonDangerColor
-    },
-    custom:  {
-        bg:    GcsStyle.PanelStyle.primaryColor,
-        border:GcsStyle.PanelStyle.defaultBorderColor,
-        text:  GcsStyle.PanelStyle.textPrimaryColor,
-        accent:GcsStyle.PanelStyle.buttonActiveColor
-    }
-})
-
-    readonly property var activePalette: palette[popupVariant] !== undefined ? palette[popupVariant] : palette.info
-
-    // Default icons per variant
-    readonly property var iconMap: ({
-        info: "",
-        success: "",
-        warning: "qrc:/resources/warning.png",
-        error: "",
-        confirm: "",
-        destructive: "qrc:/resources/delete.svg",
-        custom: ""
+    // Accent color for each variant (background color and text color are shared across all variants)
+    readonly property var accentColors: ({
+        "default":    GcsStyle.PanelStyle.popupDefaultAccent,
+        info:         GcsStyle.PanelStyle.popupInfoAccent,
+        success:      GcsStyle.PanelStyle.popupSuccessAccent,
+        warning:      GcsStyle.PanelStyle.popupWarningAccent,
+        error:        GcsStyle.PanelStyle.popupErrorAccent,
+        confirm:      GcsStyle.PanelStyle.popupConfirmAccent,
+        destructive:  GcsStyle.PanelStyle.popupDestructiveAccent,
+        custom:       GcsStyle.PanelStyle.buttonActiveColor
     })
 
-    // Resolve the icon source based on the popup variant
-    readonly property url resolvedIconSource: iconMap[popupVariant] !== undefined ? iconMap[popupVariant] : ""
+    // Selects the accent color based on popupVariant
+    readonly property color activeAccent: accentColors[popupVariant] || accentColors["default"]
 
-    // Resolve the buttons based on the popup variant
+    // Selects the buttons based on popupVariant (notifications have no buttons by default)
     readonly property var resolvedButtons: buttons !== undefined ? buttons :
+        isNotification ? [] :
         popupVariant === "confirm" ? [
             { text: qsTr("No"), role: "reject" },
             { text: qsTr("Yes"), role: "accept", accent: true }
@@ -97,31 +69,170 @@ Popup {
             { text: qsTr("OK"), role: "accept", accent: true }
         ]
 
+    // Default icons per variant. Commented out for now for simplicity
+    // readonly property var iconMap: ({
+    //     info: "", success: "", warning: "qrc:/resources/warning.png",
+    //     error: "", confirm: "", destructive: "qrc:/resources/delete.svg", custom: ""
+    // })
+    // readonly property url resolvedIconSource: iconMap[popupVariant] !== undefined ? iconMap[popupVariant] : ""
+
+    // ---------------------------------------------------------------------------
+    // POPUP CONFIGURATION - Built-in Popup settings
+    // ---------------------------------------------------------------------------
+    modal: false
+    focus: true
+    padding: isNotification ? 12 : 24  // Notifications are more compact
+    width: popupWidth
+
+    // Close policy based on variant:
+    // - Notifications: no auto-close (waits for fade timer)
+    // - Strict variants (destructive, confirm, error, warning): Escape only, must click a button
+    // - Relaxed variants (info, success, default): Escape or click outside
+    closePolicy: isNotification ? Popup.NoAutoClose :
+        (popupVariant === "destructive" || popupVariant === "confirm" || popupVariant === "error" || popupVariant === "warning")
+            ? Popup.CloseOnEscape
+            : (Popup.CloseOnEscape | Popup.CloseOnPressOutside)
+
+    // Smart positioning: notifications -> top-right, others -> center
+    parent: Overlay.overlay
+    x: isNotification
+        ? parent.width - width - 20                                                            // Top-right with margin
+        : (parent.width - width) / 2                                                           // Centered
+    y: isNotification
+        ? GcsStyle.PanelStyle.menuBarHeight + GcsStyle.PanelStyle.applicationBorderMargin      // Aligns with DroneTrackingPanel
+        : (parent.height - height) / 2                                                         // Centered
+
+    // ---------------------------------------------------------------------------
+    // HELPER FUNCTIONS
+    // ---------------------------------------------------------------------------
+
+    // Returns the button background color based on state (highlighted, hovered)
     function buttonBackgroundColor(button) {
         if (button.highlighted) {
             if (button.hovered)
-                return Qt.lighter(activePalette.accent, 1.15)
-            return activePalette.accent
+                return Qt.lighter(activeAccent, 1.15)
+            return activeAccent
         }
         if (button.hovered)
             return GcsStyle.PanelStyle.buttonHoverColor
         return GcsStyle.PanelStyle.buttonColor2
     }
 
-    // Visual frame of the popup. Rounded card with border
-    background: Rectangle {
-        color: popup.activePalette.bg
-        border.color: popup.activePalette.border
-        border.width: 1
-        radius: GcsStyle.PanelStyle.cornerRadius
+    // ---------------------------------------------------------------------------
+    // ANIMATIONS & TIMERS
+    // ---------------------------------------------------------------------------
+    
+    // Auto-close timer for notifications
+    Timer {
+        id: notificationTimer
+        interval: popup.notificationDuration
+        running: popup.opened && popup.isNotification
+        onTriggered: fadeOutAnimation.start()
     }
 
-    // Content of the popup
+    // Fade out animation before closing (used by notifications)
+    NumberAnimation {
+        id: fadeOutAnimation
+        target: popup
+        property: "opacity"
+        to: 0
+        duration: popup.fadeDuration
+        onFinished: {
+            popup.close()
+            popup.opacity = 1  // Reset for next open
+        }
+    }
+
+    // Slide-in animation for notifications (from right edge)
+    NumberAnimation {
+        id: slideInAnimation
+        target: popup
+        property: "x"
+        from: parent.width
+        to: parent.width - popup.width - 20
+        duration: 400
+        easing.type: Easing.OutCubic
+    }
+
+    // Pulse animation to draw attention when clicking outside non-dismissible popup
+    SequentialAnimation {
+        id: pulseAnimation
+        NumberAnimation { target: popup; property: "scale"; to: 1.03; duration: 80 }
+        NumberAnimation { target: popup; property: "scale"; to: 1.0; duration: 80 }
+    }
+
+    // ---------------------------------------------------------------------------
+    // EVENT HANDLERS
+    // ---------------------------------------------------------------------------
+
+    // When popup opens: reset opacity (in case previous fade), play slide-in for notifications
+    onOpened: {
+        opacity = 1
+        if (isNotification) {
+            slideInAnimation.start()
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // VISUAL COMPONENTS
+    // ---------------------------------------------------------------------------
+
+    // Dim overlay that darkens background when popup is open (only for strict variants)
+    Loader {
+        id: dimOverlayLoader
+        active: popup.opened && popup.showDimOverlay
+        sourceComponent: Rectangle {
+            parent: Overlay.overlay
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, 0.3)
+            z: -1  // Puts overlay behind the popup
+
+            // Clicking the dim overlay triggers pulse animation
+            MouseArea {
+                anchors.fill: parent
+                onClicked: pulseAnimation.start()
+            }
+        }
+    }
+
+    // Visual frame of the popup. Rounded card with accent border (no border for notifications)
+    background: Rectangle {
+        color: popup.isNotification
+            ? Qt.rgba(GcsStyle.PanelStyle.primaryColor.r, GcsStyle.PanelStyle.primaryColor.g, GcsStyle.PanelStyle.primaryColor.b, 0.75)
+            : GcsStyle.PanelStyle.primaryColor
+        border.color: popup.isNotification ? "transparent" : popup.activeAccent
+        border.width: popup.isNotification ? 0 : 1
+        radius: GcsStyle.PanelStyle.cornerRadius
+        clip: true  // Clips children to the rounded shape
+
+        // Accent bar on the left edge for notifications.
+        // Uses two overlapping rectangles to achieve left-side-only rounded corners:
+        //   1. A fully rounded rectangle (all 4 corners)
+        //   2. A square rectangle on the right half to mask the right rounded corners
+        Item {
+            visible: popup.isNotification
+            width: GcsStyle.PanelStyle.cornerRadius + 4
+            height: parent.height
+
+            Rectangle {
+                anchors.fill: parent
+                color: popup.activeAccent
+                radius: GcsStyle.PanelStyle.cornerRadius
+            }
+            Rectangle {
+                width: parent.width / 2 + 2
+                height: parent.height
+                anchors.right: parent.right
+                color: popup.activeAccent
+            }
+        }
+    }
+
+    // Main content layout
     contentItem: Item {
         implicitWidth: popup.popupWidth
         implicitHeight: column.implicitHeight + popup.padding * 2
 
-        // Main vertical layout of the popup
         ColumnLayout {
             id: column
             anchors.fill: parent
@@ -129,77 +240,68 @@ Popup {
             anchors.rightMargin: popup.padding
             anchors.topMargin: popup.padding
             anchors.bottomMargin: popup.padding
-            spacing: 16
+            spacing: 14
 
-            // Header row of the popup. Contains the icon and title.
+            // Header row with title
             RowLayout {
                 id: headerRow
-                visible: resolvedIconSource !== "" || popupTitle.length > 0
-                Layout.alignment: Qt.AlignHCenter 
+                visible: popupTitle.length > 0
+                Layout.alignment: Qt.AlignHCenter
                 spacing: 8
 
-                // Variant based icon of the popup 
-                Image {
-                    source: resolvedIconSource
-                    width: GcsStyle.PanelStyle.iconSize
-                    height: GcsStyle.PanelStyle.iconSize
-                    fillMode: Image.PreserveAspectFit
-                }
+                // Variant icon (commented out for now)
+                // Image {
+                //     source: resolvedIconSource
+                //     width: GcsStyle.PanelStyle.iconSize
+                //     height: GcsStyle.PanelStyle.iconSize
+                //     fillMode: Image.PreserveAspectFit
+                // }
 
-                // Title text of the popup
                 Label {
                     text: popupTitle
-                    visible: popupTitle.length > 0
                     font.pixelSize: GcsStyle.PanelStyle.headerFontSize
-                    font.bold: true
-                    color: popup.activePalette.text
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     wrapMode: Text.WordWrap
                     horizontalAlignment: Text.AlignHCenter
-
                 }
             }
 
-            // Main message body text
+            // Message body
             Label {
                 text: popupMessage
                 visible: popupMessage.length > 0
-                color: popup.activePalette.text
+                color: GcsStyle.PanelStyle.textPrimaryColor
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                 horizontalAlignment: Text.AlignHCenter
             }
 
-            // Button row of the popup 
+            // Button row
             RowLayout {
                 id: buttonRow
                 spacing: 12
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignHCenter
+                Layout.topMargin: 8
 
-                // Dynamically create one button per entry in resolvedButtons
                 Repeater {
                     model: popup.resolvedButtons
                     delegate: Button {
                         text: modelData.text
-                        // highlighted primpary action button gets accent colored background
                         highlighted: modelData.accent === true
-                        // Default width of button is 110 if fillwidth is false 
                         Layout.preferredWidth: modelData.fillWidth === true ? undefined : 110
                         Layout.fillWidth: modelData.fillWidth === true
 
-                        // Visual style of the button background
                         background: Rectangle {
                             radius: GcsStyle.PanelStyle.buttonRadius
                             color: popup.buttonBackgroundColor(parent)
-                            // Accent border for highlighted buttons or neutral border otherwise
                             border.color: parent.highlighted
-                                             ? Qt.tint(popup.activePalette.accent, Qt.rgba(1, 1, 1, 0.25))
-                                             : GcsStyle.PanelStyle.defaultBorderColor
+                                ? Qt.tint(popup.activeAccent, Qt.rgba(1, 1, 1, 0.25))
+                                : GcsStyle.PanelStyle.defaultBorderColor
                             border.width: 1
                         }
 
-                        // Visual style of button text
                         contentItem: Label {
                             text: parent.text
                             color: GcsStyle.PanelStyle.textPrimaryColor
@@ -207,32 +309,25 @@ Popup {
                             verticalAlignment: Text.AlignVCenter
                         }
 
-                        // Click handler for button
-                        onClicked: { 
-
-                            // Call the onTrigger custom function if it is defined
+                        onClicked: {
+                            // Call custom onTrigger function if defined
                             if (typeof modelData.onTrigger === "function") {
                                 modelData.onTrigger()
                             }
-                            // Get the role of the button
-                            const role = (modelData.role || "").toString()
 
-                           // Emit signal for parent to handle custom behavior
+                            const role = (modelData.role || "").toString()
                             popup.buttonTriggered(role)
 
-                            // Normalize the role to lowercase
+                            // Emit accept/reject signals for common roles
                             const normalizedRole = role.toLowerCase()
-
-                            // Special handling for common roles of buttons
                             if (normalizedRole === "accept") {
                                 popup.accepted()
                             } else if (normalizedRole === "reject") {
                                 popup.rejected()
                             }
 
-                            // Auto close unless otherwise specified
-                            const shouldClose = modelData.closesOnTrigger !== false && popup.autoCloseOnAction
-                            if (shouldClose) {
+                            // Close popup unless button specifies closesOnTrigger: false
+                            if (modelData.closesOnTrigger !== false) {
                                 popup.close()
                             }
                         }
@@ -242,4 +337,3 @@ Popup {
         }
     }
 }
-

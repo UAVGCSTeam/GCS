@@ -157,12 +157,9 @@ Rectangle {
     // Delete confirmation popup. Uses the UniversalPopup component to pass on properties
     Components.UniversalPopup {
         id: deleteAllDronesWindow
-        modal: false
         popupVariant: "destructive"
-        popupTitle: qsTr("Delete all drones?")
-        popupMessage: qsTr("Are you sure you want to delete ALL drones?")
-        popupWidth: 320
-        anchors.centerIn: Overlay.overlay
+        popupTitle: "Delete all drones?"
+        popupMessage: "Are you sure you want to delete ALL drones?"
         onAccepted: {
             droneController.deleteALlDrones_UI()
             confirmWindow.open()
@@ -172,11 +169,8 @@ Rectangle {
     // Confirmation popup for successful drone deletion. Uses the UniversalPopup component to pass on properties
     Components.UniversalPopup {
         id: confirmWindow
-        modal: false
         popupVariant: "success"
-        popupTitle: qsTr("Drone deletion")
-        popupMessage: qsTr("Drone successfully deleted!")
-        popupWidth: 260
-        anchors.centerIn: Overlay.overlay
+        popupTitle: "Drone deletion"
+        popupMessage: "All drones successfully deleted"
     }
 }
