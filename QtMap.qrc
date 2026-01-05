@@ -20,7 +20,6 @@
         <file>configureDroneWindow.qml</file>
     </qresource>
     <qresource prefix="/resources">
-        <file>delete.svg</file>
         <file>mappin.svg</file>
         <file>cppLOGO.svg</file>
         <file>droneStatusSVG.svg</file>

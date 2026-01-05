@@ -72,7 +72,7 @@ Popup {
     // Default icons per variant. Commented out for now for simplicity
     // readonly property var iconMap: ({
     //     info: "", success: "", warning: "qrc:/resources/warning.png",
-    //     error: "", confirm: "", destructive: "qrc:/resources/delete.svg", custom: ""
+    //     error: "", confirm: "", destructive: "qrc:/resources/delete.svg", custom: "" // replace with the actual file path
     // })
     // readonly property url resolvedIconSource: iconMap[popupVariant] !== undefined ? iconMap[popupVariant] : ""
 
