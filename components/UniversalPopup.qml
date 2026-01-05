@@ -20,7 +20,7 @@ Popup {
     property string popupTitle: ""
     property string popupMessage: ""
     property string popupVariant: "default" // default | info | success | warning | error | confirm | destructive | custom
-    property int popupWidth: 360
+    property int popupWidth: isNotification ? 320 : 360
     property var buttons: undefined // Determined by popupVariant
     property bool isNotification: false     // Notification style: auto-closes, no buttons, positioned top-right
     property int notificationDuration: 3000 // Time in ms before notification fades out
@@ -81,7 +81,7 @@ Popup {
     // ---------------------------------------------------------------------------
     modal: false
     focus: true
-    padding: isNotification ? 12 : 24  // Notifications are more compact
+    padding: isNotification ? 10 : 24  // Notifications are more compact
     width: popupWidth
 
     // Close policy based on variant:
@@ -238,9 +238,9 @@ Popup {
             anchors.fill: parent
             anchors.leftMargin: popup.padding
             anchors.rightMargin: popup.padding
-            anchors.topMargin: popup.padding
+            anchors.topMargin: popup.padding + (isNotification ? 5 : 0)
             anchors.bottomMargin: popup.padding
-            spacing: 14
+            spacing: isNotification ? 10 : 14
 
             // Header row with title
             RowLayout {
@@ -290,7 +290,7 @@ Popup {
                     delegate: Button {
                         text: modelData.text
                         highlighted: modelData.accent === true
-                        Layout.preferredWidth: modelData.fillWidth === true ? undefined : 110
+                        Layout.preferredWidth: modelData.fillWidth === true ? -1 : 110
                         Layout.fillWidth: modelData.fillWidth === true
 
                         background: Rectangle {
