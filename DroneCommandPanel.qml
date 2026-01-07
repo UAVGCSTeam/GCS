@@ -12,14 +12,33 @@ Rectangle {
     // has the collapsed form opened by default for main panel
     property bool expanded: false
     property var activeDrone: null
+    property int commandsBodyHeight: 0
+    property int configBodyHeight: 0
+    property int maxPanelHeight: Math.max(tabColumn.childrenRect.height, maxBodyHeight) // comparing the height between the expandedBody and tabColumn
+    property int maxBodyHeight: Math.max(commandsBodyHeight, configBodyHeight)  // commparing the height between the expandedBody (commands/config) pages
     property string currentTab: "Commands"
 
+    // loads in invisible object to measure the height of each panel, helps us determine how tall the expanded panel will be
+    Loader {
+        id: commandsBodyMeasure
+        sourceComponent: commandsBody
+        visible: false
+        onLoaded: commandsBodyHeight = item.implicitHeight
+    }
+
+    Loader {
+        id: configBodyMeasure
+        sourceComponent: configBody
+        visible: false
+        onLoaded: configBodyHeight = item.implicitHeight
+    }
+
     function expand() {
-        expandedBody.expand()
+        mainPanel.expanded = true
     }
 
     function collapse() {
-        expandedBody.collapse()
+        mainPanel.expanded = false
     }
 
     //drone status for buttons
@@ -27,12 +46,8 @@ Rectangle {
     readonly property int statusInProgress: 1
     readonly property int statusAvailable: 2
 
-    onVisibleChanged: {
-        if (!visible) {
-            mainPanel.expanded = false
-            expandedBody.collapse()
-        }
-    }
+    //  resets panel to collapsed once it disappears
+    onVisibleChanged: if (!visible) expanded = false
 
     RowLayout {
         anchors.fill: parent
@@ -47,7 +62,7 @@ Rectangle {
                 z: 2
                 Layout.fillWidth: true
                 height: GcsStyle.PanelStyle.headerHeight + 10
-                color: "#17161e"
+                color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
@@ -74,16 +89,18 @@ Rectangle {
                             Layout.preferredWidth: 1
                         }
 
+                        // collapse/expand arrow button
                         Button {
                             id: collapseButton
                             icon.source: "qrc:/resources/down-arrow.png"
+                            icon.color: GcsStyle.PanelStyle.textPrimaryColor
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
                             implicitWidth: 28
                             implicitHeight: 24
 
                             background: Rectangle {
                                 border.width: 0
-                                color: GcsStyle.PanelStyle.primaryColor
+                                color: GcsStyle.PanelStyle.buttonColor
                             }
 
                             MouseArea {
@@ -92,16 +109,7 @@ Rectangle {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
 
-                                onClicked: {
-                                    if (mainPanel.expanded) {
-                                        expandedBody.collapse()
-                                    }
-                                    else {
-                                        mainPanel.currentTab = "Commands"
-                                        expandedBody.expand()
-                                    }
-                                    mainPanel.expanded = !mainPanel.expanded
-                                }
+                                onClicked: mainPanel.expanded = !mainPanel.expanded
                             }
                         }
                     }
@@ -116,26 +124,10 @@ Rectangle {
                 radius: GcsStyle.PanelStyle.cornerRadius
                 Layout.topMargin: -20   //so the expanded/collapse view overlap and dont show ugly rounded corner
                 Layout.fillWidth: true
-                Layout.preferredHeight: 0
                 clip: true
 
-                PropertyAnimation {
-                    id: animation
-                    target: expandedBody
-                    property: "Layout.preferredHeight"
-                    easing.type: Easing.InOutQuad
-                    duration: 500
-                }
-
-                function expand() {
-                    animation.to = 300
-                    animation.running = true
-                }
-
-                function collapse() {
-                    animation.to = 0
-                    animation.running = true
-                }
+                property int paddingHeight: bodyLoader.anchors.topMargin + bodyLoader.anchors.bottomMargin  // including the height of the margin padding in our overall panel height
+                Layout.preferredHeight: mainPanel.expanded ? (maxPanelHeight + paddingHeight) : 0
 
                 ListModel {
                     id: repeaterModel
@@ -184,18 +176,37 @@ Rectangle {
             }
         }
 
+        // column housing the tabs on the right side of the panel
         Column {
             id: tabColumn
-            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-            Layout.preferredHeight: 0
             width: 24
 
+            // rectangle button for the commands tab
             Rectangle {
                 id: commandsTab
                 width: 24
                 height: 90
+                radius: GcsStyle.PanelStyle.buttonRadius
                 visible: mainPanel.expanded
+
+                // this statement has the tab match the body color of the current panel, with the other grayed out
                 color: mainPanel.currentTab === "Commands" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
+
+                // overlayed rectangle on the top left corner so that only the outer corners appear rounded
+                Rectangle {
+                    width: 7
+                    height: 7
+                    color: mainPanel.currentTab === "Commands" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
+                    x: 0; y: 0
+                }
+
+                // overlayed rectangle on the bottom left corner so that only the outer corners appear rounded
+                Rectangle {
+                    width: 7
+                    height: 7
+                    color: mainPanel.currentTab === "Commands" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
+                    x:0; y: parent.height - 7
+                }
 
                 Text {
                     anchors.centerIn: parent
@@ -211,12 +222,32 @@ Rectangle {
                 }
             }
 
+            // rectangle button for the configuration tab
             Rectangle {
                 id: configTab
                 width: 24
                 height: 60
+                radius: GcsStyle.PanelStyle.buttonRadius
                 visible: mainPanel.expanded
+
+                // this statement has the tab match the body color of the current panel, with the other grayed out
                 color: mainPanel.currentTab === "Config" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
+
+                // overlayed rectangle on the top left corner so that only the outer corners appear rounded
+                Rectangle {
+                    width: 7
+                    height: 7
+                    color: mainPanel.currentTab === "Config" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
+                    x: 0; y: 0
+                }
+
+                // overlayed rectangle on the bottom left corner so that only the outer corners appear rounded
+                Rectangle {
+                    width: 7
+                    height: 7
+                    color: mainPanel.currentTab === "Config" ? GcsStyle.PanelStyle.primaryColor : GcsStyle.PanelStyle.secondaryColor
+                    x:0; y: parent.height - 7
+                }
 
                 Text {
                     anchors.centerIn: parent
@@ -234,17 +265,18 @@ Rectangle {
         }
     }
 
+    // content on 'commands' tab
     Component {
         id: commandsBody
 
         ColumnLayout {
             spacing: 0
 
+            // repeater model used to create the dynamic buttons
             Repeater {
                 model: repeaterModel
                 delegate: Button {
                     Layout.fillWidth: true
-                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
 
                     background: Rectangle {
@@ -259,10 +291,12 @@ Rectangle {
                     enabled: status === statusAvailable     // button only clickable for when status is available
                     hoverEnabled: enabled
 
+                    // icon and text for each button
                     contentItem: RowLayout {
                         spacing: 2
                         anchors.margins: 6
 
+                        // the icon for each button command (the 'source:..." under Image is a placeholder)
                         Item {
                             Layout.preferredWidth: GcsStyle.PanelStyle.iconSize
                             height: GcsStyle.PanelStyle.iconSize
@@ -276,7 +310,7 @@ Rectangle {
                             }
                         }
 
-                        //changing text color
+                        //changing text color based on the action's status
                         Text {
                             text: name
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
@@ -311,9 +345,15 @@ Rectangle {
                     }
                 }
             }
+
+            // spacer so the buttons stay at the top
+            Item {
+                Layout.fillHeight: true
+            }
         }
     }
 
+    // content on 'config' tab
     Component {
         id: configBody
 

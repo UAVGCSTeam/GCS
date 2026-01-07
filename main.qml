@@ -76,6 +76,7 @@ Window {
             right: parent.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+        visible: false
     }
     
     DroneTrackingPanel {
