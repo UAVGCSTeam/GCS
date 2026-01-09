@@ -92,7 +92,7 @@ Rectangle {
                         // collapse/expand arrow button
                         Button {
                             id: collapseButton
-                            icon.source: "qrc:/resources/down-arrow.png"
+                            icon.source: mainPanel.expanded ? "qrc:/resources/up-arrow.png" : "qrc:/resources/down-arrow.png"
                             icon.color: GcsStyle.PanelStyle.textPrimaryColor
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
                             implicitWidth: 28
