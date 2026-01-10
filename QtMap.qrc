@@ -24,14 +24,14 @@
         <file>cppLOGO.svg</file>
         <file>droneStatusSVG.svg</file>
         <file>warning.png</file>
-        <file>down-arrow.png</file>
+        <file>arrow-down.png</file>
+        <file>arrow-up.png</file>
         <file>grounded.png</file>
         <file>droneSVG.svg</file>
         <file>droneSVGDarkMode.svg</file>
         <file>fireSVG.svg</file>
         <file>fireSVGDarkMode.svg</file>
         <file>droneMapIconSVG.svg</file>
-        <file>up-arrow.png</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>

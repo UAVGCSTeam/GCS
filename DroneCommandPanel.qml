@@ -103,7 +103,7 @@ Rectangle {
                             padding: 4
                             icon.width: 28 - padding * 2
                             icon.height: 24 - padding * 2
-                            icon.source: mainPanel.expanded ? "qrc:/resources/up-arrow.png" : "qrc:/resources/down-arrow.png"
+                            icon.source: mainPanel.expanded ? "qrc:/resources/arrow-up.png" : "qrc:/resources/arrow-down.png"
                             icon.color: GcsStyle.PanelStyle.textPrimaryColor
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
 
