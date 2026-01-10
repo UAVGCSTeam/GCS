@@ -97,5 +97,10 @@ QtObject {
     readonly property color statusIdleColor: "#FFC107"
     readonly property color statusChargingColor: "#2196F3"
 
+    // Command Panel drone colors
+    readonly property color commandAvailable: textPrimaryColor
+    readonly property color commandInProgress: "#FFC107"
+    readonly property color commandNotAvailable: textSecondaryColor
+
     Component.onCompleted: console.log("PanelStyle loaded")
 }
