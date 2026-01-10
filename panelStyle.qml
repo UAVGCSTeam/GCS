@@ -14,6 +14,7 @@ QtObject {
     // Sizes
     readonly property int sidebarWidth: 50
     readonly property int headerHeight: 50
+    readonly property int menuBarHeight: 30
     readonly property int itemHeight: 50
     readonly property int cornerRadius: 10
 
@@ -36,9 +37,18 @@ QtObject {
     readonly property color buttonBorderColor: "#c8c8c8"
     
     // Danger/warning button colors
-    readonly property color buttonDangerColor: "#ff4444"
+    readonly property color buttonDangerColor: "#c62828"
     readonly property color buttonDangerHoverColor: "#ff8e8e"
     readonly property color buttonDangerTextColor: "#ffffff"
+
+    // Popup variant accent colors
+    readonly property color popupDefaultAccent: buttonColor2  
+    readonly property color popupInfoAccent: "#4B88A2"       // Teal
+    readonly property color popupSuccessAccent: "#3d7a3d"    // Green 
+    readonly property color popupWarningAccent: "#C99409"    // Yellow/amber 
+    readonly property color popupErrorAccent: "#a32222"      // Red 
+    readonly property color popupConfirmAccent: "#4B88A2"    // Teal 
+    readonly property color popupDestructiveAccent: "#a32222" // Red 
 
     // List view properties
     readonly property color listItemEvenColor: primaryColor
@@ -87,7 +97,7 @@ QtObject {
     readonly property color statusIdleColor: "#FFC107"
     readonly property color statusChargingColor: "#2196F3"
 
-    // Command Panel drone status colors
+    // Command Panel drone colors
     readonly property color commandAvailable: textPrimaryColor
     readonly property color commandInProgress: "#FFC107"
     readonly property color commandNotAvailable: textSecondaryColor

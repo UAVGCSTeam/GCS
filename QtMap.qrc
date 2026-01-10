@@ -16,6 +16,7 @@
         <file>TelemetryPanel.qml</file>
         <file>components/MenuButton.qml</file>
         <file>components/PopupMenuItem.qml</file>
+        <file>components/UniversalPopup.qml</file>
         <file>configureDroneWindow.qml</file>
         <file>DroneCommandPanel.qml</file>
     </qresource>
