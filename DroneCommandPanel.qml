@@ -18,7 +18,9 @@ Rectangle {
     property int maxBodyHeight: Math.max(commandsBodyHeight, configBodyHeight)  // commparing the height between the expandedBody (commands/config) pages
     property string currentTab: "Commands"
 
-    // loads in invisible object to measure the height of each panel, helps us determine how tall the expanded panel will be
+    // The Loaders: loads in invisible object to measure the
+    // height of each panel, helps us determine
+    // how tall the expanded panel will be
     Loader {
         id: commandsBodyMeasure
         sourceComponent: commandsBody
@@ -33,6 +35,7 @@ Rectangle {
         onLoaded: configBodyHeight = item.implicitHeight
     }
 
+
     function expand() {
         mainPanel.expanded = true
     }
@@ -41,6 +44,7 @@ Rectangle {
         mainPanel.expanded = false
     }
 
+
     //drone status for buttons
     readonly property int statusNotAvailable: 0
     readonly property int statusInProgress: 1
@@ -48,6 +52,10 @@ Rectangle {
 
     //  resets panel to collapsed once it disappears
     onVisibleChanged: if (!visible) expanded = false
+
+
+
+
 
     RowLayout {
         anchors.fill: parent
@@ -92,11 +100,12 @@ Rectangle {
                         // collapse/expand arrow button
                         Button {
                             id: collapseButton
+                            padding: 4
+                            icon.width: 28 - padding * 2
+                            icon.height: 24 - padding * 2
                             icon.source: mainPanel.expanded ? "qrc:/resources/up-arrow.png" : "qrc:/resources/down-arrow.png"
                             icon.color: GcsStyle.PanelStyle.textPrimaryColor
                             Layout.alignment: Qt.AlignTop | Qt.AlignRight
-                            implicitWidth: 28
-                            implicitHeight: 24
 
                             background: Rectangle {
                                 border.width: 0
