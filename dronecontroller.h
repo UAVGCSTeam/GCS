@@ -1,11 +1,8 @@
 #ifndef DRONECONTROLLER_H
 #define DRONECONTROLLER_H
 
-#include <QList>
 #include <QObject>
-#include <QSharedMemory>
-#include <QSharedPointer>
-#include <QTimer>
+#include <QList>
 #include "backend/dbmanager.h"
 #include "droneclass.h"
 #include <QSharedPointer>
@@ -16,6 +13,8 @@
 #include <QHash>
 #include <QVariant>
 #include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
+
+
 
 // #include "drone.h"
 
@@ -35,6 +34,8 @@
 
 // Drone Controller will notify UI
 // Serves as a middle man from UI and backend.
+
+
 
 class XbeeLink;
 class MavlinkSender;

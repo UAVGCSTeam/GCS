@@ -1,8 +1,7 @@
-#include <QDir>
 #include <QGuiApplication>
-#include <QProcess>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QProcess>
 #include <QTimer>
 #include <QDir>
 #include <QtQuickControls2/QQuickStyle>
@@ -10,7 +9,6 @@
 #include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
-#include "filehandler.h"
 
 
 int main(int argc, char *argv[])
@@ -43,11 +41,9 @@ int main(int argc, char *argv[])
     qmlRegisterType<FileHandler>("com.gcs.filehandler", 1, 0, "FileHandler");
 
     // Register droneclass to QML
-    qmlRegisterUncreatableType<DroneClass>("com.gcs.dronecontroller",
-                                           1,
-                                           0,
-                                           "DroneClass",
-                                           "DroneClass cannot be created from QML");
+    qmlRegisterUncreatableType<DroneClass>(
+        "com.gcs.dronecontroller", 1, 0, "DroneClass",
+        "DroneClass cannot be created from QML");
 
     // Expose dronecontroller to QML
     qmlRegisterType<DroneController>("com.gcs.dronecontroller", 1, 0, "DroneController");

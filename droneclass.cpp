@@ -49,9 +49,9 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
-    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID
-             << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
+
 
 DroneClass::DroneClass(const QString &input_name,
                        const QString &input_role,

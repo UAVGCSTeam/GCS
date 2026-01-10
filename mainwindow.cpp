@@ -1,8 +1,8 @@
 #include "mainwindow.h"
-#include <QCoreApplication>
+#include "./ui_mainwindow.h"
 #include <QDebug>
 #include <QProcess>
-#include "./ui_mainwindow.h"
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
     auto Obje = ui->quickWidget_MapView->rootObject();
 
     // When setCenterPosition is emitted from the current object, the setCenterPosition method in Obje will be called with the same parameters
-
     connect(this, SIGNAL(setCenterPosition(QVariant,QVariant)), Obje, SLOT(setCenterPosition(QVariant,QVariant)));
     connect(this, SIGNAL(setLocationMarking(QVariant,QVariant)), Obje, SLOT(setLocationMarking(QVariant,QVariant)));
 }
@@ -33,3 +32,4 @@ MainWindow::~MainWindow()
 
     delete ui;
 }
+

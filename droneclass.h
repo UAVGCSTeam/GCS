@@ -8,6 +8,7 @@
 #include <cmath>
 #include <QVariant>
 
+
 class DroneClass : public QObject
 {
     Q_OBJECT

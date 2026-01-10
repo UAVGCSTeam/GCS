@@ -10,9 +10,11 @@
 #include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QStandardPaths>
+#include <QFile>
+#include <QDir>
+#include <QCoreApplication>
 #include <QTextStream>
-#include <QTimer>
+#include <QStandardPaths>
 
 // DATA PATH
 #ifdef _WIN32
@@ -78,13 +80,13 @@ QVariantList DroneController::getAllDrones() const
         QVariantMap droneMap;
         // these method calls have to match our DroneClass interface
         droneMap["name"] = drone->getName();
-        droneMap["role"]
-            = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
+
         droneMap["latitude"] = drone->getLatitude();
         droneMap["longitude"] = drone->getLongitude();
         droneMap["altitude"] = drone->getAltitude();
@@ -97,7 +99,10 @@ QVariantList DroneController::getAllDrones() const
 }
 
 DroneController::~DroneController()
-{}
+{
+}
+
+
 
 
 // Steps in saving a drone.
@@ -134,6 +139,7 @@ void DroneController::createDrone(const QString &input_name,
     saveDroneToDB(drone); // call the internal method
 }
 
+
 void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
 {
     // remmber to update db appropriately as well
@@ -157,7 +163,6 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
 
     // Add Drone to Database
     int newDroneID = -1;
-
     if (dbManager.createDrone(drone->getName(),
                               drone->getRole(),
                               drone->getXbeeID(),
@@ -233,7 +238,6 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
 
     // Try to find and delete the drone from memory first
     bool found = false;
-
     for (int i = 0; i < droneList.size(); i++)
     {
         if (droneList[i]->getXbeeID() == input_xbeeID ||
@@ -284,6 +288,7 @@ void DroneController::deleteALlDrones_UI()
         qWarning() << "Failed to delete all drones.";
     }
 }
+
 
 // If want to query by name
 QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name)
@@ -338,6 +343,8 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     return QSharedPointer<DroneClass>(); // Return null pointer if not found
 }
 
+
+
 // Gets drones, but is used to REBUILD the drone list; so it refreshes and keeps the drone list up to date
 QVariantList DroneController::getDrones() const
 { // DOUBLE CHECK THIS BRANDON
@@ -369,7 +376,6 @@ QVariantList DroneController::getDrones() const
 
         // Initialize droneList with database contents
         droneList.clear();
-
         for (const QVariant &droneVar : result)
         {
             QVariantMap droneMap = droneVar.toMap();
@@ -388,6 +394,8 @@ QVariantList DroneController::getDrones() const
     return result;
 }
 
+
+
 DroneClass *DroneController::getDrone(int index) const
 {
     if (index < 0 || index >= droneList.size())
@@ -398,6 +406,7 @@ DroneClass *DroneController::getDrone(int index) const
     // QSharedPointer::data() gives you the raw pointer, ownership stays with the list
     return droneList.at(index).data();
 }
+
 
 
 bool DroneController::openXbee(const QString& port, int baud)
@@ -449,6 +458,9 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
             << "sent=" << ok;
     return ok;
 }
+
+
+
 
 // Helper: find (or lazily bind) a drone for a sysid.
 // Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
