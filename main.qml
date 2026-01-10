@@ -69,6 +69,15 @@ Window {
         }
     }
 
+    DroneCommandPanel {
+        id: droneCommandPanel
+        anchors {
+            top: droneMenuBar.bottom
+            right: parent.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: false
+    }
     
     DroneTrackingPanel {
         id: droneTrackingPanel
@@ -77,6 +86,7 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+
         onSelectionChanged: function(selected) {
             // function(selected) is used here to avoid implicit parameter passing
             // In this case the implicit parameter was passing was 'selected'
@@ -126,7 +136,7 @@ Window {
         droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
-    // Syncs telemetry visibility and follow state whenever the selection array updates
+    // Syncs telemetry & command panel visibility and follow state whenever the selection array updates
     function handleSelectedDrones(selected) {
         selectedDrones = selected
 
@@ -141,11 +151,16 @@ Window {
             var drone = selected[0]
             telemetryPanel.setActiveDrone(drone)
             telemetryPanel.visible = true
+            droneCommandPanel.activeDrone = drone
+            droneCommandPanel.visible = true
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
             if (telemetryPanel.visible) {
                 telemetryPanel.visible = false
             }
+            droneCommandPanel.activeDrone = null
+            droneCommandPanel.collapse()
+            droneCommandPanel.visible = false
             mapComponent.turnOffFollowDrone()
         }
     }
