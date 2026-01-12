@@ -31,7 +31,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         dronecontroller.h dronecontroller.cpp
         xbeeHandler.py
         requirements.txt
-        setup_and_run_xbee.py
         XbeeLink.cpp
         XbeeLink.h
         MavlinkSender.cpp

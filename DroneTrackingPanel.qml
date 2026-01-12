@@ -12,7 +12,7 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Rectangle {
     id: mainPanel
-    width: 300
+    width: 250
     height: 600
     color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
@@ -65,7 +65,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/droneSVG.svg"
+                        source: "qrc:/resources/droneSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -91,7 +91,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/fireSVG.svg"
+                        source: "qrc:/resources/fireSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -141,32 +141,13 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                     Text {
-                        text: "4 drones in fleet : 3 active"
+                        text: {droneController.drones.length + " drones in fleet"}
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
             }
 
-            // Search Bar filters displayed drones in real time
-            TextField {
-                // anchors.margins: 2
-                Layout.margins: 7
-                // Layout.alignment: horizontalCenter
-                id: searchField
-                Layout.fillWidth: true
-                placeholderText: "SEARCH NOT WORK"
-                // placeholderText: "Search by drone name"
-                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                // onTextChanged: filterDroneList(text)
-
-                background: Rectangle { 
-                    color: "white" 
-                    radius: 7
-                    border.width: GcsStyle.panelStyle.defaultBorderWidth
-                    border.color: GcsStyle.panelStyle.defaultBorderColor
-                }
-            }
 
             // Drone list view
             ListView {
@@ -192,7 +173,7 @@ Rectangle {
                         Make drone symbols update based on status.
                 */
 
-                model: droneController ? droneController.drones : []
+                model: droneController.drones
 
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
@@ -281,7 +262,9 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: "qrc:/resources/droneStatusSVG.svg"
+                            source: { 
+                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
+                            }
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
                             Layout.alignment: Qt.AlignVCenter
@@ -299,8 +282,8 @@ Rectangle {
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
-                                text: modelData.battery ? modelData.battery : "Battery Not Found"
-                                color: GcsStyle.PanelStyle.textSecondaryColor
+                                text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
+                                color: modelData.batteryLevel < 70 ? "red" : GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
@@ -308,14 +291,24 @@ Rectangle {
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
-                        Text { 
-                            // This is where we can put the situation status icons
-                            text: "LOL"
-                        }
+                        Image {
+                            id: warningIcon
+                            source: {
+                                modelData.batteryLevel < 70 ? "qrc:/resources/warning.png" : ""
+                            }
+                            sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
+                            sourceSize.height: GcsStyle.PanelStyle.statusIconSize
+                            Layout.alignment: Qt.AlignVCenter
+                         }
                     }
                 }
-
-
+                Connections {
+                    target: droneController
+                    function onDronesChanged() {
+                        // TODO: check to see if telemetry data populates during simulation with ardupilot
+                        droneListView.model = dronecontroller ? droneController.drones : [] 
+                    } 
+                }
             }
 
             // Add Drone Button

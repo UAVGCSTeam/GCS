@@ -67,6 +67,16 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
+    DroneCommandPanel {
+        id: droneCommandPanel
+        anchors {
+            top: droneMenuBar.bottom
+            right: parent.right
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        visible: false
+    }
     
     DroneTrackingPanel {
         id: droneTrackingPanel
@@ -75,6 +85,7 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+
         onSelectionChanged: function(selected) {
             // function(selected) is used here to avoid implicit parameter passing
             // In this case the implicit parameter was passing was 'selected'
@@ -110,22 +121,21 @@ Window {
       Despite this some UI needs to be connected to cpp, especially if it has more complex logic.
     */
 
-    // The following two connections are crucial for setting the limits of how much the telemetry window can expand
 
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
         mapController.setCenterPosition(coords[0].lat, coords[0].lon)
-        for (var i = 0; i < coords.length; i++) {
+        for (var i = 0; i < 3; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
         }
 
-        droneController.openXbee("/dev/ttys005", 57600)
-        // droneController.openXbee("/dev/cu.usbserial-A10KFA7J", 57600)
+        // droneController.openXbee("/dev/ttys005", 57600)
+        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
-    // Syncs telemetry visibility and follow state whenever the selection array updates
+    // Syncs telemetry & command panel visibility and follow state whenever the selection array updates
     function handleSelectedDrones(selected) {
         selectedDrones = selected
 
@@ -140,12 +150,16 @@ Window {
             var drone = selected[0]
             telemetryPanel.setActiveDrone(drone)
             telemetryPanel.visible = true
-
+            droneCommandPanel.activeDrone = drone
+            droneCommandPanel.visible = true
         } else {
             // No selection or multiple selection: hide telemetry panel and stop following
             if (telemetryPanel.visible) {
                 telemetryPanel.visible = false
             }
+            droneCommandPanel.activeDrone = null
+            droneCommandPanel.collapse()
+            droneCommandPanel.visible = false
             mapComponent.turnOffFollowDrone()
         }
     }

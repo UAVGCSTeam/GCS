@@ -81,12 +81,12 @@ void MapController::setCenterPosition(const QVariant &lat, const QVariant &lon)
     updateCenter(newCenter);
 }
 
-void MapController::setLocationMarking(const QVariant &lat, const QVariant &lon)
-{
-    QPair<double, double> position(lat.toDouble(), lon.toDouble());
-    // addMarker below
-    addMarker(position);
-}
+    void MapController::setLocationMarking(const QVariant &lat, const QVariant &lon)
+    {
+        QPair<double, double> position(lat.toDouble(), lon.toDouble());
+        // addMarker below
+        addMarker(position);
+    }
 
 
 // emit sends the data that our cpp logic did to our QML files

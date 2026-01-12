@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QByteArray>
 
+
+
 class XbeeLink;
 class MavlinkSender : public QObject {
     Q_OBJECT
@@ -9,6 +11,7 @@ public:
     explicit MavlinkSender(XbeeLink* link, QObject* parent=nullptr);
     // sys/comp are target IDs on the drone
     bool sendArm(uint8_t sys, uint8_t comp, bool arm);
+
 private:
     XbeeLink* link_;
     QByteArray packCommandLong(uint8_t sys, uint8_t comp,

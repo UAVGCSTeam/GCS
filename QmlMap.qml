@@ -17,8 +17,8 @@ Item {
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
-    property double latitude: 34.059174611493965
-    property double longitude: -117.82051240067321
+    property double latitude: 34.060978616851145 // for centering the view
+    property double longitude: -117.83110213699356 // for centering the view
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },
@@ -124,7 +124,7 @@ Item {
             }
             onActiveChanged: if (active) {turnOffFollowDrone()}
         }
-
+        
         MapItemView {
             id: droneMarkerView
             model: droneController ? droneController.drones : []
@@ -295,21 +295,9 @@ Item {
     // Connect to droneController to listen for drone state changes
     Connections {
         target: droneController
-        // function onDroneStateChanged(droneName) {
-        //     // Refresh the drone markers when a drone's state changes
-        //     droneMarkerView.model = droneController.getAllDrones();
-        //     // Following drone functions
-        //     if (mapwindow.followingDrone && droneName === mapwindow.followDroneName) {
-        //         var drone = droneController.getDrone(droneName)
-        //         if (drone) {
-        //             // mapview.center = QtPositioning.coordinate(drone.latitude, drone.longitude)
-        //             _pendingCenter = QtPositioning.coordinate(drone.latitude, drone.longitude)
-        //         }
-        //     }
-        // }
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
-            droneMarkerView.model = droneController.getAllDrones();
+            droneMarkerView.model = droneController.drones;
         }
     }
 
@@ -330,9 +318,7 @@ Item {
                 mapview.zoomLevel = level
         }
     }
-
-    Component.onCompleted: {
-        console.log("Number of drones in model:", droneController.drones.length)
-
+    Component.onCompleted: {        
+        console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
     }
 }

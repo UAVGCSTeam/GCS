@@ -1,4 +1,3 @@
 {
-  "simulation_mode": true,
   "port": "/dev/ttyUSB0"
 }

@@ -15,6 +15,7 @@
 #include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
 
 
+
 // #include "drone.h"
 
 /*
@@ -50,10 +51,7 @@ public:
     ~DroneController();
 
     // Initialize shared memory for XBee communication
-    bool checkDataFileExists();
-    void startXbeeMonitoring();
     Q_INVOKABLE QVariantList getDrones() const;
-    Q_INVOKABLE bool isSimulationMode() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
 
@@ -73,28 +71,28 @@ public:
 
 
 public slots:
-    void saveDrone(const QSharedPointer<DroneClass> &drone);
-    void createDrone(const QString &name,
-                     const QString &role,
-                     const QString &xbeeId,
-                     const QString &xbeeAddress);
+    void saveDroneToDB(const QSharedPointer<DroneClass> &drone);
+    void createDrone(const QString &input_name,
+                       const QString &input_role,
+                       const QString &input_xbeeID,
+                       const QString &input_xbeeAddress,
+                       double input_batteryLevel,
+                       double input_latitude,
+                       double input_longitude,
+                       double input_altitude,
+                       QObject *parent);
     void updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
-
-private slots:
-    // Process data recieved from XBee via shared memory
-    void processXbeeData();
-    void tryConnectToDataFile();
+    
+    // Functions for serial / MAVLink connections
     void onMavlinkMessage(const RxMavlinkMsg& msg);
-
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
     void droneUpdated(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
-    void xbeeConnectionChanged(bool connected);
     void dronesChanged();
 
 private:
@@ -102,29 +100,20 @@ private:
     void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
     DBManager &dbManager;
-    static QList<QSharedPointer<DroneClass>> droneList;
-    // Timers for data polling
-    QTimer xbeeDataTimer;
-    QTimer reconnectTimer;
-    // Method to find drone by name
-    QSharedPointer<DroneClass> getDroneByName(const QString &name);
-    // Get latest data from file
-    QString getLatestXbeeData();
-    // Method to find drone by XBee address
-    QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
-
-    QString getDataFilePath();
-    QString getConfigFilePath() const;
 
     std::unique_ptr<XbeeLink>    xbee_;
     std::unique_ptr<MavlinkSender> mav_;
     std::unique_ptr<MavlinkReceiver> mavRx_;
-    void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
     QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
+    static QList<QSharedPointer<DroneClass>> droneList;
+    
+    QSharedPointer<DroneClass> getDroneByName(const QString &name);
+    QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
+    void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
+    void onTelemetry(const QString& name, double lat, double lon);
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
-    void onTelemetry(const QString& name, double lat, double lon);
 };
 
 #endif // DRONECONTROLLER_H

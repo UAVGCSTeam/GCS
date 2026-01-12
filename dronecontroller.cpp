@@ -37,6 +37,8 @@ QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the stat
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db)
 {
+    int index = 0; 
+
     // function loads all drones from the database on startup
     qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
     QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
@@ -45,17 +47,27 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         QString name = record["drone_name"].toString();
         QString role = record["drone_role"].toString();
         QString xbeeID = record["xbee_id"].toString();
+        int sysID = -1;
+        int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
         // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
         // TODO: Change this, add xbee id?
-        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress));
+        
+        if (index == 0) { 
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
+        } else if (index == 1) { 
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
+        } else if (index == 2) { 
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
+        } else { 
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
+        }
+        
+        index++;
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
 
-    // Set up timer connections but don't start yet
-    connect(&xbeeDataTimer, &QTimer::timeout, this, &DroneController::processXbeeData);
-    connect(&reconnectTimer, &QTimer::timeout, this, &DroneController::tryConnectToDataFile);
     // --- Simulated Drone Movement ---
     connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
     simulationTimer.start(250); // Move once per second
@@ -65,6 +77,8 @@ DroneController::DroneController(DBManager &db, QObject *parent)
 // method so QML can retrieve the drone list.
 QVariantList DroneController::getAllDrones() const
 {
+    // qInfo() << "DEBUGGING" << Qt::endl;
+    // int index = 0;
     QVariantList list;
     for (const QSharedPointer<DroneClass> &drone : droneList)
     {
@@ -78,73 +92,23 @@ QVariantList DroneController::getAllDrones() const
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 
-        // Position data - used by the map component
         droneMap["latitude"] = drone->getLatitude();
         droneMap["longitude"] = drone->getLongitude();
         droneMap["altitude"] = drone->getAltitude();
         droneMap["airspeed"] = drone->getAirspeed();
 
         list.append(droneMap);
+        // index++;
     }
     return list;
 }
 
 DroneController::~DroneController()
 {
-    // Cleanup code if needed
-    if (xbeeDataTimer.isActive())
-    {
-        xbeeDataTimer.stop();
-    }
-    if (reconnectTimer.isActive())
-    {
-        reconnectTimer.stop();
-    }
 }
 
-// Get the correct file path to check
-QString DroneController::getDataFilePath()
-{
-    // On Windows, always check user's TEMP folder first
-#ifdef _WIN32
-    QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QString tempFilePath = tempPath + "/xbee_tmp/xbee_data.json";
 
-    QFile tempFile(tempFilePath);
-    if (tempFile.exists())
-    {
-        qDebug() << "Using Windows temp path:" << tempFilePath;
-        return tempFilePath;
-    }
 
-    // Log the paths we're checking to aid debugging
-    qDebug() << "Checked for XBee data file at:" << tempFilePath << "(not found)";
-#endif
-
-    // Original fallback paths
-    QFile file(DEFAULT_DATA_FILE_PATH);
-    if (file.exists())
-    {
-        qDebug() << "Using default path:" << DEFAULT_DATA_FILE_PATH;
-        return DEFAULT_DATA_FILE_PATH;
-    }
-    qDebug() << "Checked for XBee data file at:" << DEFAULT_DATA_FILE_PATH << "(not found)";
-
-#ifdef _WIN32
-    // Additional Windows fallbacks
-    QString fallbackPath = tempPath + "/xbee_data.json";
-    QFile fallbackFile(fallbackPath);
-    if (fallbackFile.exists())
-    {
-        qDebug() << "Using fallback path:" << fallbackPath;
-        return fallbackPath;
-    }
-    qDebug() << "Checked for XBee data file at:" << fallbackPath << "(not found)";
-#endif
-
-    // Return the default path if nothing else found
-    return DEFAULT_DATA_FILE_PATH;
-}
 
 // Steps in saving a drone.
 /* User Clicks button to save drone information
@@ -158,26 +122,36 @@ QString DroneController::getDataFilePath()
  */
 
 // new function so the QML can create a drone using strings
-void DroneController::createDrone(const QString &name,
-                                  const QString &role,
-                                  const QString &xbeeId,
-                                  const QString &xbeeAddress)
+void DroneController::createDrone(const QString &input_name,
+                                const QString &input_role,
+                                const QString &input_xbeeID,
+                                const QString &input_xbeeAddress,
+                                double input_batteryLevel,
+                                double input_latitude,
+                                double input_longitude,
+                                double input_altitude,
+                                QObject *parent)
 {
     auto drone = QSharedPointer<DroneClass>::create();
-    drone->setName(name);
-    drone->setRole(role);
-    drone->setXbeeID(xbeeId);
-    drone->setXbeeAddress(xbeeAddress);
-
-    saveDrone(drone); // call the internal method
+    drone->setName(input_name);
+    drone->setRole(input_role);
+    drone->setXbeeID(input_xbeeID);
+    drone->setXbeeAddress(input_xbeeAddress);
+    drone->setBatteryLevel(input_batteryLevel);
+    drone->setLatitude(input_latitude);
+    drone->setLongitude(input_longitude);
+    drone->setAltitude(input_altitude);
+    saveDroneToDB(drone); // call the internal method
 }
 
-void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone)
+
+void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
 {
+    // remmber to update db appropriately as well
     if (!drone)
         return;
 
-    qDebug() << "saveDrone called with:" << drone->getName()
+    qDebug() << "saveDroneToDB called with:" << drone->getName()
              << drone->getRole()
              << drone->getXbeeID()
              << drone->getXbeeAddress();
@@ -193,14 +167,14 @@ void DroneController::saveDrone(const QSharedPointer<DroneClass> &drone)
     }
 
     // Add Drone to Database
-    int newDroneId = -1;
+    int newDroneID = -1;
     if (dbManager.createDrone(drone->getName(),
                               drone->getRole(),
                               drone->getXbeeID(),
                               drone->getXbeeAddress(),
-                              &newDroneId))
+                              &newDroneID))
     {
-        qDebug() << "Drone created in DB successfully with ID:" << newDroneId;
+        qDebug() << "Drone created in DB successfully with ID:" << newDroneID;
 
         // Add to the in-memory list
         droneList.push_back(drone);
@@ -241,8 +215,8 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
             query.bindValue(":xbeeId", drone->getXbeeID());
             if (query.exec() && query.next())
             {
-                int droneId = query.value(0).toInt();
-                dbManager.editDrone(droneId,
+                int droneID = query.value(0).toInt();
+                dbManager.editDrone(droneID,
                                     drone->getName(),
                                     drone->getRole(),
                                     drone->getXbeeID(),
@@ -259,11 +233,11 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
     }
 }
 
-void DroneController::deleteDrone(const QString &input_xbeeId)
+void DroneController::deleteDrone(const QString &input_xbeeID)
 {
-    if (input_xbeeId.isEmpty())
+    if (input_xbeeID.isEmpty())
     {
-        qWarning() << "Drone Controller: xbeeId not passed by UI.";
+        qWarning() << "Drone Controller: xbeeID not passed by UI.";
         return;
     }
 
@@ -271,27 +245,27 @@ void DroneController::deleteDrone(const QString &input_xbeeId)
     bool found = false;
     for (int i = 0; i < droneList.size(); i++)
     {
-        if (droneList[i]->getXbeeID() == input_xbeeId ||
-            droneList[i]->getXbeeAddress() == input_xbeeId)
+        if (droneList[i]->getXbeeID() == input_xbeeID ||
+            droneList[i]->getXbeeAddress() == input_xbeeID)
         {
             droneList.removeAt(i);
             found = true;
-            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeId;
+            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeID;
             break;
         }
     }
 
     // Now delete from database, even if not found in memory
-    if (dbManager.deleteDrone(input_xbeeId))
+    if (dbManager.deleteDrone(input_xbeeID))
     {
-        qDebug() << "Drone deleted successfully from database:" << input_xbeeId;
+        qDebug() << "Drone deleted successfully from database:" << input_xbeeID;
         emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
     }
     else
     {
-        qWarning() << "Failed to delete drone from database:" << input_xbeeId;
+        qWarning() << "Failed to delete drone from database:" << input_xbeeID;
         // If we removed from memory but failed to delete from DB, sync
         if (found)
         {
@@ -310,9 +284,9 @@ void DroneController::deleteALlDrones_UI()
         droneList.clear(); // also delete drones in C++ memory
 
         qDebug() << "[dronecontroller.cpp]: All drones deleted successfully!";
-        emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
+        emit dronesChanged();
     }
     else
     {
@@ -320,54 +294,6 @@ void DroneController::deleteALlDrones_UI()
     }
 }
 
-bool DroneController::isSimulationMode() const
-{
-    QString configPath = getConfigFilePath();
-    QFile configFile(configPath);
-
-    if (configFile.exists() && configFile.open(QIODevice::ReadOnly))
-    {
-        QJsonDocument doc = QJsonDocument::fromJson(configFile.readAll());
-        QJsonObject obj = doc.object();
-        bool simMode = obj["simulation_mode"].toBool();
-        configFile.close();
-        qDebug() << "Reading simulation mode from config:" << simMode;
-        return simMode;
-    }
-
-    qDebug() << "Could not find config file at:" << configPath;
-    qDebug() << "Defaulting to simulation mode";
-
-    // Default to simulation mode if can't read config
-    return true;
-}
-
-QString DroneController::getConfigFilePath() const
-{
-    QString configPath;
-
-#ifdef _WIN32
-    // Windows: User's AppData folder
-    configPath = QDir::homePath() + "/AppData/Local/GCS";
-#elif defined(__APPLE__)
-    // macOS
-    configPath = QDir::homePath() + "/Library/Application Support/GCS";
-#else
-    // Linux and other Unix systems
-    configPath = QDir::homePath() + "/.config/gcs";
-#endif
-
-    // Make sure the directory exists
-    QDir dir(configPath);
-    if (!dir.exists())
-    {
-        dir.mkpath(".");
-    }
-
-    configPath += "/xbee_config.json";
-    qDebug() << "Config file path:" << configPath;
-    return configPath;
-}
 
 // If want to query by name
 QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name)
@@ -397,7 +323,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
         }
     }
 
-    // If not found, try xbeeId match
+    // If not found, try xbeeID match
     for (const auto &drone : droneList)
     {
         if (drone->getXbeeID() == address)
@@ -422,55 +348,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     return QSharedPointer<DroneClass>(); // Return null pointer if not found
 }
 
-// Check if the data file exists
-bool DroneController::checkDataFileExists()
-{
-    QString filePath = getDataFilePath();
-    QFile file(filePath);
-    if (file.exists())
-    {
-        qDebug() << "Found XBee data file at:" << filePath;
-        return true;
-    }
-    else
-    {
-        qDebug() << "XBee data file not found at:" << filePath;
-        return false;
-    }
-}
 
-// Try to connect to the data file
-void DroneController::tryConnectToDataFile()
-{
-    if (checkDataFileExists())
-    {
-        qDebug() << "Successfully found XBee data file";
-        reconnectTimer.stop(); // Stop trying to reconnect
-
-        // Start timer to check for XBee data
-        xbeeDataTimer.start(50); // Check every 50ms
-        emit xbeeConnectionChanged(true);
-    }
-}
-
-QString DroneController::getLatestXbeeData()
-{
-    QString result;
-    QString filePath = getDataFilePath();
-    QFile file(filePath);
-
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        result = QString::fromUtf8(file.readAll());
-        file.close();
-    }
-    else
-    {
-        qWarning() << "Failed to open XBee data file:" << file.errorString();
-    }
-
-    return result;
-}
 
 // Gets drones, but is used to REBUILD the drone list; so it refreshes and keeps the drone list up to date
 QVariantList DroneController::getDrones() const
@@ -521,6 +399,8 @@ QVariantList DroneController::getDrones() const
     return result;
 }
 
+
+
 DroneClass *DroneController::getDrone(int index) const
 {
     if (index < 0 || index >= droneList.size())
@@ -532,85 +412,7 @@ DroneClass *DroneController::getDrone(int index) const
     return droneList.at(index).data();
 }
 
-void DroneController::processXbeeData()
-{
-    QString data = getLatestXbeeData();
-    if (data.isEmpty())
-        return;
 
-    qDebug() << "Raw XBee data:" << data.left(100) << "..."; // Show first 100 chars
-
-    // Try to parse as JSON
-    QJsonDocument doc = QJsonDocument::fromJson(data.toUtf8());
-    if (doc.isNull())
-    {
-        qWarning() << "Failed to parse XBee data as JSON";
-        return;
-    }
-
-    QJsonObject obj = doc.object();
-    QString messageType = obj["type"].toString();
-
-    // Handle heartbeat messages
-    if (messageType == "heartbeat")
-    {
-        // Handle heartbeat (existing code)
-        return;
-    }
-
-    // Handle drone data messages
-    if (messageType == "xbee_data")
-    {
-        QString droneName = obj["drone"].toString();
-        QString address = obj["address"].toString();
-        QString message = obj["message"].toString();
-
-        qDebug() << "Received XBee data for:" << droneName << "at address:" << address;
-        qDebug() << "Message content:" << message;
-
-        // First try to find drone by XBee address
-        QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(address);
-
-        if (!drone.isNull())
-        {
-            qDebug() << "Found matching drone:" << drone->getName();
-            // Update drone state based on XBee data
-            drone->processXbeeMessage(message);
-
-            // Emit signal that drone state has changed
-            emit droneStateChanged(drone.data());
-        }
-        else
-        {
-            qDebug() << "Received data for unknown drone at address:" << address;
-            qDebug() << "Available drones:";
-            for (const auto &d : droneList)
-            {
-                qDebug() << "  -" << d->getName() << ":" << d->getXbeeID() << "/" << d->getXbeeAddress();
-            }
-        }
-    }
-}
-
-// Start monitoring for XBee data
-void DroneController::startXbeeMonitoring()
-{
-    // Try to connect immediately
-    if (checkDataFileExists())
-    {
-        qDebug() << "Successfully found XBee data file";
-        xbeeDataTimer.start(1000); // Check every 1000ms
-        emit xbeeConnectionChanged(true);
-    }
-    else
-    {
-        qDebug() << "Waiting for XBee data file to be created...";
-        emit xbeeConnectionChanged(false);
-
-        // Start reconnect timer
-        reconnectTimer.start(1000); // Try every second
-    }
-}
 
 bool DroneController::openXbee(const QString& port, int baud)
 {
@@ -652,8 +454,8 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 
     // TODO: make these configurable or read from DB later
     // targetSys and targetComp are both 0 when dealing with ArduPilot SITL
-    const uint8_t targetSys  = 0;   
-    const uint8_t targetComp = 0;   // MAV_COMP_ID_AUTOPILOT1
+    const uint8_t targetSys  = 1;   
+    const uint8_t targetComp = 1;   // MAV_COMP_ID_AUTOPILOT1
 
     const bool ok = mav_->sendArm(targetSys, targetComp, arm);
     qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
@@ -661,6 +463,9 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
             << "sent=" << ok;
     return ok;
 }
+
+
+
 
 // Helper: find (or lazily bind) a drone for a sysid.
 // Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
@@ -679,6 +484,9 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysid,
     return {};
 }
 
+
+
+
 void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 {
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
@@ -689,10 +497,14 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     msg.len   = static_cast<uint8_t>(m.payload.size());
     memcpy(_MAV_PAYLOAD_NON_CONST(&msg), m.payload.constData(), msg.len);
 
-    const uint8_t sysid = msg.sysid;
+    uint8_t sysid = msg.sysid; 
+    // qInfo() << "[onMavlinkMessage] received message";
+        
+    // qInfo() << "[onMavlinkMessage] Orientation: " << droneList[0]->getOrientation();
 
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
+        // qInfo() << "Got a heartbeat";
         mavlink_heartbeat_t hb;
         mavlink_msg_heartbeat_decode(&msg, &hb);
         updateDroneTelem(sysid, "connected", true);
@@ -712,10 +524,12 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         mavlink_msg_global_position_int_decode(&msg, &p);
         updateDroneTelem(sysid, "lat",   p.lat/1e7);
         updateDroneTelem(sysid, "lon",   p.lon/1e7);
-        updateDroneTelem(sysid, "alt_m", p.alt/1000.0);
+        // updateDroneTelem(sysid, "alt_m", p.alt/1000.0);
+        updateDroneTelem(sysid, "alt_m", p.relative_alt / 1000.0);
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
+        // qInfo() << "Got attitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
         updateDroneTelem(sysid, "roll", a.roll);
@@ -724,6 +538,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_ACK: {
+        // qInfo() << "Got msg id ack";
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
         qInfo().nospace()
@@ -736,7 +551,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         updateDroneTelem(sysid, "last_result",  static_cast<int>(ack.result));
         break;
     }
-
     default:
         break;
     }
@@ -750,8 +564,6 @@ void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, cons
     auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
     if (d.isNull()) return;
 
-    // Call whatever setters your DroneClass actually exposes.
-    // Adjust names if your class uses different ones.
     if (field == "connected") {
         d->setConnected(value.toBool());                 // if you have it
     } else if (field == "battery_v") {
@@ -774,6 +586,7 @@ void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, cons
         d->setModeField(field, value);                   // generic hook if you prefer
     }
 
+    emit dronesChanged();
     // emit droneStateChanged(d->getName());
 } 
 
@@ -789,6 +602,7 @@ void DroneController::rebuildVariant()
     }
 }
 
+
 // Telemetry update for ONE existing drone (same object pointer)
 void DroneController::onTelemetry(const QString &name, double lat, double lon)
 {
@@ -800,7 +614,6 @@ void DroneController::onTelemetry(const QString &name, double lat, double lon)
     (*it)->setLatitude(lat);  // emits latitudeChanged → QML updates
     (*it)->setLongitude(lon); // emits longitudeChanged
 }
-
 // Simple linear interpolation towards a target point
 void moveDroneTowards(double &lat, double &lon, double targetLat, double targetLon, double step)
 {
@@ -861,10 +674,10 @@ void DroneController::simulateDroneMovement()
 }
 
 QObject* DroneController::getDroneByNameQML(const QString &name) const {
-    qDebug() << "We are inside of the new function!";
     for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>
         if (sp && sp->getName() == name)                  // use your getter names
-            return static_cast<QObject*>(sp.data());   // expose raw QObject* to QML
+        return static_cast<QObject*>(sp.data());   // expose raw QObject* to QML
     }
     return nullptr;
 }
+
