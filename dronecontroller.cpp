@@ -660,15 +660,6 @@ void DroneController::simulateDroneMovement()
         // Update drone position
         drone->setLatitude(lat);
         drone->setLongitude(lon);
-
-        // Check if we reached the waypoint
-        double distance = sqrt((targetLat - lat)*(targetLat - lat) + (targetLon - lon)*(targetLon - lon));
-        if (distance < 0.00001) // threshold for "reached"
-        {
-            // Remove waypoint
-            droneWaypoints[drone->getName()].removeFirst();
-        }
-
         emit droneStateChanged(drone.data());
     }
 }

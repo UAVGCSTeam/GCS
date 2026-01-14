@@ -56,15 +56,25 @@ Item {
         var wps = droneWaypoints[drone.name]
         if (!wps || wps.length < 2) return
 
-        var firstWp = wps[1]
-        var droneLat = drone.latitude
-        var droneLon = drone.longitude
+        var target = wps[1]
 
-        if (distanceMeters(firstWp.lat, firstWp.lon, droneLat, droneLon) < 2.0) { // 2 meter threshold
-            wps.shift()
+        if (distanceMeters(
+                target.lat,
+                target.lon,
+                drone.latitude,
+                drone.longitude
+            ) < 2.0) {
+
+            // Promote target to new origin
+            wps[0] = target
+
+            // Remove the old origin
+            wps.splice(1, 1)
+
             waypointsUpdated(drone.name)
         }
     }
+
 
     Canvas {
         id: waypointCanvas
@@ -144,12 +154,12 @@ Item {
     }
     Connections {
         target: droneController
-        function onDroneStateChanged(droneName) {
-            var drone = droneController.getDrone(droneName)
-            if (drone) {
-                pruneFirstWaypoint(drone)
-                waypointCanvas.requestPaint()
-            }
+        function onDroneStateChanged(drone) {
+            if (!drone)
+                return
+
+            pruneFirstWaypoint(drone)
+            waypointCanvas.requestPaint()
         }
     }
 
