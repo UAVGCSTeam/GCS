@@ -89,7 +89,8 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onSelectionChanged: function(selected) { updateActiveDrone(selected) }
+        onSelectionChanged: function(selected) { selectedDrones = selected }
+        onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
         onFollowRequested: function(drone) {
             if (!drone) {
                 console.warn("Follow requested without a drone reference")
@@ -124,8 +125,8 @@ Window {
 
     // This is where we essentially write the globally active drone as well 
     // as updating the global selection of drones
-    function updateActiveDrone(selected) {
-        selectedDrones = selected
-        activeDrone = selected.length === 1 ? selected[0] : null
-    }
+    // function updateActiveDrone(selected) {
+    //     selectedDrones = selected
+    //     activeDrone = selected.length === 1 ? selected[0] : null
+    // }
 }
