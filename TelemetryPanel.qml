@@ -91,12 +91,20 @@ Rectangle {
                     Layout.fillHeight: true
                     spacing: 0
 
-                    // Left Edge of Panel
-                    Rectangle {
-                        // using Layout.* because this is managed by a layout (RowLayout)
-                        width: 1
+                    Item {
+                        // Using an Item so that we can use the anchor 
+                        // system on the Rectangle. This also matches the vertical
+                        // bars on the right side 
                         Layout.fillHeight: true
-                        color: "#404040"
+                        width: 1
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.topMargin: -4
+                            anchors.bottomMargin: -4
+                            width: 1
+                            color: "#404040"
+                        }
                     }
 
                     // Repeater for each field in row
