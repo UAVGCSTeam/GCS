@@ -206,7 +206,8 @@ Rectangle {
                             const isShift = mouse.modifiers & Qt.ShiftModifier
                             const isCmd = mouse.modifiers & Qt.MetaModifier      // Command key (macOS)
                             const isCtrl = mouse.modifiers & Qt.ControlModifier  // Control key (Windows/Linux)
-                            const ctrlOrCmd = isCmd || isCtrl
+                            const ctrlOrCmd = isCmd || isCtrl                    // ctrl and cmd need to be written in this combination
+                                                                                 // or the single selection won't work for some reason
                             const hasModifier = isShift || ctrlOrCmd
 
                             // If drone is already selected, clear the selection (same behavior as e-mail clients)
@@ -222,7 +223,6 @@ Rectangle {
                                 // Ctrl/Cmd + Shift + Click: single-select and request follow
                                 mainPanel.setSingleSelection(index)
                                 mainPanel.emitSelectionChanged()
-
                                 mainPanel.followRequested(modelData)
                                 return
                             }
@@ -230,7 +230,6 @@ Rectangle {
                             // Checks for click modifiers and runs its respective helper function
                             if (isShift) {
                                 var anchor = mainPanel.selectionAnchorIndex
-
                                 if (anchor === -1) {
                                     if (mainPanel.selectedIndexes.length > 0) {
                                         anchor = mainPanel.selectedIndexes[0]
@@ -241,7 +240,6 @@ Rectangle {
                                     }
                                     mainPanel.selectionAnchorIndex = anchor
                                 }
-
                                 mainPanel.selectRange(anchor, index)
                             } else if (ctrlOrCmd) {
                                 mainPanel.toggleSelection(index)
@@ -250,7 +248,6 @@ Rectangle {
                             }
 
                             mainPanel.emitSelectionChanged()
-
                         }
                     }
 

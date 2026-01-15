@@ -9,7 +9,7 @@ Item {
     Waypoint {
         id: waypointManager
         mapview: mapview
-        activeDroneName: telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
+        activeDrone: mapwindow.activeDrone
         anchors.fill: mapview
         z: 15
     }
@@ -29,7 +29,9 @@ Item {
     property var selectedDrone: null
     property var clickedCoordLabel: null
     property var _pendingCenter: undefined
-    //property var droneWaypoints: ({})
+
+    property var activeDrone: null
+    property var selectedDrones: null
 
     Plugin {
         id: mapPlugin
@@ -290,6 +292,16 @@ Item {
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
+    }
+
+    onActiveDroneChanged: {
+        if (activeDrone === null) {
+            turnOffFollowDrone()
+        }
+    }
+
+    onSelectedDronesChanged: {
+        // This is where you will update the selection of drones
     }
 
     // Connect to droneController to listen for drone state changes
