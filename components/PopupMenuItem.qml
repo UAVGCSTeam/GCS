@@ -16,22 +16,31 @@ Button {
     property bool isDangerous: false
     property string windowFile: ""
     property var menuPopup: null  // Reference to parent Popup passed in by parent
-    
+    property bool clickable: true // determines whether it can be clicked or not 
+
     signal menuItemClicked()  // Custom signal for parent to handle
     
     background: Rectangle {
-        color: parent.pressed || parent.hovered ? 
-               (isDangerous ? GcsStyle.PanelStyle.buttonDangerHoverColor : GcsStyle.PanelStyle.buttonHoverColor) :
-               "transparent"
+        color: !clickable
+            ? "transparent"
+            : (parent.pressed || parent.hovered
+                ? (isDangerous
+                    ? GcsStyle.PanelStyle.buttonDangerHoverColor
+                    : GcsStyle.PanelStyle.buttonHoverColor)
+                : "transparent")
         radius: GcsStyle.PanelStyle.buttonRadius
     }
     
     contentItem: Text {
         id: textOfButton
         text: parent.text
-        color: isDangerous ? 
-               (parent.pressed || parent.hovered ? GcsStyle.PanelStyle.buttonDangerTextColor : GcsStyle.PanelStyle.buttonDangerColor) : 
-               GcsStyle.PanelStyle.textPrimaryColor
+        color: !clickable
+            ? GcsStyle.PanelStyle.commandNotAvailable
+            : (isDangerous
+                ? (parent.pressed || parent.hovered
+                    ? GcsStyle.PanelStyle.buttonDangerTextColor
+                    : GcsStyle.PanelStyle.buttonDangerColor)
+                : GcsStyle.PanelStyle.textPrimaryColor)
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
         font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
@@ -41,6 +50,8 @@ Button {
     
     // When clicked: 1. Close the menu 2. Emit signal 3. Open window (if windowFile is set)
     onClicked: {
+        if (!clickable) return
+
         // Close parent Popup
         if (menuPopup) {
             menuPopup.close()

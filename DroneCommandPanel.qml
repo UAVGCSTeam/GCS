@@ -371,4 +371,12 @@ Rectangle {
             color: GcsStyle.PanelStyle.textPrimaryColor
         }
     }
+
+    onActiveDroneChanged: {
+        if (activeDrone === null) {
+            mainPanel.visible = false;
+        } else {
+            mainPanel.visible = true;
+        }
+    }
 }

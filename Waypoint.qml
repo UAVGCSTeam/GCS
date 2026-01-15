@@ -6,7 +6,7 @@ Item {
 
     // Map reference, injected from parent
     property var mapview
-    property var activeDroneName: null
+    property var activeDrone: null
 
     // Shared storage for all drones
     property var droneWaypoints: ({})   // { droneName: [ {lat, lon}, ... ] }
@@ -74,8 +74,6 @@ Item {
             waypointsUpdated(drone.name)
         }
     }
-
-
     Canvas {
         id: waypointCanvas
         anchors.fill: parent
@@ -105,7 +103,7 @@ Item {
                 var wps = droneWaypoints[droneName]
                 if (!wps || wps.length < 2) continue
 
-                var isSelected = (droneName === activeDroneName)
+                var isSelected = (activeDrone ? droneName === activeDrone.name : false)
                 ctx.strokeStyle = isSelected ? "red" : "#888"
                 ctx.fillStyle   = isSelected ? "red" : "#888"
 
@@ -145,13 +143,7 @@ Item {
             function onWaypointsUpdated() { waypointCanvas.requestPaint() }
         }
     }
-    Connections {
-        target: telemetryPanel
-        function onActiveDroneChanged() {
-            waypointRoot.activeDroneName = telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
-            waypointCanvas.requestPaint()
-        }
-    }
+
     Connections {
         target: droneController
         function onDroneStateChanged(drone) {
@@ -170,4 +162,5 @@ Item {
             droneController.updateWaypoints(droneName, wps);
         }
     }
+
 }
