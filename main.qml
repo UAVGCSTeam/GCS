@@ -122,11 +122,4 @@ Window {
         // droneController.openXbee("/dev/ttys005", 57600)
         droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
     }
-
-    // This is where we essentially write the globally active drone as well 
-    // as updating the global selection of drones
-    // function updateActiveDrone(selected) {
-    //     selectedDrones = selected
-    //     activeDrone = selected.length === 1 ? selected[0] : null
-    // }
 }
