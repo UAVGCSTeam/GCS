@@ -176,7 +176,7 @@ Item {
                     // convert pixel → geo coordinate
                     lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
 
-                    if (telemetryPanel.activeDrone) {
+                    if (activeDrone) {
                         contextMenu.x = mouse.x
                         contextMenu.y = mouse.y
                         contextMenu.open()
@@ -190,10 +190,10 @@ Item {
             MenuItem {
                 text: "Go-To"
 
-                //enabled: telemetryPanel.activeDrone
+                //enabled: activeDrone
 
                 onTriggered: {
-                    var drone = telemetryPanel.activeDrone
+                    var drone = activeDrone
                     var name = drone.name
                     var clicked = rightClickMenuArea.lastRightClickCoord
 
@@ -273,10 +273,10 @@ Item {
     }
 
     function turnOnFollowDrone() {
-        if(telemetryPanel.activeDrone !== null) {
+        if(activeDrone !== null) {
             followingDrone = true
-            followDrone = telemetryPanel.activeDrone
-            followDroneName = telemetryPanel.activeDrone.name
+            followDrone = activeDrone
+            followDroneName = activeDrone.name
             console.log("Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {

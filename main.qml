@@ -89,7 +89,7 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onSelectionChanged: function(selected) { selectedDrones = selected }
+        onSelectionChanged: function(selected) { updateActiveDrone(selected) }
         onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
         onFollowRequested: function(drone) {
             if (!drone) {
@@ -121,5 +121,9 @@ Window {
         }
         // droneController.openXbee("/dev/ttys005", 57600)
         droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
+    }
+
+    function updateActiveDrone(selected) {
+        if (selected.length < 1) activeDrone = null
     }
 }
