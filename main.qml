@@ -100,7 +100,7 @@ Window {
             console.log("[main.qml] Follow requested via modifier click:", drone.name)
             // Reset the current follow target so the map component doesn't keep the old pointer
             mapComponent.turnOffFollowDrone()
-            // Immediately re-enable follow mode. map component will use telemetryPanel.activeDrone
+            // Immediately re-enable follow mode
             mapComponent.turnOnFollowDrone()
         }
     }

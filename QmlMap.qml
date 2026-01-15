@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtLocation
 import QtPositioning
 import QtQuick.Controls
+import "qrc:/gcsStyle" as GcsStyle
+import "./components"
 
 Item {
     id: mapwindow
@@ -27,7 +29,6 @@ Item {
     property int currentMapTypeIndex: 0
     property bool wayPointingActive: false
     property var selectedDrone: null
-    property var clickedCoordLabel: null
     property var _pendingCenter: undefined
 
     property var activeDrone: null
@@ -176,42 +177,53 @@ Item {
                     // convert pixel → geo coordinate
                     lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
 
-                    if (telemetryPanel.activeDrone) {
-                        contextMenu.x = mouse.x
-                        contextMenu.y = mouse.y
-                        contextMenu.open()
+                    contextMenu.x = mouse.x
+                    contextMenu.y = mouse.y
+                    contextMenu.open()
+                }
+            }
+        }
+        Popup {
+            id: contextMenu
+            width: 200
+            padding: 5
+            modal: false
+            focus: true
+            closePolicy: Popup.CloseOnPressOutside
+            
+            background: Rectangle {
+                color: GcsStyle.PanelStyle.primaryColor
+                border.color: GcsStyle.PanelStyle.defaultBorderColor
+                border.width: GcsStyle.PanelStyle.defaultBorderWidth
+                radius: GcsStyle.PanelStyle.buttonRadius + 3
+            }
+            
+            Column {
+                width: parent.width
+                spacing: 2
+                
+                PopupMenuItem {
+                    text: "Go-To"
+                    clickable: activeDrone ? true : false
+                    onMenuItemClicked: {
+                        contextMenu.close()
+                        waypointManager.addWaypoint(
+                            activeDrone.name,
+                            activeDrone.latitude,
+                            activeDrone.longitude,
+                            rightClickMenuArea.lastRightClickCoord.latitude,
+                            rightClickMenuArea.lastRightClickCoord.longitude
+                        )
+                        clickedCoordLabelItem.coordinate = rightClickMenuArea
                     }
                 }
             }
         }
-        Menu {
-            id: contextMenu
 
-            MenuItem {
-                text: "Go-To"
-
-                //enabled: telemetryPanel.activeDrone
-
-                onTriggered: {
-                    var drone = telemetryPanel.activeDrone
-                    var name = drone.name
-                    var clicked = rightClickMenuArea.lastRightClickCoord
-
-                    waypointManager.addWaypoint(
-                        name,
-                        drone.latitude,
-                        drone.longitude,
-                        clicked.latitude,
-                        clicked.longitude
-                    )
-                    mapwindow.clickedCoordLabel = clicked
-                }
-            }
-        }
         MapQuickItem {
             id: clickedCoordLabelItem
-            coordinate: mapwindow.clickedCoordLabel
-            visible: mapwindow.clickedCoordLabel !== null
+            coordinate: null
+            visible: clickedCoordLabelItem.coordinate !== null
 
             // offset label 10px right & 15px down from the actual coordinate
             anchorPoint.x: labelRect.width / 2 - 10
@@ -229,8 +241,8 @@ Item {
                 Text {
                     id: coordTex
                     anchors.centerIn: parent
-                    text: mapwindow.clickedCoordLabel
-                        ? mapwindow.clickedCoordLabel.latitude.toFixed(6) + ", " + mapwindow.clickedCoordLabel.longitude.toFixed(6)
+                    text: clickedCoordLabelItem.coordinate
+                        ? clickedCoordLabelItem.coordinate.latitude.toFixed(6) + ", " + clickedCoordLabelItem.coordinate.longitude.toFixed(6)
                         : ""
                     color: "black"
                     font.pixelSize: 14
@@ -273,10 +285,10 @@ Item {
     }
 
     function turnOnFollowDrone() {
-        if(telemetryPanel.activeDrone !== null) {
+        if(activeDrone !== null) {
             followingDrone = true
-            followDrone = telemetryPanel.activeDrone
-            followDroneName = telemetryPanel.activeDrone.name
+            followDrone = activeDrone
+            followDroneName = activeDrone.name
             console.log("Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
