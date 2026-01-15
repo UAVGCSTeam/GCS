@@ -6,6 +6,14 @@ import QtQuick.Controls
 Item {
     id: mapwindow
 
+    Waypoint {
+        id: waypointManager
+        mapview: mapview
+        activeDroneName: telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
+        anchors.fill: mapview
+        z: 15
+    }
+
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
@@ -17,9 +25,11 @@ Item {
         { name: "Terrain", type: Map.TerrainMap },
     ]
     property int currentMapTypeIndex: 0
+    property bool wayPointingActive: false
     property var selectedDrone: null
     property var clickedCoordLabel: null
     property var _pendingCenter: undefined
+    //property var droneWaypoints: ({})
 
     Plugin {
         id: mapPlugin
@@ -147,6 +157,84 @@ Item {
                 }
             }
         }
+
+        // Context menu for waypointing
+        MouseArea {
+            id: rightClickMenuArea
+            anchors.fill: parent
+            acceptedButtons: Qt.RightButton
+            propagateComposedEvents: true
+
+            // store last right-click coordinate
+            property var lastRightClickCoord: null
+
+            onPressed: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+
+                    // convert pixel → geo coordinate
+                    lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
+
+                    if (telemetryPanel.activeDrone) {
+                        contextMenu.x = mouse.x
+                        contextMenu.y = mouse.y
+                        contextMenu.open()
+                    }
+                }
+            }
+        }
+        Menu {
+            id: contextMenu
+
+            MenuItem {
+                text: "Go-To"
+
+                //enabled: telemetryPanel.activeDrone
+
+                onTriggered: {
+                    var drone = telemetryPanel.activeDrone
+                    var name = drone.name
+                    var clicked = rightClickMenuArea.lastRightClickCoord
+
+                    waypointManager.addWaypoint(
+                        name,
+                        drone.latitude,
+                        drone.longitude,
+                        clicked.latitude,
+                        clicked.longitude
+                    )
+                    mapwindow.clickedCoordLabel = clicked
+                }
+            }
+        }
+        MapQuickItem {
+            id: clickedCoordLabelItem
+            coordinate: mapwindow.clickedCoordLabel
+            visible: mapwindow.clickedCoordLabel !== null
+
+            // offset label 10px right & 15px down from the actual coordinate
+            anchorPoint.x: labelRect.width / 2 - 10
+            anchorPoint.y: labelRect.height + 15
+
+            sourceItem: Rectangle {
+                id: labelRect
+                color: "#ffffff"
+                radius: 5
+
+                // Let the rectangle size itself around the text
+                width: coordTex.implicitWidth + 8
+                height: coordTex.implicitHeight + 8
+
+                Text {
+                    id: coordTex
+                    anchors.centerIn: parent
+                    text: mapwindow.clickedCoordLabel
+                        ? mapwindow.clickedCoordLabel.latitude.toFixed(6) + ", " + mapwindow.clickedCoordLabel.longitude.toFixed(6)
+                        : ""
+                    color: "black"
+                    font.pixelSize: 14
+                }
+            }
+        }
         onZoomLevelChanged: {
             // This is the logic needed in order to update the scale bar indicator
 
@@ -230,7 +318,6 @@ Item {
                 mapview.zoomLevel = level
         }
     }
-
     Component.onCompleted: {        
         console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
     }

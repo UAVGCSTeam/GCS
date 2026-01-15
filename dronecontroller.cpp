@@ -67,6 +67,11 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         index++;
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
+
+    // --- Simulated Drone Movement ---
+    connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
+    simulationTimer.start(250); // Move once per second
+    qDebug() << "Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.
@@ -609,8 +614,55 @@ void DroneController::onTelemetry(const QString &name, double lat, double lon)
     (*it)->setLatitude(lat);  // emits latitudeChanged → QML updates
     (*it)->setLongitude(lon); // emits longitudeChanged
 }
+// Simple linear interpolation towards a target point
+void moveDroneTowards(double &lat, double &lon, double targetLat, double targetLon, double step)
+{
+    double dLat = targetLat - lat;
+    double dLon = targetLon - lon;
 
+    // Calculate distance
+    double distance = sqrt(dLat*dLat + dLon*dLon);
+    if (distance < 1e-6) return;  // Already there
 
+    // Move by step, but don't overshoot
+    double ratio = step / distance;
+    if (ratio > 1.0) ratio = 1.0;
+
+    lat += dLat * ratio;
+    lon += dLon * ratio;
+}
+
+void DroneController::simulateDroneMovement()
+{
+    double step = 0.00005; // small step toward waypoint
+
+    for (auto &drone : droneList)
+    {
+        if (!drone) continue;
+
+        double lat = drone->getLatitude();
+        double lon = drone->getLongitude();
+
+        // Get the next waypoint for this drone
+        QList<QVariantMap> wps;
+        if (droneWaypoints.contains(drone->getName()) && !droneWaypoints[drone->getName()].isEmpty())
+        {
+            wps = droneWaypoints[drone->getName()];
+        }
+        if (wps.size() < 2)
+            continue; // nothing to move toward
+        double targetLat = wps[1]["lat"].toDouble();
+        double targetLon = wps[1]["lon"].toDouble();
+
+        // Move towards it
+        moveDroneTowards(lat, lon, targetLat, targetLon, step);
+
+        // Update drone position
+        drone->setLatitude(lat);
+        drone->setLongitude(lon);
+        emit droneStateChanged(drone.data());
+    }
+}
 
 QObject* DroneController::getDroneByNameQML(const QString &name) const {
     for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>
