@@ -93,12 +93,9 @@ Rectangle {
 
                     // Left Edge of Panel
                     Rectangle {
+                        // using Layout.* because this is managed by a layout (RowLayout)
                         width: 1
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.topMargin: -4
-                        anchors.bottomMargin: -4
+                        Layout.fillHeight: true
                         color: "#404040"
                     }
 
@@ -126,8 +123,8 @@ Rectangle {
                                         if (activeDrone) {
                                             if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
                                             else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
-                                            else if (modelData.label === "SYS ID") { activeDrone.sysID }
-                                            else if (modelData.label === "COMP ID") { activeDrone.compID }
+                                            // else if (modelData.label === "SYS ID") { activeDrone.sysID }
+                                            // else if (modelData.label === "COMP ID") { activeDrone.compID }
                                             else if (modelData.label === "Flight Time") { "---" }
                                             else if (modelData.label === "Yaw") { activeDrone.orientation.z.toFixed(3) }
                                             else if (modelData.label === "Pitch") { activeDrone.orientation.y.toFixed(3) }
