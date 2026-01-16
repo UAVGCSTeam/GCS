@@ -15,6 +15,7 @@ Rectangle {
     anchors.bottom: parent.bottom
     anchors.bottomMargin: 8
 
+    property color borderColor: "#404040"
     property var activeDrone: null 
     property bool isExpanded: false
 
@@ -71,7 +72,7 @@ Rectangle {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: "#404040"
+            color: borderColor
         }
 
         // Repeater for each row
@@ -91,15 +92,20 @@ Rectangle {
                     Layout.fillHeight: true
                     spacing: 0
 
-                    // Left Edge of Panel
-                    Rectangle {
+                    Item {
+                        // Using an Item so that we can use the anchor 
+                        // system on the Rectangle. This also matches the vertical
+                        // bars on the right side 
+                        Layout.fillHeight: true
                         width: 1
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-                        anchors.topMargin: -4
-                        anchors.bottomMargin: -4
-                        color: "#404040"
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.topMargin: -4
+                            anchors.bottomMargin: -4
+                            width: 1
+                            color: borderColor
+                        }
                     }
 
                     // Repeater for each field in row
@@ -116,8 +122,8 @@ Rectangle {
 
                                 Text {
                                     text: modelData.label
-                                    color: "white"
-                                    font.pixelSize: 10
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
                                     Layout.alignment: Qt.AlignHCenter
                                 }
 
@@ -126,8 +132,8 @@ Rectangle {
                                         if (activeDrone) {
                                             if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
                                             else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
-                                            else if (modelData.label === "SYS ID") { activeDrone.sysID }
-                                            else if (modelData.label === "COMP ID") { activeDrone.compID }
+                                            // else if (modelData.label === "SYS ID") { activeDrone.sysID }
+                                            // else if (modelData.label === "COMP ID") { activeDrone.compID }
                                             else if (modelData.label === "Flight Time") { "---" }
                                             else if (modelData.label === "Yaw") { activeDrone.orientation.z.toFixed(3) }
                                             else if (modelData.label === "Pitch") { activeDrone.orientation.y.toFixed(3) }
@@ -142,15 +148,15 @@ Rectangle {
                                             else { "---" }
                                         } else { "---" }
                                     }
-                                    color: "white"
-                                    font.pixelSize: 14
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                                     font.bold: true
                                 }
                                 
                                 Text {
                                     text: modelData.unit || ""
-                                    color: "white"
-                                    font.pixelSize: 14
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                                     visible: !!modelData.unit
                                 }
                             }
@@ -163,7 +169,7 @@ Rectangle {
                                 anchors.bottom: parent.bottom
                                 anchors.topMargin: -4
                                 anchors.bottomMargin: -4
-                                color: "#404040"
+                                color: borderColor
                             }
                         }
                     }
@@ -173,7 +179,7 @@ Rectangle {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 1
-                    color: "#404040"
+                    color: borderColor
                 }
             }
         }
