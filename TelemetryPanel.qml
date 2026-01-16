@@ -132,6 +132,7 @@ Rectangle {
                                         if (activeDrone) {
                                             if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
                                             else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
+                                            // sysID and compID are no longer implemented. might be implemented in the future
                                             // else if (modelData.label === "SYS ID") { activeDrone.sysID }
                                             // else if (modelData.label === "COMP ID") { activeDrone.compID }
                                             else if (modelData.label === "Flight Time") { "---" }
@@ -185,13 +186,12 @@ Rectangle {
         }
     }
 
-    function setActiveDrone(drone) {
-        if (!drone) return;
-        activeDrone = drone;
-    }
-
-    function clearActiveDrone() {
-        activeDrone = null;
+    onActiveDroneChanged: {
+        if (activeDrone === null) {
+            telemetryPanel.visible = false;
+        } else {
+            telemetryPanel.visible = true;
+        }
     }
 
     function toggleExpanded() {

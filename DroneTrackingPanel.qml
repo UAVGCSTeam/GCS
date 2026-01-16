@@ -20,6 +20,7 @@ Rectangle {
     border.width: GcsStyle.panelStyle.defaultBorderWidth
 
     signal selectionChanged(var selectedDrones)     // Broadcast the current selection so other components (telemetry, commands, etc.) stay in sync
+    signal activeDroneChanged(var anchor)     // Broadcast the current anchor which will be used as the active drone
     signal followRequested(var drone)     // Dedicated signal for the "follow" shortcut so main.qml can toggle map following
 
     property var selectedIndexes: [] // Stores which rows are selected
@@ -206,7 +207,8 @@ Rectangle {
                             const isShift = mouse.modifiers & Qt.ShiftModifier
                             const isCmd = mouse.modifiers & Qt.MetaModifier      // Command key (macOS)
                             const isCtrl = mouse.modifiers & Qt.ControlModifier  // Control key (Windows/Linux)
-                            const ctrlOrCmd = isCmd || isCtrl
+                            const ctrlOrCmd = isCmd || isCtrl                    // ctrl and cmd need to be written in this combination
+                                                                                 // or the single selection won't work for some reason
                             const hasModifier = isShift || ctrlOrCmd
 
                             // If drone is already selected, clear the selection (same behavior as e-mail clients)
@@ -222,7 +224,6 @@ Rectangle {
                                 // Ctrl/Cmd + Shift + Click: single-select and request follow
                                 mainPanel.setSingleSelection(index)
                                 mainPanel.emitSelectionChanged()
-
                                 mainPanel.followRequested(modelData)
                                 return
                             }
@@ -230,7 +231,6 @@ Rectangle {
                             // Checks for click modifiers and runs its respective helper function
                             if (isShift) {
                                 var anchor = mainPanel.selectionAnchorIndex
-
                                 if (anchor === -1) {
                                     if (mainPanel.selectedIndexes.length > 0) {
                                         anchor = mainPanel.selectedIndexes[0]
@@ -241,7 +241,6 @@ Rectangle {
                                     }
                                     mainPanel.selectionAnchorIndex = anchor
                                 }
-
                                 mainPanel.selectRange(anchor, index)
                             } else if (ctrlOrCmd) {
                                 mainPanel.toggleSelection(index)
@@ -250,7 +249,6 @@ Rectangle {
                             }
 
                             mainPanel.emitSelectionChanged()
-
                         }
                     }
 
@@ -475,10 +473,17 @@ Rectangle {
 
         selectionChanged(selected)
     }
-    
-    // this ties into the telemetry panel to control maximum width of the panel         
-    signal trackingWidthReady(int w)
-    function publishTrackingWidth() {
-        trackingWidthReady(width)
+
+    // Whenever the selection changes, the active drone has a chance of also changing
+    // This will let main.qml know the active drone is updated
+    onSelectionChanged: function(selected) {
+        var idx = selectionAnchorIndex
+        if (idx < 0 || idx >= droneListView.count)
+            return
+
+        var model = droneListView.model
+        var drone = model ? model[idx] : null
+
+        activeDroneChanged(drone)
     }
 }

@@ -9,7 +9,7 @@ Item {
     Waypoint {
         id: waypointManager
         mapview: mapview
-        activeDroneName: telemetryPanel.activeDrone ? telemetryPanel.activeDrone.name : null
+        activeDrone: mapwindow.activeDrone
         anchors.fill: mapview
         z: 15
     }
@@ -29,7 +29,9 @@ Item {
     property var selectedDrone: null
     property var clickedCoordLabel: null
     property var _pendingCenter: undefined
-    //property var droneWaypoints: ({})
+
+    property var activeDrone: null
+    property var selectedDrones: null
 
     Plugin {
         id: mapPlugin
@@ -174,7 +176,7 @@ Item {
                     // convert pixel → geo coordinate
                     lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
 
-                    if (telemetryPanel.activeDrone) {
+                    if (activeDrone) {
                         contextMenu.x = mouse.x
                         contextMenu.y = mouse.y
                         contextMenu.open()
@@ -188,10 +190,10 @@ Item {
             MenuItem {
                 text: "Go-To"
 
-                //enabled: telemetryPanel.activeDrone
+                //enabled: activeDrone
 
                 onTriggered: {
-                    var drone = telemetryPanel.activeDrone
+                    var drone = activeDrone
                     var name = drone.name
                     var clicked = rightClickMenuArea.lastRightClickCoord
 
@@ -271,10 +273,10 @@ Item {
     }
 
     function turnOnFollowDrone() {
-        if(telemetryPanel.activeDrone !== null) {
+        if(activeDrone !== null) {
             followingDrone = true
-            followDrone = telemetryPanel.activeDrone
-            followDroneName = telemetryPanel.activeDrone.name
+            followDrone = activeDrone
+            followDroneName = activeDrone.name
             console.log("Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
@@ -290,6 +292,16 @@ Item {
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
+    }
+
+    onActiveDroneChanged: {
+        if (activeDrone === null) {
+            turnOffFollowDrone()
+        }
+    }
+
+    onSelectedDronesChanged: {
+        // This is where you will update the selection of drones
     }
 
     // Connect to droneController to listen for drone state changes
