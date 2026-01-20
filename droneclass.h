@@ -12,18 +12,18 @@
 class DroneClass : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString   name        READ getName        WRITE setName        NOTIFY nameChanged        FINAL)
-    Q_PROPERTY(QString   xbeeAddress READ getXbeeAddress WRITE setXbeeAddress NOTIFY xbeeAddressChanged FINAL)
-    Q_PROPERTY(double    batteryLevel READ getBatteryLevel WRITE setBatteryLevel NOTIFY batteryChanged  FINAL)
-    Q_PROPERTY(QString   role        READ getRole        WRITE setRole        NOTIFY roleChanged        FINAL)
-    Q_PROPERTY(QString   xbeeID      READ getXbeeID      WRITE setXbeeID      NOTIFY xbeeIDChanged      FINAL)
-    Q_PROPERTY(QVector3D position    READ getPosition    WRITE setPosition    NOTIFY positionChanged    FINAL)
-    Q_PROPERTY(double    latitude    READ getLatitude    WRITE setLatitude    NOTIFY latitudeChanged    FINAL)
-    Q_PROPERTY(double    longitude   READ getLongitude   WRITE setLongitude   NOTIFY longitudeChanged   FINAL)
-    Q_PROPERTY(double    altitude    READ getAltitude    WRITE setAltitude    NOTIFY altitudeChanged    FINAL)
-    Q_PROPERTY(QVector3D velocity    READ getVelocity    WRITE setVelocity    NOTIFY velocityChanged    FINAL)
-    Q_PROPERTY(double    airspeed    READ getAirspeed    WRITE setAirspeed    NOTIFY airspeedChanged    FINAL)
-    Q_PROPERTY(QVector3D orientation READ getOrientation WRITE setOrientation NOTIFY orientationChanged FINAL)
+    Q_PROPERTY(QString   name        READ getName        NOTIFY nameChanged        FINAL)
+    Q_PROPERTY(QString   xbeeAddress READ getXbeeAddress NOTIFY xbeeAddressChanged FINAL)
+    Q_PROPERTY(double    batteryLevel READ getBatteryLevel NOTIFY batteryChanged  FINAL)
+    Q_PROPERTY(QString   role        READ getRole        NOTIFY roleChanged        FINAL)
+    Q_PROPERTY(QString   xbeeID      READ getXbeeID      NOTIFY xbeeIDChanged      FINAL)
+    Q_PROPERTY(QVector3D position    READ getPosition    NOTIFY positionChanged    FINAL)
+    Q_PROPERTY(double    latitude    READ getLatitude    NOTIFY latitudeChanged    FINAL)
+    Q_PROPERTY(double    longitude   READ getLongitude   NOTIFY longitudeChanged   FINAL)
+    Q_PROPERTY(double    altitude    READ getAltitude    NOTIFY altitudeChanged    FINAL)
+    Q_PROPERTY(QVector3D velocity    READ getVelocity    NOTIFY velocityChanged    FINAL)
+    Q_PROPERTY(double    airspeed    READ getAirspeed    NOTIFY airspeedChanged    FINAL)
+    Q_PROPERTY(QVector3D orientation READ getOrientation NOTIFY orientationChanged FINAL)
 
 public:
     explicit DroneClass(QObject *parent = nullptr);
@@ -96,9 +96,9 @@ public:
 
 
     // Q_INVOKABLE helpers for QML
-    Q_INVOKABLE void setPosition(float x, float y, float z);
-    Q_INVOKABLE void setVelocity(float x, float y, float z);
-    Q_INVOKABLE void setOrientation(float x, float y, float z);
+    void setPosition(float x, float y, float z);
+    void setVelocity(float x, float y, float z);
+    void setOrientation(float x, float y, float z);
 
 signals:
     void nameChanged();
