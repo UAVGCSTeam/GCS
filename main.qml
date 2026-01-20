@@ -16,8 +16,8 @@ Window {
     height: 720
     visible: true
     title: qsTr("GCS - Cal Poly Pomona")
-    property var selectedDrones: null
-    property var activeDrone: null
+    property var selectedDrones: [] // a list of DroneClass objects --- QML doesn't allow list<DroneClass>
+    property var activeDrone: null // DroneClass type
 
     // These are our components that sit on top of our Window object
 
