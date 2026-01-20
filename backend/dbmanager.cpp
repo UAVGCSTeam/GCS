@@ -377,7 +377,7 @@ bool DBManager::createInitialDrones() {
     // Insert fourth drone
     insertQuery.bindValue(":droneName", "4");
     insertQuery.bindValue(":droneRole", "Suppression");
-    insertQuery.bindValue(":xbeeID", "C");
+    insertQuery.bindValue(":xbeeID", "D");
     insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
 
     if (!insertQuery.exec()) {
@@ -390,7 +390,7 @@ bool DBManager::createInitialDrones() {
     // Insert fifth drone
     insertQuery.bindValue(":droneName", "5");
     insertQuery.bindValue(":droneRole", "Suppression");
-    insertQuery.bindValue(":xbeeID", "C");
+    insertQuery.bindValue(":xbeeID", "E");
     insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
 
     if (!insertQuery.exec()) {
@@ -403,7 +403,7 @@ bool DBManager::createInitialDrones() {
     // Insert sixth drone
     insertQuery.bindValue(":droneName", "6");
     insertQuery.bindValue(":droneRole", "Suppression");
-    insertQuery.bindValue(":xbeeID", "C");
+    insertQuery.bindValue(":xbeeID", "F");
     insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
 
     if (!insertQuery.exec()) {

@@ -142,7 +142,7 @@ Rectangle {
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                     Text {
-                        text: {droneController.drones.length + " drones in fleet"}
+                        text: {droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"}
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
@@ -166,11 +166,7 @@ Rectangle {
                 /*
                   TODO:
                         Make drone list item selectable and display real data.
-
                         Make fire page as well-we need real time fire data for this page.
-
-                        Make header allocate those numbers dynamically.
-
                         Make drone symbols update based on status.
                 */
 
@@ -304,7 +300,7 @@ Rectangle {
                     target: droneController
                     function onDronesChanged() {
                         // TODO: check to see if telemetry data populates during simulation with ardupilot
-                        droneListView.model = dronecontroller ? droneController.drones : [] 
+                        droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
             }
