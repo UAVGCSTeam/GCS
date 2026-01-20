@@ -89,7 +89,7 @@ Window {
             left: parent.left
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
-        onSelectionChanged: function(selected) { updateActiveDrone(selected) }
+        onSelectionChanged: function(selected) { selectedDrones = selected }
         onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
         onFollowRequested: function(drone) {
             if (!drone) {
@@ -100,7 +100,7 @@ Window {
             console.log("[main.qml] Follow requested via modifier click:", drone.name)
             // Reset the current follow target so the map component doesn't keep the old pointer
             mapComponent.turnOffFollowDrone()
-            // Immediately re-enable follow mode. map component will use telemetryPanel.activeDrone
+            // Immediately re-enable follow mode
             mapComponent.turnOnFollowDrone()
         }
     }
@@ -121,9 +121,5 @@ Window {
         }
         // droneController.openXbee("/dev/ttys005", 57600)
         droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
-    }
-
-    function updateActiveDrone(selected) {
-        if (selected.length < 1) activeDrone = null
     }
 }
