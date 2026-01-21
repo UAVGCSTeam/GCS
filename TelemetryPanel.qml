@@ -6,16 +6,16 @@ import "qrc:/gcsStyle" as GcsStyle
 Rectangle {
     // This is the container element
     id: telemetryPanel
-    height: isExpanded ? 199 : 90  // 2.21 : 1
-    width: Math.min(parent.width * 0.5, 400)
-    color: "#80000000"
+    height: isExpanded ? 166 : 88
+    width: Math.min(parent.width * 0.5, 650)
+    color: GcsStyle.PanelStyle.telemetryPanelBackgroundColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
     anchors.bottomMargin: 8
 
-    property color borderColor: "#404040"
+    property color borderColor: GcsStyle.PanelStyle.telemetryPanelBorderColor
     property var activeDrone: null 
     property bool isExpanded: false
 
@@ -27,27 +27,26 @@ Rectangle {
         [
             { label: "SYS ID", unit: "" },
             { label: "COMP ID", unit: "" },
-            { label: "Flight Time", unit: "" },
-        ],
-        [
-            { label: "Yaw", unit: "°" },
-            { label: "Pitch", unit: "°" },
-            { label: "Roll", unit: "°" }
-        ],
-        [
-            { label: "Status", unit: "" },
             { label: "Mode", unit: "" },
             { label: "Fail Safe", unit: "" }
         ],
         [
+            { label: "Yaw", unit: "°" },
+            { label: "Pitch", unit: "°" },
+            { label: "Roll", unit: "°" },
+            { label: "N/A", unit: "N/A" },
+        ],
+        [
             { label: "Latitude", unit: "" },
             { label: "Longitude", unit: "" },
-            { label: "Altitude", unit: "m" }
+            { label: "Altitude", unit: "m" },
+            { label: "Flight Time", unit: "" }
         ],
         [
             { label: "Dist GCS", unit: "m" },
             { label: "Air Speed", unit: "m/s" },
-            { label: "Gnd Speed", unit: "m/s" }
+            { label: "Gnd Speed", unit: "m/s" },
+            { label: "Status", unit: "" }
         ]
     ]
 
@@ -68,13 +67,6 @@ Rectangle {
         anchors.margins: 8
         spacing: 4
 
-        // Top edge of panel
-        Rectangle {
-            Layout.fillWidth: true
-            height: 1
-            color: borderColor
-        }
-
         // Repeater for each row
         Repeater {
             model: telemetryPanel.fieldRows.length
@@ -82,7 +74,7 @@ Rectangle {
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                visible: index > 2 || isExpanded // permanently leave last 2 rows visible
+                visible: isExpanded || index >= (telemetryPanel.fieldRows.length - 2) // dynamically show last 2 rows when collapsed
                 spacing: 4
 
                 property var rowFields: telemetryPanel.fieldRows[index]
@@ -91,22 +83,6 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: 0
-
-                    Item {
-                        // Using an Item so that we can use the anchor 
-                        // system on the Rectangle. This also matches the vertical
-                        // bars on the right side 
-                        Layout.fillHeight: true
-                        width: 1
-                        Rectangle {
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.topMargin: -4
-                            anchors.bottomMargin: -4
-                            width: 1
-                            color: borderColor
-                        }
-                    }
 
                     // Repeater for each field in row
                     Repeater {
@@ -123,7 +99,7 @@ Rectangle {
                                 Text {
                                     text: modelData.label
                                     color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                                     Layout.alignment: Qt.AlignHCenter
                                 }
 
@@ -150,37 +126,19 @@ Rectangle {
                                         } else { "---" }
                                     }
                                     color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                                     font.bold: true
                                 }
                                 
                                 Text {
                                     text: modelData.unit || ""
                                     color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                                     visible: !!modelData.unit
                                 }
                             }
-
-                            // Separator between columns
-                            Rectangle {
-                                width: 1
-                                anchors.right: parent.right
-                                anchors.top: parent.top
-                                anchors.bottom: parent.bottom
-                                anchors.topMargin: -4
-                                anchors.bottomMargin: -4
-                                color: borderColor
-                            }
                         }
                     }
-                }
-
-                // Divider between rows
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: borderColor
                 }
             }
         }

@@ -102,5 +102,9 @@ QtObject {
     readonly property color commandInProgress: "#FFC107"
     readonly property color commandNotAvailable: textSecondaryColor
 
+    // Telemetry Panel colors
+    readonly property color telemetryPanelBorderColor: "#404040"
+    readonly property color telemetryPanelBackgroundColor: "#80000000"
+
     Component.onCompleted: console.log("PanelStyle loaded")
 }
