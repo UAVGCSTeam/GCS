@@ -76,6 +76,7 @@ Rectangle {
                         onClicked: {
                             droneListView.visible = true
                             fireView.visible = false
+                            discoveryPanel.visible = false
                         }
                     }
                 }
@@ -102,6 +103,34 @@ Rectangle {
                         onClicked: {
                             droneListView.visible = false
                             fireView.visible = true
+                            discoveryPanel.visible = false
+                        }
+                    }
+                }
+
+                // Toggle button 3
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    color: discoveryPanel.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
+                    radius: GcsStyle.PanelStyle.buttonRadius
+
+                    Image {
+                        anchors.right: parent.right
+                        anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "qrc:/resources/discoveryPanelIconDarkMode.png"
+                        sourceSize.width: GcsStyle.PanelStyle.iconSize
+                        sourceSize.height: GcsStyle.PanelStyle.iconSize
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            droneListView.visible = false
+                            fireView.visible = false
+                            discoveryPanel.visible = true
                         }
                     }
                 }
@@ -367,6 +396,20 @@ Rectangle {
                     text: "Fire View"
                     font.pixelSize: GcsStyle.PanelStyle.fontSizeLarge
                     color: GcsStyle.PanelStyle.textPrimaryColor
+                }
+            }
+
+            // Discovery panel
+            Rectangle {
+                id: discoveryPanel
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                color: GcsStyle.PanelStyle.secondaryColor
+                visible: false
+                radius: GcsStyle.PanelStyle.cornerRadius
+
+                Text {
+                    text: "hi"
                 }
             }
         }

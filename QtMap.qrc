@@ -34,6 +34,9 @@
         <file>fireSVG.svg</file>
         <file>fireSVGDarkMode.svg</file>
         <file>droneMapIconSVG.svg</file>
+        <file>discoveryPanelIcon.png</file>
+        <file>discoveryPanelIconDarkMode.png</file>
+        <file>discoveryPanelIconDarkModeSVG.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
