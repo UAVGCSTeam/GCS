@@ -8,7 +8,7 @@ Rectangle {
     id: telemetryPanel
     height: isExpanded ? 166 : 88
     width: Math.min(parent.width * 0.5, 650)
-    color: GcsStyle.PanelStyle.telemetryPanelBackgroundColor
+    color: GcsStyle.PanelStyle.primaryColor
     radius: GcsStyle.PanelStyle.cornerRadius
 
     anchors.horizontalCenter: parent.horizontalCenter
@@ -27,26 +27,26 @@ Rectangle {
         [
             { label: "SYS ID", unit: "" },
             { label: "COMP ID", unit: "" },
-            { label: "Mode", unit: "" },
-            { label: "Fail Safe", unit: "" }
+            { label: "MODE", unit: "" },
+            { label: "FAIL SAFE", unit: "" }
         ],
         [
-            { label: "Yaw", unit: "°" },
-            { label: "Pitch", unit: "°" },
-            { label: "Roll", unit: "°" },
+            { label: "YAW", unit: "°" },
+            { label: "PITCH", unit: "°" },
+            { label: "ROLL", unit: "°" },
             { label: "N/A", unit: "N/A" },
         ],
         [
-            { label: "Latitude", unit: "" },
-            { label: "Longitude", unit: "" },
-            { label: "Altitude", unit: "m" },
-            { label: "Flight Time", unit: "" }
+            { label: "LAT", unit: "" },
+            { label: "LON", unit: "" },
+            { label: "ALT", unit: "m" },
+            { label: "FLT TIME", unit: "" }
         ],
         [
-            { label: "Dist GCS", unit: "m" },
-            { label: "Air Speed", unit: "m/s" },
-            { label: "Gnd Speed", unit: "m/s" },
-            { label: "Status", unit: "" }
+            { label: "DIST GCS", unit: "m" },
+            { label: "AIR SPD", unit: "m/s" },
+            { label: "GND SPD", unit: "m/s" },
+            { label: "STAT", unit: "" }
         ]
     ]
 
@@ -99,29 +99,29 @@ Rectangle {
                                 Text {
                                     text: modelData.label
                                     color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                                     Layout.alignment: Qt.AlignHCenter
                                 }
 
                                 Text {
                                     text: {
                                         if (activeDrone) {
-                                            if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
-                                            else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
+                                            if (modelData.label === "LAT") { activeDrone.latitude.toFixed(3) }
+                                            else if (modelData.label === "LON") { activeDrone.longitude.toFixed(3) }
                                             // sysID and compID are no longer implemented. might be implemented in the future
                                             // else if (modelData.label === "SYS ID") { activeDrone.sysID }
                                             // else if (modelData.label === "COMP ID") { activeDrone.compID }
-                                            else if (modelData.label === "Flight Time") { "---" }
-                                            else if (modelData.label === "Yaw") { activeDrone.orientation.z.toFixed(3) }
-                                            else if (modelData.label === "Pitch") { activeDrone.orientation.y.toFixed(3) }
-                                            else if (modelData.label === "Roll") {  activeDrone.orientation.x.toFixed(3) }
-                                            else if (modelData.label === "Fail Safe") { "---" }
-                                            else if (modelData.label === "Status") { "---" }
-                                            else if (modelData.label === "Mode") { "---" }
-                                            else if (modelData.label === "Altitude") { activeDrone.altitude }
-                                            else if (modelData.label === "Dist GCS") { "---" }
-                                            else if (modelData.label === "Air Speed") { "---" }
-                                            else if (modelData.label === "Gnd Speed") { "---" }
+                                            else if (modelData.label === "FLT TIME") { "---" }
+                                            else if (modelData.label === "YAW") { activeDrone.orientation.z.toFixed(3) }
+                                            else if (modelData.label === "PITCH") { activeDrone.orientation.y.toFixed(3) }
+                                            else if (modelData.label === "ROLL") {  activeDrone.orientation.x.toFixed(3) }
+                                            else if (modelData.label === "FAIL SAFE") { "---" }
+                                            else if (modelData.label === "STAT") { "---" }
+                                            else if (modelData.label === "MODE") { "---" }
+                                            else if (modelData.label === "ALT") { activeDrone.altitude }
+                                            else if (modelData.label === "DIST GCS") { "---" }
+                                            else if (modelData.label === "AIR SPD") { "---" }
+                                            else if (modelData.label === "GND SPD") { "---" }
                                             else { "---" }
                                         } else { "---" }
                                     }
