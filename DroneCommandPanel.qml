@@ -284,10 +284,10 @@ Rectangle {
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
 
                     background: Rectangle {
-                        border.width: 0.05
-                        radius: 1
-                        color: GcsStyle.PanelStyle.buttonColor
-                    }
+                            border.width: 0.05
+                            radius: GcsStyle.PanelStyle.buttonRadius
+                            color: hovered ? GcsStyle.PanelStyle.buttonHoverColor : GcsStyle.PanelStyle.buttonColor
+                        }
 
                     // gets button status
                     property int status: expandedBody.buttonStatuses[modelData] ?? statusNotAvailable
