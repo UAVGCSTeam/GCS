@@ -50,10 +50,6 @@ Rectangle {
     readonly property int statusInProgress: 1
     readonly property int statusAvailable: 2
 
-    //  resets panel to collapsed once it disappears
-    onVisibleChanged: if (!visible) expanded = false
-
-
 
 
 
@@ -111,15 +107,14 @@ Rectangle {
                                 border.width: 0
                                 color: GcsStyle.PanelStyle.buttonColor
                             }
+                        }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                anchors.margins: -8
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-
-                                onClicked: mainPanel.expanded = !mainPanel.expanded
-                            }
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.margins: -8
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: mainPanel.expanded = !mainPanel.expanded
                         }
                     }
                 }
