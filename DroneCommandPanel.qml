@@ -433,7 +433,22 @@ Rectangle {
                 text: "Back to Commands"
                 onClicked: {
                     mainPanel.showingWaypoints = false
-                    mainPanel.currentCommandView = "commands"
+                }
+
+                // Set text color to white
+                contentItem: Text {
+                    text: "Back to Commands"
+                    color: "white"
+                    font.pixelSize: 16   // optional, adjust size
+                    anchors.centerIn: parent
+                }
+
+                background: Rectangle {
+                    // Sets a fixed background color for the button
+                    color: GcsStyle.PanelStyle.buttonColor2
+                    radius: 5
+                    border.width: GcsStyle.PanelStyle.defaultBorderWidth
+                    border.color: GcsStyle.PanelStyle.defaultBorderColor
                 }
             }
         }
@@ -461,7 +476,6 @@ Rectangle {
         function onWaypointsUpdated(droneName) {
             if (activeDrone && droneName === activeDrone.name) {
                 mainPanel.waypointVersion++  // triggers ListView refresh
-                console.log("waypointversion: ",waypointVersion)
             }
         }
     }
