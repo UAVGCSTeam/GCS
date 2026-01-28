@@ -33,6 +33,7 @@ Item {
 
     property var activeDrone: null
     property var selectedDrones: null
+    property Waypoint waypointManagerRef: waypointManager
 
     Plugin {
         id: mapPlugin
