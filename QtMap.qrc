@@ -30,6 +30,7 @@
         <file>fireSVG.svg</file>
         <file>fireSVGDarkMode.svg</file>
         <file>droneMapIconSVG.svg</file>
+        <file>droneMapIconSelected.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
