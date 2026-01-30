@@ -416,7 +416,7 @@ Rectangle {
                     fc: "cube orange";
                     componentid: "1231231";
                     systemid: "2894293"
-                    ignored: true
+                    ignored: false
                 }
             }
 
@@ -443,8 +443,6 @@ Rectangle {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onEntered:  parent.hovered = true
-                        onExited:   parent.hovered = false
                     }
 
                     RowLayout {
@@ -474,13 +472,15 @@ Rectangle {
                         }
 
                         RowLayout {
-                            Layout.alignment: Qt.AlignVCenter
                             spacing: 4
+
+                            //spacer all buttons are pushed towards the right
+                            Item { Layout.fillWidth: true }
 
                             // Information icon button
                             Button {
-                                Layout.preferredHeight: 25
-                                Layout.preferredWidth: 25
+                                Layout.preferredHeight: 22
+                                Layout.preferredWidth: 22
                                 padding: 0
 
                                 contentItem: Item {
@@ -505,30 +505,29 @@ Rectangle {
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        console.log("information to you")
+                                        console.log("info")
                                     }
                                 }
                             }
                             // Add drone button
                             Button {
-                                Layout.preferredHeight: 25
-                                Layout.preferredWidth: 25
+                                Layout.preferredHeight: 22
+                                Layout.preferredWidth: 22
                                 padding: 0
 
                                 contentItem: Item {
-                                    anchors.fill: parent
-                                    Text {
-                                        text: "+"
+                                    Image {
                                         anchors.centerIn: parent
-                                        font.pixelSize: GcsStyle.PanelStyle.fontsizeLarge
-                                        color: "black"
-                                        font.bold: true
+                                        source: "qrc:/resources/plusIcon.png"
+                                        height: GcsStyle.PanelStyle.iconSize - 10
+                                        width: GcsStyle.PanelStyle.iconSize - 10
+                                        fillMode: Image.PreserveAspectFit
                                     }
                                 }
 
                                 background: Rectangle {
                                     radius: GcsStyle.PanelStyle.buttonRadius
-                                    border.width: 0
+                                    //border.width: 0
                                     color: "#b0ffa8"
                                 }
 
@@ -541,20 +540,17 @@ Rectangle {
                             }
                             // Ignore drone button
                             Button {
-                                Layout.preferredHeight: 25
-                                Layout.preferredWidth: 25
+                                Layout.preferredHeight: 22
+                                Layout.preferredWidth: 22
                                 padding: 0
 
                                 contentItem: Item {
-                                    anchors.fill: parent
-                                    Text {
-                                        text: "x"
+                                    Image {
                                         anchors.centerIn: parent
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: GcsStyle.PanelStyle.fontsizeLarge
-                                        color: "black"
-                                        font.bold: true
+                                        source: "qrc:/resources/xIcon.png"
+                                        height: GcsStyle.PanelStyle.iconSize - 10
+                                        width: GcsStyle.PanelStyle.iconSize - 10
+                                        //fillMode: Image.PreserveAspectFit
                                     }
                                 }
 
