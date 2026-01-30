@@ -76,7 +76,7 @@ Rectangle {
                         onClicked: {
                             droneListView.visible = true
                             fireView.visible = false
-                            discoveryPanel.visible = false
+                            discoveryListView.visible = false
                         }
                     }
                 }
@@ -103,7 +103,7 @@ Rectangle {
                         onClicked: {
                             droneListView.visible = false
                             fireView.visible = true
-                            discoveryPanel.visible = false
+                            discoveryListView.visible = false
                         }
                     }
                 }
@@ -113,7 +113,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
-                    color: discoveryPanel.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
+                    color: discoveryListView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
                     radius: GcsStyle.PanelStyle.buttonRadius
 
                     Image {
@@ -130,7 +130,7 @@ Rectangle {
                         onClicked: {
                             droneListView.visible = false
                             fireView.visible = false
-                            discoveryPanel.visible = true
+                            discoveryListView.visible = true
                         }
                     }
                 }
@@ -399,17 +399,180 @@ Rectangle {
                 }
             }
 
+            // mock data to test list
+            ListModel {
+                id: mockDroneList
+                ListElement {
+                    uavtype: "Arducopter";
+                    uid: "123";
+                    fc: "cub black";
+                    componentid: "1433";
+                    systemid: "1232"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "ArduPlane";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: true
+                }
+            }
+
             // Discovery panel
-            Rectangle {
-                id: discoveryPanel
+            ListView {
+                id: discoveryListView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: GcsStyle.PanelStyle.secondaryColor
+                clip: true
                 visible: false
-                radius: GcsStyle.PanelStyle.cornerRadius
 
-                Text {
-                    text: "hi"
+                model: mockDroneList //placeholder name
+
+                delegate: Rectangle {
+                    width: parent ? parent.width : 0
+                    color: GcsStyle.PanelStyle.primaryColor
+                    clip: true
+
+                    // Hides ignored drones
+                    height: visible ? 60 : 0
+                    visible: !ignored // only shows the discovered drone if it isn't ignored
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered:  parent.hovered = true
+                        onExited:   parent.hovered = false
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: GcsStyle.PanelStyle.defaultMargin
+                        spacing: 15
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1
+
+                            Text {
+                                text: uavtype
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                            }
+                            Text {
+                                text: "UID: " + uid;
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: 8
+                            }
+                            Text {
+                                text: "FC: " + fc;
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: 8
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.alignment: Qt.AlignVCenter
+                            spacing: 4
+
+                            // Information icon button
+                            Button {
+                                Layout.preferredHeight: 25
+                                Layout.preferredWidth: 25
+                                padding: 0
+
+                                contentItem: Item {
+                                    Image {
+                                        anchors.centerIn: parent
+                                        source: "qrc:/resources/informationIcon.png"
+                                        height: GcsStyle.PanelStyle.iconSize - 10
+                                        width: GcsStyle.PanelStyle.iconSize - 10
+                                        fillMode: Image.PreserveAspectFit
+                                    }
+                                }
+
+                                background: Rectangle {
+                                    anchors.fill: parent
+                                    border.width: 0
+                                    color: GcsStyle.PanelStyle.buttonColor
+                                }
+
+                                MouseArea {
+                                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        console.log("information to you")
+                                    }
+                                }
+                            }
+                            // Add drone button
+                            Button {
+                                Layout.preferredHeight: 25
+                                Layout.preferredWidth: 25
+                                padding: 0
+
+                                contentItem: Item {
+                                    anchors.fill: parent
+                                    Text {
+                                        text: "+"
+                                        anchors.centerIn: parent
+                                        font.pixelSize: GcsStyle.PanelStyle.fontsizeLarge
+                                        color: "black"
+                                        font.bold: true
+                                    }
+                                }
+
+                                background: Rectangle {
+                                    radius: GcsStyle.PanelStyle.buttonRadius
+                                    border.width: 0
+                                    color: "#b0ffa8"
+                                }
+
+                                MouseArea {
+                                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                }
+                            }
+                            // Ignore drone button
+                            Button {
+                                Layout.preferredHeight: 25
+                                Layout.preferredWidth: 25
+                                padding: 0
+
+                                contentItem: Item {
+                                    anchors.fill: parent
+                                    Text {
+                                        text: "x"
+                                        anchors.centerIn: parent
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        font.pixelSize: GcsStyle.PanelStyle.fontsizeLarge
+                                        color: "black"
+                                        font.bold: true
+                                    }
+                                }
+
+                                background: Rectangle {
+                                    radius: GcsStyle.PanelStyle.buttonRadius
+                                    border.width: 0
+                                    color: "#ffa8a8"
+                                }
+
+                                MouseArea {
+                                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

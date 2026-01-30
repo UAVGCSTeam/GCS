@@ -36,7 +36,7 @@
         <file>droneMapIconSVG.svg</file>
         <file>discoveryPanelIcon.png</file>
         <file>discoveryPanelIconDarkMode.png</file>
-        <file>discoveryPanelIconDarkModeSVG.svg</file>
+        <file>informationIcon.png</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
