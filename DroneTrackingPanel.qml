@@ -431,143 +431,185 @@ Rectangle {
                 model: mockDroneList //placeholder name
 
                 delegate: Rectangle {
+                    id: discoveredItem
                     width: parent ? parent.width : 0
                     color: GcsStyle.PanelStyle.primaryColor
                     clip: true
 
+                    border.color: "white"
                     // Hides ignored drones
-                    height: visible ? 60 : 0
+                    height: visible ? (expanded ? 110 : 60) : 0
                     visible: !ignored // only shows the discovered drone if it isn't ignored
+
+                    property bool expanded: false
+
+                    ColumnLayout {
+                        //Layout.fillWidth: true
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+
+                        RowLayout {
+                            id: collapsedView
+                            Layout.fillWidth: true
+                            Layout.margins: GcsStyle.PanelStyle.defaultMargin
+                            spacing: 15
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 1
+
+                                Text {
+                                    text: uavtype
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                }
+                                Text {
+                                    text: "UID: " + uid;
+                                    color: GcsStyle.PanelStyle.textSecondaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                }
+                                Text {
+                                    text: "FC: " + fc;
+                                    color: GcsStyle.PanelStyle.textSecondaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.alignment: Qt.AlignRight
+                                spacing: 4
+
+                                //spacer all buttons are pushed towards the right
+                                Item { Layout.fillWidth: true }
+
+                                // Information icon button
+                                Button {
+                                    Layout.preferredHeight: 22
+                                    Layout.preferredWidth: 22
+                                    padding: 0
+
+                                    contentItem: Item {
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/resources/informationIcon.png"
+                                            height: GcsStyle.PanelStyle.iconSize - 10
+                                            width: GcsStyle.PanelStyle.iconSize - 10
+                                            fillMode: Image.PreserveAspectFit
+                                        }
+                                    }
+
+                                    background: Rectangle {
+                                        anchors.fill: parent
+                                        border.width: 0
+                                        color: GcsStyle.PanelStyle.buttonColor
+                                    }
+
+                                    MouseArea {
+                                        // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            console.log("info")
+                                        }
+                                    }
+                                }
+                                // Add drone button
+                                Button {
+                                    Layout.preferredHeight: 22
+                                    Layout.preferredWidth: 22
+                                    padding: 0
+
+                                    contentItem: Item {
+                                        anchors.fill: parent
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/resources/plusIcon.png"
+                                            height: GcsStyle.PanelStyle.iconSize - 10
+                                            width: GcsStyle.PanelStyle.iconSize - 10
+                                            fillMode: Image.PreserveAspectFit
+                                        }
+                                    }
+
+                                    background: Rectangle {
+                                        radius: GcsStyle.PanelStyle.buttonRadius
+                                        color: "#b0ffa8"
+                                    }
+
+                                    MouseArea {
+                                        // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            console.log("add")
+                                        }
+                                    }
+                                }
+                                // Ignore drone button
+                                Button {
+                                    Layout.preferredHeight: 22
+                                    Layout.preferredWidth: 22
+                                    padding: 0
+
+                                    contentItem: Item {
+                                        anchors.fill: parent
+                                        Image {
+                                            anchors.centerIn: parent
+                                            source: "qrc:/resources/xIcon.png"
+                                            height: GcsStyle.PanelStyle.iconSize - 10
+                                            width: GcsStyle.PanelStyle.iconSize - 10
+                                            fillMode: Image.PreserveAspectFit
+                                        }
+                                    }
+
+                                    background: Rectangle {
+                                        radius: GcsStyle.PanelStyle.buttonRadius
+                                        color: "#ffa8a8"
+                                    }
+
+                                    MouseArea {
+                                        // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            console.log("ignore")
+                                            ignored = true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Item {
+                            id: expandedView
+                            visible: discoveredItem.expanded
+                            Layout.fillWidth: true
+                            //Layout.topMargin: 10    // padding for the header
+
+                            ColumnLayout {
+                                anchors.fill: parent
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    Layout.margins: GcsStyle.PanelStyle.defaultMargin
+
+                                    text: "more drone info..."
+                                    color: GcsStyle.PanelStyle.textSecondaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
+                            }
+                        }
+                    }
 
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                    }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: GcsStyle.PanelStyle.defaultMargin
-                        spacing: 15
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 1
-
-                            Text {
-                                text: uavtype
-                                color: GcsStyle.PanelStyle.textPrimaryColor
-                                font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                            }
-                            Text {
-                                text: "UID: " + uid;
-                                color: GcsStyle.PanelStyle.textPrimaryColor
-                                font.pixelSize: 8
-                            }
-                            Text {
-                                text: "FC: " + fc;
-                                color: GcsStyle.PanelStyle.textPrimaryColor
-                                font.pixelSize: 8
-                            }
-                        }
-
-                        RowLayout {
-                            spacing: 4
-
-                            //spacer all buttons are pushed towards the right
-                            Item { Layout.fillWidth: true }
-
-                            // Information icon button
-                            Button {
-                                Layout.preferredHeight: 22
-                                Layout.preferredWidth: 22
-                                padding: 0
-
-                                contentItem: Item {
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/resources/informationIcon.png"
-                                        height: GcsStyle.PanelStyle.iconSize - 10
-                                        width: GcsStyle.PanelStyle.iconSize - 10
-                                        fillMode: Image.PreserveAspectFit
-                                    }
-                                }
-
-                                background: Rectangle {
-                                    anchors.fill: parent
-                                    border.width: 0
-                                    color: GcsStyle.PanelStyle.buttonColor
-                                }
-
-                                MouseArea {
-                                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        console.log("info")
-                                    }
-                                }
-                            }
-                            // Add drone button
-                            Button {
-                                Layout.preferredHeight: 22
-                                Layout.preferredWidth: 22
-                                padding: 0
-
-                                contentItem: Item {
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/resources/plusIcon.png"
-                                        height: GcsStyle.PanelStyle.iconSize - 10
-                                        width: GcsStyle.PanelStyle.iconSize - 10
-                                        fillMode: Image.PreserveAspectFit
-                                    }
-                                }
-
-                                background: Rectangle {
-                                    radius: GcsStyle.PanelStyle.buttonRadius
-                                    //border.width: 0
-                                    color: "#b0ffa8"
-                                }
-
-                                MouseArea {
-                                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                }
-                            }
-                            // Ignore drone button
-                            Button {
-                                Layout.preferredHeight: 22
-                                Layout.preferredWidth: 22
-                                padding: 0
-
-                                contentItem: Item {
-                                    Image {
-                                        anchors.centerIn: parent
-                                        source: "qrc:/resources/xIcon.png"
-                                        height: GcsStyle.PanelStyle.iconSize - 10
-                                        width: GcsStyle.PanelStyle.iconSize - 10
-                                        //fillMode: Image.PreserveAspectFit
-                                    }
-                                }
-
-                                background: Rectangle {
-                                    radius: GcsStyle.PanelStyle.buttonRadius
-                                    border.width: 0
-                                    color: "#ffa8a8"
-                                }
-
-                                MouseArea {
-                                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                }
-                            }
-                        }
+                        onClicked: discoveredItem.expanded = !discoveredItem.expanded
                     }
                 }
             }
