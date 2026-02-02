@@ -418,6 +418,86 @@ Rectangle {
                     systemid: "2894293"
                     ignored: false
                 }
+                ListElement {
+                    uavtype: "3";
+                    uid: "jaldfjalfd";
+                    fc: "cube blue";
+                    componentid: "080923";
+                    systemid: "82084"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "4";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "5";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "6";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "7";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "8";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "9";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "10";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "11";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "12";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
             }
 
             // Discovery panel
@@ -428,23 +508,50 @@ Rectangle {
                 clip: true
                 visible: false
 
+                property int selectedIndex: -1
+
                 model: mockDroneList //placeholder name
 
                 delegate: Rectangle {
                     id: discoveredItem
                     width: parent ? parent.width : 0
-                    color: GcsStyle.PanelStyle.primaryColor
                     clip: true
 
-                    border.color: "white"
                     // Hides ignored drones
                     height: visible ? (expanded ? 110 : 60) : 0
                     visible: !ignored // only shows the discovered drone if it isn't ignored
 
+                    // local UI state
                     property bool expanded: false
+                    property bool hovered: false
+                    property bool selected: discoveryListView.selectedIndex === index
+
+                    // dynamic background color rule:
+                    // selected > hovered > alternating row color (unchanged)
+                    color: selected
+                           ? GcsStyle.PanelStyle.listItemSelectedColor
+                           : (hovered
+                              ? GcsStyle.PanelStyle.listItemHoverColor
+                              : (index % 2 === 0
+                                 ? GcsStyle.PanelStyle.listItemEvenColor
+                                 : GcsStyle.PanelStyle.listItemOddColor))
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onEntered: discoveredItem.hovered = true
+                        onExited: discoveredItem.hovered = false
+
+                        onClicked: {
+                            discoveredItem.expanded = !discoveredItem.expanded
+                            discoveryListView.selectedIndex =
+                                    (discoveryListView.selectedIndex === index )
+                                        ? -1 : index
+                        }
+                    }
 
                     ColumnLayout {
-                        //Layout.fillWidth: true
                         anchors.left: parent.left
                         anchors.right: parent.right
 
@@ -465,12 +572,12 @@ Rectangle {
                                 }
                                 Text {
                                     text: "UID: " + uid;
-                                    color: GcsStyle.PanelStyle.textSecondaryColor
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
                                 }
                                 Text {
                                     text: "FC: " + fc;
-                                    color: GcsStyle.PanelStyle.textSecondaryColor
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
                                 }
                             }
@@ -492,8 +599,8 @@ Rectangle {
                                         Image {
                                             anchors.centerIn: parent
                                             source: "qrc:/resources/informationIcon.png"
-                                            height: GcsStyle.PanelStyle.iconSize - 10
-                                            width: GcsStyle.PanelStyle.iconSize - 10
+                                            height: GcsStyle.PanelStyle.statusIconSize
+                                            width: GcsStyle.PanelStyle.statusIconSize
                                             fillMode: Image.PreserveAspectFit
                                         }
                                     }
@@ -514,10 +621,11 @@ Rectangle {
                                         }
                                     }
                                 }
+
                                 // Add drone button
                                 Button {
-                                    Layout.preferredHeight: 22
-                                    Layout.preferredWidth: 22
+                                    Layout.preferredHeight: 23
+                                    Layout.preferredWidth: 23
                                     padding: 0
 
                                     contentItem: Item {
@@ -525,8 +633,8 @@ Rectangle {
                                         Image {
                                             anchors.centerIn: parent
                                             source: "qrc:/resources/plusIcon.png"
-                                            height: GcsStyle.PanelStyle.iconSize - 10
-                                            width: GcsStyle.PanelStyle.iconSize - 10
+                                            height: GcsStyle.PanelStyle.statusIconSize
+                                            width: GcsStyle.PanelStyle.statusIconSize
                                             fillMode: Image.PreserveAspectFit
                                         }
                                     }
@@ -542,14 +650,17 @@ Rectangle {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            console.log("add")
+                                            console.log("added!")
+                                            discoveryListView.selectedIndex = -1
+                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
+
                                 // Ignore drone button
                                 Button {
-                                    Layout.preferredHeight: 22
-                                    Layout.preferredWidth: 22
+                                    Layout.preferredHeight: 23
+                                    Layout.preferredWidth: 23
                                     padding: 0
 
                                     contentItem: Item {
@@ -557,8 +668,8 @@ Rectangle {
                                         Image {
                                             anchors.centerIn: parent
                                             source: "qrc:/resources/xIcon.png"
-                                            height: GcsStyle.PanelStyle.iconSize - 10
-                                            width: GcsStyle.PanelStyle.iconSize - 10
+                                            height: GcsStyle.PanelStyle.statusIconSize
+                                            width: GcsStyle.PanelStyle.statusIconSize
                                             fillMode: Image.PreserveAspectFit
                                         }
                                     }
@@ -576,6 +687,8 @@ Rectangle {
                                         onClicked: {
                                             console.log("ignore")
                                             ignored = true
+                                            discoveryListView.selectedIndex = -1
+                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -586,7 +699,6 @@ Rectangle {
                             id: expandedView
                             visible: discoveredItem.expanded
                             Layout.fillWidth: true
-                            //Layout.topMargin: 10    // padding for the header
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -596,20 +708,13 @@ Rectangle {
                                     Layout.margins: GcsStyle.PanelStyle.defaultMargin
 
                                     text: "more drone info..."
-                                    color: GcsStyle.PanelStyle.textSecondaryColor
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
 
                                     horizontalAlignment: Text.AlignHCenter
                                 }
                             }
                         }
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: discoveredItem.expanded = !discoveredItem.expanded
                     }
                 }
             }
