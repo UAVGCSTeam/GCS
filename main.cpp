@@ -9,6 +9,7 @@
 #include "filehandler.h"
 #include "backend/dbmanager.h"
 #include "dronecontroller.h"
+#include "settingsmanager.h"
 
 
 int main(int argc, char *argv[])
@@ -32,6 +33,10 @@ int main(int argc, char *argv[])
     // TODO: Intialize and make UI button click reach database
 
     QQmlApplicationEngine engine;
+
+    // Create and register SettingsManager for persistent per-user settings
+    SettingsManager settingsManager;
+    engine.rootContext()->setContextProperty("settingsManager", &settingsManager);
 
     // Create and register MapController as an object that the cpp can use
     MapController mapController;

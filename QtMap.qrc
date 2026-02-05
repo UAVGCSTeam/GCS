@@ -16,15 +16,18 @@
         <file>TelemetryPanel.qml</file>
         <file>components/MenuButton.qml</file>
         <file>components/PopupMenuItem.qml</file>
+        <file>components/StyledComboBox.qml</file>
         <file>Waypoint.qml</file>
         <file>components/UniversalPopup.qml</file>
         <file>configureDroneWindow.qml</file>
         <file>DroneCommandPanel.qml</file>
+        <file>settingsWindow.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>mappin.svg</file>
         <file>cppLOGO.svg</file>
         <file>droneStatusSVG.svg</file>
+        <file>droneStatusSVGDarkMode.svg</file>
         <file>warning.png</file>
         <file>arrow-down.png</file>
         <file>arrow-up.png</file>

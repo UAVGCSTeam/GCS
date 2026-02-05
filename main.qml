@@ -111,10 +111,33 @@ Window {
         onActivated: mapComponent.toggleFollowDrone()
     }
 
+    // Shortcut to open Settings window (Ctrl+. on Windows / Cmd+. on Mac)
+    Shortcut {
+        sequence: "Ctrl+."
+        onActivated: openSettingsWindow()
+    }
+
+    // Settings window 
+    Loader {
+        id: settingsLoader
+        source: "qrc:/settingsWindow.qml"
+    }
+
+    function openSettingsWindow() {
+        settingsLoader.item.show()
+        settingsLoader.item.raise()
+    }
+
+    // Save map state when app closes (for "leave at last location" settings feature)
+    onClosing: {
+        settingsManager.lastMapLat = mapComponent.latitude
+        settingsManager.lastMapLong = mapComponent.longitude
+        settingsManager.lastMapZoom = mapComponent.zoomLevel
+    }
+
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
-        mapController.setCenterPosition(coords[0].lat, coords[0].lon)
         for (var i = 0; i < 3; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
