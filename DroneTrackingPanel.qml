@@ -27,7 +27,7 @@ Rectangle {
     property int lastSelectedIndex: -1 // Remembers last drone the user clicked (so Shift-click knows where to start)
     property int selectionAnchorIndex: -1 // Anchor index used for Shift-range selections
     property bool multiSelectActive: selectedIndexes.length > 1 
-
+    property string activePanel: "drones"   //"drones", "discovery"
 
     RowLayout {
         anchors.fill: parent
@@ -74,41 +74,15 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            droneListView.visible = true
-                            fireView.visible = false
-                            discoveryListView.visible = false
+                            mainPanel.activePanel = "drones"
+                            //droneListView.visible = true
+                            //fireView.visible = false
+                            //discoveryListView.visible = false
                         }
                     }
                 }
 
                 // Toggle button 2
-                Rectangle {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
-                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
-                    color: fireView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
-                    radius: GcsStyle.PanelStyle.buttonRadius
-
-                    Image {
-                        anchors.right: parent.right
-                        anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/fireSVGDarkMode.svg"
-                        sourceSize.width: GcsStyle.PanelStyle.iconSize
-                        sourceSize.height: GcsStyle.PanelStyle.iconSize
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            droneListView.visible = false
-                            fireView.visible = true
-                            discoveryListView.visible = false
-                        }
-                    }
-                }
-
-                // Toggle button 3
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
@@ -128,9 +102,10 @@ Rectangle {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            droneListView.visible = false
-                            fireView.visible = false
-                            discoveryListView.visible = true
+                            mainPanel.activePanel = "discovery"
+                            //droneListView.visible = false
+                            //fireView.visible = false
+                            //discoveryListView.visible = true
                         }
                     }
                 }
@@ -166,12 +141,25 @@ Rectangle {
                     spacing: 0
 
                     Text {
-                        text: "Drone Tracking"
+                        text: {
+                            switch (mainPanel.activePanel) {
+                            case "drones":      return "Drone Tracking"
+                            case "discovery":   return "UAV Discovery"
+                            }
+                        }
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
+
                     Text {
-                        text: {droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"}
+                        text: {
+                            switch (mainPanel.activePanel) {
+                            case "drones":
+                                return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
+                            case "discovery":
+                                return "x discovered UAVs"  // replace this with droneController.unknownDrones later on
+                            }
+                        }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
@@ -185,7 +173,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
-                visible: true
+                visible: mainPanel.activePanel === "drones"
                 currentIndex: -1 //Sets currentIndex to -1 so that no item in the index is initially selected
                 /* 
                     This drone list should be dynamic because it uses the 
@@ -334,71 +322,6 @@ Rectangle {
                 }
             }
 
-            // Add Drone Button
-            Button {
-                text: "Add Drone"
-                Layout.fillWidth: true
-                Layout.margins: GcsStyle.PanelStyle.defaultMargin
-
-                MouseArea {
-                    // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: parent.clicked()
-                }
-
-                background: Rectangle {
-                    // Sets a fixed background color for the button
-                    color: GcsStyle.PanelStyle.buttonColor2
-                    radius: 5
-                    border.width: GcsStyle.panelStyle.defaultBorderWidth
-                    border.color: GcsStyle.panelStyle.defaultBorderColor
-                }
-
-                contentItem: Text {
-                    // This button is special because of this code.
-                    // The idea is that the font has a specific color now. The issue was that for
-                    // systems that use dynamic light/dark mode, the font disappeared in dark mode.
-                    text: parent.text
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    font.pointSize: 12
-                }
-
-                onClicked: {
-                    var component = Qt.createComponent("manageDroneWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating object:", component.errorString());
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString());
-                    }
-                }
-            }
-
-            // Fire view (placeholder)
-            Rectangle {
-                id: fireView
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: GcsStyle.PanelStyle.secondaryColor
-                visible: false
-                radius: GcsStyle.PanelStyle.cornerRadius
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Fire View"
-                    font.pixelSize: GcsStyle.PanelStyle.fontSizeLarge
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                }
-            }
-
             // mock data to test list
             ListModel {
                 id: mockDroneList
@@ -426,78 +349,6 @@ Rectangle {
                     systemid: "82084"
                     ignored: false
                 }
-                ListElement {
-                    uavtype: "4";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "5";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "6";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "7";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "8";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "9";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "10";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "11";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "12";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
             }
 
             // Discovery panel
@@ -506,7 +357,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
-                visible: false
+                visible: mainPanel.activePanel === "discovery"
 
                 property int selectedIndex: -1
 
@@ -588,39 +439,6 @@ Rectangle {
 
                                 //spacer all buttons are pushed towards the right
                                 Item { Layout.fillWidth: true }
-
-                                // Information icon button
-                                Button {
-                                    Layout.preferredHeight: 22
-                                    Layout.preferredWidth: 22
-                                    padding: 0
-
-                                    contentItem: Item {
-                                        Image {
-                                            anchors.centerIn: parent
-                                            source: "qrc:/resources/informationIcon.png"
-                                            height: GcsStyle.PanelStyle.statusIconSize
-                                            width: GcsStyle.PanelStyle.statusIconSize
-                                            fillMode: Image.PreserveAspectFit
-                                        }
-                                    }
-
-                                    background: Rectangle {
-                                        anchors.fill: parent
-                                        border.width: 0
-                                        color: GcsStyle.PanelStyle.buttonColor
-                                    }
-
-                                    MouseArea {
-                                        // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            console.log("info")
-                                        }
-                                    }
-                                }
 
                                 // Add drone button
                                 Button {
