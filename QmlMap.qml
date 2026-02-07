@@ -146,7 +146,8 @@ Item {
 
                     Image {
                         id: markerImage
-                        source: "qrc:/resources/droneMapIconSVG.svg"
+                        readonly property bool isCurrentDroneSelected: droneIsSelected(modelData)
+                        source: isCurrentDroneSelected ? "qrc:/resources/droneMapIconSelected.svg" : "qrc:/resources/droneMapIconSVG.svg"
                         width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
                         fillMode: Image.PreserveAspectFit
                     }
@@ -305,6 +306,16 @@ Item {
             if (followTimer.running) followTimer.stop()
         }
     }
+
+        function droneIsSelected(modelData) { 
+        for (let drone of selectedDrones) { 
+            if (drone.latitude === modelData.latitude) {
+                return true
+            }
+        }
+        return false
+    }
+    
 
     onActiveDroneChanged: {
         if (activeDrone === null) {

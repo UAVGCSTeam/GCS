@@ -1,0 +1,66 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Direction chevron - with cyan highlight -->
+  <polyline
+    points="88,45 100,30 112,45"
+    stroke="#06b6d4"
+    stroke-width="5"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    opacity="0.5"
+  />
+  <polyline
+    points="88,45 100,30 112,45"
+    stroke="#dc2626"
+    stroke-width="2.5"
+    fill="none"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Main body with highlight -->
+  <ellipse cx="100" cy="100" rx="25" ry="15" fill="#27272a" />
+  <ellipse
+    cx="100"
+    cy="100"
+    rx="25"
+    ry="15"
+    fill="none"
+    stroke="#06b6d4"
+    stroke-width="3"
+    opacity="0.7"
+  />
+  
+  <!-- Camera/gimbal with highlight -->
+  <circle cx="100" cy="105" r="8" fill="#3f3f46" />
+  <circle cx="100" cy="105" r="5" fill="#52525b" />
+  <circle cx="100" cy="105" r="8" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.6" />
+  
+  <!-- Arms with cyan highlight glow -->
+  <line x1="100" y1="100" x2="50" y2="50" stroke="#06b6d4" stroke-width="10" stroke-linecap="round" opacity="0.5" />
+  <line x1="100" y1="100" x2="150" y2="50" stroke="#06b6d4" stroke-width="10" stroke-linecap="round" opacity="0.5" />
+  <line x1="100" y1="100" x2="50" y2="150" stroke="#06b6d4" stroke-width="10" stroke-linecap="round" opacity="0.5" />
+  <line x1="100" y1="100" x2="150" y2="150" stroke="#06b6d4" stroke-width="10" stroke-linecap="round" opacity="0.5" />
+  
+  <!-- Arms -->
+  <line x1="100" y1="100" x2="50" y2="50" stroke="#3f3f46" stroke-width="6" stroke-linecap="round" />
+  <line x1="100" y1="100" x2="150" y2="50" stroke="#3f3f46" stroke-width="6" stroke-linecap="round" />
+  <line x1="100" y1="100" x2="50" y2="150" stroke="#3f3f46" stroke-width="6" stroke-linecap="round" />
+  <line x1="100" y1="100" x2="150" y2="150" stroke="#3f3f46" stroke-width="6" stroke-linecap="round" />
+  
+  <!-- Motors with cyan highlight rings -->
+  <circle cx="50" cy="50" r="15" fill="none" stroke="#06b6d4" stroke-width="3" opacity="0.7" />
+  <circle cx="150" cy="50" r="15" fill="none" stroke="#06b6d4" stroke-width="3" opacity="0.7" />
+  <circle cx="50" cy="150" r="15" fill="none" stroke="#06b6d4" stroke-width="3" opacity="0.7" />
+  <circle cx="150" cy="150" r="15" fill="none" stroke="#06b6d4" stroke-width="3" opacity="0.7" />
+  
+  <!-- Motors -->
+  <circle cx="50" cy="50" r="12" fill="#27272a" />
+  <circle cx="150" cy="50" r="12" fill="#27272a" />
+  <circle cx="50" cy="150" r="12" fill="#27272a" />
+  <circle cx="150" cy="150" r="12" fill="#27272a" />
+  
+  <!-- Status lights -->
+  <circle cx="90" cy="95" r="2" fill="#dc2626" />
+  <circle cx="110" cy="95" r="2" fill="#16a34a" />
+</svg>
