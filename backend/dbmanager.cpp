@@ -374,6 +374,45 @@ bool DBManager::createInitialDrones() {
         qDebug() << "[dbmanager.cpp] Hexacopter inserted successfully.";
     }
 
+    // Insert fourth drone
+    insertQuery.bindValue(":droneName", "4");
+    insertQuery.bindValue(":droneRole", "Suppression");
+    insertQuery.bindValue(":xbeeID", "D");
+    insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
+
+    if (!insertQuery.exec()) {
+        qCritical() << "[dbmanager.cpp] Failed to insert 4:" << insertQuery.lastError().text();
+        return false;
+    } else {
+        qDebug() << "[dbmanager.cpp] 4 inserted successfully.";
+    }
+
+    // Insert fifth drone
+    insertQuery.bindValue(":droneName", "5");
+    insertQuery.bindValue(":droneRole", "Suppression");
+    insertQuery.bindValue(":xbeeID", "E");
+    insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
+
+    if (!insertQuery.exec()) {
+        qCritical() << "[dbmanager.cpp] Failed to insert 5:" << insertQuery.lastError().text();
+        return false;
+    } else {
+        qDebug() << "[dbmanager.cpp] 5 inserted successfully.";
+    }
+
+    // Insert sixth drone
+    insertQuery.bindValue(":droneName", "6");
+    insertQuery.bindValue(":droneRole", "Suppression");
+    insertQuery.bindValue(":xbeeID", "F");
+    insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
+
+    if (!insertQuery.exec()) {
+        qCritical() << "[dbmanager.cpp] Failed to insert 6:" << insertQuery.lastError().text();
+        return false;
+    } else {
+        qDebug() << "[dbmanager.cpp] 6 inserted successfully.";
+    }
+
     qDebug() << "[dbmanager.cpp] All initial drones created successfully.";
     return true;
 }

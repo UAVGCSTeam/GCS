@@ -67,6 +67,11 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         index++;
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
+
+    // --- Simulated Drone Movement ---
+    connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
+    simulationTimer.start(250); // Move once per second
+    qDebug() << "Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.
@@ -103,6 +108,131 @@ DroneController::~DroneController()
 }
 
 
+
+// DroneClass updaters
+// We're changing this here so that by default the DroneClass is 
+// not able to be updated from QML. Only C++ can update drones
+// in the DroneController class
+void DroneController::renameDrone(const QString &xbeeID, const QString &newName) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setName(newName);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setXbeeAddress(newXbeeAddress);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setBatteryLevel(const QString &xbeeID, const double &newBattery) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setBatteryLevel(newBattery);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setRole(const QString &xbeeID, const QString &newRole) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setRole(newRole);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setXbeeID(const QString &xbeeID, const QString &newXbeeID) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setXbeeID(newXbeeID);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setPosition(const QString &xbeeID, const QVector3D &newPosition) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setPosition(newPosition);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setLatitude(const QString &xbeeID, const double &newLatitude) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setLatitude(newLatitude);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setLongitude(const QString &xbeeID, const double &newLongitude) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setLongitude(newLongitude);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setAltitude(const QString &xbeeID, const double &newAltitude) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setAltitude(newAltitude);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setVelocity(const QString &xbeeID, const QVector3D &newVelocity) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setVelocity(newVelocity);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setAirspeed(const QString &xbeeID, const double &newAirspeed) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setAirspeed(newAirspeed);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
+void DroneController::setOrientation(const QString &xbeeID, const QVector3D &newOrientation) {
+    for (auto &drone : droneList) {
+        if (drone->getXbeeID() == xbeeID) {
+            drone->setOrientation(newOrientation);
+
+            updateDrone(drone);
+            break;
+        }
+    }
+}
 
 
 // Steps in saving a drone.
@@ -174,7 +304,6 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
         // Add to the in-memory list
         droneList.push_back(drone);
 
-        qDebug() << "About to emit dronesChanged and droneAdded signals after adding drone";
         emit droneAdded(drone); // right now this is not being used anywhere
         emit dronesChanged();
         // Adding update to the new QML list
@@ -218,11 +347,9 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
                                     drone->getXbeeAddress());
             }
 
-            emit droneUpdated(drone);
             emit dronesChanged();
-            // Adding update to the new QML list
             rebuildVariant();
-            qDebug() << "Drone updated:" << drone->getName();
+            qDebug() << "[DroneController] Drone updated:" << drone->getName();
             break;
         }
     }
@@ -582,7 +709,6 @@ void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, cons
     }
 
     emit dronesChanged();
-    // emit droneStateChanged(d->getName());
 } 
 
 
@@ -609,8 +735,55 @@ void DroneController::onTelemetry(const QString &name, double lat, double lon)
     (*it)->setLatitude(lat);  // emits latitudeChanged → QML updates
     (*it)->setLongitude(lon); // emits longitudeChanged
 }
+// Simple linear interpolation towards a target point
+void moveDroneTowards(double &lat, double &lon, double targetLat, double targetLon, double step)
+{
+    double dLat = targetLat - lat;
+    double dLon = targetLon - lon;
 
+    // Calculate distance
+    double distance = sqrt(dLat*dLat + dLon*dLon);
+    if (distance < 1e-6) return;  // Already there
 
+    // Move by step, but don't overshoot
+    double ratio = step / distance;
+    if (ratio > 1.0) ratio = 1.0;
+
+    lat += dLat * ratio;
+    lon += dLon * ratio;
+}
+
+void DroneController::simulateDroneMovement()
+{
+    double step = 0.00005; // small step toward waypoint
+
+    for (auto &drone : droneList)
+    {
+        if (!drone) continue;
+
+        double lat = drone->getLatitude();
+        double lon = drone->getLongitude();
+
+        // Get the next waypoint for this drone
+        QList<QVariantMap> wps;
+        if (droneWaypoints.contains(drone->getName()) && !droneWaypoints[drone->getName()].isEmpty())
+        {
+            wps = droneWaypoints[drone->getName()];
+        }
+        if (wps.size() < 2)
+            continue; // nothing to move toward
+        double targetLat = wps[1]["lat"].toDouble();
+        double targetLon = wps[1]["lon"].toDouble();
+
+        // Move towards it
+        moveDroneTowards(lat, lon, targetLat, targetLon, step);
+
+        // Update drone position
+        drone->setLatitude(lat);
+        drone->setLongitude(lon);
+        emit droneStateChanged(drone.data());
+    }
+}
 
 QObject* DroneController::getDroneByNameQML(const QString &name) const {
     for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>

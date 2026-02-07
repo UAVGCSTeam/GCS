@@ -61,6 +61,26 @@ public:
     QVariantList drones() const { return m_dronesVariant; }
     void rebuildVariant();
     Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
+    Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
+    {
+        QList<QVariantMap> list;
+        for (const QVariant &v : wps)
+            list.append(v.toMap());
+        droneWaypoints[droneName] = list;
+    }
+
+  Q_INVOKABLE void renameDrone(const QString &xbeeID, const QString &newName);
+  Q_INVOKABLE void setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress);
+  Q_INVOKABLE void setBatteryLevel(const QString &xbeeID, const double &newBattery);
+  Q_INVOKABLE void setRole(const QString &xbeeID, const QString &newRole);
+  Q_INVOKABLE void setXbeeID(const QString &xbeeID, const QString &newXbeeID);
+  Q_INVOKABLE void setPosition(const QString &xbeeID, const QVector3D &newPosition);
+  Q_INVOKABLE void setLatitude(const QString &xbeeID, const double &newLatitude);
+  Q_INVOKABLE void setLongitude(const QString &xbeeID, const double &newLongitude);
+  Q_INVOKABLE void setAltitude(const QString &xbeeID, const double &newAltitude);
+  Q_INVOKABLE void setVelocity(const QString &xbeeID, const QVector3D &newVelocity);
+  Q_INVOKABLE void setAirspeed(const QString &xbeeID, const double &newAirspeed);
+  Q_INVOKABLE void setOrientation(const QString &xbeeID, const QVector3D &newOrientation);
 
 public slots:
     void saveDroneToDB(const QSharedPointer<DroneClass> &drone);
@@ -82,12 +102,14 @@ public slots:
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
-    void droneUpdated(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
     void dronesChanged();
 
 private:
+    QTimer simulationTimer;       // Timer for simulated movement
+    void simulateDroneMovement(); // Function to move a drone periodically
+    QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
     DBManager &dbManager;
 
     std::unique_ptr<XbeeLink>    xbee_;

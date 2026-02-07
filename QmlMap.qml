@@ -2,9 +2,19 @@ import QtQuick 2.15
 import QtLocation
 import QtPositioning
 import QtQuick.Controls
+import "qrc:/gcsStyle" as GcsStyle
+import "./components"
 
 Item {
     id: mapwindow
+
+    Waypoint {
+        id: waypointManager
+        mapview: mapview
+        activeDrone: mapwindow.activeDrone
+        anchors.fill: mapview
+        z: 15
+    }
 
     property string followDroneName: ""
     property var followDrone: null
@@ -17,9 +27,12 @@ Item {
         { name: "Terrain", type: Map.TerrainMap },
     ]
     property int currentMapTypeIndex: 0
+    property bool wayPointingActive: false
     property var selectedDrone: null
-    property var clickedCoordLabel: null
     property var _pendingCenter: undefined
+
+    property var activeDrone: null
+    property var selectedDrones: null
 
     Plugin {
         id: mapPlugin
@@ -147,6 +160,95 @@ Item {
                 }
             }
         }
+
+        // Context menu for waypointing
+        MouseArea {
+            id: rightClickMenuArea
+            anchors.fill: parent
+            acceptedButtons: Qt.RightButton
+            propagateComposedEvents: true
+
+            // store last right-click coordinate
+            property var lastRightClickCoord: null
+
+            onPressed: function(mouse) {
+                if (mouse.button === Qt.RightButton) {
+
+                    // convert pixel → geo coordinate
+                    lastRightClickCoord = mapview.toCoordinate(Qt.point(mouse.x, mouse.y))
+
+                    contextMenu.x = mouse.x
+                    contextMenu.y = mouse.y
+                    contextMenu.open()
+                }
+            }
+        }
+        Popup {
+            id: contextMenu
+            width: 200
+            padding: 5
+            modal: false
+            focus: true
+            closePolicy: Popup.CloseOnPressOutside
+            
+            background: Rectangle {
+                color: GcsStyle.PanelStyle.primaryColor
+                border.color: GcsStyle.PanelStyle.defaultBorderColor
+                border.width: GcsStyle.PanelStyle.defaultBorderWidth
+                radius: GcsStyle.PanelStyle.buttonRadius + 3
+            }
+            
+            Column {
+                width: parent.width
+                spacing: 2
+                
+                PopupMenuItem {
+                    text: "Go-To"
+                    clickable: activeDrone ? true : false
+                    onMenuItemClicked: {
+                        contextMenu.close()
+                        waypointManager.addWaypoint(
+                            activeDrone.name,
+                            activeDrone.latitude,
+                            activeDrone.longitude,
+                            rightClickMenuArea.lastRightClickCoord.latitude,
+                            rightClickMenuArea.lastRightClickCoord.longitude
+                        )
+                        clickedCoordLabelItem.coordinate = rightClickMenuArea
+                    }
+                }
+            }
+        }
+
+        MapQuickItem {
+            id: clickedCoordLabelItem
+            coordinate: null
+            visible: clickedCoordLabelItem.coordinate !== null
+
+            // offset label 10px right & 15px down from the actual coordinate
+            anchorPoint.x: labelRect.width / 2 - 10
+            anchorPoint.y: labelRect.height + 15
+
+            sourceItem: Rectangle {
+                id: labelRect
+                color: "#ffffff"
+                radius: 5
+
+                // Let the rectangle size itself around the text
+                width: coordTex.implicitWidth + 8
+                height: coordTex.implicitHeight + 8
+
+                Text {
+                    id: coordTex
+                    anchors.centerIn: parent
+                    text: clickedCoordLabelItem.coordinate
+                        ? clickedCoordLabelItem.coordinate.latitude.toFixed(6) + ", " + clickedCoordLabelItem.coordinate.longitude.toFixed(6)
+                        : ""
+                    color: "black"
+                    font.pixelSize: 14
+                }
+            }
+        }
         onZoomLevelChanged: {
             // This is the logic needed in order to update the scale bar indicator
 
@@ -183,10 +285,10 @@ Item {
     }
 
     function turnOnFollowDrone() {
-        if(telemetryPanel.activeDrone !== null) {
+        if(activeDrone !== null) {
             followingDrone = true
-            followDrone = telemetryPanel.activeDrone
-            followDroneName = telemetryPanel.activeDrone.name
+            followDrone = activeDrone
+            followDroneName = activeDrone.name
             console.log("Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
@@ -202,6 +304,16 @@ Item {
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
+    }
+
+    onActiveDroneChanged: {
+        if (activeDrone === null) {
+            turnOffFollowDrone()
+        }
+    }
+
+    onSelectedDronesChanged: {
+        // This is where you will update the selection of drones
     }
 
     // Connect to droneController to listen for drone state changes
@@ -230,8 +342,7 @@ Item {
                 mapview.zoomLevel = level
         }
     }
-
     Component.onCompleted: {        
-        console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
+        // console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
     }
 }
