@@ -150,7 +150,7 @@ Rectangle {
             }
 
 
-            // Drone list view
+            // Drone list view-----------------
             ListView {
                 id: droneListView
                 Layout.fillWidth: true
@@ -256,12 +256,15 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: { 
-                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
-                            }
+                            source: mainPanel.isIndexSelected(index) ? "qrc:/resources/droneMapIconSelected.svg"
+                                                                     : (modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png")
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
                             Layout.alignment: Qt.AlignVCenter
+                            opacity: mainPanel.isIndexSelected(index) ? 1.0 : 0.6
+                            Behavior on opacity {
+                                NumberAnimation { duration: 150 }
+                            }
                         }
 
                         ColumnLayout {
