@@ -146,7 +146,8 @@ Item {
 
                     Image {
                         id: markerImage
-                        source: droneIsSelected(modelData) ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneMapIconSVG.svg"
+                        readonly property bool isCurrentDroneSelected: droneIsSelected(modelData)
+                        source: isCurrentDroneSelected ? "qrc:/resources/droneMapIconSelected.svg" : "qrc:/resources/droneMapIconSVG.svg"
                         width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
                         fillMode: Image.PreserveAspectFit
                     }
@@ -306,9 +307,8 @@ Item {
         }
     }
 
-    function droneIsSelected(modelData) { 
-        console.log("Checking if drone is selected. Model data:", modelData, "Selected drones:", selectedDrones)
-        for (drone in selectedDrones) { 
+        function droneIsSelected(modelData) { 
+        for (let drone of selectedDrones) { 
             if (drone.latitude === modelData.latitude) {
                 return true
             }
@@ -323,12 +323,8 @@ Item {
         }
     }
 
-    //update 
     onSelectedDronesChanged: {
         // This is where you will update the selection of drones
-        
-        
-
     }
 
     // Connect to droneController to listen for drone state changes
