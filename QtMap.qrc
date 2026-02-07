@@ -36,7 +36,6 @@
         <file>droneMapIconSVG.svg</file>
         <file>discoveryPanelIcon.png</file>
         <file>discoveryPanelIconDarkMode.png</file>
-        <file>informationIcon.png</file>
         <file>xIcon.png</file>
         <file>plusIcon.png</file>
     </qresource>
