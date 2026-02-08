@@ -15,6 +15,7 @@ Window {
     width: 1050 // Perfect length, not sure why but the boxes get mis aligned. Maybe right padding; too tired to worry about
     height: 600
     title: qsTr("Manage Drones")
+    color: GcsStyle.PanelStyle.primaryColor
 
     // Property to track the currently selected drone
     property int selectedDroneIndex: -1
@@ -234,6 +235,7 @@ Window {
                 width: parent.width - 20
                 horizontalAlignment: Text.AlignHCenter
                 font.pointSize: 12
+                font.family: GcsStyle.PanelStyle.fontFamily
                 color: "#721c24"
             }
 
@@ -277,6 +279,7 @@ Window {
                 width: parent.width - 20
                 horizontalAlignment: Text.AlignHCenter
                 font.pointSize: 12
+                font.family: GcsStyle.PanelStyle.fontFamily
                 color: "#721c24"
             }
 
@@ -318,6 +321,7 @@ Window {
                 width: parent.width - 20
                 horizontalAlignment: Text.AlignHCenter
                 font.pointSize: 12
+                font.family: GcsStyle.PanelStyle.fontFamily
                 color: "#155724"  // Dark green text
             }
 
@@ -338,6 +342,8 @@ Window {
         Text {
             text: "Manage Drones"
             font.pixelSize: 20
+            font.family: GcsStyle.PanelStyle.fontFamily
+            color: GcsStyle.PanelStyle.textPrimaryColor
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
@@ -355,34 +361,36 @@ Window {
                 TextField {
                     id: droneNameField
                     placeholderText: "Drone Name"
-                    placeholderTextColor: GcsStyle.PanelStyle.textPrimaryColor
+                    placeholderTextColor: GcsStyle.PanelStyle.textSecondaryColor
                     width: (parent.width - 30) * 0.15
 
                     background: Rectangle {
-                        color: "#f5f5f5"
+                        color: GcsStyle.PanelStyle.secondaryColor
                         radius: 4
-                        border.color: parent.focus ? "#4CAF50" : "#e0e0e0"
+                        border.color: parent.focus ? "#4CAF50" : GcsStyle.PanelStyle.defaultBorderColor
                         border.width: parent.focus ? 2 : 1
                     }
-                    color: "#333333"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pixelSize: 14
+                    font.family: GcsStyle.PanelStyle.fontFamily
                     leftPadding: 8
                 }
 
                 TextField {
                     id: droneRole
                     placeholderText: "Drone Role"
-                    placeholderTextColor: GcsStyle.PanelStyle.textPrimaryColor
+                    placeholderTextColor: GcsStyle.PanelStyle.textSecondaryColor
                     width: (parent.width - 30) * 0.15
 
                     background: Rectangle {
-                        color: "#f5f5f5"
+                        color: GcsStyle.PanelStyle.secondaryColor
                         radius: 4
-                        border.color: parent.focus ? "#4CAF50" : "#e0e0e0"
+                        border.color: parent.focus ? "#4CAF50" : GcsStyle.PanelStyle.defaultBorderColor
                         border.width: parent.focus ? 2 : 1
                     }
-                    color: "#333333"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pixelSize: 14
+                    font.family: GcsStyle.PanelStyle.fontFamily
                     leftPadding: 8
                 }
 
@@ -390,34 +398,36 @@ Window {
                 TextField {
                     id: droneXbeeID
                     placeholderText: "Drone Xbee ID"
-                    placeholderTextColor: GcsStyle.PanelStyle.textPrimaryColor
+                    placeholderTextColor: GcsStyle.PanelStyle.textSecondaryColor
                     width: (parent.width - 30) * 0.35
 
                     background: Rectangle {
-                        color: "#f5f5f5"
+                        color: GcsStyle.PanelStyle.secondaryColor
                         radius: 6
-                        border.color: parent.focus ? "#4CAF50" : "#e0e0e0"
+                        border.color: parent.focus ? "#4CAF50" : GcsStyle.PanelStyle.defaultBorderColor
                         border.width: parent.focus ? 2 : 1
                     }
-                    color: "#333333"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pixelSize: 15
+                    font.family: GcsStyle.PanelStyle.fontFamily
                     leftPadding: 12
                 }
 
                 TextField {
                     id: droneXbeeAddr
                     placeholderText: "Drone Xbee Address"
-                    placeholderTextColor: GcsStyle.PanelStyle.textPrimaryColor
+                    placeholderTextColor: GcsStyle.PanelStyle.textSecondaryColor
                     width: (parent.width - 30) * 0.35
 
                     background: Rectangle {
-                        color: "#f5f5f5"
+                        color: GcsStyle.PanelStyle.secondaryColor
                         radius: 6
-                        border.color: parent.focus ? "#4CAF50" : "#e0e0e0"
+                        border.color: parent.focus ? "#4CAF50" : GcsStyle.PanelStyle.defaultBorderColor
                         border.width: parent.focus ? 2 : 1
                     }
-                    color: "#333333"
+                    color: GcsStyle.PanelStyle.textPrimaryColor
                     font.pixelSize: 15
+                    font.family: GcsStyle.PanelStyle.fontFamily
                     leftPadding: 12
                     rightPadding: 12
                 }
@@ -435,15 +445,16 @@ Window {
                     width: (parent.width - 30) / 4
 
                     background: Rectangle {
-                        color: addButton.pressed ? "#e0e0e0" : parent.hovered ? "#f0f0f0" : "#f5f5f5"
+                        color: addButton.pressed ? GcsStyle.PanelStyle.buttonPressedColor : addButton.hovered ? GcsStyle.PanelStyle.buttonHoverColor : GcsStyle.PanelStyle.buttonColor2
                         radius: 4
-                        border.color: "#e0e0e0"
+                        border.color: GcsStyle.PanelStyle.defaultBorderColor
                         border.width: 1
                     }
 
                     contentItem: Text {
                         text: addButton.text
                         color: GcsStyle.PanelStyle.textPrimaryColor
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -492,17 +503,18 @@ Window {
 
                     background: Rectangle {
                         color: updateButton.enabled ?
-                                   (updateButton.pressed ? "#e0e0e0" : parent.hovered ? "#f0f0f0" : "#f5f5f5")
-                                 : "#d0d0d0"
+                                   (updateButton.pressed ? GcsStyle.PanelStyle.buttonPressedColor : updateButton.hovered ? GcsStyle.PanelStyle.buttonHoverColor : GcsStyle.PanelStyle.buttonColor2)
+                                 : GcsStyle.PanelStyle.buttonUnavailableColor
                         radius: 4
-                        border.color: "#e0e0e0"
+                        border.color: GcsStyle.PanelStyle.defaultBorderColor
                         border.width: 1
                         opacity: updateButton.enabled ? 1.0 : 0.5
                     }
 
                     contentItem: Text {
                         text: updateButton.text
-                        color: updateButton.enabled ? GcsStyle.PanelStyle.textPrimaryColor : "#888888"
+                        color: updateButton.enabled ? GcsStyle.PanelStyle.textPrimaryColor : GcsStyle.PanelStyle.textSecondaryColor
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -544,10 +556,10 @@ Window {
 
                     background: Rectangle {
                         color: deleteButton.enabled ?
-                                   (deleteButton.pressed ? "#e07070" : parent.hovered ? "#ffdddd" : "#f5f5f5")
-                                 : "#d0d0d0"
+                                   (deleteButton.pressed ? GcsStyle.PanelStyle.buttonDangerColor : deleteButton.hovered ? GcsStyle.PanelStyle.buttonDangerHoverColor : GcsStyle.PanelStyle.buttonColor2)
+                                 : GcsStyle.PanelStyle.buttonUnavailableColor
                         radius: 4
-                        border.color: "#e0e0e0"
+                        border.color: GcsStyle.PanelStyle.defaultBorderColor
                         border.width: 1
                         opacity: deleteButton.enabled ? 1.0 : 0.5
                     }
@@ -555,8 +567,9 @@ Window {
                     contentItem: Text {
                         text: deleteButton.text
                         color: deleteButton.enabled ?
-                                   (deleteButton.pressed || parent.hovered ? "#cc0000" : "#404040")
-                                 : "#888888"
+                                   (deleteButton.pressed || deleteButton.hovered ? GcsStyle.PanelStyle.buttonDangerColor : GcsStyle.PanelStyle.textPrimaryColor)
+                                 : GcsStyle.PanelStyle.textSecondaryColor
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -590,15 +603,16 @@ Window {
                     onClicked: fileDialog.open()
 
                     background: Rectangle {
-                        color: importDroneButton.pressed ? "#e0e0e0" : parent.hovered ? "#f0f0f0" : "#f5f5f5"
+                        color: importDroneButton.pressed ? GcsStyle.PanelStyle.buttonPressedColor : importDroneButton.hovered ? GcsStyle.PanelStyle.buttonHoverColor : GcsStyle.PanelStyle.buttonColor2
                         radius: 4
-                        border.color: "#e0e0e0"
+                        border.color: GcsStyle.PanelStyle.defaultBorderColor
                         border.width: 1
                     }
 
                     contentItem: Text {
                         text: importDroneButton.text
                         color: GcsStyle.PanelStyle.textPrimaryColor
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
@@ -609,13 +623,15 @@ Window {
             Rectangle {
                 width: parent.width
                 height: 1
-                color: "#e0e0e0"
+                color: GcsStyle.PanelStyle.defaultBorderColor
             }
 
             // Drone List Section
             Text {
                 text: "Current Drones"
                 font.pixelSize: 16
+                font.family: GcsStyle.PanelStyle.fontFamily
+                color: GcsStyle.PanelStyle.textPrimaryColor
             }
 
             // Table Header
@@ -623,7 +639,7 @@ Window {
                 id: tableHeader
                 width: parent.width
                 height: 30
-                color: "#f5f5f5"
+                color: GcsStyle.PanelStyle.secondaryColor
                 anchors.left: parent.left
                 anchors.right: parent.right
 
@@ -635,51 +651,61 @@ Window {
                     Rectangle {
                         width: 40
                         height: parent.height
-                        color: "#e8e8e8"
+                        color: GcsStyle.PanelStyle.listItemHoverColor
                         Text {
                             anchors.centerIn: parent
                             font.bold: true
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            color: GcsStyle.PanelStyle.textPrimaryColor
                         }
                     }
 
                     Rectangle {
                         width: parent.width * 0.15 - 10
                         height: parent.height
-                        color: "#e8e8e8"
+                        color: GcsStyle.PanelStyle.listItemHoverColor
                         Text {
                             anchors.centerIn: parent
                             text: "Drone Name"
                             font.bold: true
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            color: GcsStyle.PanelStyle.textPrimaryColor
                         }
                     }
                     Rectangle {
                         width: parent.width * 0.15
                         height: parent.height
-                        color: "#e8e8e8"
+                        color: GcsStyle.PanelStyle.listItemHoverColor
                         Text {
                             anchors.centerIn: parent
                             text: "Role"
                             font.bold: true
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            color: GcsStyle.PanelStyle.textPrimaryColor
                         }
                     }
                     Rectangle {
                         width: parent.width * 0.33
                         height: parent.height
-                        color: "#e8e8e8"
+                        color: GcsStyle.PanelStyle.listItemHoverColor
                         Text {
                             anchors.centerIn: parent
                             text: "Xbee ID"
                             font.bold: true
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            color: GcsStyle.PanelStyle.textPrimaryColor
                         }
                     }
                     Rectangle {
                         width: parent.width * 0.33
                         height: parent.height
-                        color: "#e8e8e8"
+                        color: GcsStyle.PanelStyle.listItemHoverColor
                         Text {
                             anchors.centerIn: parent
                             text: "Xbee Address"
                             font.bold: true
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            color: GcsStyle.PanelStyle.textPrimaryColor
                         }
                     }
                 }
@@ -700,7 +726,7 @@ Window {
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
                     height: 40
-                    color: index === selectedDroneIndex ? "#e3f2fd" : (index % 2 === 0 ? "#ffffff" : "#f9f9f9")
+                    color: index === selectedDroneIndex ? GcsStyle.PanelStyle.listItemSelectedColor : (index % 2 === 0 ? GcsStyle.PanelStyle.listItemEvenColor : GcsStyle.PanelStyle.listItemOddColor)
                     anchors.left: parent ? parent.left : undefined
                     anchors.right: parent ? parent.right : undefined
 
@@ -715,9 +741,9 @@ Window {
                         Rectangle {
                             width: 40
                             height: parent.height
-                            color: index % 2 === 0 ? "#f2f2f2" : "#ffffff"
+                            color: index % 2 === 0 ? GcsStyle.PanelStyle.listItemOddColor : GcsStyle.PanelStyle.listItemEvenColor
                             border.width: 1
-                            border.color: "#e0e0e0"
+                            border.color: GcsStyle.PanelStyle.defaultBorderColor
 
                             CheckBox {
                                 anchors.centerIn: parent
@@ -727,9 +753,9 @@ Window {
                                     implicitHeight: 18
                                     x: 9
                                     y: 6
-                                    border.color: "#888888"
+                                    border.color: GcsStyle.PanelStyle.textSecondaryColor
                                     border.width: 1
-                                    color: index === selectedDroneIndex ? "#4CAF50" : "white"
+                                    color: index === selectedDroneIndex ? "#4CAF50" : GcsStyle.PanelStyle.primaryColor
 
                                     Rectangle {
                                         width: 10
@@ -757,13 +783,14 @@ Window {
                         Rectangle {
                             width: parent.width * 0.15 - 10
                             height: parent.height
-                            color: index % 2 === 0 ? "#f2f2f2" : "#ffffff"
+                            color: index % 2 === 0 ? GcsStyle.PanelStyle.listItemOddColor : GcsStyle.PanelStyle.listItemEvenColor
                             border.width: 1
-                            border.color: "#e0e0e0"
+                            border.color: GcsStyle.PanelStyle.defaultBorderColor
 
                             Text {
                                 text: name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.family: GcsStyle.PanelStyle.fontFamily
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
@@ -788,13 +815,14 @@ Window {
                         Rectangle {
                             width: parent.width * 0.15
                             height: parent.height
-                            color: index % 2 === 0 ? "#f2f2f2" : "#ffffff"
+                            color: index % 2 === 0 ? GcsStyle.PanelStyle.listItemOddColor : GcsStyle.PanelStyle.listItemEvenColor
                             border.width: 1
-                            border.color: "#e0e0e0"
+                            border.color: GcsStyle.PanelStyle.defaultBorderColor
 
                             Text {
                                 text: role
                                 color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.family: GcsStyle.PanelStyle.fontFamily
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
@@ -819,13 +847,14 @@ Window {
                         Rectangle {
                             width: parent.width * 0.35
                             height: parent.height
-                            color: index % 2 === 0 ? "#f2f2f2" : "#ffffff"
+                            color: index % 2 === 0 ? GcsStyle.PanelStyle.listItemOddColor : GcsStyle.PanelStyle.listItemEvenColor
                             border.width: 1
-                            border.color: "#e0e0e0"
+                            border.color: GcsStyle.PanelStyle.defaultBorderColor
 
                             Text {
                                 text: xbeeId
                                 color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.family: GcsStyle.PanelStyle.fontFamily
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
@@ -850,13 +879,14 @@ Window {
                         Rectangle {
                             width: parent.width * 0.35 - 30
                             height: parent.height
-                            color: index % 2 === 0 ? "#f2f2f2" : "#ffffff"
+                            color: index % 2 === 0 ? GcsStyle.PanelStyle.listItemOddColor : GcsStyle.PanelStyle.listItemEvenColor
                             border.width: 1
-                            border.color: "#e0e0e0"
+                            border.color: GcsStyle.PanelStyle.defaultBorderColor
 
                             Text {
                                 text: xbeeAddress
                                 color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.family: GcsStyle.PanelStyle.fontFamily
                                 anchors.verticalCenter: parent.verticalCenter
                                 anchors.left: parent.left
                                 anchors.leftMargin: 10
@@ -901,8 +931,9 @@ Window {
             Text {
                 anchors.centerIn: parent
                 text: "No drones added yet. Add your first drone above."
-                color: "#888888"
+                color: GcsStyle.PanelStyle.textSecondaryColor
                 font.italic: true
+                font.family: GcsStyle.PanelStyle.fontFamily
             }
         }
 

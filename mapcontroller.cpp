@@ -113,3 +113,8 @@ void MapController::addMarker(const QPair<double, double> &position)
     m_markers.append(position);
     emit locationMarked(QVariant(position.first), QVariant(position.second));
 }
+
+void MapController::setZoomLevel(double level)
+{
+    emit zoomLevelChanged(level);
+}

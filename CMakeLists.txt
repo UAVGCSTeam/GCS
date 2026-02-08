@@ -37,6 +37,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MavlinkSender.h
         MavlinkReceiver.h
         MavLinkReceiver.cpp
+        settingsmanager.h
+        settingsmanager.cpp
 
        # MavLinkUdp.h MavLinkUdp.cpp
     )

@@ -84,7 +84,7 @@ Rectangle {
                             text: activeDrone ? activeDrone.name: ""
                             font.pixelSize: GcsStyle.PanelStyle.headerFontSize
                             font.bold: true
-                            color: "#d9e8f6"
+                            color: GcsStyle.PanelStyle.textPrimaryColor
                         }
 
                         // spacer
@@ -318,6 +318,7 @@ Rectangle {
                         Text {
                             text: name
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                            font.family: GcsStyle.PanelStyle.fontFamily
                             Layout.alignment: Qt.AlignVCenter
                             Layout.fillWidth: true
 
