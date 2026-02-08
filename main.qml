@@ -25,7 +25,7 @@ Window {
         id: mapComponent
         anchors.fill: parent
         activeDrone: mainWindow.activeDrone
-        selectedDrones: mainWindow.selectedDrones 
+        selectedDrones: mainWindow.selectedDrones // Not yet implemented. But will be like this
         onZoomScaleChanged: function(coord1, coord2, pixelLength) {  
             mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
         }
@@ -62,12 +62,9 @@ Window {
         z: 100
     }
 
-    //active drone, initial anchor drone, clicked selected first, 
-    //more than one selected, pass in list of selected drones to qml map, -> use list to determine what is selected 
-    //to select each drone, to change our icon. 
     TelemetryPanel {
         id: telemetryPanel
-        activeDrone: mainWindow.activeDrone // Pass the active drone reference to the telemetry panel
+        activeDrone: mainWindow.activeDrone
         anchors {
             bottom: parent.bottom
             margins: GcsStyle.PanelStyle.applicationBorderMargin

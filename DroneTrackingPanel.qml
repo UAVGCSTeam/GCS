@@ -150,7 +150,7 @@ Rectangle {
             }
 
 
-            // Drone list view-----------------
+            // Drone list view
             ListView {
                 id: droneListView
                 Layout.fillWidth: true
@@ -261,10 +261,10 @@ Rectangle {
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
                             Layout.alignment: Qt.AlignVCenter
-                            opacity: mainPanel.isIndexSelected(index) ? 1.0 : 0.6
-                            Behavior on opacity {
-                                NumberAnimation { duration: 150 }
-                            }
+                            // opacity: mainPanel.isIndexSelected(index) ? 1.0 : 0.6
+                            // Behavior on opacity {
+                            //     NumberAnimation { duration: 150 }
+                            // }
                         }
 
                         ColumnLayout {
