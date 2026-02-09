@@ -66,7 +66,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -92,7 +92,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/fireSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/fireSVG.svg" : "qrc:/resources/fireSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -139,11 +139,13 @@ Rectangle {
                     Text {
                         text: "Drone Tracking"
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                     Text {
                         text: {droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"}
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
@@ -257,7 +259,10 @@ Rectangle {
                         Image {
                             id: statusIcon
                             source: { 
-                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
+                                if (modelData.altitude > 0.05) {
+                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                                }
+                                return "qrc:/resources/grounded.png"
                             }
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
@@ -273,12 +278,14 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
                                 color: modelData.batteryLevel < 70 ? "red" : GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
 
@@ -335,7 +342,8 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
                     color: GcsStyle.PanelStyle.textPrimaryColor
-                    font.pointSize: 12
+                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                    font.family: GcsStyle.PanelStyle.fontFamily
                 }
 
                 onClicked: {
@@ -366,6 +374,7 @@ Rectangle {
                     anchors.centerIn: parent
                     text: "Fire View"
                     font.pixelSize: GcsStyle.PanelStyle.fontSizeLarge
+                    font.family: GcsStyle.PanelStyle.fontFamily
                     color: GcsStyle.PanelStyle.textPrimaryColor
                 }
             }
