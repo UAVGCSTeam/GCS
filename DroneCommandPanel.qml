@@ -17,6 +17,10 @@ Rectangle {
     property int maxPanelHeight: Math.max(tabColumn.childrenRect.height, maxBodyHeight) // comparing the height between the expandedBody and tabColumn
     property int maxBodyHeight: Math.max(commandsBodyHeight, configBodyHeight)  // commparing the height between the expandedBody (commands/config) pages
     property string currentTab: "Commands"
+    property var waypointManager   // reference to Waypoint.qml
+    property bool showingWaypoints: false
+    property int waypointVersion: 0  // increment to refresh ListView
+
 
     // The Loaders: loads in invisible object to measure the
     // height of each panel, helps us determine
@@ -146,6 +150,9 @@ Rectangle {
                         name: "Hover"; //; destination:
                     }
                     ListElement {
+                        name: "Waypoints"; //; destination:
+                    }
+                    ListElement {
                         name: "Do A Flip!"; //; destination:
                     }
                     ListElement {
@@ -164,7 +171,7 @@ Rectangle {
 
                 // mock status for testing
                 property var buttonStatuses: ({
-                    "Go To": statusAvailable, "Return Home": statusAvailable, "Hover": statusAvailable, "Do A Flip!": statusAvailable, "Connect": statusAvailable, "Evaluate Fleet": statusAvailable, "Arm Motors": statusAvailable, "Diagnose": statusAvailable
+                    "Go To": statusAvailable, "Return Home": statusAvailable, "Hover": statusAvailable,"Waypoints": statusAvailable, "Do A Flip!": statusAvailable, "Connect": statusAvailable, "Evaluate Fleet": statusAvailable, "Arm Motors": statusAvailable, "Diagnose": statusAvailable
                 })
 
                 Loader {
@@ -175,7 +182,15 @@ Rectangle {
                     anchors.bottomMargin: GcsStyle.PanelStyle.defaultMargin
                     anchors.topMargin: 20
 
-                    sourceComponent: mainPanel.currentTab === "Commands" ? commandsBody : configBody
+                    sourceComponent: {
+                        if (mainPanel.currentTab !== "Commands")
+                            return configBody
+
+                        if (mainPanel.showingWaypoints)
+                            return waypointsBody
+
+                        return commandsBody
+                    }
                 }
             }
         }
@@ -340,13 +355,17 @@ Rectangle {
 
                         onClicked: {
                             console.log ("opening", text)
+                            if (name === "Waypoints") {
+                                mainPanel.showingWaypoints = true
+                                return
+                            }
 
                             if (status === statusAvailable) {
                                 status = statusInProgress
 
                                 console.log ("Action started:", text)
                             }
-                        }
+                        }  
                     }
                 }
             }
@@ -354,6 +373,79 @@ Rectangle {
             // spacer so the buttons stay at the top
             Item {
                 Layout.fillHeight: true
+            }
+        }
+    }
+    // content on 'Waypoints' tab
+    Component {
+        id: waypointsBody
+
+        ColumnLayout {
+            spacing: 6
+
+            Text {
+                text: "Waypoint Queue"
+                font.bold: true
+                color: GcsStyle.PanelStyle.textPrimaryColor
+            }
+
+            ListView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                model: {
+                    if (!activeDrone || !waypointManager)
+                        return []
+                    // Force reevaluation whenever waypointVersion changes
+                    waypointVersion
+                    return waypointManager.droneWaypoints[activeDrone.name] || []
+                }
+
+                delegate: Rectangle {
+                    height: 32
+                    width: parent.width
+                    color: GcsStyle.PanelStyle.secondaryColor
+                    radius: 4
+
+                    Text {
+                        text: index === 0 ? "Origin" : "WP " + index
+                        color: "#9ccfff"
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 60
+                    }
+
+                    Text {
+                        text: Number(modelData.lat).toFixed(5) + ", " + Number(modelData.lon).toFixed(5)
+                        color: GcsStyle.PanelStyle.textPrimaryColor
+                        anchors.left: parent.left
+                        anchors.leftMargin: 70
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
+
+            Button {
+                text: "Back to Commands"
+                onClicked: {
+                    mainPanel.showingWaypoints = false
+                }
+
+                // Set text color to white
+                contentItem: Text {
+                    text: "Back to Commands"
+                    color: "white"
+                    font.pixelSize: 16   // optional, adjust size
+                    anchors.centerIn: parent
+                }
+
+                background: Rectangle {
+                    // Sets a fixed background color for the button
+                    color: GcsStyle.PanelStyle.buttonColor2
+                    radius: 5
+                    border.width: GcsStyle.PanelStyle.defaultBorderWidth
+                    border.color: GcsStyle.PanelStyle.defaultBorderColor
+                }
             }
         }
     }
@@ -373,6 +465,14 @@ Rectangle {
             mainPanel.visible = false;
         } else {
             mainPanel.visible = true;
+        }
+    }
+    Connections {
+        target: waypointManager
+        function onWaypointsUpdated(droneName) {
+            if (activeDrone && droneName === activeDrone.name) {
+                mainPanel.waypointVersion++  // triggers ListView refresh
+            }
         }
     }
 }
