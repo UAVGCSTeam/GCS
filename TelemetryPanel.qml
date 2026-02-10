@@ -126,7 +126,7 @@ Rectangle {
                                         } else { "---" }
                                     }
                                     color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall_Medium
                                     font.bold: true
                                 }
                                 
