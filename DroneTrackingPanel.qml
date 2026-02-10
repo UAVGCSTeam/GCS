@@ -346,32 +346,6 @@ Rectangle {
                     systemid: "82084"
                     ignored: false
                 }
-
-                contentItem: Text {
-                    // This button is special because of this code.
-                    // The idea is that the font has a specific color now. The issue was that for
-                    // systems that use dynamic light/dark mode, the font disappeared in dark mode.
-                    text: parent.text
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                    font.family: GcsStyle.PanelStyle.fontFamily
-                }
-
-                onClicked: {
-                    var component = Qt.createComponent("manageDroneWindow.qml")
-                    if (component.status === Component.Ready) {
-                        var window = component.createObject(null)
-                        if (window !== null) {
-                            window.show()
-                        } else {
-                            console.error("Error creating object:", component.errorString());
-                        }
-                    } else {
-                        console.error("Component not ready:", component.errorString());
-                    }
-                }
             }
 
             // Discovery panel
