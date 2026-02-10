@@ -66,7 +66,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -89,7 +89,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/discoveryPanelIconDarkMode.png"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/discoveryPanelIcon.png" : "qrc:/resources/discoveryPanelIconDarkMode.png"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -138,6 +138,7 @@ Rectangle {
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
 
@@ -151,6 +152,7 @@ Rectangle {
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
@@ -264,7 +266,10 @@ Rectangle {
                         Image {
                             id: statusIcon
                             source: { 
-                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
+                                if (modelData.altitude > 0.05) {
+                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                                }
+                                return "qrc:/resources/grounded.png"
                             }
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
@@ -280,12 +285,14 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
                                 color: modelData.batteryLevel < 70 ? "red" : GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
 
@@ -338,6 +345,32 @@ Rectangle {
                     componentid: "080923";
                     systemid: "82084"
                     ignored: false
+                }
+
+                contentItem: Text {
+                    // This button is special because of this code.
+                    // The idea is that the font has a specific color now. The issue was that for
+                    // systems that use dynamic light/dark mode, the font disappeared in dark mode.
+                    text: parent.text
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: GcsStyle.PanelStyle.textPrimaryColor
+                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                    font.family: GcsStyle.PanelStyle.fontFamily
+                }
+
+                onClicked: {
+                    var component = Qt.createComponent("manageDroneWindow.qml")
+                    if (component.status === Component.Ready) {
+                        var window = component.createObject(null)
+                        if (window !== null) {
+                            window.show()
+                        } else {
+                            console.error("Error creating object:", component.errorString());
+                        }
+                    } else {
+                        console.error("Component not ready:", component.errorString());
+                    }
                 }
             }
 
