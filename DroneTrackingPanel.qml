@@ -66,7 +66,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -89,7 +89,11 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
+<<<<<<< HEAD
                         source: "qrc:/resources/discoveryPanelIconDarkMode.svg"
+=======
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/discoveryPanelIcon.png" : "qrc:/resources/discoveryPanelIconDarkMode.png"
+>>>>>>> 29fcae545b9a4e5fb6cc43c6ac35fc5e06edc351
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -138,6 +142,7 @@ Rectangle {
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
 
@@ -151,6 +156,7 @@ Rectangle {
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
@@ -264,7 +270,10 @@ Rectangle {
                         Image {
                             id: statusIcon
                             source: { 
-                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
+                                if (modelData.altitude > 0.05) {
+                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                                }
+                                return "qrc:/resources/grounded.png"
                             }
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
@@ -280,12 +289,14 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
                                 color: modelData.batteryLevel < 70 ? "red" : GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
 

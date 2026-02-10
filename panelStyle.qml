@@ -2,14 +2,24 @@ pragma Singleton
 import QtQuick 2.15
 
 QtObject {
+    // Theme state - bound to settingsManager
+    property string currentTheme: settingsManager ? settingsManager.currentTheme : "dark"
+    readonly property bool isLightTheme: currentTheme === "light" 
+
+    // Text size state - bound to settingsManager
+    property int textSizeBase: settingsManager ? settingsManager.textSizeBase : 12
+
+    // Font family state - bound to settingsManager
+    property string fontFamily: settingsManager ? settingsManager.fontFamily : "Arial"
+
     // Color scheme
-    readonly property color listItemHoverColor: "#384250"
-    readonly property color listItemSelectedColor: "#495B76"
-    readonly property color primaryColor: "#161720"
-    readonly property color secondaryColor: "#282831"
-    readonly property color accentColor: "#007bff"
-    readonly property color textPrimaryColor: "#ffffff"
-    readonly property color textSecondaryColor: "#666666"
+    readonly property color listItemHoverColor: isLightTheme ? "#D1D1D6" : "#384250"     // light silver, blue-grey slate
+    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : "#495B76"  // soft blue-grey, muted steel blue
+    readonly property color primaryColor: isLightTheme ? "#FDF6F6" : "#161720"           // subtle warm pink white, dark navy
+    readonly property color secondaryColor: isLightTheme ? "#E8E8ED" : "#282831"         // light grey, charcoal
+    readonly property color accentColor: "#007bff"                                       // bright blue
+    readonly property color textPrimaryColor: isLightTheme ? "#1D1D1F" : "#ffffff"       // black, white
+    readonly property color textSecondaryColor: isLightTheme ? "#86868B" : "#666666"     // medium grey, dark grey
 
     // Sizes
     readonly property int sidebarWidth: 50
@@ -18,23 +28,23 @@ QtObject {
     readonly property int itemHeight: 50
     readonly property int cornerRadius: 10
 
-    // Font sizes
-    readonly property int fontSizeLarge: 18
-    readonly property int fontSizeMedium: 16
-    readonly property int fontSizeSmall: 12
-    readonly property int fontSizeXS: 10
-    readonly property int fontSizeXXS: 8
+    // Font sizes (computed from textSizeBase)
+    readonly property int fontSizeLarge: textSizeBase + 6 //18 default value
+    readonly property int fontSizeMedium: textSizeBase + 4 //16 default value
+    readonly property int fontSizeSmall: textSizeBase //12 default value
+    readonly property int fontSizeXS: textSizeBase - 2 //10 default value
+    readonly property int fontSizeXXS: textSizeBase - 4 //8 default value
 
     // Button properties
     readonly property int buttonSize: 40
     readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
-    readonly property color buttonColor2: "#282830"
-    readonly property color buttonActiveColor: "#4B88A2"
-    readonly property color buttonHoverColor: "#364357"
+    readonly property color buttonColor2: isLightTheme ? "#DCDCE2" : "#282830"           // pale grey, charcoal
+    readonly property color buttonActiveColor: "#4B88A2"                                  // teal blue
+    readonly property color buttonHoverColor: isLightTheme ? "#C5C5CC" : "#364357"       // silver, slate blue
     readonly property color buttonPressedColor: listItemHoverColor
-    readonly property color buttonUnavailableColor: "#212129"
-    readonly property color buttonBorderColor: "#c8c8c8"
+    readonly property color buttonUnavailableColor: isLightTheme ? "#E5E5EA" : "#212129" // light grey, dark charcoal
+    readonly property color buttonBorderColor: isLightTheme ? "#B0B0B5" : "#c8c8c8"      // grey, light grey
     
     // Danger/warning button colors
     readonly property color buttonDangerColor: "#c62828"
@@ -52,7 +62,7 @@ QtObject {
 
     // List view properties
     readonly property color listItemEvenColor: primaryColor
-    readonly property color listItemOddColor: "#202029"
+    readonly property color listItemOddColor: isLightTheme ? "#EBEBF0" : "#202029"       // light grey, dark grey
     readonly property int listItemHeight: 40
 
     // Command Menu
@@ -70,22 +80,19 @@ QtObject {
 
     // Borders 
     readonly property double defaultBorderWidth: 0.5
-    // readonly property color defaultBorderColor: "lightgray"
-    readonly property color defaultBorderColor: "#515151"
-    // readonly property color defaultBorderColor: "red"
+    readonly property color defaultBorderColor: isLightTheme ? "#C5C5CC" : "#515151"     // silver, medium grey
 
     // Icon properties
     readonly property int iconSize: 24
     readonly property int statusIconSize: 15
 
     // Text colors for different backgrounds
-    // readonly property color textOnPrimaryColor: "#000000"
-    readonly property color textOnPrimaryColor: "#ffffff"
+    readonly property color textOnPrimaryColor: isLightTheme ? "#1D1D1F" : "#ffffff"     // near-black, white
     readonly property color textOnSecondaryColor: textPrimaryColor
 
-    // Header-specific properties
-    readonly property int headerFontSize: 18
-    readonly property int subHeaderFontSize: 12
+    // Header-specific properties (scale with textSizeBase)
+    readonly property int headerFontSize: textSizeBase + 6 //18 default value
+    readonly property int subHeaderFontSize: textSizeBase // 12 default value
 
     // Battery indicator colors
     readonly property color batteryHighColor: "#4CAF50"

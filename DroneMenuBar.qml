@@ -95,6 +95,12 @@ Rectangle {
                 windowFile: "manageDroneWindow.qml"
                 menuPopup: gcsMenu
             }
+            
+            PopupMenuItem {
+                text: "Settings"
+                menuPopup: gcsMenu
+                onMenuItemClicked: mainWindow.openSettingsWindow()
+            }
         }
     }
     
