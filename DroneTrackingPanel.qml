@@ -89,11 +89,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-<<<<<<< HEAD
-                        source: "qrc:/resources/discoveryPanelIconDarkMode.svg"
-=======
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/discoveryPanelIcon.png" : "qrc:/resources/discoveryPanelIconDarkMode.png"
->>>>>>> 29fcae545b9a4e5fb6cc43c6ac35fc5e06edc351
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/discoveryPanelIcon.svg" : "qrc:/resources/discoveryPanelIconDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
