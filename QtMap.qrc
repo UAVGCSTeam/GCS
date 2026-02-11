@@ -1,42 +1,44 @@
+<!DOCTYPE RCC>
 <RCC>
-    <qresource prefix="/">
-        <file>QmlMap.qml</file>
-        <file>main.qml</file>
-        <file>coordinates.js</file>
-        <file>MapDisplayTypeButton.qml</file>
-        <file>MapScaleBarIndicator.qml</file>
-        <file>DroneTrackingPanel.qml</file>
-        <file>DroneMenuBar.qml</file>
-        <file>manageDroneWindow.qml</file>
-        <file>armWindow.qml</file>
-        <file>coordinateNavigationWindow.qml</file>
-        <file>goHomeLandingWindow.qml</file>
-        <file>takeOffWindow.qml</file>
-        <file>DroneLabelComponent.qml</file>
-        <file>TelemetryPanel.qml</file>
-        <file>components/MenuButton.qml</file>
-        <file>components/PopupMenuItem.qml</file>
-        <file>Waypoint.qml</file>
-        <file>components/UniversalPopup.qml</file>
-        <file>configureDroneWindow.qml</file>
-        <file>DroneCommandPanel.qml</file>
-    </qresource>
-    <qresource prefix="/resources">
-        <file>mappin.svg</file>
-        <file>cppLOGO.svg</file>
-        <file>droneStatusSVG.svg</file>
-        <file>warning.png</file>
-        <file>arrow-down.png</file>
-        <file>arrow-up.png</file>
-        <file>grounded.png</file>
-        <file>droneSVG.svg</file>
-        <file>droneSVGDarkMode.svg</file>
-        <file>fireSVG.svg</file>
-        <file>fireSVGDarkMode.svg</file>
-        <file>droneMapIconSVG.svg</file>
-    </qresource>
-    <qresource prefix="/gcsStyle">
-        <file>panelStyle.qml</file>
-        <file>qmldir</file>
-    </qresource>
+  <qresource prefix="/">
+    <file>QmlMap.qml</file>
+    <file>main.qml</file>
+    <file>coordinates.js</file>
+    <file>MapDisplayTypeButton.qml</file>
+    <file>MapScaleBarIndicator.qml</file>
+    <file>DroneTrackingPanel.qml</file>
+    <file>DroneMenuBar.qml</file>
+    <file>manageDroneWindow.qml</file>
+    <file>armWindow.qml</file>
+    <file>coordinateNavigationWindow.qml</file>
+    <file>goHomeLandingWindow.qml</file>
+    <file>takeOffWindow.qml</file>
+    <file>DroneLabelComponent.qml</file>
+    <file>TelemetryPanel.qml</file>
+    <file>components/MenuButton.qml</file>
+    <file>components/PopupMenuItem.qml</file>
+    <file>Waypoint.qml</file>
+    <file>components/UniversalPopup.qml</file>
+    <file>configureDroneWindow.qml</file>
+    <file>DroneCommandPanel.qml</file>
+    <file>components/StatusPill.qml</file>
+  </qresource>
+  <qresource prefix="/resources">
+    <file>mappin.svg</file>
+    <file>cppLOGO.svg</file>
+    <file>droneStatusSVG.svg</file>
+    <file>warning.png</file>
+    <file>arrow-down.png</file>
+    <file>arrow-up.png</file>
+    <file>grounded.png</file>
+    <file>droneSVG.svg</file>
+    <file>droneSVGDarkMode.svg</file>
+    <file>fireSVG.svg</file>
+    <file>fireSVGDarkMode.svg</file>
+    <file>droneMapIconSVG.svg</file>
+  </qresource>
+  <qresource prefix="/gcsStyle">
+    <file>panelStyle.qml</file>
+    <file>qmldir</file>
+  </qresource>
 </RCC>

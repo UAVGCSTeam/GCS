@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
+import "./components"
+import "./components" as Components
 
 /*
   Welcome to the wild west....
@@ -175,19 +177,6 @@ Rectangle {
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
                     height: GcsStyle.PanelStyle.listItemHeight
-                    
-                    StatusPill {
-                        readonly property real altitude: modelData.altitude || 0
-                        readonly property bool connected: modelData.connected || false
-                        readonly property bool arming: modelData.arming || false
-
-                        statusVariant: {
-                            if (arming) return "arming"
-                            if (altitude >= 0.05) return "inFlight"
-                            if (connected) return "active"
-                            return "idle"
-                        }
-                    }
 
                     // local UI state
                     property bool hovered: false
@@ -278,6 +267,7 @@ Rectangle {
                         }
 
                         ColumnLayout {
+                            Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft
                             Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
@@ -286,6 +276,9 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
@@ -294,10 +287,24 @@ Rectangle {
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             }
                         }
-
+                        
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
+                        StatusPill {
+                            readonly property real altitude: modelData.altitude || 0
+                            readonly property bool connected: modelData.connected || false
+                            readonly property bool arming: modelData.arming || false
+
+                            property string statusVariant: {
+                                if (arming) return "arming"
+                                if (altitude >= 0.05) return "inFlight"
+                                if (connected) return "active"
+                                return "idle"
+                            }
+                        }   
+
+                        
                         Image {
                             id: warningIcon
                             source: {

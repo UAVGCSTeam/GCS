@@ -4,10 +4,11 @@ import "qrc:/gcsStyle" as GcsStyle
 
 Button{
     id: statusPill
-    height: textOfButton.implicitHeight + 15
-    flat: true
-    anchors.margins: 12
-    
+    height: textOfButton.implicitHeight
+    flat: false
+    anchors.margins: 5
+
+
     property var stateText: [
         "Idle",
         "Arming",
@@ -17,23 +18,23 @@ Button{
     property string statusVariant: "idle"
 
     background: Rectangle {
+        //color: GcsStyle.PanelStyle.buttonActiveColor
         color: checkColor(statusVariant)
-        border: GcsStyle.PanelStyle.defaultBorderWidth
         radius: GcsStyle.PanelStyle.cornerRadius
     }
 
-    contentItem: text{
+    contentItem: Text{
         id: textOfStatus
         text: stateText[checkText(statusVariant)] ?? stateText[0]
-        color: "black"
-        font.pointSize: GcsStyle.PanelStyle.fontSizeXS
+        color: "white"
+        font.pointSize: GcsStyle.PanelStyle.fontSizeXS - 5
         font.weight: Font.Medium
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     } 
-    
-    function checkText(var){
-        switch(var){
+
+    function checkText(v){
+        switch(v){
             case "idle": return 0
             case "inFlight": return 1
             case "arming": return 2
@@ -41,8 +42,8 @@ Button{
         }
     }
 
-    function checkColor(var){
-        switch(var){
+    function checkColor(v){
+        switch(v){
             case "idle": return GcsStyle.PanelStyle.secondaryColor
             case "inFlight": return GcsStyle.PanelStyle.buttonActiveColor
             case "arming": return GcsStyle.PanelStyle.statusFlyingColor
