@@ -175,6 +175,19 @@ Rectangle {
                 delegate: Rectangle {
                     width: parent ? parent.width : 0
                     height: GcsStyle.PanelStyle.listItemHeight
+                    
+                    StatusPill {
+                        readonly property real altitude: modelData.altitude || 0
+                        readonly property bool connected: modelData.connected || false
+                        readonly property bool arming: modelData.arming || false
+
+                        statusVariant: {
+                            if (arming) return "arming"
+                            if (altitude >= 0.05) return "inFlight"
+                            if (connected) return "active"
+                            return "idle"
+                        }
+                    }
 
                     // local UI state
                     property bool hovered: false
