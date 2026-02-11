@@ -27,7 +27,11 @@ Rectangle {
     property int lastSelectedIndex: -1 // Remembers last drone the user clicked (so Shift-click knows where to start)
     property int selectionAnchorIndex: -1 // Anchor index used for Shift-range selections
     property bool multiSelectActive: selectedIndexes.length > 1 
+<<<<<<< HEAD
     property string activePanel: "drones"   //"drones", "discovery"
+=======
+    property string activePanel: "drones"   // "drones", "discovery"
+>>>>>>> main
 
     RowLayout {
         anchors.fill: parent
@@ -66,19 +70,23 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
+<<<<<<< HEAD
                         onClicked: {
                             mainPanel.activePanel = "drones"
                             //droneListView.visible = true
                             //fireView.visible = false
                             //discoveryListView.visible = false
                         }
+=======
+                        onClicked: {mainPanel.activePanel = "drones"}
+>>>>>>> main
                     }
                 }
 
@@ -94,19 +102,27 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
+<<<<<<< HEAD
                         source: "qrc:/resources/discoveryPanelIconDarkMode.png"
+=======
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/discoveryPanelIcon.svg" : "qrc:/resources/discoveryPanelIconDarkMode.svg"
+>>>>>>> main
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
+<<<<<<< HEAD
                         onClicked: {
                             mainPanel.activePanel = "discovery"
                             //droneListView.visible = false
                             //fireView.visible = false
                             //discoveryListView.visible = true
                         }
+=======
+                        onClicked: {mainPanel.activePanel = "discovery"}
+>>>>>>> main
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
@@ -148,6 +164,7 @@ Rectangle {
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
 
@@ -161,6 +178,7 @@ Rectangle {
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
+                        font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
                     }
                 }
@@ -274,7 +292,10 @@ Rectangle {
                         Image {
                             id: statusIcon
                             source: { 
-                                    modelData.altitude > 0.05 ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/grounded.png"
+                                if (modelData.altitude > 0.05) {
+                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                                }
+                                return "qrc:/resources/grounded.png"
                             }
                             sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                             sourceSize.height: GcsStyle.PanelStyle.statusIconSize
@@ -290,12 +311,14 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "Battery Not Found"
                                 color: modelData.batteryLevel < 70 ? "red" : GcsStyle.PanelStyle.textSecondaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
 
