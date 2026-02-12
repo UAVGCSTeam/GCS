@@ -1,11 +1,11 @@
 #include "DroneController.h"
 #include "DroneClass.h"
 #include "UARTLink.h"
-#include "MavlinkReceiver.h"
-#include "MavlinkSender.h"
+#include "MAVLinkReceiver.h"
+#include "MAVLinkSender.h"
 #include <QDebug>
 #include <memory>
-#include "MavlinkReceiver.h"
+#include "MAVLinkReceiver.h"
 #include <QMetaType>
 #include <QTimer>
 #include <QJsonDocument>
@@ -539,14 +539,14 @@ DroneClass *DroneController::getDrone(int index) const
 bool DroneController::openUART(const QString& port, int baud)
 {
     if (!uartDevice_) uartDevice_ = std::make_unique<UARTLink>(this);
-    if (!mav_)  mav_  = std::make_unique<MavlinkSender>(uartDevice_.get(), this);
+    if (!mav_)  mav_  = std::make_unique<MAVLinkSender>(uartDevice_.get(), this);
 
     //  set up receiver & wire signals
     if (!mavRx_) {
-        mavRx_ = std::make_unique<MavlinkReceiver>(this);
+        mavRx_ = std::make_unique<MAVLinkReceiver>(this);
         connect(uartDevice_.get(), &UARTLink::bytesReceived,
-                mavRx_.get(), &MavlinkReceiver::onBytes);
-        connect(mavRx_.get(), &MavlinkReceiver::messageReceived,
+                mavRx_.get(), &MAVLinkReceiver::onBytes);
+        connect(mavRx_.get(), &MAVLinkReceiver::messageReceived,
                 this,        &DroneController::onMavlinkMessage);
     }
 

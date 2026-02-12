@@ -9,7 +9,7 @@
 #include "FileHandler.h"
 #include "backend/dbmanager.h"
 #include "DroneController.h"
-#include "settingsmanager.h"
+#include "SettingsManager.h"
 
 
 int main(int argc, char *argv[])

@@ -32,14 +32,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         requirements.txt
         UARTLink.cpp
         UARTLink.h
-        MavlinkSender.cpp
-        MavlinkSender.h
-        MavlinkReceiver.h
-        MavLinkReceiver.cpp
-        settingsmanager.h
-        settingsmanager.cpp
-
-       # MavLinkUdp.h MavLinkUdp.cpp
+        MAVLinkSender.cpp
+        MAVLinkSender.h
+        MAVLinkReceiver.h
+        MAVLinkReceiver.cpp
+        SettingsManager.h
+        SettingsManager.cpp
     )
 else()
     if(ANDROID)

@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <QHash>
 #include <QVariant>
-#include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
+#include "MAVLinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
 
 
 
@@ -38,8 +38,8 @@
 
 
 class UARTLink;
-class MavlinkSender;
-class MavlinkReceiver;
+class MAVLinkSender;
+class MAVLinkReceiver;
 
 class DroneController : public QObject 
 {
@@ -113,8 +113,8 @@ private:
     DBManager &dbManager;
 
     std::unique_ptr<UARTLink>    uartDevice_;
-    std::unique_ptr<MavlinkSender> mav_;
-    std::unique_ptr<MavlinkReceiver> mavRx_;
+    std::unique_ptr<MAVLinkSender> mav_;
+    std::unique_ptr<MAVLinkReceiver> mavRx_;
     QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
     static QList<QSharedPointer<DroneClass>> droneList;
     

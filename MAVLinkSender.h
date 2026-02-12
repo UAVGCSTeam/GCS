@@ -5,10 +5,10 @@
 
 
 class UARTLink;
-class MavlinkSender : public QObject {
+class MAVLinkSender : public QObject {
     Q_OBJECT
 public:
-    explicit MavlinkSender(UARTLink* link, QObject* parent=nullptr);
+    explicit MAVLinkSender(UARTLink* link, QObject* parent=nullptr);
     // sys/comp are target IDs on the drone
     bool sendArm(uint8_t sys, uint8_t comp, bool arm);
 
