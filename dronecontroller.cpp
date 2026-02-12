@@ -1,6 +1,6 @@
-#include "dronecontroller.h"
-#include "droneclass.h"
-#include "XbeeLink.h"
+#include "DroneController.h"
+#include "DroneClass.h"
+#include "UARTLink.h"
 #include "MavlinkReceiver.h"
 #include "MavlinkSender.h"
 #include <QDebug>
@@ -85,7 +85,7 @@ QVariantList DroneController::getAllDrones() const
         QVariantMap droneMap;
         // these method calls have to match our DroneClass interface
         droneMap["name"] = drone->getName();
-        droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in DroneClass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
         // Adds placeholder values for status and battery and leave other fields blank
@@ -405,7 +405,7 @@ void DroneController::deleteALlDrones_UI()
     {
         droneList.clear(); // also delete drones in C++ memory
 
-        qDebug() << "[dronecontroller.cpp]: All drones deleted successfully!";
+        qDebug() << "[DroneController.cpp]: All drones deleted successfully!";
         // Adding update to the new QML list
         rebuildVariant();
         emit dronesChanged();
@@ -536,26 +536,26 @@ DroneClass *DroneController::getDrone(int index) const
 
 
 
-bool DroneController::openXbee(const QString& port, int baud)
+bool DroneController::openUART(const QString& port, int baud)
 {
-    if (!xbee_) xbee_ = std::make_unique<XbeeLink>(this);
-    if (!mav_)  mav_  = std::make_unique<MavlinkSender>(xbee_.get(), this);
+    if (!uartDevice_) uartDevice_ = std::make_unique<UARTLink>(this);
+    if (!mav_)  mav_  = std::make_unique<MavlinkSender>(uartDevice_.get(), this);
 
     //  set up receiver & wire signals
     if (!mavRx_) {
         mavRx_ = std::make_unique<MavlinkReceiver>(this);
-        connect(xbee_.get(), &XbeeLink::bytesReceived,
+        connect(uartDevice_.get(), &UARTLink::bytesReceived,
                 mavRx_.get(), &MavlinkReceiver::onBytes);
         connect(mavRx_.get(), &MavlinkReceiver::messageReceived,
                 this,        &DroneController::onMavlinkMessage);
     }
 
-    const bool ok = xbee_->open(port, baud);
+    const bool ok = uartDevice_->open(port, baud);
     if (!ok) {
-        qWarning() << "[DroneController] Failed to open XBee port" << port << "baud" << baud;
+        qWarning() << "[DroneController] Failed to open UART port" << port << "baud" << baud;
         return false;
     }
-    qInfo()  << "[DroneController] XBee opened on" << port << "@" << baud;
+    qInfo()  << "[DroneController] UART opened on" << port << "@" << baud;
     return true;
 }
 
@@ -570,7 +570,7 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
     }
 
     if (!mav_) {
-        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        qWarning() << "[DroneController] MAVLink sender not ready; call openUART() first";
         return false;
     }
 

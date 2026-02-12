@@ -1,5 +1,5 @@
 #include "MavlinkSender.h"
-#include "XbeeLink.h"
+#include "UARTLink.h"
 #include <QDebug>
 #include <chrono>
 
@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 
-MavlinkSender::MavlinkSender(XbeeLink* link, QObject* p) : QObject(p), link_(link) {}
+MavlinkSender::MavlinkSender(UARTLink* link, QObject* p) : QObject(p), link_(link) {}
 
 QByteArray MavlinkSender::packCommandLong(uint8_t sys, uint8_t comp,
                                           uint16_t command, float p1,

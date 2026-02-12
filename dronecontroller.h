@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QList>
 #include "backend/dbmanager.h"
-#include "droneclass.h"
+#include "DroneClass.h"
 #include <QSharedPointer>
 #include <QSharedMemory>
 #include <QTimer>
@@ -37,7 +37,7 @@
 
 
 
-class XbeeLink;
+class UARTLink;
 class MavlinkSender;
 class MavlinkReceiver;
 
@@ -52,7 +52,7 @@ public:
 
     // Initialize shared memory for XBee communication
     Q_INVOKABLE QVariantList getDrones() const;
-    Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
+    Q_INVOKABLE bool openUART(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
 
     Q_INVOKABLE DroneClass *getDrone(int index) const;
@@ -112,7 +112,7 @@ private:
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
     DBManager &dbManager;
 
-    std::unique_ptr<XbeeLink>    xbee_;
+    std::unique_ptr<UARTLink>    uartDevice_;
     std::unique_ptr<MavlinkSender> mav_;
     std::unique_ptr<MavlinkReceiver> mavRx_;
     QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
