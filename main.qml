@@ -54,6 +54,7 @@ Window {
     // Menu bar above the drone tracking panel
     DroneMenuBar {
         id: droneMenuBar
+        activeDrone: mainWindow.activeDrone
         anchors {
             top: parent.top
             left: parent.left
