@@ -92,7 +92,7 @@ public slots:
                        double input_longitude,
                        double input_altitude,
                        QObject *parent);
-    void updateDrone(const QSharedPointer<DroneClass> &drone);
+    bool updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
     

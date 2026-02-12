@@ -1,5 +1,10 @@
 #include "UARTLink.h"
 
+/*
+    Tip: Learn more about the QSerialPort class' members here: 
+    https://doc.qt.io/qt-6/qserialport-members.html
+*/
+
 UARTLink::UARTLink(QObject* p):QObject(p){
     connect(&serial_, &QSerialPort::readyRead, this, &UARTLink::onReadyRead);
 }
