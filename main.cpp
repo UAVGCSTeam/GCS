@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     // If the database doesn't exist, it will create the database. The following code intializes the drones Table.
     DBManager gcs_db_manager;
     gcs_db_manager.initDB();
-    qDebug() << "Database started successfully.";
+    qDebug() << "[main.cpp] Database started successfully.";
 
     // TODO: Intialize and make UI button click reach database
 

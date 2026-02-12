@@ -50,7 +50,6 @@ public:
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
     ~DroneController();
 
-    // Initialize shared memory for XBee communication
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool openUART(const QString &port, int baud = 57600);
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);

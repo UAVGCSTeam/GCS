@@ -174,8 +174,6 @@ Rectangle {
                 */
                 /*
                   TODO:
-                        Make drone list item selectable and display real data.
-                        Make fire page as well-we need real time fire data for this page.
                         Make drone symbols update based on status.
                 */
 
