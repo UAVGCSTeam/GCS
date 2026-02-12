@@ -1,5 +1,5 @@
-#include "mapcontroller.h"
-#include "droneclass.h"
+#include "MapController.h"
+#include "DroneClass.h"
 
 
 /*

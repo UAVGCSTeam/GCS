@@ -4,7 +4,7 @@
 #include <QVariant>
 #include <QPair>
 #include <QVector>
-#include "droneclass.h"
+#include "DroneClass.h"
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.

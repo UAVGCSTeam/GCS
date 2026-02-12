@@ -1,4 +1,4 @@
-#include "settingsmanager.h"
+#include "SettingsManager.h"
 
 /*
  * QSettings API:

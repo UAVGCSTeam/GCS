@@ -5,11 +5,11 @@
 #include <QTimer>
 #include <QDir>
 #include <QtQuickControls2/QQuickStyle>
-#include "mapcontroller.h"
-#include "filehandler.h"
+#include "MapController.h"
+#include "FileHandler.h"
 #include "backend/dbmanager.h"
-#include "dronecontroller.h"
-#include "settingsmanager.h"
+#include "DroneController.h"
+#include "SettingsManager.h"
 
 
 int main(int argc, char *argv[])
