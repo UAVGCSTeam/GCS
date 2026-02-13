@@ -27,11 +27,7 @@ Rectangle {
     property int lastSelectedIndex: -1 // Remembers last drone the user clicked (so Shift-click knows where to start)
     property int selectionAnchorIndex: -1 // Anchor index used for Shift-range selections
     property bool multiSelectActive: selectedIndexes.length > 1 
-<<<<<<< HEAD
-    property string activePanel: "drones"   //"drones", "discovery"
-=======
     property string activePanel: "drones"   // "drones", "discovery"
->>>>>>> main
 
     RowLayout {
         anchors.fill: parent
@@ -77,16 +73,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-<<<<<<< HEAD
-                        onClicked: {
-                            mainPanel.activePanel = "drones"
-                            //droneListView.visible = true
-                            //fireView.visible = false
-                            //discoveryListView.visible = false
-                        }
-=======
                         onClicked: {mainPanel.activePanel = "drones"}
->>>>>>> main
                     }
                 }
 
@@ -102,27 +89,14 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-<<<<<<< HEAD
-                        source: "qrc:/resources/discoveryPanelIconDarkMode.png"
-=======
                         source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/discoveryPanelIcon.svg" : "qrc:/resources/discoveryPanelIconDarkMode.svg"
->>>>>>> main
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
-<<<<<<< HEAD
-                        onClicked: {
-                            mainPanel.activePanel = "discovery"
-                            //droneListView.visible = false
-                            //fireView.visible = false
-                            //discoveryListView.visible = true
-                        }
-=======
                         onClicked: {mainPanel.activePanel = "discovery"}
->>>>>>> main
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up

@@ -28,21 +28,12 @@ QtObject {
     readonly property int itemHeight: 50
     readonly property int cornerRadius: 10
 
-<<<<<<< HEAD
-    // Font sizes
-    readonly property int fontSizeLarge: 18
-    readonly property int fontSizeMedium: 16
-    readonly property int fontSizeSmall: 12
-    readonly property int fontSizeXS: 10
-    readonly property int fontSizeXXS: 8
-=======
     // Font sizes (computed from textSizeBase)
     readonly property int fontSizeLarge: textSizeBase + 6 //18 default value
     readonly property int fontSizeMedium: textSizeBase + 4 //16 default value
     readonly property int fontSizeSmall: textSizeBase //12 default value
     readonly property int fontSizeXS: textSizeBase - 2 //10 default value
     readonly property int fontSizeXXS: textSizeBase - 4 //8 default value
->>>>>>> main
 
     // Button properties
     readonly property int buttonSize: 40
