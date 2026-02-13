@@ -25,16 +25,11 @@ class MapController : public QObject
 
 public:
     explicit MapController(QObject *parent = nullptr);
-    // Q_INVOKABLE void debugPrintDrones() const;
-    Q_INVOKABLE void createDrone(const QString &input_name);
-
 
 public slots:
     void setCenterPosition(const QVariant &lat, const QVariant &lon);
     void setLocationMarking(const QVariant &lat, const QVariant &lon);
     void changeMapType(int typeIndex);
-    Q_INVOKABLE void addDrone(DroneClass* drone);
-    Q_INVOKABLE QVariantList getAllDrones() const;
 signals:
     void centerPositionChanged(const QVariant &lat, const QVariant &lon);
     void locationMarked(const QVariant &lat, const QVariant &lon);
