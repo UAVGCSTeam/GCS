@@ -37,34 +37,60 @@ QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the stat
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db)
 {
-    int index = 0; 
 
-    // function loads all drones from the database on startup
-    qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
-    QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
-    for (const QVariantMap &record : droneRecords)
+    //check if save file exists -> load drones from file else load manually
+    std::string fileName = "app.sav";
+    if(std::filesystem::exists(fileName))
     {
-        QString name = record["drone_name"].toString();
-        QString role = record["drone_role"].toString();
-        QString xbeeID = record["xbee_id"].toString();
-        int sysID = -1;
-        int compID = -1;
-        QString xbeeAddress = record["xbee_address"].toString();
-        // Should? work with other fields like xbee_id or drone_id if needed
-        // existing table can have added columns for the lati and longi stuff and input here
-        // TODO: Change this, add xbee id?
-        
-        if (index == 0) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
-        } else if (index == 1) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
-        } else if (index == 2) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
-        } else { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
+        qDebug() << "Load from file";
+        //load from file
+        std::ifstream is(fileName, std::ios::binary);
+        cereal::BinaryInputArchive archive(is);
+
+        archive(droneList);
+
+        is.close();
+    } else
+    {
+        //load manually
+        qDebug() << "Load manually";
+        int index = 0;
+
+        // function loads all drones from the database on startup
+        qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
+        QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
+        for (const QVariantMap &record : droneRecords)
+        {
+            QString name = record["drone_name"].toString();
+            QString role = record["drone_role"].toString();
+            QString xbeeID = record["xbee_id"].toString();
+            int sysID = -1;
+            int compID = -1;
+            QString xbeeAddress = record["xbee_address"].toString();
+            // Should? work with other fields like xbee_id or drone_id if needed
+            // existing table can have added columns for the lati and longi stuff and input here
+            // TODO: Change this, add xbee id?
+
+            if (index == 0) {
+                droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
+            } else if (index == 1) {
+                droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
+            } else if (index == 2) {
+                droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
+            } else {
+                droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
+            }
+
+            index++;
         }
-        
-        index++;
+
+        //save
+        std::ofstream os(fileName, std::ios::binary);
+        cereal::BinaryOutputArchive archive(os);
+
+        archive(droneList);
+
+        os.close();
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
 

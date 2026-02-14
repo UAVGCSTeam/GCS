@@ -10,3 +10,6 @@
 [submodule "external/mavlink"]
 	path = external/mavlink
 	url = https://github.com/mavlink/c_library_v2
+[submodule "external/cereal"]
+	path = external/cereal
+	url = https://github.com/USCiLab/cereal.git

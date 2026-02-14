@@ -39,6 +39,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MavLinkReceiver.cpp
         settingsmanager.h
         settingsmanager.cpp
+        Serialization.h
+
+
 
        # MavLinkUdp.h MavLinkUdp.cpp
     )
@@ -79,7 +82,8 @@ endif()
 message(STATUS "MAVLINK_INCLUDE_DIR = ${MAVLINK_INCLUDE_DIR}")
 target_include_directories(GCS PRIVATE "${MAVLINK_INCLUDE_DIR}")
 
-
+# --- Cereal -> for serialization ----
+target_include_directories(GCS PRIVATE "${CMAKE_SOURCE_DIR}/external/cereal/include")
 
 target_link_libraries(GCS PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets

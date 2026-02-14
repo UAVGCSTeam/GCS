@@ -8,6 +8,7 @@
 #include <cmath>
 #include <QVariant>
 
+#include "Serialization.h"
 
 class DroneClass : public QObject
 {
@@ -28,25 +29,25 @@ class DroneClass : public QObject
 public:
     explicit DroneClass(QObject *parent = nullptr);
 
-    DroneClass(const QString &input_name, 
-                const QString &input_role,
-                const QString &input_xbeeID,
-                const QString &input_xbeeAddress,
-                double input_batteryLevel,
-                double input_latitude,
-                double input_longitude,
-                double input_altitude,
-                QObject *parent);
+    DroneClass(const QString &input_name,
+               const QString &input_role,
+               const QString &input_xbeeID,
+               const QString &input_xbeeAddress,
+               double input_batteryLevel,
+               double input_latitude,
+               double input_longitude,
+               double input_altitude,
+               QObject *parent);
 
     /*
     This constructor is used for creating drones based off information
     that is stored persistently in the database.
     */
-    DroneClass(const QString &input_name, 
-                const QString &input_role,
-                const QString &input_xbeeID,
-                const QString &input_xbeeAddress,
-                QObject *parent = nullptr);
+    DroneClass(const QString &input_name,
+               const QString &input_role,
+               const QString &input_xbeeID,
+               const QString &input_xbeeAddress,
+               QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
     QString   getName()        const { return m_name; }
@@ -74,16 +75,16 @@ public:
     void      setOrientation(const QVector3D &ori);
 
     double    getLatitude()    const { return m_latitude; }
-    void      setLatitude(double latitude);  
+    void      setLatitude(double latitude);
 
     double    getLongitude()   const { return m_longitude; }
     void      setLongitude(double longitude);
 
     double    getAltitude()    const { return m_altitude; }
-    void      setAltitude(double altitude);  
+    void      setAltitude(double altitude);
 
     double    getAirspeed()    const { return m_airspeed; }
-    void      setAirspeed(double airspeed);                 
+    void      setAirspeed(double airspeed);
 
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
@@ -109,11 +110,11 @@ signals:
     void compIDChanged();
     void batteryChanged();
     void positionChanged();
-    void latitudeChanged();  
-    void longitudeChanged(); 
-    void altitudeChanged();  
+    void latitudeChanged();
+    void longitudeChanged();
+    void altitudeChanged();
     void velocityChanged();
-    void airspeedChanged();  
+    void airspeedChanged();
     void orientationChanged();
     void dataChanged();
 
@@ -126,16 +127,40 @@ private:
     int       m_compID;
     double    m_batteryLevel;
     QVector3D m_position;
-    double    m_latitude;    
-    double    m_longitude;   
-    double    m_altitude;    
+    double    m_latitude;
+    double    m_longitude;
+    double    m_altitude;
     QVector3D m_velocity;
-    double    m_airspeed;    
+    double    m_airspeed;
     QVector3D m_orientation;
 
     // Newly added backing fields for adapters
     bool      m_connected = false;
     QString   m_mode;
+
+    //serialization
+    friend class cereal::access;
+    template<class Archive>
+    void serialize(Archive& archive)
+    {
+        archive(m_name);
+        archive(m_xbeeAddress);
+        archive(m_role);
+        archive(m_xbeeID);
+        archive(m_sysID);
+        archive(m_compID);
+        archive(m_batteryLevel);
+        archive(m_position);
+        archive(m_latitude);
+        archive(m_longitude);
+        archive(m_altitude);
+        archive(m_altitude);
+        archive(m_velocity);
+        archive(m_airspeed);
+        archive(m_orientation);
+        archive(m_connected);
+        archive(m_mode);
+    }
 };
 
 #endif // DRONECLASS_H
