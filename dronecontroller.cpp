@@ -539,7 +539,7 @@ DroneClass *DroneController::getDrone(int index) const
 bool DroneController::openXbee(const QString& port, int baud)
 {
     if (!xbee_) xbee_ = std::make_unique<XbeeLink>(this);
-    if (!mav_)  mav_  = std::make_unique<MavlinkSender>(xbee_.get(), this);
+    if (!mavTx_)  mavTx_  = std::make_unique<MavlinkSender>(xbee_.get(), this);
 
     //  set up receiver & wire signals
     if (!mavRx_) {
@@ -589,7 +589,7 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
         return false;
     }
 
-    if (!mav_ || !mav_->linkOpen()) {
+    if (!mavTx_ || !mavTx_->linkOpen()) {
         qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
         return false;
     }
@@ -600,7 +600,7 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
     const uint8_t targetComp = 1;   // MAV_COMP_ID_AUTOPILOT1
 
     // use the MAVLinkSender class to package and send the signal
-    bool response = mav_->sendCommand(targetSys, targetComp,
+    bool response = mavTx_->sendCommand(targetSys, targetComp,
                                 MAV_CMD_COMPONENT_ARM_DISARM, arm ? 1.0f : 0.0f);
 
     qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
@@ -644,14 +644,14 @@ bool DroneController::requestTelem(uint8_t targetSysID, uint8_t targetCompID) {
         MAVLINK_MSG_ID_ATTITUDE
     };
 
-    if (!mav_ || !mav_->linkOpen()) {
+    if (!mavTx_ || !mavTx_->linkOpen()) {
         qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
         return false;
     }
 
     for (int cmd : requestDataCommands) {
         qInfo() << "COMMAND: " << cmd;
-        response = mav_->sendTelemRequest(
+        response = mavTx_->sendTelemRequest(
             targetSysID,
             targetCompID,
             MAVLINK_MSG_ID_GLOBAL_POSITION_INT

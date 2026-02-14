@@ -115,7 +115,7 @@ private:
     DBManager &dbManager;
 
     std::unique_ptr<XbeeLink>    xbee_;
-    std::unique_ptr<MavlinkSender> mav_;
+    std::unique_ptr<MavlinkSender> mavTx_;
     std::unique_ptr<MavlinkReceiver> mavRx_;
     QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
     static QList<QSharedPointer<DroneClass>> droneList;
