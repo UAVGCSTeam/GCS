@@ -1,22 +1,46 @@
 #ifndef DRONECONTROLLER_H
 #define DRONECONTROLLER_H
 
-#include <QObject>
 #include <QList>
-#include "backend/dbmanager.h"
-#include "DroneClass.h"
+#include <QCoreApplication>
+#include <QStandardPaths>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSharedPointer>
 #include <QSharedMemory>
+#include <QMetaType>
 #include <QTimer>
-#include <memory>
-#include <cstdint>
+#include <QFile>
+#include <QTextStream>
 #include <QHash>
-#include <QVariant>
-#include "MAVLinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
+#include <cstdint>
+
+#include "DroneClass.h"
+#include "backend/dbmanager.h"
+#include "MAVLinkReceiver.h"
+#include "MAVLinkSender.h"
+#include "UARTLink.h"
 
 
 
-// #include "drone.h"
+// DATA PATH
+#ifdef _WIN32
+// Try both the original path and the user's temp directory
+#define DEFAULT_DATA_FILE_PATH "C:/tmp/xbee_data.json" // Windows path
+#else
+#define DEFAULT_DATA_FILE_PATH "/tmp/xbee_data.json" // Unix/Mac path
+#endif
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
+
+
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.

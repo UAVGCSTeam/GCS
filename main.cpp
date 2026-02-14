@@ -2,9 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QProcess>
-#include <QTimer>
-#include <QDir>
 #include <QtQuickControls2/QQuickStyle>
+
 #include "MapController.h"
 #include "FileHandler.h"
 #include "backend/dbmanager.h"

@@ -1,11 +1,6 @@
 #include "MAVLinkReceiver.h"
-extern "C" {
-#if __has_include(<mavlink/common/mavlink.h>)
-#include <mavlink/common/mavlink.h>
-#else
-#include <common/mavlink.h>
-#endif
-}
+
+
 
 struct MAVLinkReceiver::Impl {
     mavlink_status_t status{};

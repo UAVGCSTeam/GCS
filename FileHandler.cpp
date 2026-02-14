@@ -1,7 +1,4 @@
 #include "FileHandler.h"
-#include <QFile>
-#include <QTextStream>
-#include <QDebug>
 
 FileHandler::FileHandler(QObject *parent) : QObject(parent) {}
 

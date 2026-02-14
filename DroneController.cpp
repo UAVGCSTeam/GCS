@@ -1,36 +1,6 @@
 #include "DroneController.h"
-#include "DroneClass.h"
-#include "UARTLink.h"
-#include "MAVLinkReceiver.h"
-#include "MAVLinkSender.h"
-#include <QDebug>
-#include <memory>
-#include "MAVLinkReceiver.h"
-#include <QMetaType>
-#include <QTimer>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QFile>
-#include <QDir>
-#include <QCoreApplication>
-#include <QTextStream>
-#include <QStandardPaths>
 
-// DATA PATH
-#ifdef _WIN32
-// Try both the original path and the user's temp directory
-#define DEFAULT_DATA_FILE_PATH "C:/tmp/xbee_data.json" // Windows path
-#else
-#define DEFAULT_DATA_FILE_PATH "/tmp/xbee_data.json" // Unix/Mac path
-#endif
 
-extern "C" {
-#if __has_include(<mavlink/common/mavlink.h>)
-#include <mavlink/common/mavlink.h>
-#else
-#include <common/mavlink.h>
-#endif
-}
 
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
 

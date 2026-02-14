@@ -1,10 +1,5 @@
 #include "DroneClass.h"
 
-#include <QDebug>
-#include <QString>
-#include <QStringList>
-#include <cmath>
-
 
 
 DroneClass::DroneClass(QObject *parent) :
