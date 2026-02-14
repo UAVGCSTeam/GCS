@@ -117,12 +117,12 @@ private:
     std::unique_ptr<XbeeLink>    xbee_;
     std::unique_ptr<MavlinkSender> mavTx_;
     std::unique_ptr<MavlinkReceiver> mavRx_;
-    QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
+    QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
     static QList<QSharedPointer<DroneClass>> droneList;
     
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
-    void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
+    void updateDroneTelem(uint8_t sysID, uint8_t compID, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
 
     // Trying out caching QVariantList for QML property usage

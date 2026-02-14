@@ -664,20 +664,31 @@ bool DroneController::requestTelem(uint8_t targetSysID, uint8_t targetCompID) {
 
 
 
-// Helper: find (or lazily bind) a drone for a sysid.
-// Header must have: QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
-QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysid,
+/**
+ * Helper: find (or lazily bind) a drone for a sysid.
+ * Header must have: QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
+ * 
+ * TODO: Instead of adding a new drone from the list to the map, this function 
+ * should return a null ptr so that the function that called it can CREATE a drone.
+ * The newly created drone should be added to both the list and the map. 
+ * Once that's been done, the drone list should not be needed here; only the map.
+ */
+QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
+                                                  uint8_t compID,
                                                   QList<QSharedPointer<DroneClass>>& list,
-                                                  QHash<uint8_t, QSharedPointer<DroneClass>>& map)
+                                                  QHash<uint32_t, QSharedPointer<DroneClass>>& map)
 {
-    if (map.contains(sysid)) return map.value(sysid);
+    uint32_t hashKey = sysID * 93 + compID * 89; // relying on only one ID will inevitably lead to overlap
+    if (map.contains(hashKey)) return map.value(hashKey);
+
     if (!list.isEmpty()) {
         // TEMP heuristic: bind first drone we have (until you provide a real mapping)
         auto d = list.first();
-        map.insert(sysid, d);
-        qInfo() << "[DroneController] Bound sysid" << sysid << "to drone" << d->getName();
+        map.insert(hashKey, d);
+        qInfo() << "[DroneController] Bound sysID" << sysID << "to drone" << d->getName();
         return d;
     }
+    
     return {};
 }
 
@@ -694,7 +705,8 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     msg.len   = static_cast<uint8_t>(m.payload.size());
     memcpy(_MAV_PAYLOAD_NON_CONST(&msg), m.payload.constData(), msg.len);
 
-    uint8_t sysid = msg.sysid; 
+    uint8_t sysID = msg.sysid; 
+    uint8_t compID = msg.sysid; 
     // qInfo() << "[onMavlinkMessage] received message";
         
     // qInfo() << "[onMavlinkMessage] Orientation: " << droneList[0]->getOrientation();
@@ -704,34 +716,34 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         // qInfo() << "Got a heartbeat";
         mavlink_heartbeat_t hb;
         mavlink_msg_heartbeat_decode(&msg, &hb);
-        updateDroneTelem(sysid, "connected", true);
-        updateDroneTelem(sysid, "base_mode",   static_cast<int>(hb.base_mode));
-        updateDroneTelem(sysid, "custom_mode", static_cast<int>(hb.custom_mode));
+        updateDroneTelem(sysID, compID, "connected", true);
+        updateDroneTelem(sysID, compID, "base_mode",   static_cast<int>(hb.base_mode));
+        updateDroneTelem(sysID, compID, "custom_mode", static_cast<int>(hb.custom_mode));
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
         mavlink_sys_status_t s;
         mavlink_msg_sys_status_decode(&msg, &s);
-        updateDroneTelem(sysid, "battery_v",   s.voltage_battery/1000.0);
-        updateDroneTelem(sysid, "battery_pct", static_cast<int>(s.battery_remaining));
+        updateDroneTelem(sysID, compID, "battery_v",   s.voltage_battery/1000.0);
+        updateDroneTelem(sysID, compID, "battery_pct", static_cast<int>(s.battery_remaining));
         break;
     }
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
         mavlink_global_position_int_t p;
         mavlink_msg_global_position_int_decode(&msg, &p);
-        updateDroneTelem(sysid, "lat",   p.lat/1e7);
-        updateDroneTelem(sysid, "lon",   p.lon/1e7);
-        // updateDroneTelem(sysid, "alt_m", p.alt/1000.0);
-        updateDroneTelem(sysid, "alt_m", p.relative_alt / 1000.0);
+        updateDroneTelem(sysID, compID, "lat",   p.lat/1e7);
+        updateDroneTelem(sysID, compID, "lon",   p.lon/1e7);
+        // updateDroneTelem(sysID, compID, "alt_m", p.alt/1000.0);
+        updateDroneTelem(sysID, compID, "alt_m", p.relative_alt / 1000.0);
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
         // qInfo() << "Got attitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
-        updateDroneTelem(sysid, "roll", a.roll);
-        updateDroneTelem(sysid, "pitch", a.pitch);
-        updateDroneTelem(sysid, "yaw",  a.yaw);
+        updateDroneTelem(sysID, compID, "roll", a.roll);
+        updateDroneTelem(sysID, compID, "pitch", a.pitch);
+        updateDroneTelem(sysID, compID, "yaw",  a.yaw);
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_ACK: {
@@ -741,11 +753,11 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         qInfo().nospace()
             << "[MAVRX] COMMAND_ACK cmd=" << ack.command
             << " result=" << static_cast<int>(ack.result)
-            << " (sysid=" << static_cast<int>(sysid)
-            << ", compid=" << static_cast<int>(msg.compid) << ")";
+            << " (sysID=" << static_cast<int>(sysID)
+            << ", compID=" << static_cast<int>(compID) << ")";
 
-        updateDroneTelem(sysid, "last_command", static_cast<int>(ack.command));
-        updateDroneTelem(sysid, "last_result",  static_cast<int>(ack.result));
+        updateDroneTelem(sysID, compID, "last_command", static_cast<int>(ack.command));
+        updateDroneTelem(sysID, compID, "last_result",  static_cast<int>(ack.result));
         break;
     }
     default:
@@ -754,11 +766,9 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 }
 
 
-void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value)
+void DroneController::updateDroneTelem(uint8_t sysID, uint8_t compID, const QString& field, const QVariant& value)
 {
-    // NOTE: add 'sysMap_' as a private member in your header:
-    //   QHash<uint8_t, QSharedPointer<DroneClass>> sysMap_;
-    auto d = droneForSysId_lazyBind(sysid, droneList, sysMap_);
+    auto d = droneForSysId_lazyBind(sysID, compID, droneList, dronesMap_);
     if (d.isNull()) return;
 
     if (field == "connected") {
