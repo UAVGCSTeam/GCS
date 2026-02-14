@@ -50,17 +50,19 @@ public:
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
     ~DroneController();
 
-    // Initialize shared memory for XBee communication
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
+
+    // MAVLink Commands 
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
+    Q_INVOKABLE bool requestTelem(uint8_t targetSysID, uint8_t targetCompID);
+
 
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
     QVariantList drones() const { return m_dronesVariant; }
     void rebuildVariant();
-    Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
     Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
     {
         QList<QVariantMap> list;

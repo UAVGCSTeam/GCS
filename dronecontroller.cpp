@@ -560,32 +560,107 @@ bool DroneController::openXbee(const QString& port, int baud)
 }
 
 
+/**
+ * @brief Sends an arm or disarm command to a drone via MAVLink.
+ *
+ * Resolves the specified drone using its XBee address (or key), constructs
+ * a MAV_CMD_COMPONENT_ARM_DISARM command, and transmits it over the active
+ * MAVLink/XBee link.
+ *
+ * @param droneKeyOrAddr  The drone identifier or XBee address used to resolve
+ *                        the target drone.
+ * @param arm             If true, sends an ARM command; if false, sends DISARM.
+ *
+ * @return true if the command was successfully written to the MAVLink link;
+ *         false if the drone could not be resolved, the MAVLink sender is not
+ *         initialized, the link is not open, or transmission fails.
+ *
+ * @note Requires a valid and open MAVLink link (openUART() must be called first).
+ */
 bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 {
-    // Use your existing resolver so callers can pass either address or ID
+    /**
+     * TODO: (SIM) TEST THIS WITH SIMULATION BEFORE PUTTING ON MAIN BRANCH
+     */
+
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
         qWarning() << "[DroneController] sendArm: unknown drone/address:" << droneKeyOrAddr;
         return false;
     }
 
-    if (!mav_) {
+    if (!mav_ || !mav_->linkOpen()) {
         qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
         return false;
     }
 
     // TODO: make these configurable or read from DB later
-    // targetSys and targetComp are both 0 when dealing with ArduPilot SITL
+    // targetSys and targetComp are both 1 when dealing with ArduPilot SITL
     const uint8_t targetSys  = 1;   
     const uint8_t targetComp = 1;   // MAV_COMP_ID_AUTOPILOT1
 
-    const bool ok = mav_->sendArm(targetSys, targetComp, arm);
+    // use the MAVLinkSender class to package and send the signal
+    bool response = mav_->sendCommand(targetSys, targetComp,
+                                MAV_CMD_COMPONENT_ARM_DISARM, arm ? 1.0f : 0.0f);
+
     qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
             << "->" << drone->getName() << drone->getXbeeAddress()
-            << "sent=" << ok;
-    return ok;
+            << "sent=" << response;
+    return response;
 }
 
+
+
+
+/**
+ * @brief Requests periodic telemetry messages (streamed) from the target vehicle.
+ *
+ * Sends MAV_CMD_SET_MESSAGE_INTERVAL commands to configure the autopilot
+ * to stream selected MAVLink telemetry messages at 2 Hz (500,000 µs interval).
+ *
+ * Each message is requested using COMMAND_LONG with:
+ *   param1 = message ID
+ *   param2 = interval in microseconds
+ *
+ * @param targetSysID     MAVLink system ID of the target vehicle.
+ * @param targetCompID  MAVLink component ID (typically MAV_COMP_ID_AUTOPILOT1).
+ *
+ * @return true if all message interval requests were successfully written
+ *         to the link; false if the link is null, not open, or any write fails.
+ *
+ * @note Requires a valid and open MAVLink link.
+ * @note The vehicle will continue streaming messages at the requested rate
+ *       until the interval is changed or the vehicle reboots.
+ */
+bool DroneController::requestTelem(uint8_t targetSysID, uint8_t targetCompID) {
+    /**
+     * TODO: (SIM) TEST THIS WITH SIMULATION BEFORE PUTTING ON MAIN BRANCH
+     */
+    bool response = false;
+
+    const QList<int> requestDataCommands = {
+        MAVLINK_MSG_ID_GLOBAL_POSITION_INT,
+        MAVLINK_MSG_ID_SYS_STATUS,
+        MAVLINK_MSG_ID_ATTITUDE
+    };
+
+    if (!mav_ || !mav_->linkOpen()) {
+        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        return false;
+    }
+
+    for (int cmd : requestDataCommands) {
+        qInfo() << "COMMAND: " << cmd;
+        response = mav_->sendTelemRequest(
+            targetSysID,
+            targetCompID,
+            MAVLINK_MSG_ID_GLOBAL_POSITION_INT
+        );
+        if (!response) return response;
+    }
+
+    return response;
+}
 
 
 
@@ -784,12 +859,3 @@ void DroneController::simulateDroneMovement()
         emit droneStateChanged(drone.data());
     }
 }
-
-QObject* DroneController::getDroneByNameQML(const QString &name) const {
-    for (const auto &sp : droneList) {                 // QList<QSharedPointer<DroneClass>>
-        if (sp && sp->getName() == name)                  // use your getter names
-        return static_cast<QObject*>(sp.data());   // expose raw QObject* to QML
-    }
-    return nullptr;
-}
-

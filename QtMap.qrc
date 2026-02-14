@@ -21,7 +21,6 @@
     <file>components/UniversalPopup.qml</file>
     <file>configureDroneWindow.qml</file>
     <file>DroneCommandPanel.qml</file>
-    <file>components/StatusPill.qml</file>
   </qresource>
   <qresource prefix="/resources">
     <file>mappin.svg</file>

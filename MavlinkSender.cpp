@@ -30,10 +30,44 @@ extern "C" {
 
 MavlinkSender::MavlinkSender(XbeeLink* link, QObject* p) : QObject(p), link_(link) {}
 
+bool MavlinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const {
+    if(!link_ || !link_->isOpen()) return false;
+    QByteArray bytes = packCommandLong(
+        sysID,
+        compID,
+        MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
+        command,                             // param1 = message ID
+        500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
+        0, 0, 0, 0, 0                        // params 3–7 unused
+    );
+    return link_->writeBytes(bytes);
+}
+
+
+bool MavlinkSender::sendCommand(uint8_t sysID, uint8_t compID, int command, bool p1) const {
+    /**
+     * TODO: (SIM) TEST THIS WITH SIMULATION BEFORE PUTTING ON MAIN BRANCH
+     */
+    if(!link_ || !link_->isOpen()) return false;
+    QByteArray bytes = packCommandLong(
+        sysID,
+        compID,
+        command,
+        p1
+    );
+    return link_->writeBytes(bytes);
+}
+
+
+bool MavlinkSender::linkOpen() const {
+    return link_ && link_->isOpen();
+}
+
+
 QByteArray MavlinkSender::packCommandLong(uint8_t sys, uint8_t comp,
                                           uint16_t command, float p1,
                                           float p2,float p3,float p4,
-                                          float p5,float p6,float p7) {
+                                          float p5,float p6,float p7) const {
     mavlink_message_t msg;
     mavlink_command_long_t cmd{};
     cmd.target_system = sys;
@@ -50,10 +84,3 @@ QByteArray MavlinkSender::packCommandLong(uint8_t sys, uint8_t comp,
 }
 
 
-
-bool MavlinkSender::sendArm(uint8_t sys, uint8_t comp, bool arm) {
-    if(!link_ || !link_->isOpen()) return false;
-    auto bytes = packCommandLong(sys, comp,
-                                 MAV_CMD_COMPONENT_ARM_DISARM, arm ? 1.0f : 0.0f);
-    return link_->writeBytes(bytes);
-}
