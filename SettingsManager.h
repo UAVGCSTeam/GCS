@@ -40,6 +40,7 @@ class SettingsManager : public QObject
 
 public:
     explicit SettingsManager(QObject *parent = nullptr);
+    ~SettingsManager();
 
     // Appearance getters
     QString currentTheme() const;

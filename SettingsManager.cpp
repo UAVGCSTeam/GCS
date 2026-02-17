@@ -13,6 +13,10 @@ SettingsManager::SettingsManager(QObject *parent)
 {
 }
 
+SettingsManager::~SettingsManager()
+{
+}
+
 // =============================================================================
 // APPEARANCE SETTINGS
 // =============================================================================

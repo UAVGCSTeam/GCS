@@ -3,6 +3,17 @@
 #include <QByteArray>
 #include <memory>
 
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
+
+
 struct RxMavlinkMsg {
     quint8 sysid, compid;
     quint32 msgid;

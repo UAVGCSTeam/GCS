@@ -1,7 +1,11 @@
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
 
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
 #include <QObject>
+
 
 class FileHandler : public QObject {
     Q_OBJECT

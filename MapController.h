@@ -1,9 +1,6 @@
 #define MAPCONTROLLER_H
 
-#include <QObject>
-#include <QVariant>
 #include <QPair>
-#include <QVector>
 #include "DroneClass.h"
 
 /*

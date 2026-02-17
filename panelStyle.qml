@@ -109,5 +109,5 @@ QtObject {
     readonly property color commandInProgress: "#FFC107"
     readonly property color commandNotAvailable: textSecondaryColor
 
-    Component.onCompleted: console.log("PanelStyle loaded")
+    Component.onCompleted: console.log("[panelStyle] PanelStyle loaded")
 }

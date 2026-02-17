@@ -5,8 +5,11 @@
 #include <QString>
 #include <QVector3D>
 #include <QVector>
-#include <cmath>
 #include <QVariant>
+#include <QStringList>
+#include <QDebug>
+#include <cmath>
+
 
 
 class DroneClass : public QObject

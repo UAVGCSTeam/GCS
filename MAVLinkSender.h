@@ -1,6 +1,36 @@
 #pragma once
 #include <QObject>
 #include <QByteArray>
+#include <QDebug>
+#include <chrono>
+
+#include "UARTLink.h"
+
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
+
+
+// include mavlink (common dialect), handle both folder layouts
+#if __has_include(<mavlink/common/mavlink.h>)
+extern "C" {
+#include <mavlink/common/mavlink.h>
+}
+#elif __has_include(<common/mavlink.h>)
+extern "C" {
+#include <common/mavlink.h>
+}
+#else
+#error "Cannot find MAVLink headers. Check CMake include dirs and submodule path."
+#endif
+
+
 
 
 
