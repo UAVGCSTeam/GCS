@@ -5,10 +5,11 @@
 #include <QTimer>
 #include <QDir>
 #include <QtQuickControls2/QQuickStyle>
-#include "mapcontroller.h"
-#include "filehandler.h"
+#include "MapController.h"
+#include "FileHandler.h"
 #include "backend/dbmanager.h"
-#include "dronecontroller.h"
+#include "DroneController.h"
+#include "SettingsManager.h"
 
 
 int main(int argc, char *argv[])
@@ -32,6 +33,10 @@ int main(int argc, char *argv[])
     // TODO: Intialize and make UI button click reach database
 
     QQmlApplicationEngine engine;
+
+    // Create and register SettingsManager for persistent per-user settings
+    SettingsManager settingsManager;
+    engine.rootContext()->setContextProperty("settingsManager", &settingsManager);
 
     // Create and register MapController as an object that the cpp can use
     MapController mapController;

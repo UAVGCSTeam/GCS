@@ -4,7 +4,7 @@
 #include <QVariant>
 #include <QPair>
 #include <QVector>
-#include "droneclass.h"
+#include "DroneClass.h"
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
@@ -30,11 +30,14 @@ public slots:
     void setCenterPosition(const QVariant &lat, const QVariant &lon);
     void setLocationMarking(const QVariant &lat, const QVariant &lon);
     void changeMapType(int typeIndex);
+    void setZoomLevel(double level);
+    Q_INVOKABLE void addDrone(DroneClass* drone);
+    Q_INVOKABLE QVariantList getAllDrones() const;
 signals:
     void centerPositionChanged(const QVariant &lat, const QVariant &lon);
     void locationMarked(const QVariant &lat, const QVariant &lon);
     void mapTypeChanged(int typeIndex);
-    void zoomLevelChanged(int level);
+    void zoomLevelChanged(double level);
 
 private:
     QPair<double, double> m_center;

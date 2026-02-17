@@ -1,5 +1,5 @@
-#include "mapcontroller.h"
-#include "droneclass.h"
+#include "MapController.h"
+#include "DroneClass.h"
 
 
 /*
@@ -55,4 +55,9 @@ void MapController::addMarker(const QPair<double, double> &position)
     // Stores markers on cpp side
     m_markers.append(position);
     emit locationMarked(QVariant(position.first), QVariant(position.second));
+}
+
+void MapController::setZoomLevel(double level)
+{
+    emit zoomLevelChanged(level);
 }

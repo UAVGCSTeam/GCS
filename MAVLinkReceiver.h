@@ -10,11 +10,11 @@ struct RxMavlinkMsg {
 };
 Q_DECLARE_METATYPE(RxMavlinkMsg)
 
-class MavlinkReceiver : public QObject {
+class MAVLinkReceiver : public QObject {
     Q_OBJECT
 public:
-    explicit MavlinkReceiver(QObject* parent=nullptr);
-    ~MavlinkReceiver();                 // ← add this (no inline definition)
+    explicit MAVLinkReceiver(QObject* parent=nullptr);
+    ~MAVLinkReceiver();                 // ← add this (no inline definition)
 
 public slots:
     void onBytes(const QByteArray& data);
