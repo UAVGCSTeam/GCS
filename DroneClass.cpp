@@ -1,4 +1,4 @@
-#include "droneclass.h"
+#include "DroneClass.h"
 
 #include <QDebug>
 #include <QString>

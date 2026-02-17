@@ -143,8 +143,8 @@ Window {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
         }
-        // droneController.openXbee("/dev/ttys005", 57600)
-        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
+        // droneController.openUART("/dev/ttys005", 57600)
+        droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
     function updateActiveDrone(selected) {
