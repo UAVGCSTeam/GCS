@@ -296,7 +296,7 @@ Rectangle {
                             readonly property bool connected: modelData.connected || false
                             readonly property bool arming: modelData.arming || false
 
-                            property string statusVariant: {
+                            statusVariant: {
                                 if (arming) return "arming"
                                 if (altitude >= 0.05) return "inFlight"
                                 if (connected) return "active"
