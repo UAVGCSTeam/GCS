@@ -6,7 +6,7 @@
 #include <cmath>
 
 UnknownDroneClass::UnknownDroneClass(QObject *parent) :
-    DroneClass(parent)
+    QObject(parent)
 {}
 
 UnknownDroneClass::UnknownDroneClass(const QString &uid,
@@ -15,7 +15,7 @@ UnknownDroneClass::UnknownDroneClass(const QString &uid,
                                      int sysID,
                                      int compID,
                                      QObject *parent)
-    : DroneClass(parent)
+    : QObject(parent)
     , m_uid(uid)
     , m_fc(fc)
     , m_uavType(uavType)
@@ -57,4 +57,11 @@ void UnknownDroneClass::setCompID(int compID)
     if (m_compID == compID) return;
     m_compID = compID;
     emit compIDChanged();
+}
+
+void UnknownDroneClass::setIgnored(bool ignored)
+{
+    if (m_ignored == ignored) return;
+    m_ignored = ignored;
+    emit ignoredChanged();
 }

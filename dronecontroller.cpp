@@ -1,5 +1,6 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
+#include "unknowndroneclass.h"
 #include "XbeeLink.h"
 #include "MavlinkReceiver.h"
 #include "MavlinkSender.h"
@@ -33,6 +34,7 @@ extern "C" {
 }
 
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
+QList<QSharedPointer<UnknownDroneClass>> DroneController::unknownDroneList; // Define the static variable
 
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db)
@@ -99,6 +101,26 @@ QVariantList DroneController::getAllDrones() const
 
         list.append(droneMap);
         // index++;
+    }
+    return list;
+}
+
+// method so QML can retrieve the unknown drone list
+QVariantList DroneController::getAllUnknownDrones() const
+{
+    QVariantList list;
+    for (const QSharedPointer<UnknownDroneClass> &unknownDrone : unknownDroneList)
+    {
+        QVariantMap unknownDroneMap;
+        // these method calls have to match our DroneClass interface
+        unknownDroneMap["uid"] = unknownDrone->getUid();
+        unknownDroneMap["fc"] = unknownDrone->getFc(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
+        unknownDroneMap["uavType"] = unknownDrone->getUavType();
+        unknownDroneMap["sysID"] = unknownDrone->getSysID();
+        unknownDroneMap["compID"] = unknownDrone->getCompID();
+        unknownDroneMap["ignored"] = unknownDrone->getIgnored();
+
+        list.append(unknownDroneMap);
     }
     return list;
 }
@@ -720,6 +742,17 @@ void DroneController::rebuildVariant()
     for (const auto &sp : droneList)
     {
         m_dronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
+    }
+}
+
+// called when the unknownDroneList is updated
+void DroneController::rebuildUnknownVariant()
+{
+    m_unknownDronesVariant.clear();
+    m_unknownDronesVariant.reserve(unknownDroneList.size());
+    for (const auto &sp : unknownDroneList)
+    {
+        m_unknownDronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
     }
 }
 

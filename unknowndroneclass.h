@@ -1,9 +1,14 @@
 #ifndef UNKNOWNDRONECLASS_H
 #define UNKNOWNDRONECLASS_H
 
-#include "droneclass.h"
+#include <QObject>
+#include <QString>
+#include <QVector3D>
+#include <QVector>
+#include <cmath>
+#include <QVariant>
 
-class UnknownDroneClass : public DroneClass
+class UnknownDroneClass : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString  uid         READ getUid     NOTIFY uidChanged       FINAL)
@@ -11,6 +16,7 @@ class UnknownDroneClass : public DroneClass
     Q_PROPERTY(QString  uavType     READ getUavType NOTIFY uavTypeChanged   FINAL)
     Q_PROPERTY(int      sysID       READ getSysID   NOTIFY sysIDChanged     FINAL)
     Q_PROPERTY(int      compID      READ getCompID  NOTIFY compIDChanged    FINAL)
+    Q_PROPERTY(bool     ignored     READ getIgnored NOTIFY ignoredChanged   FINAL)
 
 public:
     explicit UnknownDroneClass(QObject *parent = nullptr);
@@ -38,12 +44,16 @@ public:
     int getCompID()         const { return m_compID; }
     void    setCompID(int compID);
 
+    bool getIgnored()       const { return m_ignored; }
+    void    setIgnored(bool ignored);
+
 signals:
     void uidChanged();
     void fcChanged();
     void uavTypeChanged();
     void sysIDChanged();
     void compIDChanged();
+    void ignoredChanged();
 
 private:
     QString m_uid;
@@ -51,6 +61,7 @@ private:
     QString m_uavType;
     int m_sysID = -1;
     int m_compID = -1;
+    bool m_ignored = false;
 };
 
 #endif // UNKNOWNDRONECLASS_H
