@@ -18,6 +18,7 @@ import "./components" as Components
 Rectangle {
     id: menuBar
     property int padding: 2 // padding between the menu bar and the buttons within it
+    property var activeDrone
     height: 26 + padding * 2
     color: GcsStyle.PanelStyle.primaryColor
 
@@ -129,25 +130,22 @@ Rectangle {
             
             PopupMenuItem {
                 text: "ARM"
-                windowFile: "armWindow.qml"
                 menuPopup: commandMenu
+                clickable: activeDrone !== null
+                onMenuItemClicked: armUAVConfirmation.open() 
             }
             
             PopupMenuItem {
                 text: "Takeoff"
-                windowFile: "takeOffWindow.qml"
                 menuPopup: commandMenu
-            }
-            
-            PopupMenuItem {
-                text: "Coordinate Navigation"
-                windowFile: "coordinateNavigationWindow.qml"
-                menuPopup: commandMenu
+                clickable: activeDrone !== null
+                onMenuItemClicked: takeoffUAVConfirmation.open()
             }
             
             PopupMenuItem {
                 text: "Go Home Landing"
                 windowFile: "goHomeLandingWindow.qml"
+                clickable: activeDrone !== null
                 menuPopup: commandMenu
             }
             
@@ -164,19 +162,66 @@ Rectangle {
     Components.UniversalPopup {
         id: deleteAllDronesWindow
         popupVariant: "destructive"
-        popupTitle: "Delete all drones?"
-        popupMessage: "Are you sure you want to delete ALL drones?"
+        popupTitle: "Delete all UAVs?"
+        popupMessage: "Are you sure you want to delete ALL UAVs?"
         onAccepted: {
             droneController.deleteALlDrones_UI()
-            confirmWindow.open()
+            deleteAllConfirmed.open()
+        }
+    }
+
+    Components.UniversalPopup {
+        id: armUAVConfirmation
+        popupTitle: "Arm the UAV?"
+        popupMessage: (activeDrone && activeDrone.name
+                    ? "Are you sure you want to arm the UAV, " + activeDrone.name + "?"
+                    : "NO UAV SELECTED")
+        onAccepted: {
+            // TEMP: hardcode a target; replace with your real XBee address or ID later
+            const target = activeDrone.xbeeAddress
+            const ok = droneController.sendArm(target, true)   // true = arm, false = disarm
+            console.log("[DroneMenuBar] ARM ->", target, ok)
+            armConfirmed.open()
+        }
+    }
+
+    Components.UniversalPopup {
+        id: takeoffUAVConfirmation
+        popupTitle: "Takeoff"
+        popupMessage: (activeDrone && activeDrone.name
+                    ? "Are you sure you want to takeoff: " + activeDrone.name + "?"
+                    : "NO UAV SELECTED")
+        onAccepted: {
+            // TEMP: hardcode a target; replace with your real XBee address or ID later
+            const target = activeDrone.xbeeAddress
+            const ok = droneController.sendTakeoffCmd(target)   // true = arm, false = disarm
+            console.log("[DroneMenuBar] TAKEOFF ->", target, ok)
+            takeoffConfirmed.open()
         }
     }
 
     // Confirmation popup for successful drone deletion. Uses the UniversalPopup component to pass on properties
     Components.UniversalPopup {
-        id: confirmWindow
+        id: deleteAllConfirmed
         popupVariant: "success"
         popupTitle: "Drone deletion"
         popupMessage: "All drones successfully deleted"
+    }
+
+    Components.UniversalPopup {
+        id: armConfirmed
+        popupVariant: "success"
+        popupTitle: "Armed"
+        popupMessage: (activeDrone && activeDrone.name
+                    ? activeDrone.name + " successfully armed"
+                    : "NO UAV SELECTED")
+    }
+
+    Components.UniversalPopup {
+        id: takeoffConfirmed
+        popupVariant: "success"
+        popupTitle: "Takeoff"
+        popupMessage: "Takeoff command sent to "
+                    + (activeDrone && activeDrone.name ? activeDrone.name : "NO UAV SELECTED")
     }
 }

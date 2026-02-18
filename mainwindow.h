@@ -1,12 +1,20 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "./ui_mainwindow.h"
+
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QtQuick>
 #include <QVariant>
 #include <QQuickWidget>
 #include <QProcess>
+#include <QDebug>
+#include <QProcess>
+#include <QCoreApplication>
+
+
+
 
 /*
  * Provides the functions and constructors for our mainwindow object

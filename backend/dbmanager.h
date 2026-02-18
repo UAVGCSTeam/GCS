@@ -1,6 +1,17 @@
 #ifndef DBMANAGER_H
 #define DBMANAGER_H
 
+#include <QObject>
+#include <QSqlQuery> // wow queueries yay!!!
+#include <QSqlDatabase> // Connection Stuff
+#include <QSqlError>
+#include <QCoreApplication>
+#include <QDir>
+#include <QString> // Mostly to avoid having to bind stuff on database, mostly cause all the examples are using QString
+#include <QDebug>
+
+
+
 /**
  * SQLite Database Connection
  * Soley used to create, delete Drones in SQLite.
@@ -11,13 +22,8 @@
  * @author Gian David Marquez
  */
 
-#include <QString> // Mostly to avoid having to bind stuff on database, mostly cause all the examples are using QString
-#include <QSqlDatabase> // Connection Stuff
-#include <QObject>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QDebug>
+
+
 
 class DBManager : public QObject {
     Q_OBJECT

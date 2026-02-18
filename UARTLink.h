@@ -3,10 +3,10 @@
 #include <QSerialPort>
 #include <QByteArray>
 
-class XbeeLink : public QObject {
+class UARTLink : public QObject {
     Q_OBJECT
 public:
-    explicit XbeeLink(QObject* parent=nullptr);
+    explicit UARTLink(QObject* parent=nullptr);
     bool   open(const QString& portName, int baud=57600);
     void   close();
     bool   isOpen() const { return serial_.isOpen(); }
