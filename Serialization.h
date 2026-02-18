@@ -82,7 +82,7 @@ namespace cereal
         vector = QVector<T>(v.begin(), v.end());
     }*/
 
-    //QList
+    //QList and QVector -> Q treats them as same for some reason
     template<class Archive, typename T>
     void save(Archive& archive, const QList<T>& list)
     {
