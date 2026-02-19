@@ -1,4 +1,5 @@
 #include "MavlinkReceiver.h"
+
 extern "C" {
 #if __has_include(<mavlink/common/mavlink.h>)
 #include <mavlink/common/mavlink.h>
@@ -17,9 +18,13 @@ MavlinkReceiver::MavlinkReceiver(QObject* parent)
 MavlinkReceiver::~MavlinkReceiver() = default;   // ← now Impl is complete
 
 void MavlinkReceiver::onBytes(const QByteArray& data) {
+
     mavlink_message_t msg;
     for (unsigned char b : data) {
         if (mavlink_parse_char(MAVLINK_COMM_0, b, &msg, &d_->status)) {
+
+
+
             RxMavlinkMsg out{ msg.sysid, msg.compid, msg.msgid,
                              QByteArray(reinterpret_cast<const char*>(_MAV_PAYLOAD(&msg)),
                                         static_cast<int>(msg.len)) };
@@ -27,3 +32,4 @@ void MavlinkReceiver::onBytes(const QByteArray& data) {
         }
     }
 }
+

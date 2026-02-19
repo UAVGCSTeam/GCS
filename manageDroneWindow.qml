@@ -37,7 +37,7 @@ Window {
             // Store the currently selected drone address if any
             var selectedDroneAddr = "";
             if (selectedDroneIndex >= 0 && selectedDroneIndex < droneModel.count) {
-                selectedDroneAddr = droneModel.get(selectedDroneIndex).xbeeAddress;
+                selectedDroneAddr = droneModel.get(selectedDroneIndex).hardwareUid;
             }
 
             // Reload drones from database
@@ -58,11 +58,11 @@ Window {
                         "name": drone.name || "",
                         "role": drone.role || "",
                         "xbeeId": drone.xbeeId || "",
-                        "xbeeAddress": drone.xbeeAddress || ""
+                        "hardwareUid": drone.hardwareUid || ""
                     });
 
                     // If this is the previously selected drone, note its new index
-                    if (selectedDroneAddr && drone.xbeeAddress === selectedDroneAddr) {
+                    if (selectedDroneAddr && drone.hardwareUid === selectedDroneAddr) {
                         newSelectedIndex = i;
                     }
                 }
@@ -98,7 +98,7 @@ Window {
                         "name": drone.name || "",
                         "role": drone.role || "",
                         "xbeeId": drone.xbeeId || "",
-                        "xbeeAddress": drone.xbeeAddress || ""
+                        "hardwareUid": drone.hardwareUid || ""
                     });
                 });
             }
@@ -132,7 +132,7 @@ Window {
                     "name": drone.name || "",
                     "role": drone.role || "",
                     "xbeeId": drone.xbeeId || "",
-                    "xbeeAddress": drone.xbeeAddress || ""
+                    "hardwareUid": drone.hardwareUid || ""
                 });
             }
             console.log("Model updated with", droneModel.count, "drones from database");
@@ -188,7 +188,7 @@ Window {
             droneNameField.text = selectedDrone.name;
             droneRole.text = selectedDrone.role;
             droneXbeeID.text = selectedDrone.xbeeId;
-            droneXbeeAddr.text = selectedDrone.xbeeAddress;
+            droneXbeeAddr.text = selectedDrone.hardwareUid;
         }
     }
 
@@ -528,7 +528,7 @@ Window {
                             droneObj.name = droneNameField.text;
                             droneObj.role = droneRole.text;
                             droneObj.xbeeID = droneXbeeID.text;
-                            droneObj.xbeeAddress = droneXbeeAddr.text;
+                            droneObj.hardwareUid = droneXbeeAddr.text;
                             // Update the item in the model
                             try {
                                 // Pass the whole object to C++
@@ -576,11 +576,11 @@ Window {
 
                     onClicked: {
                         if (selectedDroneIndex >= 0) {
-                            var xbeeAddress = droneModel.get(selectedDroneIndex).xbeeAddress;
+                            var hardwareUid = droneModel.get(selectedDroneIndex).hardwareUid;
 
                             // Remove from database
                             try {
-                                droneController.deleteDrone(xbeeAddress);
+                                droneController.deleteDrone(hardwareUid);
                                 // Update model from database
                                 syncModelWithDatabase();
 
@@ -884,7 +884,7 @@ Window {
                             border.color: GcsStyle.PanelStyle.defaultBorderColor
 
                             Text {
-                                text: xbeeAddress
+                                text: hardwareUid
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.family: GcsStyle.PanelStyle.fontFamily
                                 anchors.verticalCenter: parent.verticalCenter

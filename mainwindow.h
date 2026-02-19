@@ -30,6 +30,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QProcess *pythonProcess;
+
     QLabel *xbeeStatusLabel;
 
 signals:

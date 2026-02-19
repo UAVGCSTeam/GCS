@@ -10,6 +10,11 @@ MainWindow::MainWindow(QWidget *parent)
     , pythonProcess(nullptr)
 {
     ui->setupUi(this);
+
+
+
+
+
     ui->quickWidget_MapView->setSource(QUrl(QStringLiteral("qrc:/main.qml")));
 
     // Reference to the rootObject of quickWidget_MapView which is our map

@@ -46,17 +46,31 @@ public:
     // CRUD
     // QString() is a default value of an empty string that's passable.
     // A person can create a drone with just the droneName defined.
+
+
+
+
     bool createDrone(const QString& droneName, const QString& droneRole,
-                     const QString& xbeeID, const QString& xbeeAddress,
+                     const QString& xbeeID, const QString& hardwareUid,
                      int* newDroneID = nullptr);
+
+
     bool editDrone(int droneID, const QString& droneName = QString(), const QString& droneRole = QString(),
-                    const QString& xbeeID = QString(), const QString& xbeeAddress = QString());
+                   const QString& xbeeID = QString(), const QString& hardwareUid = QString());
+
+
     bool deleteDrone(const QString& xbeeId);
+
+
     bool deleteAllDrones();
     void printDroneList(); // essentially Reading the drone, has some basecode
 
     // Declaration to fetch all drone records from the database
     QList<QVariantMap> fetchAllDrones();
+
+    // Check if hardware_uid exists in database (for testing)///////////////
+    bool checkHardwareUidExists(const QString& hardwareUid);
+    /////////////////////////////////////////////////////////
 
 private:
     QSqlDatabase gcs_db_connection;

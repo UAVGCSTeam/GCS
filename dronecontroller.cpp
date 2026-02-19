@@ -49,24 +49,31 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         QString xbeeID = record["xbee_id"].toString();
         int sysID = -1;
         int compID = -1;
-        QString xbeeAddress = record["xbee_address"].toString();
+        QString hardwareUid = record["hardware_uid"].toString();
         // Should? work with other fields like xbee_id or drone_id if needed
         // existing table can have added columns for the lati and longi stuff and input here
         // TODO: Change this, add xbee id?
         
         if (index == 0) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, hardwareUid, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
         } else if (index == 1) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, hardwareUid, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
         } else if (index == 2) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, hardwareUid, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
         } else { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
+            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, hardwareUid, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
         }
         
         index++;
     }
     qDebug() << "Loaded" << droneList.size() << "drones from the database.";
+
+
+
+    ///////////////////////
+    testHardwareUid();
+    ///////////////////////
+
 
     // --- Simulated Drone Movement ---
     connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
@@ -87,7 +94,7 @@ QVariantList DroneController::getAllDrones() const
         droneMap["name"] = drone->getName();
         droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
-        droneMap["xbeeAddress"] = drone->getXbeeAddress();
+        droneMap["hardwareUid"] = drone->gethardwareUid();
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
@@ -123,10 +130,10 @@ void DroneController::renameDrone(const QString &xbeeID, const QString &newName)
         }
     }
 }
-void DroneController::setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress) {
+void DroneController::sethardwareUid(const QString &xbeeID, const QString &newhardwareUid) {
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
-            drone->setXbeeAddress(newXbeeAddress);
+            drone->sethardwareUid(newhardwareUid);
 
             updateDrone(drone);
             break;
@@ -250,7 +257,7 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
 void DroneController::createDrone(const QString &input_name,
                                 const QString &input_role,
                                 const QString &input_xbeeID,
-                                const QString &input_xbeeAddress,
+                                const QString &input_hardwareUid,
                                 double input_batteryLevel,
                                 double input_latitude,
                                 double input_longitude,
@@ -261,7 +268,7 @@ void DroneController::createDrone(const QString &input_name,
     drone->setName(input_name);
     drone->setRole(input_role);
     drone->setXbeeID(input_xbeeID);
-    drone->setXbeeAddress(input_xbeeAddress);
+    drone->sethardwareUid(input_hardwareUid);
     drone->setBatteryLevel(input_batteryLevel);
     drone->setLatitude(input_latitude);
     drone->setLongitude(input_longitude);
@@ -279,14 +286,14 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
     qDebug() << "saveDroneToDB called with:" << drone->getName()
              << drone->getRole()
              << drone->getXbeeID()
-             << drone->getXbeeAddress();
+             << drone->gethardwareUid();
 
     // Avoid duplicates
     for (const auto &d : droneList)
     {
-        if (d->getXbeeAddress() == drone->getXbeeAddress())
+        if (d->gethardwareUid() == drone->gethardwareUid())
         {
-            qDebug() << "Drone already exists with address:" << drone->getXbeeAddress();
+            qDebug() << "Drone already exists with address:" << drone->gethardwareUid();
             return;
         }
     }
@@ -296,7 +303,7 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
     if (dbManager.createDrone(drone->getName(),
                               drone->getRole(),
                               drone->getXbeeID(),
-                              drone->getXbeeAddress(),
+                              drone->gethardwareUid(),
                               &newDroneID))
     {
         qDebug() << "Drone created in DB successfully with ID:" << newDroneID;
@@ -331,7 +338,7 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
             droneList[i]->setName(drone->getName());
             droneList[i]->setRole(drone->getRole());
             droneList[i]->setXbeeID(drone->getXbeeID());
-            droneList[i]->setXbeeAddress(drone->getXbeeAddress());
+            droneList[i]->sethardwareUid(drone->gethardwareUid());
 
             // Update database
             QSqlQuery query;
@@ -344,7 +351,7 @@ void DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
                                     drone->getName(),
                                     drone->getRole(),
                                     drone->getXbeeID(),
-                                    drone->getXbeeAddress());
+                                    drone->gethardwareUid());
             }
 
             emit dronesChanged();
@@ -368,7 +375,7 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
     for (int i = 0; i < droneList.size(); i++)
     {
         if (droneList[i]->getXbeeID() == input_xbeeID ||
-            droneList[i]->getXbeeAddress() == input_xbeeID)
+            droneList[i]->gethardwareUid() == input_xbeeID)
         {
             droneList.removeAt(i);
             found = true;
@@ -431,14 +438,14 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name)
 }
 
 // If want to query by address
-QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString &address)
+QSharedPointer<DroneClass> DroneController::getDroneByhardwareUid(const QString &address)
 {
     qDebug() << "Looking for drone with address:" << address;
 
     // First try exact address match
     for (const auto &drone : droneList)
     {
-        if (drone->getXbeeAddress() == address)
+        if (drone->gethardwareUid() == address)
         {
             qDebug() << "Found drone by address:" << drone->getName();
             return drone;
@@ -458,8 +465,8 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     // Attempt a more flexible match (case insensitive, partial)
     for (const auto &drone : droneList)
     {
-        if (drone->getXbeeAddress().contains(address, Qt::CaseInsensitive) ||
-            address.contains(drone->getXbeeAddress(), Qt::CaseInsensitive))
+        if (drone->gethardwareUid().contains(address, Qt::CaseInsensitive) ||
+            address.contains(drone->gethardwareUid(), Qt::CaseInsensitive))
         {
             qDebug() << "Found drone by partial address match:" << drone->getName();
             return drone;
@@ -485,7 +492,7 @@ QVariantList DroneController::getDrones() const
     }
 
     // Execute a simple SELECT query
-    QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, xbee_address FROM drones");
+    QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, hardware_uid FROM drones");
 
     if (query.exec())
     {
@@ -496,7 +503,7 @@ QVariantList DroneController::getDrones() const
             drone["name"] = query.value(1).toString();
             drone["role"] = query.value(2).toString(); // Changed from "type" to "role"
             drone["xbeeId"] = query.value(3).toString();
-            drone["xbeeAddress"] = query.value(4).toString();
+            drone["hardwareUid"] = query.value(4).toString();
             result.append(drone);
         }
         qDebug() << "Found" << result.size() << "drones in database";
@@ -510,7 +517,7 @@ QVariantList DroneController::getDrones() const
                 droneMap["name"].toString(),
                 droneMap["role"].toString(), // Changed from "type" to "role"
                 droneMap["xbeeId"].toString(),
-                droneMap["xbeeAddress"].toString()));
+                droneMap["hardwareUid"].toString()));
         }
     }
     else
@@ -563,7 +570,7 @@ bool DroneController::openXbee(const QString& port, int baud)
 bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 {
     // Use your existing resolver so callers can pass either address or ID
-    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
+    QSharedPointer<DroneClass> drone = getDroneByhardwareUid(droneKeyOrAddr);
     if (drone.isNull()) {
         qWarning() << "[DroneController] sendArm: unknown drone/address:" << droneKeyOrAddr;
         return false;
@@ -581,7 +588,7 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 
     const bool ok = mav_->sendArm(targetSys, targetComp, arm);
     qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
-            << "->" << drone->getName() << drone->getXbeeAddress()
+            << "->" << drone->getName() << drone->gethardwareUid()
             << "sent=" << ok;
     return ok;
 }
@@ -793,3 +800,31 @@ QObject* DroneController::getDroneByNameQML(const QString &name) const {
     return nullptr;
 }
 
+
+// Simple test function for hardware_uid with hardcoded fake IDs////////////////////////////////
+void DroneController::testHardwareUid() {
+    qDebug() << "[DroneController] === Starting Hardware UID Test ===";
+
+    // Test with real IDs from your database (should exist = true)
+    QStringList realIds = {"13A20041D365C5", "0013A200422F2FDF", "0013A200422F2FD1"};
+
+    // Test with fake IDs (should exist = false)
+    QStringList fakeIds = {"TEST_HW_001", "FAKE_ID_999", "NOT_IN_DB"};
+
+    qDebug() << "[DroneController] Testing REAL hardware_uid values:";
+    for (const QString& testId : realIds) {
+        bool exists = dbManager.checkHardwareUidExists(testId);
+        qDebug() << "  " << testId << "-> Exists:" << exists;
+    }
+
+    qDebug() << "[DroneController] Testing FAKE hardware_uid values:";
+    for (const QString& testId : fakeIds) {
+        bool exists = dbManager.checkHardwareUidExists(testId);
+        qDebug() << "  " << testId << "-> Exists:" << exists;
+    }
+
+    qDebug() << "[DroneController] === Hardware UID Test Complete ===";
+}
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+// sqlite3 "./build/Qt_6_10_1_for_macOS-Debug/GCS.app/Contents/MacOS/data/gcs.db"

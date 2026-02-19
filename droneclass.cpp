@@ -10,7 +10,7 @@
 DroneClass::DroneClass(QObject *parent) :
     QObject(parent)
     , m_name("")
-    , m_xbeeAddress("")
+    , m_hardwareUid("")
     , m_role("")
     , m_xbeeID("")
     , m_batteryLevel(-1)
@@ -22,14 +22,14 @@ DroneClass::DroneClass(QObject *parent) :
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
-    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_hardwareUid;
 }
 
 
 DroneClass::DroneClass(const QString &input_name,
                        const QString &input_role,
                        const QString &input_xbeeID,
-                       const QString &input_xbeeAddress,
+                       const QString &input_hardwareUid,
                        double input_batteryLevel,
                        double input_latitude,
                        double input_longitude,
@@ -37,7 +37,7 @@ DroneClass::DroneClass(const QString &input_name,
                        QObject *parent)
     : QObject(parent)
     , m_name(input_name)
-    , m_xbeeAddress(input_xbeeAddress)
+    , m_hardwareUid(input_hardwareUid)
     , m_role(input_role)
     , m_xbeeID(input_xbeeID)
     , m_batteryLevel(input_batteryLevel)
@@ -49,18 +49,18 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
-    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_hardwareUid;
 }
 
 
 DroneClass::DroneClass(const QString &input_name,
                        const QString &input_role,
                        const QString &input_xbeeID,
-                       const QString &input_xbeeAddress,
+                       const QString &input_hardwareUid,
                        QObject *parent)
     : QObject(parent)
     , m_name(input_name)
-    , m_xbeeAddress(input_xbeeAddress)
+    , m_hardwareUid(input_hardwareUid)
     , m_role(input_role)
     , m_xbeeID(input_xbeeID)
     , m_batteryLevel(-1)
@@ -72,7 +72,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
-    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_hardwareUid;
 }
 
 
@@ -83,10 +83,10 @@ void DroneClass::setName(const QString &inputName){
     }
 }
 
-void DroneClass::setXbeeAddress(const QString &inputXbeeAddress){
-    if (m_xbeeAddress != inputXbeeAddress){
-        m_xbeeAddress = inputXbeeAddress;
-        emit xbeeAddressChanged();
+void DroneClass::sethardwareUid(const QString &inputhardwareUid){
+    if (m_hardwareUid != inputhardwareUid){
+        m_hardwareUid = inputhardwareUid;
+        emit hardwareUidChanged();
     }
 }
 

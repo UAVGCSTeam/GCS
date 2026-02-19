@@ -70,7 +70,7 @@ public:
     }
 
   Q_INVOKABLE void renameDrone(const QString &xbeeID, const QString &newName);
-  Q_INVOKABLE void setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress);
+  Q_INVOKABLE void sethardwareUid(const QString &xbeeID, const QString &newhardwareUid);
   Q_INVOKABLE void setBatteryLevel(const QString &xbeeID, const double &newBattery);
   Q_INVOKABLE void setRole(const QString &xbeeID, const QString &newRole);
   Q_INVOKABLE void setXbeeID(const QString &xbeeID, const QString &newXbeeID);
@@ -82,12 +82,17 @@ public:
   Q_INVOKABLE void setAirspeed(const QString &xbeeID, const double &newAirspeed);
   Q_INVOKABLE void setOrientation(const QString &xbeeID, const QVector3D &newOrientation);
 
+  // Test function for hardware_uid//////////
+  Q_INVOKABLE void testHardwareUid();
+  ///////////////////////////////////////////
+
+
 public slots:
     void saveDroneToDB(const QSharedPointer<DroneClass> &drone);
     void createDrone(const QString &input_name,
                        const QString &input_role,
                        const QString &input_xbeeID,
-                       const QString &input_xbeeAddress,
+                       const QString &input_hardwareUid,
                        double input_batteryLevel,
                        double input_latitude,
                        double input_longitude,
@@ -107,6 +112,8 @@ signals:
     void dronesChanged();
 
 private:
+
+
     QTimer simulationTimer;       // Timer for simulated movement
     void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
@@ -119,7 +126,7 @@ private:
     static QList<QSharedPointer<DroneClass>> droneList;
     
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
-    QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
+    QSharedPointer<DroneClass> getDroneByhardwareUid(const QString &address);
     void updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
 

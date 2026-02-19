@@ -13,7 +13,7 @@ class DroneClass : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString   name        READ getName        NOTIFY nameChanged        FINAL)
-    Q_PROPERTY(QString   xbeeAddress READ getXbeeAddress NOTIFY xbeeAddressChanged FINAL)
+    Q_PROPERTY(QString   hardwareUid READ gethardwareUid NOTIFY hardwareUidChanged FINAL)
     Q_PROPERTY(double    batteryLevel READ getBatteryLevel NOTIFY batteryChanged  FINAL)
     Q_PROPERTY(QString   role        READ getRole        NOTIFY roleChanged        FINAL)
     Q_PROPERTY(QString   xbeeID      READ getXbeeID      NOTIFY xbeeIDChanged      FINAL)
@@ -31,7 +31,7 @@ public:
     DroneClass(const QString &input_name, 
                 const QString &input_role,
                 const QString &input_xbeeID,
-                const QString &input_xbeeAddress,
+                const QString &input_hardwareUid,
                 double input_batteryLevel,
                 double input_latitude,
                 double input_longitude,
@@ -45,15 +45,15 @@ public:
     DroneClass(const QString &input_name, 
                 const QString &input_role,
                 const QString &input_xbeeID,
-                const QString &input_xbeeAddress,
+                const QString &input_hardwareUid,
                 QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
     QString   getName()        const { return m_name; }
     void      setName(const QString &inputName);
 
-    QString   getXbeeAddress() const { return m_xbeeAddress; }
-    void      setXbeeAddress(const QString &inputXbeeAddress);
+    QString   gethardwareUid() const { return m_hardwareUid; }
+    void      sethardwareUid(const QString &inputhardwareUid);
 
     QString   getRole()        const { return m_role; }
     void      setRole(const QString &inputRole);
@@ -102,7 +102,7 @@ public:
 
 signals:
     void nameChanged();
-    void xbeeAddressChanged();
+    void hardwareUidChanged();
     void roleChanged();
     void xbeeIDChanged();
     void sysIDChanged();
@@ -119,7 +119,7 @@ signals:
 
 private:
     QString   m_name;
-    QString   m_xbeeAddress;
+    QString   m_hardwareUid;
     QString   m_role;
     QString   m_xbeeID;
     int       m_sysID;
