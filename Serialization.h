@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SERIALIZATION_H
 #define SERIALIZATION_H
 
@@ -9,6 +10,7 @@
 #include <cereal/archives/binary.hpp>
 
 //std library
+#include <cstdio>
 #include <vector>
 #include <fstream>
 #include <string>

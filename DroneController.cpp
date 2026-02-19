@@ -12,7 +12,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     std::string fileName = "app.sav";
     if(std::filesystem::exists(fileName))
     {
-        qDebug() << "Load from file";
+        qDebug() << "[DroneController.cpp] Load from file";
         //load from file
         std::ifstream is(fileName, std::ios::binary);
         cereal::BinaryInputArchive archive(is);
@@ -23,7 +23,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     } else
     {
         //load manually
-        qDebug() << "Load manually";
+        qDebug() << "[DroneController.cpp] Load manually";
         int index = 0;
 
         // function loads all drones from the database on startup
@@ -101,6 +101,23 @@ QVariantList DroneController::getAllDrones() const
 
 DroneController::~DroneController()
 {
+    //TODO: for demo only, delete after
+    //delete save file if did not crash
+    std::string fileName = "app.sav";
+
+    if(std::filesystem::exists(fileName))
+    {
+        if(std::remove(fileName.c_str()) == 0)
+        {
+            qDebug() << "[DroneController.cpp] Save file deleted!";
+        } else
+        {
+            qDebug() << "[DroneController.cpp] Save file not properly deleted!";
+        }
+    } else
+    {
+        qDebug() << "[DroneController.cpp] Save file does not exist: should not happen!";
+    }
 }
 
 
