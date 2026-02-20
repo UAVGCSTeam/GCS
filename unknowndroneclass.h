@@ -26,6 +26,7 @@ public:
                       const QString &uavType,
                       int sysID,
                       int compID,
+                      bool ignored,
                       QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY

@@ -72,8 +72,10 @@ public:
 
     // unknowndronelist
     QVariantList unknownDrones() const { return m_unknownDronesVariant; }
+    Q_INVOKABLE void loadUnknownDrones();
+    Q_INVOKABLE void setUnknownDroneIgnored(const QString &uid, bool ignored);
+    Q_INVOKABLE void removeUnknownDrones(const QString &uid);
     void rebuildUnknownVariant();
-    Q_INVOKABLE QVariantList getAllUnknownDrones() const;
 
 
   Q_INVOKABLE void renameDrone(const QString &xbeeID, const QString &newName);

@@ -96,7 +96,10 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {mainPanel.activePanel = "discovery"}
+                        onClicked: {
+                            mainPanel.activePanel = "discovery"
+                            droneController.loadUnknownDrones()
+                        }
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
@@ -148,7 +151,7 @@ Rectangle {
                             case "drones":
                                 return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
                             case "discovery":
-                                return "x discovered UAVs"  // replace this with droneController.unknownDrones later on
+                                return droneController ? droneController.unknownDrones.length + " discovered UAVs" : "0 discovered UAVs" // replace this with droneController.unknownDrones later on
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -358,7 +361,8 @@ Rectangle {
 
                 property int selectedIndex: -1
 
-                model: mockDroneList //placeholder name
+                //model: mockDroneList //placeholder name
+                model: droneController.unknownDrones;
 
                 delegate: Rectangle {
                     id: discoveredItem
@@ -367,7 +371,7 @@ Rectangle {
 
                     // Hides ignored drones
                     height: visible ? (expanded ? 110 : 60) : 0
-                    visible: !ignored // only shows the discovered drone if it isn't ignored
+                    visible: !modelData.ignored // only shows the discovered drone if it isn't ignored
 
                     // local UI state
                     property bool expanded: false
@@ -414,17 +418,17 @@ Rectangle {
                                 spacing: 1
 
                                 Text {
-                                    text: uavtype
+                                    text: modelData.uavType
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                                 }
                                 Text {
-                                    text: "UID: " + uid;
+                                    text: "UID: " + modelData.uid;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
                                 }
                                 Text {
-                                    text: "FC: " + fc;
+                                    text: "FC: " + modelData.fc;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
                                 }
@@ -466,8 +470,9 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("added!")
+                                            droneController.removeUnknownDrones(modelData.uid) // removes the drone from the list
                                             discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
+                                            //mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -501,9 +506,10 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("ignore")
-                                            ignored = true
+                                            droneController.setUnknownDroneIgnored(modelData.uid, true)
                                             discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
+                                            //ignored = true
+                                            //mockDroneList.remove(index)
                                         }
                                     }
                                 }

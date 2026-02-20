@@ -14,6 +14,7 @@ UnknownDroneClass::UnknownDroneClass(const QString &uid,
                                      const QString &uavType,
                                      int sysID,
                                      int compID,
+                                     bool ignored,
                                      QObject *parent)
     : QObject(parent)
     , m_uid(uid)
@@ -21,6 +22,7 @@ UnknownDroneClass::UnknownDroneClass(const QString &uid,
     , m_uavType(uavType)
     , m_sysID(sysID)
     , m_compID(compID)
+    , m_ignored(ignored)
 {
 }
 

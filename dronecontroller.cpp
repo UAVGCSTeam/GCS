@@ -105,26 +105,6 @@ QVariantList DroneController::getAllDrones() const
     return list;
 }
 
-// method so QML can retrieve the unknown drone list
-QVariantList DroneController::getAllUnknownDrones() const
-{
-    QVariantList list;
-    for (const QSharedPointer<UnknownDroneClass> &unknownDrone : unknownDroneList)
-    {
-        QVariantMap unknownDroneMap;
-        // these method calls have to match our DroneClass interface
-        unknownDroneMap["uid"] = unknownDrone->getUid();
-        unknownDroneMap["fc"] = unknownDrone->getFc(); // <-- we been using "drone type" in UI and everything but its called drone role in droneclass.h lul
-        unknownDroneMap["uavType"] = unknownDrone->getUavType();
-        unknownDroneMap["sysID"] = unknownDrone->getSysID();
-        unknownDroneMap["compID"] = unknownDrone->getCompID();
-        unknownDroneMap["ignored"] = unknownDrone->getIgnored();
-
-        list.append(unknownDroneMap);
-    }
-    return list;
-}
-
 DroneController::~DroneController()
 {
 }
@@ -256,6 +236,44 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
     }
 }
 
+// unknonwn drone list updaters
+void DroneController::loadUnknownDrones()
+{
+    // simulated unknown drone list
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u2", "fc2", "uavtype2", -1, -1, true, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
+
+    rebuildUnknownVariant();
+    emit unknownDronesChanged();
+}
+void DroneController::setUnknownDroneIgnored(const QString &uid, bool ignored)
+{
+    for (const auto &unknownDrone : unknownDroneList) {
+        if (unknownDrone && unknownDrone->getUid() == uid) {
+            unknownDrone->setIgnored(ignored);
+            rebuildUnknownVariant();
+            emit unknownDronesChanged();
+            return;
+        }
+    }
+}
+void DroneController::removeUnknownDrones(const QString &uid)
+{
+    // loops through the list to find the specific drone index with the
+    // matching uid the user wants to remove
+    for (int i = 0; i < unknownDroneList.size(); ++i) {
+        if (unknownDroneList[i] && unknownDroneList[i]->getUid() == uid) {
+            unknownDroneList.removeAt(i);
+            rebuildUnknownVariant();
+            emit unknownDronesChanged();
+            return;
+        }
+    }
+}
 
 // Steps in saving a drone.
 /* User Clicks button to save drone information
