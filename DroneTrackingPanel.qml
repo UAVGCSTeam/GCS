@@ -320,6 +320,12 @@ Rectangle {
                         droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
+                // Connections {
+                //     target: droneController
+                //     function onUnknownDronesChanged() {
+                //         droneListView.model = droneController ? droneController.drones : [] 
+                //     } 
+                // }
             }
 
             // mock data to test list

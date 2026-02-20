@@ -65,6 +65,16 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         } else { 
             droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
         }
+
+        // simulated unknown drone list
+        unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
+        unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u2", "fc2", "uavtype2", -1, -1, true, nullptr));
+        unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
+
+
         
         index++;
     }
@@ -239,14 +249,6 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
 // unknonwn drone list updaters
 void DroneController::loadUnknownDrones()
 {
-    // simulated unknown drone list
-    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-        "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
-    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-        "u2", "fc2", "uavtype2", -1, -1, true, nullptr));
-    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-        "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
-
     rebuildUnknownVariant();
     emit unknownDronesChanged();
 }
