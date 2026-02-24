@@ -151,7 +151,7 @@ Rectangle {
                             case "drones":
                                 return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
                             case "discovery":
-                                return droneController ? droneController.unknownDrones.length + " discovered UAVs" : "0 discovered UAVs" // replace this with droneController.unknownDrones later on
+                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs" // replace this with droneController.unknownDrones later on
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -320,40 +320,11 @@ Rectangle {
                         droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
-                // Connections {
-                //     target: droneController
-                //     function onUnknownDronesChanged() {
-                //         droneListView.model = droneController ? droneController.drones : [] 
-                //     } 
-                // }
-            }
-
-            // mock data to test list
-            ListModel {
-                id: mockDroneList
-                ListElement {
-                    uavtype: "Arducopter";
-                    uid: "123";
-                    fc: "cub black";
-                    componentid: "1433";
-                    systemid: "1232"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "ArduPlane";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "3";
-                    uid: "jaldfjalfd";
-                    fc: "cube blue";
-                    componentid: "080923";
-                    systemid: "82084"
-                    ignored: false
+                Connections {
+                    target: droneController
+                    function onUnknownDronesChanged() {
+                        discoveryListView.model = droneController ? droneController.unknownDrones : []
+                    }
                 }
             }
 
@@ -367,8 +338,7 @@ Rectangle {
 
                 property int selectedIndex: -1
 
-                //model: mockDroneList //placeholder name
-                model: droneController.unknownDrones;
+                model: droneController.unknownDrones.filter(u => !u.ignored)
 
                 delegate: Rectangle {
                     id: discoveredItem
@@ -478,7 +448,6 @@ Rectangle {
                                             console.log("added!")
                                             droneController.removeUnknownDrones(modelData.uid) // removes the drone from the list
                                             discoveryListView.selectedIndex = -1
-                                            //mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -514,8 +483,6 @@ Rectangle {
                                             console.log("ignore")
                                             droneController.setUnknownDroneIgnored(modelData.uid, true)
                                             discoveryListView.selectedIndex = -1
-                                            //ignored = true
-                                            //mockDroneList.remove(index)
                                         }
                                     }
                                 }
