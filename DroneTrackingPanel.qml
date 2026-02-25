@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
+import "./components"
+import "./components" as Components
 
 /*
   Welcome to the wild west....
@@ -275,6 +277,7 @@ Rectangle {
                         }
 
                         ColumnLayout {
+                            Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft
                             Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
@@ -283,6 +286,8 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
                                 font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
@@ -293,7 +298,7 @@ Rectangle {
                                 font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
-
+                        
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
