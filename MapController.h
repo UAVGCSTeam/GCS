@@ -1,6 +1,11 @@
+#ifndef MAPCONTROLLER_H
 #define MAPCONTROLLER_H
 
+#include <QObject>
 #include <QPair>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QVariantList>
 #include "DroneClass.h"
 
 /*
@@ -19,11 +24,15 @@
 class MapController : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QVariantList noFlyZones READ noFlyZones NOTIFY noFlyZonesChanged)
 
 public:
     explicit MapController(QObject *parent = nullptr);
     // Q_INVOKABLE void debugPrintDrones() const;
     Q_INVOKABLE void createDrone(const QString &input_name);
+    Q_INVOKABLE bool loadNoFlyZones(const QString &geoJsonPath);
+    Q_INVOKABLE void clearNoFlyZones();
+    QVariantList noFlyZones() const;
 
 
 public slots:
@@ -38,6 +47,7 @@ signals:
     void locationMarked(const QVariant &lat, const QVariant &lon);
     void mapTypeChanged(int typeIndex);
     void zoomLevelChanged(double level);
+    void noFlyZonesChanged();
 
 private:
     QPair<double, double> m_center;
@@ -46,7 +56,12 @@ private:
     int m_supportedMapTypesCount;
 
     QVector<DroneClass*> m_drones;
+    QVariantList m_noFlyZones;
 
     void updateCenter(const QPair<double, double> &center);
     void addMarker(const QPair<double, double> &position);
+    bool addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties);
+    QVariantList buildPointListFromPolygonRing(const QJsonArray &ring) const;
 };
+
+#endif // MAPCONTROLLER_H

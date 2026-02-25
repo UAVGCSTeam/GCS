@@ -43,6 +43,7 @@ Item {
     property var activeDrone: null
     property var selectedDrones: null
     property Waypoint waypointManagerRef: waypointManager
+    property bool showNoFlyZones: true
 
     Plugin {
         id: mapPlugin
@@ -166,6 +167,32 @@ Item {
                         x: (parent.width - width) / 2
                         y: markerImage.height + 5
                     }
+                }
+            }
+        }
+
+        MapItemView {
+            id: noFlyZoneView
+            model: mapController ? mapController.noFlyZones : []
+            delegate: MapPolygon {
+                property var zonePoints: (modelData && modelData.points) ? modelData.points : []
+
+                visible: mapwindow.showNoFlyZones && zonePoints.length >= 3
+                color: "#44ff0000"
+                border.color: "#cc0000"
+                border.width: 2
+                z: 5
+
+                path: {
+                    var points = []
+                    for (var i = 0; i < zonePoints.length; i++) {
+                        var p = zonePoints[i]
+                        if (p.lat === undefined || p.lon === undefined)
+                            continue
+
+                        points.push(QtPositioning.coordinate(p.lat, p.lon))
+                    }
+                    return points
                 }
             }
         }

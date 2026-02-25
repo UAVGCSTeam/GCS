@@ -44,4 +44,7 @@
         <file>panelStyle.qml</file>
         <file>qmldir</file>
     </qresource>
+    <qresource prefix="/data">
+        <file>National_Security_UAS_Flight_Restrictions.geojson</file>
+    </qresource>
 </RCC>

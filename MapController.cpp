@@ -1,6 +1,13 @@
 #include "MapController.h"
 #include "DroneClass.h"
 
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QUrl>
+
 
 /*
  * Used to emit signals to our QML functions.
@@ -117,4 +124,173 @@ void MapController::addMarker(const QPair<double, double> &position)
 void MapController::setZoomLevel(double level)
 {
     emit zoomLevelChanged(level);
+}
+
+QVariantList MapController::noFlyZones() const
+{
+    return m_noFlyZones;
+}
+
+void MapController::clearNoFlyZones()
+{
+    if (m_noFlyZones.isEmpty()) {
+        return;
+    }
+
+    m_noFlyZones.clear();
+    emit noFlyZonesChanged();
+}
+
+QVariantList MapController::buildPointListFromPolygonRing(const QJsonArray &ring) const
+{
+    QVariantList points;
+    for (const QJsonValue &coordinateValue : ring) {
+        if (!coordinateValue.isArray()) {
+            continue;
+        }
+
+        const QJsonArray coordinate = coordinateValue.toArray();
+        if (coordinate.size() < 2 || !coordinate[0].isDouble() || !coordinate[1].isDouble()) {
+            continue;
+        }
+
+        const double longitude = coordinate[0].toDouble();
+        const double latitude = coordinate[1].toDouble();
+
+        QVariantMap point;
+        point["lat"] = latitude;
+        point["lon"] = longitude;
+        points.append(point);
+    }
+
+    return points;
+}
+
+bool MapController::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties)
+{
+    const QString geometryType = geometry.value("type").toString();
+    const QJsonArray coordinates = geometry.value("coordinates").toArray();
+
+    if (geometryType == "Polygon") {
+        if (coordinates.isEmpty() || !coordinates[0].isArray()) {
+            return false;
+        }
+
+        const QVariantList points = buildPointListFromPolygonRing(coordinates[0].toArray());
+        if (points.size() < 3) {
+            return false;
+        }
+
+        QVariantMap zone;
+        zone["id"] = zoneId;
+        zone["type"] = "polygon";
+        zone["points"] = points;
+        zone["label"] = properties.value("NAME").toString(properties.value("name").toString(zoneId));
+        m_noFlyZones.append(zone);
+        return true;
+    }
+
+    if (geometryType == "MultiPolygon") {
+        bool addedAny = false;
+        int polygonIndex = 0;
+
+        for (const QJsonValue &polygonValue : coordinates) {
+            if (!polygonValue.isArray()) {
+                continue;
+            }
+
+            const QJsonArray polygon = polygonValue.toArray();
+            if (polygon.isEmpty() || !polygon[0].isArray()) {
+                continue;
+            }
+
+            const QVariantList points = buildPointListFromPolygonRing(polygon[0].toArray());
+            if (points.size() < 3) {
+                continue;
+            }
+
+            QVariantMap zone;
+            zone["id"] = QString("%1_%2").arg(zoneId).arg(polygonIndex++);
+            zone["type"] = "polygon";
+            zone["points"] = points;
+            zone["label"] = properties.value("NAME").toString(properties.value("name").toString(zoneId));
+            m_noFlyZones.append(zone);
+            addedAny = true;
+        }
+
+        return addedAny;
+    }
+
+    return false;
+}
+
+bool MapController::loadNoFlyZones(const QString &geoJsonPath)
+{
+    QString resolvedPath = geoJsonPath;
+    if (resolvedPath.startsWith("qrc:/")) {
+        resolvedPath.replace(0, 4, ":");
+    } else if (resolvedPath.startsWith("file:/")) {
+        const QUrl url(resolvedPath);
+        if (url.isLocalFile()) {
+            resolvedPath = url.toLocalFile();
+        }
+    }
+
+    QFile file(resolvedPath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "[MapController.cpp] Unable to open no-fly GeoJSON:" << geoJsonPath << "resolved as" << resolvedPath;
+        return false;
+    }
+
+    const QByteArray rawData = file.readAll();
+    file.close();
+
+    QJsonParseError parseError;
+    const QJsonDocument document = QJsonDocument::fromJson(rawData, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !document.isObject()) {
+        qWarning() << "[MapController.cpp] Invalid GeoJSON:" << parseError.errorString();
+        return false;
+    }
+
+    const QJsonObject root = document.object();
+    const QJsonArray features = root.value("features").toArray();
+
+    int idCounter = 0;
+
+    const QVariantList existingZones = m_noFlyZones;
+    m_noFlyZones.clear();
+
+    for (const QJsonValue &featureValue : features) {
+        if (!featureValue.isObject()) {
+            continue;
+        }
+
+        const QJsonObject feature = featureValue.toObject();
+        const QJsonObject geometry = feature.value("geometry").toObject();
+        const QJsonObject properties = feature.value("properties").toObject();
+        if (geometry.isEmpty()) {
+            continue;
+        }
+
+        QString zoneId = properties.value("OBJECTID").toVariant().toString();
+        if (zoneId.isEmpty()) {
+            zoneId = QString("zone_%1").arg(idCounter++);
+        }
+
+        const int beforeCount = m_noFlyZones.size();
+        addGeoJsonGeometry(zoneId, geometry, properties);
+        if (m_noFlyZones.size() == beforeCount) {
+            continue;
+        }
+    }
+
+    if (m_noFlyZones.isEmpty()) {
+        m_noFlyZones = existingZones;
+        qWarning() << "[MapController.cpp] No supported no-fly geometries were loaded.";
+        return false;
+    }
+
+    emit noFlyZonesChanged();
+    qDebug() << "[MapController.cpp] Loaded no-fly zones:" << m_noFlyZones.size();
+    return !m_noFlyZones.isEmpty();
 }

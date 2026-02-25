@@ -138,6 +138,8 @@ Window {
     }
 
     Component.onCompleted: {
+        mapController.loadNoFlyZones(":/data/National_Security_UAS_Flight_Restrictions.geojson")
+
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
         for (var i = 0; i < 3; i++) {
