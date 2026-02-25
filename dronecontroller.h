@@ -38,6 +38,7 @@
 
 
 class XbeeLink;
+class UdpLink;
 class MavlinkSender;
 class MavlinkReceiver;
 
@@ -52,6 +53,9 @@ public:
 
     Q_INVOKABLE QVariantList getDrones() const;
     Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
+    Q_INVOKABLE bool openUdp(quint16 localPort,
+                             const QString &remoteHost = QStringLiteral("127.0.0.1"),
+                             quint16 remotePort = 14550);
 
     // MAVLink Commands 
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
@@ -115,6 +119,7 @@ private:
     DBManager &dbManager;
 
     std::unique_ptr<XbeeLink>    xbee_;
+    std::unique_ptr<UdpLink>     udp_;
     std::unique_ptr<MavlinkSender> mavTx_;
     std::unique_ptr<MavlinkReceiver> mavRx_;
     QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;

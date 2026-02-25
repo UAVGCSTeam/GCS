@@ -1,6 +1,7 @@
 #include "dronecontroller.h"
 #include "droneclass.h"
 #include "XbeeLink.h"
+#include "UdpLink.h"
 #include "MavlinkReceiver.h"
 #include "MavlinkSender.h"
 #include <QDebug>
@@ -536,6 +537,31 @@ DroneClass *DroneController::getDrone(int index) const
 
 
 
+bool DroneController::openUdp(quint16 localPort,
+                              const QString& remoteHost,
+                              quint16 remotePort)
+{
+    if (!udp_) udp_ = std::make_unique<UdpLink>(this);
+    if (!mavTx_) mavTx_ = std::make_unique<MavlinkSender>(udp_.get(), this);
+
+    if (!mavRx_) {
+        mavRx_ = std::make_unique<MavlinkReceiver>(this);
+        connect(udp_.get(), &UdpLink::bytesReceived,
+                mavRx_.get(), &MavlinkReceiver::onBytes);
+        connect(mavRx_.get(), &MavlinkReceiver::messageReceived,
+                this,         &DroneController::onMavlinkMessage);
+    }
+
+    const bool ok = udp_->open(localPort, QHostAddress(remoteHost), remotePort);
+    if (!ok) {
+        qWarning() << "[DroneController] Failed to open UDP on port" << localPort;
+        return false;
+    }
+    qInfo() << "[DroneController] UDP opened on port" << localPort
+            << "-> " << remoteHost << ":" << remotePort;
+    return true;
+}
+
 bool DroneController::openXbee(const QString& port, int baud)
 {
     if (!xbee_) xbee_ = std::make_unique<XbeeLink>(this);
@@ -654,7 +680,7 @@ bool DroneController::requestTelem(uint8_t targetSysID, uint8_t targetCompID) {
         response = mavTx_->sendTelemRequest(
             targetSysID,
             targetCompID,
-            MAVLINK_MSG_ID_GLOBAL_POSITION_INT
+            cmd
         );
         if (!response) return response;
     }
@@ -697,6 +723,8 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
 
 void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 {
+    qInfo() << "[DroneController::onMavlinkMessage] received message";
+    
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
     mavlink_message_t msg{};
     msg.sysid = m.sysid;
@@ -705,11 +733,16 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     msg.len   = static_cast<uint8_t>(m.payload.size());
     memcpy(_MAV_PAYLOAD_NON_CONST(&msg), m.payload.constData(), msg.len);
 
+    uint8_t sysid = msg.sysid; 
+    qInfo() << "[DroneController::onMavlinkMessage] received message";
+    qInfo() << "[DroneController.cpp] " << msg.sysid;
+    qInfo() << "[DroneController.cpp] " << msg.compid;
+    qInfo() << "[DroneController.cpp] " << msg.len;
+    qInfo() << "[DroneController.cpp] [DroneController::onMavlinkMessage] Orientation: ";
+    qInfo() << droneList[0]->getName() << ": " << droneList[0]->getOrientation();
+
     uint8_t sysID = msg.sysid; 
     uint8_t compID = msg.sysid; 
-    // qInfo() << "[onMavlinkMessage] received message";
-        
-    // qInfo() << "[onMavlinkMessage] Orientation: " << droneList[0]->getOrientation();
 
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {

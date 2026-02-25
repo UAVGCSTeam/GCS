@@ -1,5 +1,6 @@
 #include "MavlinkSender.h"
 #include "XbeeLink.h"
+#include "UdpLink.h"
 #include <QDebug>
 #include <chrono>
 
@@ -28,19 +29,21 @@ extern "C" {
 #endif
 
 
-MavlinkSender::MavlinkSender(XbeeLink* link, QObject* p) : QObject(p), link_(link) {}
+MavlinkSender::MavlinkSender(XbeeLink* link, QObject* p) : QObject(p), xbeeLink_(link) {}
+MavlinkSender::MavlinkSender(UdpLink*  link, QObject* p) : QObject(p), udpLink_(link)  {}
 
 bool MavlinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const {
-    if(!link_ || !link_->isOpen()) return false;
+    if(!linkOpen()) return false;
     QByteArray bytes = packCommandLong(
         sysID,
         compID,
         MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
+        // 0,                                   // confirmation = 0
         command,                             // param1 = message ID
         500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
         0, 0, 0, 0, 0                        // params 3–7 unused
     );
-    return link_->writeBytes(bytes);
+    return writeToLink(bytes) > 0;
 }
 
 
@@ -48,19 +51,27 @@ bool MavlinkSender::sendCommand(uint8_t sysID, uint8_t compID, int command, bool
     /**
      * TODO: (SIM) TEST THIS WITH SIMULATION BEFORE PUTTING ON MAIN BRANCH
      */
-    if(!link_ || !link_->isOpen()) return false;
+    if(!linkOpen()) return false;
     QByteArray bytes = packCommandLong(
         sysID,
         compID,
         command,
         p1
     );
-    return link_->writeBytes(bytes);
+    return writeToLink(bytes) > 0;
 }
 
 
 bool MavlinkSender::linkOpen() const {
-    return link_ && link_->isOpen();
+    if (xbeeLink_) return xbeeLink_->isOpen();
+    if (udpLink_)  return udpLink_->isOpen();
+    return false;
+}
+
+qint64 MavlinkSender::writeToLink(const QByteArray& bytes) const {
+    if (xbeeLink_) return xbeeLink_->writeBytes(bytes);
+    if (udpLink_)  return udpLink_->writeBytes(bytes);
+    return -1;
 }
 
 

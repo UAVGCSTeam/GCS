@@ -120,7 +120,8 @@ Window {
             mapController.setLocationMarking(coord.lat, coord.lon)
         }
         // droneController.openXbee("/dev/ttys005", 57600)
-        droneController.openXbee("/dev/cu.usbserial-AQ015EBI", 57600)
+        // droneController.openXbee("/dev/ttys011", 57600)
+        droneController.openUdp(14551, "127.0.0.1", 14550)
     }
 
     function updateActiveDrone(selected) {

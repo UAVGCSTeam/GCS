@@ -33,6 +33,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         requirements.txt
         XbeeLink.cpp
         XbeeLink.h
+        UdpLink.cpp
+        UdpLink.h
         MavlinkSender.cpp
         MavlinkSender.h
         MavlinkReceiver.h
