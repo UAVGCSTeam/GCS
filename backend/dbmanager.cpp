@@ -1,11 +1,5 @@
 #include "dbmanager.h"
 
-#include <QSqlQuery> // wow queueries yay!!!
-#include <QCoreApplication>
-#include <QSqlError>
-#include <QDir>
-
-
 
 DBManager::DBManager(QObject *parent) : QObject(parent) {
     gcs_db_connection = QSqlDatabase::addDatabase("QSQLITE"); // Signals for Qt that the DB will be in SQLite

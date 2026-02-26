@@ -1,5 +1,5 @@
-#include "mapcontroller.h"
-#include "droneclass.h"
+#include "MapController.h"
+#include "DroneClass.h"
 
 
 /*
@@ -38,9 +38,9 @@ void MapController::changeMapType(int index)
     if (index < m_supportedMapTypesCount) {
         m_currentMapType = index;
         emit mapTypeChanged(index);
-        qDebug() << "Changed to map type:" << index;
+        qDebug() << "[MapController.cpp] Changed to map type:" << index;
     } else {
-        qDebug() << "Unsupported map type index:" << index;
+        qDebug() << "[MapController.cpp] Unsupported map type index:" << index;
     }
 }
 

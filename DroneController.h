@@ -1,22 +1,46 @@
 #ifndef DRONECONTROLLER_H
 #define DRONECONTROLLER_H
 
-#include <QObject>
 #include <QList>
-#include "backend/dbmanager.h"
-#include "droneclass.h"
+#include <QCoreApplication>
+#include <QStandardPaths>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QSharedPointer>
 #include <QSharedMemory>
+#include <QMetaType>
 #include <QTimer>
-#include <memory>
-#include <cstdint>
+#include <QFile>
+#include <QTextStream>
 #include <QHash>
-#include <QVariant>
-#include "MavlinkReceiver.h"   // brings RxMavlinkMsg and its Q_DECLARE_METATYPE
+#include <cstdint>
+
+#include "DroneClass.h"
+#include "backend/dbmanager.h"
+#include "MAVLinkReceiver.h"
+#include "MAVLinkSender.h"
+#include "UARTLink.h"
 
 
 
-// #include "drone.h"
+// DATA PATH
+#ifdef _WIN32
+// Try both the original path and the user's temp directory
+#define DEFAULT_DATA_FILE_PATH "C:/tmp/xbee_data.json" // Windows path
+#else
+#define DEFAULT_DATA_FILE_PATH "/tmp/xbee_data.json" // Unix/Mac path
+#endif
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
+
+
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
@@ -37,10 +61,10 @@
 
 
 
-class XbeeLink;
+class UARTLink;
 class UdpLink;
-class MavlinkSender;
-class MavlinkReceiver;
+class MAVLinkSender;
+class MAVLinkReceiver;
 
 class DroneController : public QObject 
 {
@@ -52,7 +76,7 @@ public:
     ~DroneController();
 
     Q_INVOKABLE QVariantList getDrones() const;
-    Q_INVOKABLE bool openXbee(const QString &port, int baud = 57600);
+    Q_INVOKABLE bool openUART(const QString &port, int baud = 57600);
     Q_INVOKABLE bool openUdp(quint16 localPort,
                              const QString &remoteHost = QStringLiteral("127.0.0.1"),
                              quint16 remotePort = 14550);
@@ -99,7 +123,7 @@ public slots:
                        double input_longitude,
                        double input_altitude,
                        QObject *parent);
-    void updateDrone(const QSharedPointer<DroneClass> &drone);
+    bool updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
     
@@ -118,10 +142,10 @@ private:
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
     DBManager &dbManager;
 
-    std::unique_ptr<XbeeLink>    xbee_;
+    std::unique_ptr<UARTLink>    uartDevice_;
     std::unique_ptr<UdpLink>     udp_;
-    std::unique_ptr<MavlinkSender> mavTx_;
-    std::unique_ptr<MavlinkReceiver> mavRx_;
+    std::unique_ptr<MAVLinkSender> mavTx_;
+    std::unique_ptr<MAVLinkReceiver> mavRx_;
     QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
     static QList<QSharedPointer<DroneClass>> droneList;
     

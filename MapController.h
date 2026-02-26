@@ -1,10 +1,7 @@
 #define MAPCONTROLLER_H
 
-#include <QObject>
-#include <QVariant>
 #include <QPair>
-#include <QVector>
-#include "droneclass.h"
+#include "DroneClass.h"
 
 /*
  * Qt uses Slots and Signals to create responsive UI/GUI applications.
@@ -34,7 +31,7 @@ signals:
     void centerPositionChanged(const QVariant &lat, const QVariant &lon);
     void locationMarked(const QVariant &lat, const QVariant &lon);
     void mapTypeChanged(int typeIndex);
-    void zoomLevelChanged(int level);
+    void zoomLevelChanged(double level);
 
 private:
     QPair<double, double> m_center;

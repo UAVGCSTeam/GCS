@@ -54,6 +54,7 @@ Window {
     // Menu bar above the drone tracking panel
     DroneMenuBar {
         id: droneMenuBar
+        activeDrone: mainWindow.activeDrone
         anchors {
             top: parent.top
             left: parent.left
@@ -73,6 +74,7 @@ Window {
 
     DroneCommandPanel {
         id: droneCommandPanel
+        waypointManager: mapComponent.waypointManagerRef
         activeDrone: mainWindow.activeDrone
         anchors {
             top: droneMenuBar.bottom
@@ -111,17 +113,40 @@ Window {
         onActivated: mapComponent.toggleFollowDrone()
     }
 
+    // Shortcut to open Settings window (Ctrl+. on Windows / Cmd+. on Mac)
+    Shortcut {
+        sequence: "Ctrl+."
+        onActivated: openSettingsWindow()
+    }
+
+    // Settings window 
+    Loader {
+        id: settingsLoader
+        source: "qrc:/settingsWindow.qml"
+    }
+
+    function openSettingsWindow() {
+        settingsLoader.item.show()
+        settingsLoader.item.raise()
+    }
+
+    // Save map state when app closes (for "leave at last location" settings feature)
+    onClosing: {
+        settingsManager.lastMapLat = mapComponent.latitude
+        settingsManager.lastMapLong = mapComponent.longitude
+        settingsManager.lastMapZoom = mapComponent.zoomLevel
+    }
+
     Component.onCompleted: {
         // Once the component is fully loaded, run through our js file to grab the needed info
         var coords = Coordinates.getAllCoordinates();
-        mapController.setCenterPosition(coords[0].lat, coords[0].lon)
         for (var i = 0; i < 3; i++) {
             var coord = coords[i]
             mapController.setLocationMarking(coord.lat, coord.lon)
         }
-        // droneController.openXbee("/dev/ttys005", 57600)
-        // droneController.openXbee("/dev/ttys011", 57600)
         droneController.openUdp(14551, "127.0.0.1", 14550)
+        // droneController.openUART("/dev/ttys005", 57600)
+        // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
     function updateActiveDrone(selected) {

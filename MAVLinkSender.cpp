@@ -1,38 +1,14 @@
-#include "MavlinkSender.h"
-#include "XbeeLink.h"
-#include "UdpLink.h"
-#include <QDebug>
-#include <chrono>
-
-
-extern "C" {
-#if __has_include(<mavlink/common/mavlink.h>)
-#include <mavlink/common/mavlink.h>
-#else
-#include <common/mavlink.h>
-#endif
-}
+#include "MAVLinkSender.h"
 
 
 
-// include mavlink (common dialect), handle both folder layouts
-#if __has_include(<mavlink/common/mavlink.h>)
-extern "C" {
-#include <mavlink/common/mavlink.h>
-}
-#elif __has_include(<common/mavlink.h>)
-extern "C" {
-#include <common/mavlink.h>
-}
-#else
-#error "Cannot find MAVLink headers. Check CMake include dirs and submodule path."
-#endif
 
 
-MavlinkSender::MavlinkSender(XbeeLink* link, QObject* p) : QObject(p), xbeeLink_(link) {}
-MavlinkSender::MavlinkSender(UdpLink*  link, QObject* p) : QObject(p), udpLink_(link)  {}
 
-bool MavlinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const {
+MAVLinkSender::MAVLinkSender(UARTLink* link, QObject* p) : QObject(p), UARTLink_(link) {}
+MAVLinkSender::MAVLinkSender(UdpLink*  link, QObject* p) : QObject(p), UDPLink_(link)  {}
+
+bool MAVLinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const {
     if(!linkOpen()) return false;
     QByteArray bytes = packCommandLong(
         sysID,
@@ -47,7 +23,7 @@ bool MavlinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command)
 }
 
 
-bool MavlinkSender::sendCommand(uint8_t sysID, uint8_t compID, int command, bool p1) const {
+bool MAVLinkSender::sendCommand(uint8_t sysID, uint8_t compID, int command, bool p1) const {
     /**
      * TODO: (SIM) TEST THIS WITH SIMULATION BEFORE PUTTING ON MAIN BRANCH
      */
@@ -62,20 +38,21 @@ bool MavlinkSender::sendCommand(uint8_t sysID, uint8_t compID, int command, bool
 }
 
 
-bool MavlinkSender::linkOpen() const {
-    if (xbeeLink_) return xbeeLink_->isOpen();
-    if (udpLink_)  return udpLink_->isOpen();
+bool MAVLinkSender::linkOpen() const {
+    if (UARTLink_) return UARTLink_->isOpen();
+    if (UDPLink_)  return UDPLink_->isOpen();
     return false;
 }
 
-qint64 MavlinkSender::writeToLink(const QByteArray& bytes) const {
-    if (xbeeLink_) return xbeeLink_->writeBytes(bytes);
-    if (udpLink_)  return udpLink_->writeBytes(bytes);
+
+qint64 MAVLinkSender::writeToLink(const QByteArray& bytes) const {
+    if (UARTLink_) return UARTLink_->writeBytes(bytes);
+    if (UDPLink_)  return UDPLink_->writeBytes(bytes);
     return -1;
 }
 
 
-QByteArray MavlinkSender::packCommandLong(uint8_t sys, uint8_t comp,
+QByteArray MAVLinkSender::packCommandLong(uint8_t sys, uint8_t comp,
                                           uint16_t command, float p1,
                                           float p2,float p3,float p4,
                                           float p5,float p6,float p7) const {
@@ -93,5 +70,7 @@ QByteArray MavlinkSender::packCommandLong(uint8_t sys, uint8_t comp,
     const uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
     return QByteArray(reinterpret_cast<char*>(buf), len);
 }
+
+
 
 

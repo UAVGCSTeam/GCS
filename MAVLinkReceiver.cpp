@@ -1,22 +1,17 @@
-#include "MavlinkReceiver.h"
-extern "C" {
-#if __has_include(<mavlink/common/mavlink.h>)
-#include <mavlink/common/mavlink.h>
-#else
-#include <common/mavlink.h>
-#endif
-}
+#include "MAVLinkReceiver.h"
 
-struct MavlinkReceiver::Impl {
+
+
+struct MAVLinkReceiver::Impl {
     mavlink_status_t status{};
 };
 
-MavlinkReceiver::MavlinkReceiver(QObject* parent)
+MAVLinkReceiver::MAVLinkReceiver(QObject* parent)
     : QObject(parent), d_(std::make_unique<Impl>()) {}
 
-MavlinkReceiver::~MavlinkReceiver() = default;   // ← now Impl is complete
+MAVLinkReceiver::~MAVLinkReceiver() = default;   // ← now Impl is complete
 
-void MavlinkReceiver::onBytes(const QByteArray& data) {
+void MAVLinkReceiver::onBytes(const QByteArray& data) {
     mavlink_message_t msg;
     for (unsigned char b : data) {
         if (mavlink_parse_char(MAVLINK_COMM_0, b, &msg, &d_->status)) {

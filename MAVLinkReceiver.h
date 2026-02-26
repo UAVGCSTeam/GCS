@@ -2,6 +2,18 @@
 #include <QObject>
 #include <QByteArray>
 #include <memory>
+#include "UARTLink.h"
+#include "UdpLink.h"
+
+extern "C" {
+#if __has_include(<mavlink/common/mavlink.h>)
+#include <mavlink/common/mavlink.h>
+#else
+#include <common/mavlink.h>
+#endif
+}
+
+
 
 struct RxMavlinkMsg {
     quint8 sysid, compid;
@@ -10,11 +22,11 @@ struct RxMavlinkMsg {
 };
 Q_DECLARE_METATYPE(RxMavlinkMsg)
 
-class MavlinkReceiver : public QObject {
+class MAVLinkReceiver : public QObject {
     Q_OBJECT
 public:
-    explicit MavlinkReceiver(QObject* parent=nullptr);
-    ~MavlinkReceiver();                 // ← add this (no inline definition)
+    explicit MAVLinkReceiver(QObject* parent=nullptr);
+    ~MAVLinkReceiver();                 // ← add this (no inline definition)
 
 public slots:
     void onBytes(const QByteArray& data);

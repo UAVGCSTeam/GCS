@@ -24,23 +24,22 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         QtMap.qrc
         main.cpp
-        mapcontroller.h mapcontroller.cpp
-        filehandler.h filehandler.cpp
+        MapController.h MapController.cpp
+        FileHandler.h FileHandler.cpp
         backend/dbmanager.h backend/dbmanager.cpp
-        droneclass.h droneclass.cpp
-        dronecontroller.h dronecontroller.cpp
-        xbeeHandler.py
+        DroneClass.h DroneClass.cpp
+        DroneController.h DroneController.cpp
         requirements.txt
-        XbeeLink.cpp
-        XbeeLink.h
+        UARTLink.cpp
+        UARTLink.h
         UdpLink.cpp
         UdpLink.h
-        MavlinkSender.cpp
-        MavlinkSender.h
-        MavlinkReceiver.h
-        MavLinkReceiver.cpp
-
-       # MavLinkUdp.h MavLinkUdp.cpp
+        MAVLinkSender.cpp
+        MAVLinkSender.h
+        MAVLinkReceiver.h
+        MAVLinkReceiver.cpp
+        SettingsManager.h
+        SettingsManager.cpp
     )
 else()
     if(ANDROID)
