@@ -171,10 +171,12 @@ Item {
             }
         }
 
+        // No-fly-zone overlay. Model comes from MapController::noFlyZones (GeoJSON parsed in C++).
         MapItemView {
             id: noFlyZoneView
             model: mapController ? mapController.noFlyZones : []
             delegate: MapPolygon {
+            // Each zone contains a `points` array with `{ lat, lon }` entries.
                 property var zonePoints: (modelData && modelData.points) ? modelData.points : []
 
                 visible: mapwindow.showNoFlyZones && zonePoints.length >= 3
@@ -184,6 +186,7 @@ Item {
                 z: 5
 
                 path: {
+                    // Convert stored lat/lon pairs into QGeoCoordinate objects for MapPolygon.
                     var points = []
                     for (var i = 0; i < zonePoints.length; i++) {
                         var p = zonePoints[i]

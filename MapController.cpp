@@ -128,11 +128,13 @@ void MapController::setZoomLevel(double level)
 
 QVariantList MapController::noFlyZones() const
 {
+    // Exposes the parsed no-fly-zone list to QML via Q_PROPERTY binding.
     return m_noFlyZones;
 }
 
 void MapController::clearNoFlyZones()
 {
+    // Clears all loaded zones and notifies QML so the overlay is removed.
     if (m_noFlyZones.isEmpty()) {
         return;
     }
@@ -143,6 +145,9 @@ void MapController::clearNoFlyZones()
 
 QVariantList MapController::buildPointListFromPolygonRing(const QJsonArray &ring) const
 {
+    // Converts one GeoJSON polygon ring ([[lon,lat], ...]) into
+    // our internal QVariantList format: [{lat, lon}, ...].
+    // Non-numeric or malformed points are skipped.
     QVariantList points;
     for (const QJsonValue &coordinateValue : ring) {
         if (!coordinateValue.isArray()) {
@@ -168,6 +173,9 @@ QVariantList MapController::buildPointListFromPolygonRing(const QJsonArray &ring
 
 bool MapController::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties)
 {
+    // Converts a GeoJSON geometry object into one or more internal zone records.
+    // Supported geometry types: Polygon and MultiPolygon.
+    // Returns true if at least one zone was added.
     const QString geometryType = geometry.value("type").toString();
     const QJsonArray coordinates = geometry.value("coordinates").toArray();
 
@@ -226,6 +234,9 @@ bool MapController::addGeoJsonGeometry(const QString &zoneId, const QJsonObject 
 
 bool MapController::loadNoFlyZones(const QString &geoJsonPath)
 {
+    // Main entry point used by QML at startup (or manual reload) to parse
+    // a GeoJSON file/resource and replace the current no-fly-zone dataset.
+    // Accept common path styles from QML/resources and normalize to QFile-compatible format.
     QString resolvedPath = geoJsonPath;
     if (resolvedPath.startsWith("qrc:/")) {
         resolvedPath.replace(0, 4, ":");
@@ -257,9 +268,11 @@ bool MapController::loadNoFlyZones(const QString &geoJsonPath)
 
     int idCounter = 0;
 
+    // Replace previous data on each load so the overlay reflects the latest source file.
     const QVariantList existingZones = m_noFlyZones;
     m_noFlyZones.clear();
 
+    // Parse each GeoJSON feature into our simplified zone model used by QML.
     for (const QJsonValue &featureValue : features) {
         if (!featureValue.isObject()) {
             continue;
@@ -277,6 +290,7 @@ bool MapController::loadNoFlyZones(const QString &geoJsonPath)
             zoneId = QString("zone_%1").arg(idCounter++);
         }
 
+        // addGeoJsonGeometry() handles Polygon and MultiPolygon conversion to point lists.
         const int beforeCount = m_noFlyZones.size();
         addGeoJsonGeometry(zoneId, geometry, properties);
         if (m_noFlyZones.size() == beforeCount) {
@@ -284,12 +298,14 @@ bool MapController::loadNoFlyZones(const QString &geoJsonPath)
         }
     }
 
+    // If parsing produced nothing, restore previous data to avoid blanking a working overlay.
     if (m_noFlyZones.isEmpty()) {
         m_noFlyZones = existingZones;
         qWarning() << "[MapController.cpp] No supported no-fly geometries were loaded.";
         return false;
     }
 
+    // Notify QML bindings so MapItemView refreshes the rendered polygons.
     emit noFlyZonesChanged();
     qDebug() << "[MapController.cpp] Loaded no-fly zones:" << m_noFlyZones.size();
     return !m_noFlyZones.isEmpty();
