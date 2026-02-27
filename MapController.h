@@ -1,4 +1,3 @@
-#ifndef MAPCONTROLLER_H
 #define MAPCONTROLLER_H
 
 #include <QObject>
@@ -63,5 +62,3 @@ private:
     bool addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties);
     QVariantList buildPointListFromPolygonRing(const QJsonArray &ring) const;
 };
-
-#endif // MAPCONTROLLER_H
