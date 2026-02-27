@@ -59,8 +59,15 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
-                    color: droneListView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
-                    radius: GcsStyle.PanelStyle.buttonRadius
+                    
+                    property bool hovered: false
+                    
+                    color: mainPanel.activePanel === "drones" ? GcsStyle.PanelStyle.buttonActiveColor 
+                        : (hovered ? GcsStyle.PanelStyle.hoverBackground : GcsStyle.PanelStyle.buttonColor)
+
+                    border.color: mainPanel.activePanel === "drones" ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: mainPanel.activePanel === "drones" ? 1 : 0
+                    radius: 8
 
                     Image {
                         anchors.right: parent.right
@@ -73,6 +80,9 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
+                        hoverEnabled: true                        
+                        onEntered: parent.hovered = true          
+                        onExited: parent.hovered = false 
                         onClicked: {mainPanel.activePanel = "drones"}
                     }
                 }
@@ -82,8 +92,15 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
-                    color: discoveryListView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
-                    radius: GcsStyle.PanelStyle.buttonRadius
+                    
+                    property bool hovered: false
+
+                    color: mainPanel.activePanel === "discovery" ? GcsStyle.PanelStyle.buttonActiveColor 
+                        : (hovered ? GcsStyle.PanelStyle.hoverBackground : GcsStyle.PanelStyle.buttonColor)
+
+                    border.color: mainPanel.activePanel === "discovery" ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: mainPanel.activePanel === "discovery" ? 1 : 0
+                    radius: 8
 
                     Image {
                         anchors.right: parent.right
@@ -96,6 +113,9 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
+                        hoverEnabled: true                        
+                        onEntered: parent.hovered = true          
+                        onExited: parent.hovered = false 
                         onClicked: {mainPanel.activePanel = "discovery"}
                     }
                 }
@@ -192,10 +212,13 @@ Rectangle {
                     color: selected
                            ? GcsStyle.PanelStyle.listItemSelectedColor
                            : (hovered
-                              ? GcsStyle.PanelStyle.listItemHoverColor
+                              ? GcsStyle.PanelStyle.hoverBackground
                               : (index % 2 === 0
                                  ? GcsStyle.PanelStyle.listItemEvenColor
-                                 : GcsStyle.PanelStyle.listItemOddColor))
+                                 : GcsStyle.PanelStyle.cardBackground))
+
+                    border.color: selected ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: selected ? 1 : 0
 
                     MouseArea {
                         anchors.fill: parent

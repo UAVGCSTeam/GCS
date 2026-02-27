@@ -14,12 +14,19 @@ QtObject {
 
     // Color scheme
     readonly property color listItemHoverColor: isLightTheme ? "#D1D1D6" : "#384250"     // light silver, blue-grey slate
-    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : "#495B76"  // soft blue-grey, muted steel blue
+    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : Qt.rgba(0, 0.831, 1, 0.12)  // soft blue-grey, blue (?)
+    readonly property color listItemSelectedBorderColor: isLightTheme ? "#A0B0D0" : Qt.rgba(0, 0.831, 1, 0.40) // placeholder, blue (?)
     readonly property color primaryColor: isLightTheme ? "#FDF6F6" : "#161720"           // subtle warm pink white, dark navy
     readonly property color secondaryColor: isLightTheme ? "#E8E8ED" : "#282831"         // light grey, charcoal
     readonly property color accentColor: "#007bff"                                       // bright blue
     readonly property color textPrimaryColor: isLightTheme ? "#1D1D1F" : "#ffffff"       // black, white
     readonly property color textSecondaryColor: isLightTheme ? "#86868B" : "#666666"     // medium grey, dark grey
+
+    //Background Color Scheme (Light Mode : Dark Mode)
+    readonly property color baseBackground: isLightTheme ? "#D1D1D6" : "#0F1014"     // for side bars, top bar, base background
+    readonly property color surfaceBackground: isLightTheme ? "#C7D2E8" : "#161721"  // for side panels
+    readonly property color cardBackground: isLightTheme ? "#FDF6F6" : Qt.rgba(0.118, 0.129, 0.188, 1)    // for drone items, clickable items
+    readonly property color hoverBackground: isLightTheme ? "#E8E8ED" : "#252840"    // for hovering over items
 
     // Sizes
     readonly property int sidebarWidth: 50
@@ -40,7 +47,7 @@ QtObject {
     readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
     readonly property color buttonColor2: isLightTheme ? "#DCDCE2" : "#282830"           // pale grey, charcoal
-    readonly property color buttonActiveColor: "#4B88A2"                                  // teal blue
+    readonly property color buttonActiveColor: Qt.rgba(0, 0.831, 1, 0.12)                                // teal blue
     readonly property color buttonHoverColor: isLightTheme ? "#C5C5CC" : "#364357"       // silver, slate blue
     readonly property color buttonPressedColor: listItemHoverColor
     readonly property color buttonUnavailableColor: isLightTheme ? "#E5E5EA" : "#212129" // light grey, dark charcoal
