@@ -1,7 +1,6 @@
 #include "DroneController.h"
 
 
-
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
 
 DroneController::DroneController(DBManager &db, QObject *parent)
@@ -37,6 +36,14 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         index++;
     }
     qDebug() << "[DroneController.cpp] Loaded" << droneList.size() << "drones from the database.";
+
+    // MAVProxy telemetry via UDP
+    mavlinkReceiver = new MAVLinkReceiver(this);
+
+    connect(mavlinkReceiver,
+            &MAVLinkReceiver::messageReceived,
+            this,
+            &DroneController::onMavlinkMessage);
 
     // --- Simulated Drone Movement ---
     connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
@@ -241,6 +248,27 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
     }
 }
 
+void DroneController::openUDP(const QString &address, quint16 port)
+{
+    if (udpSocket) {
+        udpSocket->close();
+        udpSocket->deleteLater();
+    }
+
+    udpSocket = new QUdpSocket(this);
+
+    bool ok = udpSocket->bind(QHostAddress(address), port);
+
+    if (!ok) {
+        qDebug() << "[DroneController] Failed to bind UDP port" << port;
+        return;
+    }
+
+    connect(udpSocket, &QUdpSocket::readyRead,
+            this, &DroneController::onUdpReadyRead);
+
+    qDebug() << "[DroneController] UDP listening on" << port;
+}
 
 // Steps in saving a drone.
 /* User Clicks button to save drone information
@@ -812,3 +840,16 @@ QObject* DroneController::getDroneByNameQML(const QString &name) const {
     return nullptr;
 }
 
+void DroneController::onUdpReadyRead()
+{
+    while (udpSocket->hasPendingDatagrams()) {
+
+        QByteArray datagram;
+        datagram.resize(udpSocket->pendingDatagramSize());
+
+        udpSocket->readDatagram(datagram.data(), datagram.size());
+
+        // Feed bytes into existing MAVLink parser
+        mavlinkReceiver->onBytes(datagram);
+    }
+}

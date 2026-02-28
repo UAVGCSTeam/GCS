@@ -145,7 +145,8 @@ Window {
             mapController.setLocationMarking(coord.lat, coord.lon)
         }
         // droneController.openUART("/dev/ttys005", 57600)
-        droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
+        // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
+        droneController.openUDP("0.0.0.0", 14550)
     }
 
     function updateActiveDrone(selected) {

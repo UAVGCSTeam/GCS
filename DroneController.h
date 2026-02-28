@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QHash>
+#include <QUdpSocket>
 #include <cstdint>
 
 #include "DroneClass.h"
@@ -104,6 +105,7 @@ public:
   Q_INVOKABLE void setVelocity(const QString &xbeeID, const QVector3D &newVelocity);
   Q_INVOKABLE void setAirspeed(const QString &xbeeID, const double &newAirspeed);
   Q_INVOKABLE void setOrientation(const QString &xbeeID, const QVector3D &newOrientation);
+  Q_INVOKABLE void openUDP(const QString &address, const quint16 port);
 
 public slots:
     void saveDroneToDB(const QSharedPointer<DroneClass> &drone);
@@ -129,6 +131,10 @@ signals:
     void droneStateChanged(const DroneClass *drone);
     void dronesChanged();
 
+private slots:
+    // Slot for udpSocket when it emits readyRead
+    void onUdpReadyRead();
+
 private:
     QTimer simulationTimer;       // Timer for simulated movement
     void simulateDroneMovement(); // Function to move a drone periodically
@@ -148,6 +154,9 @@ private:
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
+
+    MAVLinkReceiver *mavlinkReceiver = nullptr;
+    QUdpSocket *udpSocket = nullptr;
 };
 
 #endif // DRONECONTROLLER_H
