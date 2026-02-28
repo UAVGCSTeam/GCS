@@ -75,8 +75,6 @@ Button {
             } else {
                 console.error("Component not ready for", text + ":", component.errorString())
             }
-        } else {
-            parent.clicked()
         }
     }
 }

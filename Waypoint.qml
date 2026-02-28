@@ -4,39 +4,19 @@ import QtLocation
 Item {
     id: waypointRoot
 
-    // Map reference, injected from parent
     property var mapview
     property var activeDrone: null
 
-    // Shared storage for all drones
-    property var droneWaypoints: ({})   // { droneName: [ {lat, lon}, ... ] }
-
-    // Expose a signal so other UI parts can refresh
+    // Signal to update the waypoint list in the UI
     signal waypointsUpdated(string droneName)
 
-    // Add one waypoint for a drone
-    function addWaypoint(droneName, droneLat, droneLon, clickLat, clickLon) {
-        if (!droneWaypoints[droneName])
-            droneWaypoints[droneName] = []
-
-        // First waypoint: insert drone position
-        if (droneWaypoints[droneName].length === 0) {
-            droneWaypoints[droneName].push({
-                lat: droneLat,
-                lon: droneLon
-            })
-        }
-
-        // Add clicked waypoint
-        droneWaypoints[droneName].push({
-            lat: clickLat,
-            lon: clickLon
-        })
-
-        waypointsUpdated(droneName)
+    // Delegates to MissionManager. drone position auto-inserted in C++ for new missions
+    function addWaypoint(drone, clickLat, clickLon) {
+        if (!drone) return
+        missionManager.addWaypoint(drone, clickLat, clickLon)
     }
 
-    // Distance in meters between two coordinates
+    // Haversine formula for distance between two geo coordinates
     function distanceMeters(lat1, lon1, lat2, lon2) {
         var R = 6371000; // earth radius in meters
         var radLat1 = lat1 * Math.PI / 180
@@ -53,7 +33,7 @@ Item {
 
     // Remove first waypoint if drone is close enough
     function pruneFirstWaypoint(drone) {
-        var wps = droneWaypoints[drone.name]
+        var wps = missionManager.getWaypoints(drone.xbeeAddress)
         if (!wps || wps.length < 2) return
 
         var target = wps[1]
@@ -65,13 +45,7 @@ Item {
                 drone.longitude
             ) < 2.0) {
 
-            // Promote target to new origin
-            wps[0] = target
-
-            // Remove the old origin
-            wps.splice(1, 1)
-
-            waypointsUpdated(drone.name)
+            missionManager.pruneFirstWaypoint(drone.xbeeAddress)
         }
     }
     Canvas {
@@ -99,11 +73,14 @@ Item {
                 return { x: width/2 + (x - centerX), y: height/2 + (y - centerY) }
             }
 
-            for (var droneName in droneWaypoints) {
-                var wps = droneWaypoints[droneName]
+            // Draw waypoint paths for every active mission, red for the selected drone
+            var droneIDs = missionManager.getMissionDroneIDs()
+            for (var i = 0; i < droneIDs.length; i++) {
+                var droneID = droneIDs[i]
+                var wps = missionManager.getWaypoints(droneID)
                 if (!wps || wps.length < 2) continue
 
-                var isSelected = (activeDrone ? droneName === activeDrone.name : false)
+                var isSelected = (activeDrone ? droneID === activeDrone.xbeeAddress : false)
                 ctx.strokeStyle = isSelected ? "red" : "#888"
                 ctx.fillStyle   = isSelected ? "red" : "#888"
 
@@ -114,15 +91,14 @@ Item {
                 var start = geoToPixel(wps[0].lat, wps[0].lon)
                 ctx.moveTo(start.x, start.y)
 
-                for (var i = 1; i < wps.length; i++) {
-                    var p = geoToPixel(wps[i].lat, wps[i].lon)
+                for (var j = 1; j < wps.length; j++) {
+                    var p = geoToPixel(wps[j].lat, wps[j].lon)
                     ctx.lineTo(p.x, p.y)
                 }
 
                 ctx.stroke()
                 ctx.setLineDash([])
 
-                // Draw waypoint dots
                 for (var t = 0; t < wps.length; t++) {
                     var s = geoToPixel(wps[t].lat, wps[t].lon)
                     ctx.beginPath()
@@ -139,28 +115,29 @@ Item {
         }
 
         Connections {
-            target: waypointRoot
-            function onWaypointsUpdated() { waypointCanvas.requestPaint() }
+            target: missionManager
+            function onWaypointsChanged() { waypointCanvas.requestPaint() }
         }
     }
 
     Connections {
         target: droneController
         function onDroneStateChanged(drone) {
-            if (!drone)
-                return
-
+            if (!drone) return
             pruneFirstWaypoint(drone)
             waypointCanvas.requestPaint()
         }
     }
 
+    // When MissionManager modifies waypoints, forward them to DroneController
+    // (which needs the drone name, not xbeeAddress) and re-signal to QML listeners
     Connections {
-        target: waypointRoot
-        function onWaypointsUpdated(droneName) {
-            var wps = waypointRoot.droneWaypoints[droneName];
-            droneController.updateWaypoints(droneName, wps);
+        target: missionManager
+        function onWaypointsChanged(uavID) {
+            var droneName = missionManager.getDroneNameForMission(uavID)
+            waypointsUpdated(droneName)
+            var wps = missionManager.getWaypoints(uavID)
+            droneController.updateWaypoints(droneName, wps)
         }
     }
-
 }

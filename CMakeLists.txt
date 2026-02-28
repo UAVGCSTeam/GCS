@@ -38,6 +38,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MAVLinkReceiver.cpp
         SettingsManager.h
         SettingsManager.cpp
+        uavmission.h uavmission.cpp
+        missionmanager.h missionmanager.cpp
     )
 else()
     if(ANDROID)

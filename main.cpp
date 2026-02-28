@@ -9,6 +9,7 @@
 #include "backend/dbmanager.h"
 #include "DroneController.h"
 #include "SettingsManager.h"
+#include "missionmanager.h"
 
 
 int main(int argc, char *argv[])
@@ -56,6 +57,9 @@ int main(int argc, char *argv[])
     droneController.rebuildVariant();
     // Expose to QML
     engine.rootContext()->setContextProperty("droneController", &droneController);
+
+    MissionManager missionManager;
+    engine.rootContext()->setContextProperty("missionManager", &missionManager);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*
