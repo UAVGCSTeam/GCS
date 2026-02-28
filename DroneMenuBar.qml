@@ -6,15 +6,6 @@ import "qrc:/gcsStyle" as GcsStyle
 import "./components"
 import "./components" as Components
 
-/*
- * DroneMenuBar - Menu bar component to display various features and actions
- * Located below the native window title bar
- * Full-width bar with menu items on the left
- * Contains two dropdown items:
- * 1. "GCS" that opens the manage drone window.
- * 2. "Command Menu" that shows a submenu with the 4 command options.
- */
-
 Rectangle {
     id: menuBar
     property int padding: 2 // padding between the menu bar and the buttons within it
@@ -90,12 +81,6 @@ Rectangle {
         Column {
             width: parent.width
             spacing: 2
-            
-            PopupMenuItem {
-                text: "Manage Drones"
-                windowFile: "manageDroneWindow.qml"
-                menuPopup: gcsMenu
-            }
             
             PopupMenuItem {
                 text: "Settings"
