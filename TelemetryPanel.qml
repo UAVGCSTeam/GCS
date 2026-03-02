@@ -8,14 +8,14 @@ Rectangle {
     id: telemetryPanel
     height: isExpanded ? 199 : 90  // 2.21 : 1
     width: Math.min(parent.width * 0.5, 400)
-    color: "#80000000"
+    color: GcsStyle.PanelStyle.isLightTheme ? "#80FFFFFF" : "#80000000"
     radius: GcsStyle.PanelStyle.cornerRadius
 
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
     anchors.bottomMargin: 8
 
-    property color borderColor: "#404040"
+    property color borderColor: GcsStyle.PanelStyle.defaultBorderColor
     property var activeDrone: null 
     property bool isExpanded: false
 
@@ -124,6 +124,7 @@ Rectangle {
                                     text: modelData.label
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                     Layout.alignment: Qt.AlignHCenter
                                 }
 
@@ -151,6 +152,7 @@ Rectangle {
                                     }
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                     font.bold: true
                                 }
                                 
@@ -158,6 +160,7 @@ Rectangle {
                                     text: modelData.unit || ""
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                     visible: !!modelData.unit
                                 }
                             }

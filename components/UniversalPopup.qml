@@ -274,6 +274,7 @@ Popup {
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                font.family: GcsStyle.PanelStyle.fontFamily
                 horizontalAlignment: Text.AlignHCenter
             }
 

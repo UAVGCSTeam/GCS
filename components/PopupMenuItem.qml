@@ -43,7 +43,7 @@ Button {
                 : GcsStyle.PanelStyle.textPrimaryColor)
         horizontalAlignment: Text.AlignLeft
         verticalAlignment: Text.AlignVCenter
-        font.pointSize: GcsStyle.PanelStyle.fontSizeXXS
+        font.pointSize: GcsStyle.PanelStyle.fontSizeXS
         anchors.left: parent.left
         anchors.leftMargin: 10
     }
@@ -75,6 +75,8 @@ Button {
             } else {
                 console.error("Component not ready for", text + ":", component.errorString())
             }
+        } else {
+            parent.clicked()
         }
     }
 }
