@@ -731,10 +731,10 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
         map.insert(hashKey, d);
         d->setSysID(sysID);
         d->setCompID(compID);
-        qDebug() << "[DroneController.cpp] Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
+        qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
         return d;
     }
-    qDebug() << "[DroneController.cpp] No drone found with sysID" << sysID <<  "and compID" << compID;
+    qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] No drone found with sysID" << sysID <<  "and compID" << compID;
     
     return {};
 }
