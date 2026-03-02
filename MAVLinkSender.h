@@ -46,6 +46,10 @@ public:
                     uint16_t command, float p1=0,
                     float p2=0,float p3=0,float p4=0,
                     float p5=0,float p6=0,float p7=0) const;
+    // Guided-mode position target helper (SET_POSITION_TARGET_GLOBAL_INT)
+    bool sendSetPositionTargetGlobalInt(uint8_t targetSys, uint8_t targetComp,
+                                        double lat_deg, double lon_deg,
+                                        float alt_m) const;
 
 private:
     qint64 writeToLink(const QByteArray& bytes) const;

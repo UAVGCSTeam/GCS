@@ -144,6 +144,7 @@ public:
      */
     Q_INVOKABLE bool sendTakeoffCmd(const QString &droneKeyOrAddr, bool takeoff);
 
+    Q_INVOKABLE bool sendToCoord(const QString droneName, float lat, float lon);
 
     /**
      * function sendGuidedMode()
@@ -253,8 +254,8 @@ signals:
     void dronesChanged();
 
 private:
-    QTimer simulationTimer;       // Timer for simulated movement
-    void simulateDroneMovement(); // Function to move a drone periodically
+    // QTimer simulationTimer;       // Timer for simulated movement
+    // void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
     DBManager &dbManager;
 

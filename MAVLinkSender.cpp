@@ -72,5 +72,48 @@ QByteArray MAVLinkSender::packCommandLong(uint8_t targetSys, uint8_t targetComp,
 }
 
 
+bool MAVLinkSender::sendSetPositionTargetGlobalInt(uint8_t targetSys, uint8_t targetComp,
+                                                   double lat_deg, double lon_deg,
+                                                   float alt_m) const {
+    if (!linkOpen()) return false;
+
+    mavlink_message_t msg{};
+
+    // ArduPilot expects lat/lon scaled by 1e7 in GLOBAL_INT frames
+    const int32_t lat_int = static_cast<int32_t>(lat_deg * 1e7);
+    const int32_t lon_int = static_cast<int32_t>(lon_deg * 1e7);
+
+    // Use only position (x,y,z); ignore velocity, acceleration, yaw, yaw_rate
+    const uint16_t typeMask =
+        (1 << 3) | (1 << 4) | (1 << 5) |  // ignore velocity
+        (1 << 6) | (1 << 7) | (1 << 8) |  // ignore acceleration
+        (1 << 9) | (1 << 10);             // ignore yaw, yaw rate
+
+    // time_boot_ms can be 0 for simple GCS implementations
+    const uint32_t time_boot_ms = 0;
+
+    mavlink_msg_set_position_target_global_int_pack(
+        /*sysid (GCS)*/ 255,
+        /*compid*/       190,
+        &msg,
+        time_boot_ms,
+        targetSys,
+        targetComp,
+        MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,
+        typeMask,
+        lat_int,
+        lon_int,
+        alt_m,
+        0.0f, 0.0f, 0.0f,   // vx, vy, vz (ignored)
+        0.0f, 0.0f, 0.0f,   // ax, ay, az (ignored)
+        0.0f, 0.0f          // yaw, yaw_rate (ignored)
+    );
+
+    uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+    const uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
+    return writeToLink(QByteArray(reinterpret_cast<char*>(buf), len)) > 0;
+}
+
+
 
 

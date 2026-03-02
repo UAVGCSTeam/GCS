@@ -19,9 +19,6 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         int sysID = -1;
         int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
-        // Should? work with other fields like xbee_id or drone_id if needed
-        // existing table can have added columns for the lati and longi stuff and input here
-        // TODO: Change this, add xbee id?
         
         if (index == 0) { 
             droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
@@ -38,9 +35,9 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     qDebug() << "[DroneController.cpp] Loaded" << droneList.size() << "drones from the database.";
 
     // --- Simulated Drone Movement ---
-    connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
-    simulationTimer.start(250); // Move once per second
-    qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
+    // connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
+    // simulationTimer.start(250); // Move once per second
+    // qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.
@@ -685,6 +682,39 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
 }
 
 
+bool DroneController::sendToCoord(const QString droneName, float lat, float lon) { 
+    QSharedPointer<DroneClass> drone = getDroneByName(droneName);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController.cpp::sendToCoord] unknown drone:" << drone;
+        return false;
+    }
+    qDebug() << "[DroneController.cpp::sendToCoord] Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
+    if (!mavTx_ || !mavTx_->linkOpen()) {
+        qWarning() << "[DroneController.cpp::sendToCoord] MAVLink sender not ready; call openUDP() or openUART() first";
+        return false;
+    }
+    
+    const uint8_t targetSysID  = drone->getSysID();
+    const uint8_t targetCompID = drone->getCompID();
+
+    // In GUIDED mode, Copter expects a position-target message (SET_POSITION_TARGET_GLOBAL_INT)
+    // rather than MAV_CMD_NAV_WAYPOINT via COMMAND_LONG.
+    bool response = mavTx_->sendSetPositionTargetGlobalInt(
+        targetSysID,
+        targetCompID,
+        static_cast<double>(lat),
+        static_cast<double>(lon),
+        5.0f   // altitude meters above home
+    );
+
+    qInfo() << "[DroneController.cpp::sendToCoord] SendToCoord:"
+    << drone->getName() << drone->getXbeeAddress()
+    << "sent=" << response;
+    return response;
+    return true;
+}
+
+
 bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode) {
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
@@ -863,7 +893,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         mavlink_msg_global_position_int_decode(&msg, &p);
 
         const double altMeters = static_cast<double>(p.relative_alt) / 1000.0;
-        qDebug() << "[DroneController.cpp::onMavlinkMessage] Altitude: " <<  altMeters << "m";
+        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Altitude: " <<  altMeters << "m";
         updateDroneTelem(drone, "lat",   p.lat/1e7);
         updateDroneTelem(drone, "lon",   p.lon/1e7);
         updateDroneTelem(drone, "alt_m", altMeters);
@@ -1025,34 +1055,33 @@ void moveDroneTowards(double &lat, double &lon, double targetLat, double targetL
     lon += dLon * ratio;
 }
 
-void DroneController::simulateDroneMovement()
-{
-    double step = 0.00005; // small step toward waypoint
+// void DroneController::simulateDroneMovement()
+// {
+//     double step = 0.00005; // small step toward waypoint
 
-    for (auto &drone : droneList)
-    {
-        if (!drone) continue;
+//     for (auto &drone : droneList) {
+//         if (!drone) continue;
 
-        double lat = drone->getLatitude();
-        double lon = drone->getLongitude();
+//         double lat = drone->getLatitude();
+//         double lon = drone->getLongitude();
 
-        // Get the next waypoint for this drone
-        QList<QVariantMap> wps;
-        if (droneWaypoints.contains(drone->getName()) && !droneWaypoints[drone->getName()].isEmpty())
-        {
-            wps = droneWaypoints[drone->getName()];
-        }
-        if (wps.size() < 2)
-            continue; // nothing to move toward
-        double targetLat = wps[1]["lat"].toDouble();
-        double targetLon = wps[1]["lon"].toDouble();
+//         // Get the next waypoint for this drone
+//         QList<QVariantMap> wps;
+//         if (droneWaypoints.contains(drone->getName()) && !droneWaypoints[drone->getName()].isEmpty())
+//         {
+//             wps = droneWaypoints[drone->getName()];
+//         }
+//         if (wps.size() < 2)
+//             continue; // nothing to move toward
+//         double targetLat = wps[1]["lat"].toDouble();
+//         double targetLon = wps[1]["lon"].toDouble();
 
-        // Move towards it
-        moveDroneTowards(lat, lon, targetLat, targetLon, step);
+//         // Move towards it
+//         moveDroneTowards(lat, lon, targetLat, targetLon, step);
 
-        // Update drone position
-        drone->setLatitude(lat);
-        drone->setLongitude(lon);
-        emit droneStateChanged(drone.data());
-    }
-}
+//         // Update drone position
+//         drone->setLatitude(lat);
+//         drone->setLongitude(lon);
+//         emit droneStateChanged(drone.data());
+//     }
+// }
