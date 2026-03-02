@@ -556,7 +556,11 @@ bool DroneController::openUdp(quint16 localPort,
                               const QString& remoteHost,
                               quint16 remotePort)
 {
-    if (!udp_) udp_ = std::make_unique<UdpLink>(this);
+    if (!udp_) {
+        udp_ = std::make_unique<UdpLink>(this);
+        connect(udp_.get(), &UdpLink::bytesReceived,
+                this,        &DroneController::onUdpBytesReceived);
+    }
     if (!mavTx_) mavTx_ = std::make_unique<MAVLinkSender>(udp_.get(), this);
 
     if (!mavRx_) {
@@ -575,6 +579,16 @@ bool DroneController::openUdp(quint16 localPort,
     qInfo() << "[DroneController] UDP opened on port" << localPort
             << "-> " << remoteHost << ":" << remotePort;
     return true;
+}
+
+void DroneController::onUdpBytesReceived(const QByteArray& bytes)
+{
+    const int size = bytes.size();
+    const int previewLen = qMin(size, 32);
+    QByteArray hex = bytes.left(previewLen).toHex(' ');
+    qDebug() << "[DroneController] UDP received" << size << "bytes"
+             << (previewLen < size ? QString("(first %1):").arg(previewLen) : ":")
+             << hex;
 }
 
 

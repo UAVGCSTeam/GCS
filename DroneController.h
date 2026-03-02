@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QHash>
+#include <QByteArray>
 #include <cstdint>
 
 #include "DroneClass.h"
@@ -20,6 +21,7 @@
 #include "MAVLinkReceiver.h"
 #include "MAVLinkSender.h"
 #include "UARTLink.h"
+#include "UdpLink.h"
 
 
 
@@ -153,6 +155,8 @@ private:
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
     void updateDroneTelem(uint8_t sysID, uint8_t compID, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
+
+    void onUdpBytesReceived(const QByteArray& bytes);
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
