@@ -286,7 +286,6 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 font.family: GcsStyle.PanelStyle.fontFamily
