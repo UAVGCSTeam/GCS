@@ -156,7 +156,7 @@ Item {
                     Image {
                         id: markerImage
                         readonly property bool isCurrentDroneSelected: droneIsSelected(modelData)
-                        source: isCurrentDroneSelected ? "qrc:/resources/droneMapIconSelected.svg" : "qrc:/resources/droneMapIconSVG.svg"
+                        source: isCurrentDroneSelected ? "qrc:/resources/droneMapIconSelected.png" : "qrc:/resources/droneMapIconUnselected.png"
                         width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
                         fillMode: Image.PreserveAspectFit
                     }
@@ -299,7 +299,7 @@ Item {
             followingDrone = true
             followDrone = activeDrone
             followDroneName = activeDrone.name
-            console.log("Starting to follow the drone!: ", followDroneName)
+            console.log("[QmlMap] Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
             console.warn("No drone is currently selected to toggle")
@@ -308,7 +308,7 @@ Item {
 
     function turnOffFollowDrone() {
         if (followingDrone){
-            console.log("Stop following current drone: ", followDroneName)
+            console.log("[QmlMap] Stop following current drone: ", followDroneName)
             followingDrone = false;
             followDrone = null
             followDroneName = ""

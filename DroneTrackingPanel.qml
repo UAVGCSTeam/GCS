@@ -68,7 +68,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneStatusDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -267,11 +267,10 @@ Rectangle {
                             id: statusIcon
                             source: {
                                 if (modelData.altitude > 0.05) {
-                                    return "qrc:/resources/droneStatusSVG.svg"
-                                    if (mainPanel.isIndexSelected(index)){
-                                        return "qrc:/resources/droneMapIconSelected.svg"
+                                    if (GcsStyle.PanelStyle.isLightTheme) {
+                                        return "qrc:/resources/droneStatusLightMode.svg"
                                     }
-                                    return "qrc:/resources/droneMapIcon.svg"
+                                    return "qrc:/resources/droneStatusDarkMode.svg"
                                 }
                                 return "qrc:/resources/grounded.png"
                             }
