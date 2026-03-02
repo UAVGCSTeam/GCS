@@ -158,6 +158,8 @@ Item {
                         source: "qrc:/resources/droneMapIconSVG.svg"
                         width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
                         fillMode: Image.PreserveAspectFit
+                        // Rotate icon to match drone heading (yaw from orientation.z, radians → degrees)
+                        rotation: modelData.orientation ? (modelData.orientation.z * 180 / Math.PI) : 0
                     }
 
                     DroneLabelComponent {
@@ -330,7 +332,7 @@ Item {
         target: droneController
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
-            droneMarkerView.model = droneController.drones;
+            droneMarkerView.model = droneController ? droneController.drones : [];
         }
     }
 

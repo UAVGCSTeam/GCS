@@ -868,13 +868,13 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
             // qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: stabalize (0)";
             break;
         case 3:
-            qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: auto (3)";
+            // qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: auto (3)";
             break;
         case 4:
-            qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: guided (4)";
+            // qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: guided (4)";
             break;
         case 5:
-            qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: loiter (5)";
+            // qInfo() << "DroneController.cpp::onMavlinkMessage] The current mode: loiter (5)";
             break;
         }
 
