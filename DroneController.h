@@ -21,7 +21,7 @@
 #include "MAVLinkReceiver.h"
 #include "MAVLinkSender.h"
 #include "UARTLink.h"
-#include "UdpLink.h"
+#include "UDPLink.h"
 
 
 
@@ -64,7 +64,7 @@ extern "C" {
 
 
 class UARTLink;
-class UdpLink;
+class UDPLink;
 class MAVLinkSender;
 class MAVLinkReceiver;
 
@@ -260,7 +260,7 @@ private:
     DBManager &dbManager;
 
     std::unique_ptr<UARTLink>    uartDevice_;
-    std::unique_ptr<UdpLink>     udp_;
+    std::unique_ptr<UDPLink>     udp_;
     std::unique_ptr<MAVLinkSender> mavTx_;
     std::unique_ptr<MAVLinkReceiver> mavRx_;
     QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
@@ -269,8 +269,28 @@ private:
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
     void updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value);
-    void onTelemetry(const QString& name, double lat, double lon);
 
+    /**
+     * function onUdpBytesReceived()
+     * @brief FOR DEBUGGING: Handles raw UDP payloads received from the active link.
+     *
+     * This function is invoked when a UDP datagram is received. It logs
+     * the total number of bytes received and prints a hexadecimal preview
+     * of the payload (up to the first 32 bytes) for diagnostic purposes.
+     *
+     * Behavior:
+     * - Computes the total payload size.
+     * - Extracts up to the first 32 bytes.
+     * - Converts the preview portion to a space-separated hexadecimal string.
+     * - Emits a debug log entry containing the size and preview data.
+     *
+     * @param bytes  Raw UDP datagram payload.
+     *
+     * @note This function performs logging only and does not parse or process
+     *       the payload contents.
+     * @note Logging large volumes of UDP traffic may impact performance
+     *       when debug output is enabled.
+     */
     void onUdpBytesReceived(const QByteArray& bytes);
 
     // Trying out caching QVariantList for QML property usage

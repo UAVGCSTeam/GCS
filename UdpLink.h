@@ -6,10 +6,10 @@
 #include <QDebug>
 #include <QNetworkDatagram>
 
-class UdpLink : public QObject {
+class UDPLink : public QObject {
     Q_OBJECT
 public:
-    explicit UdpLink(QObject* parent = nullptr);
+    explicit UDPLink(QObject* parent = nullptr);
 
     /**
      * function open()

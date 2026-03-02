@@ -3,7 +3,7 @@
 #include <QByteArray>
 #include <memory>
 #include "UARTLink.h"
-#include "UdpLink.h"
+#include "UDPLink.h"
 
 extern "C" {
 #if __has_include(<mavlink/common/mavlink.h>)

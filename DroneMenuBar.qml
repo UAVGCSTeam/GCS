@@ -184,7 +184,6 @@ Rectangle {
                     ? "Are you sure you want to arm the UAV, " + activeDrone.name + "?"
                     : "NO UAV SELECTED")
         onAccepted: {
-            // TEMP: hardcode a target; replace with your real XBee address or ID later
             const targetXbeeAddress = activeDrone.xbeeAddress
             const ok = droneController.sendArm(targetXbeeAddress, true)   // true = arm, false = disarm
             // console.log("[DroneMenuBar.qml] Armed: ", targetXbeeAddress, ok)
@@ -199,7 +198,6 @@ Rectangle {
                     ? "Are you sure you want to takeoff: " + activeDrone.name + "?"
                     : "NO UAV SELECTED")
         onAccepted: {
-            // TEMP: hardcode a target; replace with your real XBee address or ID later
             const targetXbeeAddress = activeDrone.xbeeAddress
             const ok = droneController.sendTakeoffCmd(targetXbeeAddress, true)   // true = arm, false = disarm
             // console.log("[DroneMenuBar.qml] Takeoff Response:", targetXbeeAddress, ok)
@@ -214,7 +212,6 @@ Rectangle {
                     ? "Are you sure you want to set: " + activeDrone.name + " to guided mode?"
                     : "NO UAV SELECTED")
         onAccepted: {
-            // TEMP: hardcode a target; replace with your real XBee address or ID later
             const targetXbeeAddress = activeDrone.xbeeAddress
             const ok = droneController.sendGuidedMode(targetXbeeAddress, true)   // true = arm, false = disarm
             // console.log("[DroneMenuBar.qml] Guided mode Response:", targetXbeeAddress, ok)

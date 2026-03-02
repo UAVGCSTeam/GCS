@@ -32,8 +32,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         requirements.txt
         UARTLink.cpp
         UARTLink.h
-        UdpLink.cpp
-        UdpLink.h
+        UDPLink.cpp
+        UDPLink.h
         MAVLinkSender.cpp
         MAVLinkSender.h
         MAVLinkReceiver.h
