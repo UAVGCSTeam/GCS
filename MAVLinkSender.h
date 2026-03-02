@@ -42,7 +42,10 @@ public:
     explicit MAVLinkSender(UdpLink*  link, QObject* parent=nullptr);
     bool linkOpen() const;
     bool sendTelemRequest(uint8_t sys, uint8_t comp, int command) const;
-    bool sendCommand(uint8_t sysID, uint8_t compID, int command, bool p1) const;
+    bool sendCommand(uint8_t sysID, uint8_t compID,
+                    uint16_t command, float p1=0,
+                    float p2=0,float p3=0,float p4=0,
+                    float p5=0,float p6=0,float p7=0) const;
 
 private:
     qint64 writeToLink(const QByteArray& bytes) const;

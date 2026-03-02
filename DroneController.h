@@ -83,10 +83,104 @@ public:
                              const QString &remoteHost = QStringLiteral("127.0.0.1"),
                              quint16 remotePort = 14550);
 
-    // MAVLink Commands 
+    
+    /**
+     * function sendArm() 
+     * @brief Sends an arm or disarm command to a drone via MAVLink.
+     *
+     * Resolves the specified drone using its XBee address (or key), constructs
+     * a MAV_CMD_COMPONENT_ARM_DISARM command, and transmits it over the active
+     * MAVLink/XBee link.
+     *
+     * @param droneKeyOrAddr  The drone identifier or XBee address used to resolve
+     *                        the target drone.
+     * @param arm             If true, sends an ARM command; if false, sends DISARM.
+     *
+     * @return true if the command was successfully written to the MAVLink link;
+     *         false if the drone could not be resolved, the MAVLink sender is not
+     *         initialized, the link is not open, or transmission fails.
+     *
+     * @note Requires a valid and open MAVLink link (openUART() must be called first).
+     */
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
 
+
     /**
+     * function sendTakeoffCmd()
+     * @brief Sends a MAVLink takeoff command to the specified drone.
+     *
+     * This function issues a MAV_CMD_NAV_TAKEOFF command to the target drone,
+     * instructing it to take off to a predefined altitude (5 meters above home).
+     * The drone is identified using the provided key or XBee address.
+     *
+     * Behavior:
+     * - If @p takeoff is false, the function performs no action and returns true.
+     * - If the drone cannot be resolved, a warning is logged and false is returned.
+     * - If the MAVLink transmitter is not initialized or the link is not open,
+     *   a warning is logged and false is returned.
+     * - Otherwise, a takeoff command is sent via MAVLink.
+     *
+     * Command parameters:
+     * - pitch = 0.0f
+     * - yaw   = 0.0f
+     * - latitude/longitude = 0.0f (use current position for ArduCopter)
+     * - altitude = 5.0f (meters above home position)
+     *
+     * @param droneKeyOrAddr  Identifier used to locate the drone (e.g., XBee address).
+     * @param takeoff         If true, a takeoff command is sent. If false,
+     *                        no command is sent and the function returns true.
+     *
+     * @return true if:
+     *         - @p takeoff is false, or
+     *         - the takeoff command was successfully queued/sent.
+     *         Returns false if the drone was not found, the link is not open,
+     *         or the send operation failed.
+     *
+     * @note Requires a valid and open MAVLink transport (e.g., openUDP() or openUART()).
+     * @note The altitude is hardcoded to 5 meters AGL (above home).
+     *
+     * @warning No pre-arm checks or flight mode validation are performed here.
+     *          The flight controller must be armed and in a mode that permits takeoff.
+     */
+    Q_INVOKABLE bool sendTakeoffCmd(const QString &droneKeyOrAddr, bool takeoff);
+
+
+    /**
+     * function sendGuidedMode()
+     * @brief Sends a MAVLink command to set the target drone to Guided mode.
+     *
+     * This function resolves a drone instance using the provided identifier
+     * (XBeeAddress or key), verifies that the MAVLink transmission interface
+     * is ready, and sends a MAV_CMD_DO_SET_MODE command to the target system.
+     *
+     * The command is sent with:
+     * - param1 = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+     * - param2 = 4.0f (custom mode value corresponding to GUIDED)
+     *
+     * If the drone cannot be found or the MAVLink sender is not initialized
+     * or open, the function logs a warning and returns false.
+     *
+     * @param droneKeyOrAddr   Identifier used to locate the drone (e.g., XBee address).
+     * @param enableGuidedMode Boolean flag indicating intent to enable or disable
+     *                         Guided mode. Currently not used in command construction;
+     *                         the function always sends a request to enable GUIDED mode.
+     *
+     * @return true if the command was successfully queued/sent by the MAVLink
+     *         transmitter; false if the drone was not found, the link is not open,
+     *         or the send operation failed.
+     *
+     * @note Requires a valid and open MAVLink transport (e.g., openUDP() or openUART()).
+     * @note The GUIDED mode value (4.0f) assumes ArduPilot-compatible custom modes.
+     *       Mode mappings may differ across firmware types.
+     *
+     * @warning The @p enableGuidedMode parameter is not currently used to toggle
+     *          modes and does not disable Guided mode when false.
+     */
+    Q_INVOKABLE bool sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode);
+
+
+    /**
+     * function requestTelem()
      * @brief Requests periodic telemetry messages (streamed) from the target vehicle.
      *
      * Sends MAV_CMD_SET_MESSAGE_INTERVAL commands to configure the autopilot
