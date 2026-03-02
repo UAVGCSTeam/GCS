@@ -1,6 +1,5 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
-import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
 import "qrc:/gcsStyle" as GcsStyle
@@ -138,12 +137,6 @@ Window {
     }
 
     Component.onCompleted: {
-        // Once the component is fully loaded, run through our js file to grab the needed info
-        var coords = Coordinates.getAllCoordinates();
-        for (var i = 0; i < 3; i++) {
-            var coord = coords[i]
-            mapController.setLocationMarking(coord.lat, coord.lon)
-        }
         droneController.openUdp(14550, "127.0.0.1", 14550)
         // droneController.openUART("/dev/ttys005", 57600)
         // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
