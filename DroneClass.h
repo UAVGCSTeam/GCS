@@ -94,10 +94,10 @@ public:
     void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
 
     int      getSysID() const { return m_sysID; }
-    void      setSysID(bool sysID) { m_sysID = sysID; }
+    void      setSysID(int sysID) { m_sysID = sysID; }
 
     int      getCompID() const { return m_compID; }
-    void      setCompID(bool compID) { m_compID = compID; }
+    void      setCompID(int compID) { m_compID = compID; }
 
 
     // Adapters expected by DroneController (to unblock compile)
