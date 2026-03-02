@@ -11,11 +11,11 @@ bool UdpLink::open(quint16 localPort,
     remoteHost_ = remoteHost;
     remotePort_ = remotePort;
     if (!socket_.bind(QHostAddress::AnyIPv4, localPort)) {
-        qWarning() << "[UdpLink] Bind failed on port" << localPort << ":" << socket_.errorString();
+        qWarning() << "[UdpLink::open] Bind failed on port" << localPort << ":" << socket_.errorString();
         emit linkError(QString("Bind failed: %1").arg(socket_.errorString()));
         return false;
     }
-    qInfo() << "[UdpLink] Bound to port" << localPort << "- receiving on 0.0.0.0:" << localPort
+    qInfo() << "[UdpLink::open] Bound to port" << localPort << "- receiving on 0.0.0.0:" << localPort
             << "(outgoing ->" << remoteHost_.toString() << ":" << remotePort_ << ")";
     return true;
 }
@@ -23,20 +23,29 @@ bool UdpLink::open(quint16 localPort,
 bool UdpLink::listen(quint16 port) {
     if (socket_.state() == QAbstractSocket::BoundState) socket_.close();
     if (!socket_.bind(QHostAddress::AnyIPv4, port)) {
-        qWarning() << "[UdpLink] Listen bind failed on port" << port << ":" << socket_.errorString();
+        qWarning() << "[UdpLink::listen] Listen bind failed on port" << port << ":" << socket_.errorString();
         emit linkError(QString("Bind failed: %1").arg(socket_.errorString()));
         return false;
     }
-    qInfo() << "[UdpLink] Listening on port" << port << "(0.0.0.0:" << port << ")";
+    qInfo() << "[UdpLink::listen] Listening on port" << port << "(0.0.0.0:" << port << ")";
     return true;
 }
 
 void UdpLink::close() { socket_.close(); }
 
 qint64 UdpLink::writeBytes(const QByteArray& b) {
-    if (socket_.state() != QAbstractSocket::BoundState) return -1;
+    if (socket_.state() != QAbstractSocket::BoundState) {
+        qWarning() << "[UdpLink] writeBytes: socket not bound, state=" << socket_.state();
+        return -1;
+    }
     const qint64 n = socket_.writeDatagram(b, remoteHost_, remotePort_);
-    if (n == -1) emit linkError(socket_.errorString());
+    if (n == -1) {
+        qWarning() << "[UdpLink] writeDatagram failed:" << socket_.errorString()
+                   << "to" << remoteHost_.toString() << ":" << remotePort_;
+        emit linkError(socket_.errorString());
+    } else {
+        qDebug() << "[UdpLink] sent" << n << "bytes to" << remoteHost_.toString() << ":" << remotePort_;
+    }
     return n;
 }
 

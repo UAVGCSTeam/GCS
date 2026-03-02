@@ -6,17 +6,18 @@
 
 
 MAVLinkSender::MAVLinkSender(UARTLink* link, QObject* p) : QObject(p), UARTLink_(link) {}
-MAVLinkSender::MAVLinkSender(UdpLink*  link, QObject* p) : QObject(p), UDPLink_(link)  {}
+MAVLinkSender::MAVLinkSender(UdpLink*  link, QObject* p) : QObject(p), UDPLink_(link) {}
 
 bool MAVLinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const {
     if(!linkOpen()) return false;
+    qDebug() << "[MAVLinkSender.cpp::sendTelemRequest] requesting from sysID" << sysID << "compID" << compID;
     QByteArray bytes = packCommandLong(
         sysID,
         compID,
         MAV_CMD_SET_MESSAGE_INTERVAL,        // 511
         // 0,                                   // confirmation = 0
         command,                             // param1 = message ID
-        500000,                              // param2 = interval in µs (500000 µs = 2 Hz)
+        500000,                              // param2 = interval in µs (500000 µs = 2 Hz = 500 ms)
         0, 0, 0, 0, 0                        // params 3–7 unused
     );
     return writeToLink(bytes) > 0;
@@ -52,14 +53,14 @@ qint64 MAVLinkSender::writeToLink(const QByteArray& bytes) const {
 }
 
 
-QByteArray MAVLinkSender::packCommandLong(uint8_t sys, uint8_t comp,
+QByteArray MAVLinkSender::packCommandLong(uint8_t targetSys, uint8_t targetComp,
                                           uint16_t command, float p1,
                                           float p2,float p3,float p4,
                                           float p5,float p6,float p7) const {
     mavlink_message_t msg;
     mavlink_command_long_t cmd{};
-    cmd.target_system = sys;
-    cmd.target_component = comp;
+    cmd.target_system = targetSys;
+    cmd.target_component = targetComp;
     cmd.command = command;
     cmd.confirmation = 0;
     cmd.param1=p1; cmd.param2=p2; cmd.param3=p3; cmd.param4=p4;

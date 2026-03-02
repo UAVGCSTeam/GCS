@@ -573,10 +573,10 @@ bool DroneController::openUdp(quint16 localPort,
 
     const bool ok = udp_->open(localPort, QHostAddress(remoteHost), remotePort);
     if (!ok) {
-        qWarning() << "[DroneController] Failed to open UDP on port" << localPort;
+        qWarning() << "[DroneController.cpp] Failed to open UDP on port" << localPort;
         return false;
     }
-    qInfo() << "[DroneController] UDP opened on port" << localPort
+    qInfo() << "[DroneController.cpp::openUDP] UDP opened on port" << localPort
             << "-> " << remoteHost << ":" << remotePort;
     return true;
 }
@@ -586,9 +586,9 @@ void DroneController::onUdpBytesReceived(const QByteArray& bytes)
     const int size = bytes.size();
     const int previewLen = qMin(size, 32);
     QByteArray hex = bytes.left(previewLen).toHex(' ');
-    qDebug() << "[DroneController] UDP received" << size << "bytes"
-             << (previewLen < size ? QString("(first %1):").arg(previewLen) : ":")
-             << hex;
+    // qDebug() << "[DroneController.cpp::onUdpBytesReceived] UDP received" << size << "bytes"
+             // << (previewLen < size ? QString("(first %1):").arg(previewLen) : ":")
+             // << hex;
 }
 
 
@@ -610,10 +610,10 @@ bool DroneController::openUART(const QString& port, int baud)
 
     const bool ok = uartDevice_->open(port, baud);
     if (!ok) {
-        qWarning() << "[DroneController] Failed to open UART port" << port << "baud" << baud;
+        qWarning() << "[DroneController.cpp::openUART] Failed to open UART port" << port << "baud" << baud;
         return false;
     }
-    qInfo()  << "[DroneController] UART opened on" << port << "@" << baud;
+    qInfo()  << "[DroneController.cpp::openUART] UART opened on" << port << "@" << baud;
     return true;
 }
 
@@ -643,12 +643,12 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
-        qWarning() << "[DroneController] sendArm: unknown drone/address:" << droneKeyOrAddr;
+        qWarning() << "[DroneController.cpp::sendArm] sendArm: unknown drone/address:" << droneKeyOrAddr;
         return false;
     }
 
     if (!mavTx_ || !mavTx_->linkOpen()) {
-        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        qWarning() << "[DroneController.cpp::sendArm] MAVLink sender not ready; call openXbee() first";
         return false;
     }
 
@@ -661,7 +661,7 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
     bool response = mavTx_->sendCommand(targetSys, targetComp,
                                 MAV_CMD_COMPONENT_ARM_DISARM, arm ? 1.0f : 0.0f);
 
-    qInfo() << "[DroneController] ARM" << (arm ? "ON" : "OFF")
+    qInfo() << "[DroneController.cpp::sendArm] ARM" << (arm ? "ON" : "OFF")
             << "->" << drone->getName() << drone->getXbeeAddress()
             << "sent=" << response;
     return response;
@@ -670,31 +670,11 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 
 
 
-/**
- * @brief Requests periodic telemetry messages (streamed) from the target vehicle.
- *
- * Sends MAV_CMD_SET_MESSAGE_INTERVAL commands to configure the autopilot
- * to stream selected MAVLink telemetry messages at 2 Hz (500,000 µs interval).
- *
- * Each message is requested using COMMAND_LONG with:
- *   param1 = message ID
- *   param2 = interval in microseconds
- *
- * @param targetSysID     MAVLink system ID of the target vehicle.
- * @param targetCompID  MAVLink component ID (typically MAV_COMP_ID_AUTOPILOT1).
- *
- * @return true if all message interval requests were successfully written
- *         to the link; false if the link is null, not open, or any write fails.
- *
- * @note Requires a valid and open MAVLink link.
- * @note The vehicle will continue streaming messages at the requested rate
- *       until the interval is changed or the vehicle reboots.
- */
-bool DroneController::requestTelem(uint8_t targetSysID, uint8_t targetCompID) {
-    /**
-     * TODO: (SIM) TEST THIS WITH SIMULATION BEFORE PUTTING ON MAIN BRANCH
-     */
-    bool response = false;
+bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
+    if (drone.isNull()) {
+        qWarning() << "[DroneController.cpp::requestTelem] drone is null";
+        return false;
+    }
 
     const QList<int> requestDataCommands = {
         MAVLINK_MSG_ID_GLOBAL_POSITION_INT,
@@ -703,20 +683,24 @@ bool DroneController::requestTelem(uint8_t targetSysID, uint8_t targetCompID) {
     };
 
     if (!mavTx_ || !mavTx_->linkOpen()) {
-        qWarning() << "[DroneController] MAVLink sender not ready; call openXbee() first";
+        qWarning() << "[DroneController.cpp::requestTelem] MAVLink sender not ready; call openUdp() (or openUART()) first";
         return false;
     }
 
+    uint8_t targetSysID = drone->getSysID();
+    uint8_t targetCompID = drone->getCompID();
+    qInfo() << "[DroneController.cpp::requestTelem] requesting streams for" << drone->getName()
+    << "target sysid=" << targetSysID << "compid=" << targetCompID;
+    
+    bool response = true;
     for (int cmd : requestDataCommands) {
-        qInfo() << "COMMAND: " << cmd;
-        response = mavTx_->sendTelemRequest(
-            targetSysID,
-            targetCompID,
-            cmd
-        );
-        if (!response) return response;
+        if (!mavTx_->sendTelemRequest(targetSysID, targetCompID, cmd)) {
+            response = false;
+            qInfo() << "[DroneController.cpp::requestTelem] Something went wrong requesting data";
+            break;
+        }
     }
-
+    qInfo() << "[DroneController.cpp::requestTelem] Data requested";
     return response;
 }
 
@@ -742,10 +726,15 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
     if (!list.isEmpty()) {
         // TEMP heuristic: bind first drone we have (until you provide a real mapping)
         auto d = list.first();
+        if (d->getSysID() == 1) 
+        return d;
         map.insert(hashKey, d);
-        qInfo() << "[DroneController] Bound sysID" << sysID << "to drone" << d->getName();
+        d->setSysID(sysID);
+        d->setCompID(compID);
+        qDebug() << "[DroneController.cpp] Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
         return d;
     }
+    qDebug() << "[DroneController.cpp] No drone found with sysID" << sysID <<  "and compID" << compID;
     
     return {};
 }
@@ -755,8 +744,6 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
 
 void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 {
-    qInfo() << "[DroneController::onMavlinkMessage] received message";
-    
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
     mavlink_message_t msg{};
     msg.sysid = m.sysid;
@@ -764,98 +751,124 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     msg.msgid = static_cast<uint32_t>(m.msgid);
     msg.len   = static_cast<uint8_t>(m.payload.size());
     memcpy(_MAV_PAYLOAD_NON_CONST(&msg), m.payload.constData(), msg.len);
+    uint8_t sysID = msg.sysid;
+    uint8_t compID = msg.compid; 
+    // qInfo() << "[DroneController.cpp::onMavlinkMessage] received message";
+    // qInfo() << "[DroneController.cpp::onMavlinkMessage] sysID: " << sysID;
+    // qInfo() << "[DroneController.cpp::onMavlinkMessage] compID: " << compID;
+    // qInfo() << "[DroneController.cpp::onMavlinkMessage] Len: " << msg.len;
+    // qInfo() << "[DroneController.cpp::onMavlinkMessage] ID:  " << msg.msgid;
+    // qInfo() << "[DroneController.cpp::onMavlinkMessage] Orientation: ";
+    // qInfo() << droneList[0]->getName() << ": " << droneList[0]->getOrientation();
 
-    uint8_t sysid = msg.sysid; 
-    qInfo() << "[DroneController::onMavlinkMessage] received message";
-    qInfo() << "[DroneController.cpp] " << msg.sysid;
-    qInfo() << "[DroneController.cpp] " << msg.compid;
-    qInfo() << "[DroneController.cpp] " << msg.len;
-    qInfo() << "[DroneController.cpp] [DroneController::onMavlinkMessage] Orientation: ";
-    qInfo() << droneList[0]->getName() << ": " << droneList[0]->getOrientation();
-
-    uint8_t sysID = msg.sysid; 
-    uint8_t compID = msg.sysid; 
+    auto drone = droneForSysId_lazyBind(sysID, compID, droneList, dronesMap_);
+    if (drone.isNull()) {
+        qDebug() << "[DroneController.cpp::onMavlinkMessage] NULL Drone";
+        return;
+    }
 
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
-        // qInfo() << "[DroneController.cpp] Got a heartbeat";
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] Got a heartbeat";
         mavlink_heartbeat_t hb;
         mavlink_msg_heartbeat_decode(&msg, &hb);
-        updateDroneTelem(sysID, compID, "connected", true);
-        updateDroneTelem(sysID, compID, "base_mode",   static_cast<int>(hb.base_mode));
-        updateDroneTelem(sysID, compID, "custom_mode", static_cast<int>(hb.custom_mode));
+        updateDroneTelem(drone, "connected", true);
+        updateDroneTelem(drone, "base_mode",   static_cast<int>(hb.base_mode));
+        updateDroneTelem(drone, "custom_mode", static_cast<int>(hb.custom_mode));
+        // Request telem streams once per drone when we see first heartbeat (not on every message)
+        if (!drone->getRequestedTelem()) {
+            bool ok = requestTelem(drone);
+            if (ok) drone->setRequestedTelem(true);
+            else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting telem";
+        }
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] Got system status";
         mavlink_sys_status_t s;
         mavlink_msg_sys_status_decode(&msg, &s);
-        updateDroneTelem(sysID, compID, "battery_v",   s.voltage_battery/1000.0);
-        updateDroneTelem(sysID, compID, "battery_pct", static_cast<int>(s.battery_remaining));
+        updateDroneTelem(drone, "battery_v",   s.voltage_battery/1000.0);
+        updateDroneTelem(drone, "battery_pct", static_cast<int>(s.battery_remaining));
         break;
     }
     case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] Got position";
         mavlink_global_position_int_t p;
         mavlink_msg_global_position_int_decode(&msg, &p);
-        updateDroneTelem(sysID, compID, "lat",   p.lat/1e7);
-        updateDroneTelem(sysID, compID, "lon",   p.lon/1e7);
-        // updateDroneTelem(sysID, compID, "alt_m", p.alt/1000.0);
-        updateDroneTelem(sysID, compID, "alt_m", p.relative_alt / 1000.0);
+        updateDroneTelem(drone, "lat",   p.lat/1e7);
+        updateDroneTelem(drone, "lon",   p.lon/1e7);
+        // updateDroneTelem(drone, "alt_m", p.alt/1000.0);
+        updateDroneTelem(drone, "alt_m", p.relative_alt / 1000.0);
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
-        // qInfo() << "[DroneController.cpp] Got attitude";
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] Got attitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
-        updateDroneTelem(sysID, compID, "roll", a.roll);
-        updateDroneTelem(sysID, compID, "pitch", a.pitch);
-        updateDroneTelem(sysID, compID, "yaw",  a.yaw);
+        updateDroneTelem(drone, "roll", a.roll);
+        updateDroneTelem(drone, "pitch", a.pitch);
+        updateDroneTelem(drone, "yaw",  a.yaw);
+        break;
+    }
+    case MAVLINK_MSG_ID_COMMAND_LONG: {
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] Got COMMAND_LONG (76)";
+        mavlink_command_long_t cmd;
+        mavlink_msg_command_long_decode(&msg, &cmd);
+        qInfo().nospace()
+            << "[MAVRX] COMMAND_LONG msgid=" << MAVLINK_MSG_ID_COMMAND_LONG
+            << " command=" << cmd.command
+            << " params=[" << cmd.param1 << ", " << cmd.param2 << ", "
+            << cmd.param3 << ", " << cmd.param4 << ", " << cmd.param5 << ", "
+            << cmd.param6 << ", " << cmd.param7 << "]"
+            << " (target_sys=" << static_cast<int>(cmd.target_system)
+            << ", target_comp=" << static_cast<int>(cmd.target_component)
+            << ", confirmation=" << static_cast<int>(cmd.confirmation) << ")";
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_ACK: {
-        // qInfo() << "[DroneController.cpp] Got msg id ack";
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] Got msg id ack";
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
         qInfo().nospace()
-            << "[MAVRX] COMMAND_ACK cmd=" << ack.command
+            << "[MAVRX] COMMAND_ACK (for COMMAND_LONG, msgid=76) cmd=" << ack.command
             << " result=" << static_cast<int>(ack.result)
             << " (sysID=" << static_cast<int>(sysID)
             << ", compID=" << static_cast<int>(compID) << ")";
 
-        updateDroneTelem(sysID, compID, "last_command", static_cast<int>(ack.command));
-        updateDroneTelem(sysID, compID, "last_result",  static_cast<int>(ack.result));
+        updateDroneTelem(drone, "last_command", static_cast<int>(ack.command));
+        updateDroneTelem(drone, "last_result",  static_cast<int>(ack.result));
         break;
     }
     default:
+        qDebug() << "[DroneController.cpp::onMavlinkMessage] unexpected message type: " << msg.msgid;
         break;
     }
 }
 
 
-void DroneController::updateDroneTelem(uint8_t sysID, uint8_t compID, const QString& field, const QVariant& value)
+void DroneController::updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value)
 {
-    auto d = droneForSysId_lazyBind(sysID, compID, droneList, dronesMap_);
-    if (d.isNull()) return;
-
+    // qDebug() << "[DroneController.cpp::updateDroneTelem] Updating drone: " << drone->getName();
     if (field == "connected") {
-        d->setConnected(value.toBool());                 // if you have it
+        drone->setConnected(value.toBool());                 // if you have it
     } else if (field == "battery_v") {
-        d->setBatteryVoltage(value.toDouble());          // or setBatteryLevel if that's what you track
+        drone->setBatteryVoltage(value.toDouble());          // or setBatteryLevel if that's what you track
     } else if (field == "battery_pct") {
-        d->setBatteryLevel(value.toInt());               // 0–100
+        drone->setBatteryLevel(value.toInt());               // 0–100
     } else if (field == "lat") {
-        d->setLatitude(value.toDouble());
+        drone->setLatitude(value.toDouble());
     } else if (field == "lon") {
-        d->setLongitude(value.toDouble());
+        drone->setLongitude(value.toDouble());
     } else if (field == "alt_m") {
-        d->setAltitude(value.toDouble());
+        drone->setAltitude(value.toDouble());
     } else if (field == "roll") {
-        d->setRoll(value.toDouble());                    // if you surface attitude
+        drone->setRoll(value.toDouble());                    // if you surface attitude
     } else if (field == "pitch") {
-        d->setPitch(value.toDouble());
+        drone->setPitch(value.toDouble());
     } else if (field == "yaw") {
-        d->setYaw(value.toDouble());
+        drone->setYaw(value.toDouble());
     } else if (field == "base_mode" || field == "custom_mode") {
-        d->setModeField(field, value);                   // generic hook if you prefer
+        drone->setModeField(field, value);                   // generic hook if you prefer
     }
 
     emit dronesChanged();

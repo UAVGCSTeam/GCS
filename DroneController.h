@@ -85,9 +85,29 @@ public:
 
     // MAVLink Commands 
     Q_INVOKABLE bool sendArm(const QString &droneKeyOrAddr, bool arm = true);
-    Q_INVOKABLE bool requestTelem(uint8_t targetSysID, uint8_t targetCompID);
 
-
+    /**
+     * @brief Requests periodic telemetry messages (streamed) from the target vehicle.
+     *
+     * Sends MAV_CMD_SET_MESSAGE_INTERVAL commands to configure the autopilot
+     * to stream selected MAVLink telemetry messages at 2 Hz (500,000 µs interval).
+     *
+     * Each message is requested using COMMAND_LONG with:
+     *   param1 = message ID
+     *   param2 = interval in microseconds
+     *
+     * @param targetSysID     MAVLink system ID of the target vehicle.
+     * @param targetCompID  MAVLink component ID (typically MAV_COMP_ID_AUTOPILOT1).
+     *
+     * @return true if all message interval requests were successfully written
+     *         to the link; false if the link is null, not open, or any write fails.
+     *
+     * @note Requires a valid and open MAVLink link.
+     * @note The vehicle will continue streaming messages at the requested rate
+     *       until the interval is changed or the vehicle reboots.
+     */
+    Q_INVOKABLE bool requestTelem(QSharedPointer<DroneClass> drone);
+    
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
@@ -153,7 +173,7 @@ private:
     
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
-    void updateDroneTelem(uint8_t sysID, uint8_t compID, const QString& field, const QVariant& value);
+    void updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value);
     void onTelemetry(const QString& name, double lat, double lon);
 
     void onUdpBytesReceived(const QByteArray& bytes);
