@@ -6,7 +6,7 @@
         <file>MapScaleBarIndicator.qml</file>
         <file>DroneTrackingPanel.qml</file>
         <file>DroneMenuBar.qml</file>
-        <file>manageDroneWindow.qml</file>
+        <file>coordinateNavigationWindow.qml</file>
         <file>goHomeLandingWindow.qml</file>
         <file>DroneLabelComponent.qml</file>
         <file>TelemetryPanel.qml</file>
@@ -21,8 +21,8 @@
     <qresource prefix="/resources">
         <file>mappin.svg</file>
         <file>cppLOGO.svg</file>
-        <file>droneStatusSVG.svg</file>
-        <file>droneStatusSVGDarkMode.svg</file>
+        <file>droneStatusLightMode.svg</file>
+        <file>droneStatusDarkMode.svg</file>
         <file>warning.png</file>
         <file>arrow-down.png</file>
         <file>arrow-up.png</file>
@@ -31,7 +31,8 @@
         <file>droneSVGDarkMode.svg</file>
         <file>fireSVG.svg</file>
         <file>fireSVGDarkMode.svg</file>
-        <file>droneMapIconSVG.svg</file>
+        <file>droneMapIconUnselected.png</file>
+        <file>droneMapIconSelected.png</file>
         <file>xIcon.png</file>
         <file>plusIcon.png</file>
         <file>discoveryPanelIcon.svg</file>
