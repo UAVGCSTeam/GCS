@@ -75,7 +75,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
         "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
     unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-        "u2", "fc2", "uavtype2", -1, -1, true, nullptr));
+        "u2", "fc2", "uavtype2", -1, -1, false, nullptr));
     unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
         "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
     }
@@ -249,7 +249,12 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
     }
 }
 
-// unknonwn drone list updaters
+// drone list updaters
+void DroneController::loadDrones()
+{
+    rebuildVariant();
+    emit dronesChanged();
+}
 void DroneController::loadUnknownDrones()
 {
     rebuildUnknownVariant();
@@ -265,6 +270,36 @@ void DroneController::setUnknownDroneIgnored(const QString &uid, bool ignored)
             return;
         }
     }
+}
+void DroneController::acceptUnknownDrone(const QString &uid)
+{
+    // finds drone by uid, if not found, then sends warning and doesn't log to db
+    QSharedPointer<UnknownDroneClass> found;
+    for (const auto &unknownDrone : unknownDroneList) {
+        if (unknownDrone && unknownDrone->getUid() == uid) {
+            found = unknownDrone;
+            break;
+        }
+    }
+
+    if (!found) {
+        qWarning() << "acceptUnknownDrone: unknown drone not found for uid: " << uid;
+        return;
+    }
+
+    // these are just to easily identify the newly added drones since we don't have other identifers
+    const QString role = found->getUavType().isEmpty() ? QStringLiteral("Unknown") : found->getUavType();
+    const QString name = role + QStringLiteral(" ") + uid;
+    // uid as placeholder since we won't know xbeeAddress yet
+    const QString xbeeID = uid;
+    const QString xbeeAddress = uid;
+
+    // battery, latitutde, longitude, altitude all unknown (-1)
+    createDrone(name,role,xbeeID,xbeeAddress,-1,-1,-1,-1,nullptr);
+    removeUnknownDrones(uid);
+
+    rebuildVariant();
+    emit dronesChanged();
 }
 void DroneController::removeUnknownDrones(const QString &uid)
 {

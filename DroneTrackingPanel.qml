@@ -73,7 +73,10 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {mainPanel.activePanel = "drones"}
+                        onClicked: {
+                            mainPanel.activePanel = "drones"
+                            droneController.loadDrones()
+                        }
                     }
                 }
 
@@ -318,6 +321,7 @@ Rectangle {
                     function onDronesChanged() {
                         // TODO: check to see if telemetry data populates during simulation with ardupilot
                         droneListView.model = droneController ? droneController.drones : [] 
+                        console.log("QML received dronesChanged. New count =", droneController.drones.length)
                     } 
                 }
                 Connections {
@@ -446,7 +450,7 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("added!")
-                                            droneController.removeUnknownDrones(modelData.uid) // removes the drone from the list
+                                            droneController.acceptUnknownDrone(modelData.uid);
                                             discoveryListView.selectedIndex = -1
                                         }
                                     }

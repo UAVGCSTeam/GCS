@@ -60,6 +60,7 @@ public:
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
     QVariantList drones() const { return m_dronesVariant; }
+    Q_INVOKABLE void loadDrones();
     void rebuildVariant();
     Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
     Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
@@ -74,6 +75,7 @@ public:
     QVariantList unknownDrones() const { return m_unknownDronesVariant; }
     Q_INVOKABLE void loadUnknownDrones();
     Q_INVOKABLE void setUnknownDroneIgnored(const QString &uid, bool ignored);
+    Q_INVOKABLE void acceptUnknownDrone(const QString &uid);
     Q_INVOKABLE void removeUnknownDrones(const QString &uid);
     void rebuildUnknownVariant();
 
