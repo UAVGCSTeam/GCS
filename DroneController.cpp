@@ -42,6 +42,10 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
     simulationTimer.start(250); // Move once per second
     qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
+
+    //temporary sim heartbeat
+    connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::simHeartbeat);
+    heartBeatSimTimer.start(250); //four per second
 }
 
 // method so QML can retrieve the drone list.
@@ -77,7 +81,12 @@ DroneController::~DroneController()
 {
 }
 
-
+//temporary sim heartbeat
+void DroneController::simHeartbeat()
+{
+    if(checkHeartBeat)
+        updateDroneTelem(0, "connected", true);
+}
 
 // DroneClass updaters
 // We're changing this here so that by default the DroneClass is 
@@ -696,7 +705,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
 }
-
 
 void DroneController::updateDroneTelem(uint8_t sysid, const QString& field, const QVariant& value)
 {

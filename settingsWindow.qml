@@ -725,6 +725,18 @@ Window {
                                 font.italic: true
                             }
 
+                            CheckBox {
+                                checked: droneController.checkHeartBeat
+                                text: qsTr("Heartbeat Simulation")
+
+                                onCheckedChanged: {
+                                    droneController.setCheckedHeartBeat(checked)
+                                    // This updates the C++ property when the user clicks the checkbox
+                                    // droneController.checkHeartBeat = checked
+                                    // console.log("HEART: ", droneController.checkHeartBeat)
+                                }
+                            }
+
                             Item {
                                 Layout.fillHeight: true
                             }

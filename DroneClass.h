@@ -7,7 +7,9 @@
 #include <QVector>
 #include <QVariant>
 #include <QStringList>
+#include <QDateTime>
 #include <QDebug>
+#include <QTimer>
 #include <cmath>
 
 
@@ -27,6 +29,7 @@ class DroneClass : public QObject
     Q_PROPERTY(QVector3D velocity    READ getVelocity    NOTIFY velocityChanged    FINAL)
     Q_PROPERTY(double    airspeed    READ getAirspeed    NOTIFY airspeedChanged    FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation NOTIFY orientationChanged FINAL)
+    Q_PROPERTY(bool      connection  READ getConnection  NOTIFY connectionStatusChanged FINAL)
 
 public:
     explicit DroneClass(QObject *parent = nullptr);
@@ -86,7 +89,9 @@ public:
     void      setAltitude(double altitude);  
 
     double    getAirspeed()    const { return m_airspeed; }
-    void      setAirspeed(double airspeed);                 
+    void      setAirspeed(double airspeed);
+
+    bool      getConnection() const {return m_connected;}
 
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
@@ -102,6 +107,10 @@ public:
     void setPosition(float x, float y, float z);
     void setVelocity(float x, float y, float z);
     void setOrientation(float x, float y, float z);
+
+    //check for heartbeat
+    void checkHeartbeat();
+    void startHeartBeatTimer();
 
 signals:
     void nameChanged();
@@ -119,6 +128,7 @@ signals:
     void airspeedChanged();  
     void orientationChanged();
     void dataChanged();
+    void connectionStatusChanged(bool connection);
 
 private:
     QString   m_name;
@@ -135,10 +145,11 @@ private:
     QVector3D m_velocity;
     double    m_airspeed;    
     QVector3D m_orientation;
-
-    // Newly added backing fields for adapters
     bool      m_connected = false;
     QString   m_mode;
+    QTimer    m_heartBeatTimer;
+    QDateTime m_lastHeartBeat;
+    qint64    m_heartbeatIntervalMs;
 };
 
 #endif // DRONECLASS_H

@@ -9,7 +9,6 @@
 #include <QSharedPointer>
 #include <QSharedMemory>
 #include <QMetaType>
-#include <QTimer>
 #include <QFile>
 #include <QTextStream>
 #include <QHash>
@@ -69,6 +68,7 @@ class DroneController : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList drones READ drones NOTIFY dronesChanged)
+
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
@@ -122,6 +122,11 @@ public slots:
     
     // Functions for serial / MAVLink connections
     void onMavlinkMessage(const RxMavlinkMsg& msg);
+    
+    //temporary
+    void setCheckedHeartBeat(bool checked) {
+        checkHeartBeat = checked;
+    }
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
@@ -130,9 +135,15 @@ signals:
     void dronesChanged();
 
 private:
+    QTimer heartBeatSimTimer; //temporary
     QTimer simulationTimer;       // Timer for simulated movement
     void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
+
+    //temporary heartbeat sim
+    void simHeartbeat();
+    bool checkHeartBeat = false;
+
     DBManager &dbManager;
 
     std::unique_ptr<UARTLink>    uartDevice_;
