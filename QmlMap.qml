@@ -19,8 +19,17 @@ Item {
     property string followDroneName: ""
     property var followDrone: null
     property bool followingDrone: false
-    property double latitude: 34.060978616851145 // for centering the view
-    property double longitude: -117.83110213699356 // for centering the view
+    
+    // Compute initial position from settings 
+    property double initialLatitude: settingsManager.leaveAtLastMapLocation ? settingsManager.lastMapLat : settingsManager.homeLat
+    property double initialLongitude: settingsManager.leaveAtLastMapLocation ? settingsManager.lastMapLong : settingsManager.homeLong
+    property double initialZoomLevel: settingsManager.leaveAtLastMapLocation ? settingsManager.lastMapZoom : 16
+    
+    // Current map state
+    readonly property double latitude: mapview.center ? mapview.center.latitude : initialLatitude
+    readonly property double longitude: mapview.center ? mapview.center.longitude : initialLongitude
+    readonly property double zoomLevel: mapview.zoomLevel
+
     property var supportedMapTypes: [
         { name: "Street", type: Map.StreetMap },
         { name: "Satellite", type: Map.SatelliteMapDay },
@@ -33,6 +42,7 @@ Item {
 
     property var activeDrone: null
     property var selectedDrones: null
+    property Waypoint waypointManagerRef: waypointManager
 
     Plugin {
         id: mapPlugin
@@ -46,8 +56,8 @@ Item {
         id: mapview
         anchors.fill: parent
         plugin: mapPlugin
-        center: QtPositioning.coordinate(latitude, longitude)
-        zoomLevel: 18
+        center: QtPositioning.coordinate(initialLatitude, initialLongitude)
+        zoomLevel: initialZoomLevel
 
         Connections {
             target: followDrone
@@ -69,7 +79,6 @@ Item {
             repeat: true
             onTriggered: {
                 if (_pendingCenter) {
-                    // console.log("we are in the timer: longitude", _pendingCenter)
                     coordAnim.from = mapview.center
                     coordAnim.to   = _pendingCenter
                     coordAnim.start()
@@ -289,7 +298,7 @@ Item {
             followingDrone = true
             followDrone = activeDrone
             followDroneName = activeDrone.name
-            console.log("Starting to follow the drone!: ", followDroneName)
+            console.log("[QmlMap] Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
             console.warn("No drone is currently selected to toggle")
@@ -298,7 +307,7 @@ Item {
 
     function turnOffFollowDrone() {
         if (followingDrone){
-            console.log("Stop following current drone: ", followDroneName)
+            console.log("[QmlMap] Stop following current drone: ", followDroneName)
             followingDrone = false;
             followDrone = null
             followDroneName = ""
@@ -342,7 +351,11 @@ Item {
                 mapview.zoomLevel = level
         }
     }
-    Component.onCompleted: {        
-        // console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
+    Component.onCompleted: {
+        // Breaks initial properties binding to settingsManager via self-assignment (prevents settings changes from moving map during session)
+        // Settings will take effect on next app launch
+        initialLatitude = initialLatitude
+        initialLongitude = initialLongitude
+        initialZoomLevel = initialZoomLevel
     }
 }

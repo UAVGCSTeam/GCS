@@ -1,9 +1,14 @@
-#include "XbeeLink.h"
+#include "UARTLink.h"
 
-XbeeLink::XbeeLink(QObject* p):QObject(p){
-    connect(&serial_, &QSerialPort::readyRead, this, &XbeeLink::onReadyRead);
+/*
+    Tip: Learn more about the QSerialPort class' members here: 
+    https://doc.qt.io/qt-6/qserialport-members.html
+*/
+
+UARTLink::UARTLink(QObject* p):QObject(p){
+    connect(&serial_, &QSerialPort::readyRead, this, &UARTLink::onReadyRead);
 }
-bool XbeeLink::open(const QString& port, int baud){
+bool UARTLink::open(const QString& port, int baud){
     if (serial_.isOpen()) serial_.close();
     serial_.setPortName(port);
     serial_.setBaudRate(baud);
@@ -17,15 +22,15 @@ bool XbeeLink::open(const QString& port, int baud){
     }
     return true;
 }
-void XbeeLink::close(){ serial_.close(); }
-qint64 XbeeLink::writeBytes(const QByteArray& b){
+void UARTLink::close(){ serial_.close(); }
+qint64 UARTLink::writeBytes(const QByteArray& b){
     if (!serial_.isOpen()) return -1;
     const qint64 n = serial_.write(b);      // QSerialPort::write returns qint64
     if (n == -1) emit linkError(serial_.errorString());
     return n;
 }
 
-void XbeeLink::onReadyRead(){
+void UARTLink::onReadyRead(){
     emit bytesReceived(serial_.readAll());
 
 }

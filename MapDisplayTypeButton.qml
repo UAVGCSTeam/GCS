@@ -29,7 +29,8 @@ Button {
     contentItem: Text {
         text: mapTypeButton.text
         font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-        color: mapTypeButton.pressed ? GcsStyle.PanelStyle.textPrimaryColor : "white"
+        font.family: GcsStyle.PanelStyle.fontFamily
+        color: GcsStyle.PanelStyle.textPrimaryColor
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
     }
