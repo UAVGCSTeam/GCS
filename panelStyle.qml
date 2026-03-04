@@ -20,7 +20,7 @@ QtObject {
     readonly property color secondaryColor: isLightTheme ? "#E8E8ED" : "#282831"         // light grey, charcoal
     readonly property color accentColor: "#007bff"                                       // bright blue
     readonly property color textPrimaryColor: isLightTheme ? "#1D1D1F" : "#ffffff"       // black, white
-    readonly property color textSecondaryColor: isLightTheme ? "#86868B" : "#666666"     // medium grey, dark grey
+    readonly property color textSecondaryColor: isLightTheme ? "#86868B" : "#d1d0d0"     // medium grey, dark grey
 
     //Background Color Scheme (Light Mode : Dark Mode)
     readonly property color baseBackground: isLightTheme ? "#D1D1D6" : "#0F1014"     // for side bars, top bar, base background
