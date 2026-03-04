@@ -252,6 +252,7 @@ signals:
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
     void dronesChanged();
+    void commandAcknowledged(const QString &message, bool success);
 
 private:
     // QTimer simulationTimer;       // Timer for simulated movement

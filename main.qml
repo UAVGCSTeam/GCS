@@ -32,6 +32,7 @@ Window {
             mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
         }
     }
+
     MapScaleBarIndicator {
         id: mapScaleBar
         anchors {
@@ -40,6 +41,7 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
@@ -82,7 +84,7 @@ Window {
         }
         visible: false
     }
-    
+
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -97,18 +99,15 @@ Window {
                 console.warn("Follow requested without a drone reference")
                 return
             }
-
             console.log("[main.qml] Follow requested via modifier click:", drone.name)
-            // Reset the current follow target so the map component doesn't keep the old pointer
             mapComponent.turnOffFollowDrone()
-            // Immediately re-enable follow mode
             mapComponent.turnOnFollowDrone()
         }
     }
 
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
     Shortcut {
-        sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
+        sequence: StandardKey.Find
         onActivated: mapComponent.toggleFollowDrone()
     }
 
@@ -118,7 +117,59 @@ Window {
         onActivated: openSettingsWindow()
     }
 
-    // Settings window 
+    // Command ACK toast notification listener
+    Connections {
+        target: droneController
+        function onCommandAcknowledged(message, success) {
+            toastNotification.show(message, success)
+        }
+    }
+
+    // Toast notification
+    Rectangle {
+        id: toastNotification
+        width: toastText.implicitWidth + 32
+        height: 40
+        radius: 8
+        color: toastSuccess ? "#2e7d32" : "#c62828"
+        opacity: 0
+        z: 999
+
+        anchors {
+            top: droneMenuBar.bottom
+            horizontalCenter: parent.horizontalCenter
+            topMargin: 12
+        }
+
+        property bool toastSuccess: true
+
+        function show(message, success) {
+            toastText.text = message
+            toastSuccess = success
+            opacity = 1
+            toastTimer.restart()
+        }
+
+        Behavior on opacity {
+            NumberAnimation { duration: 300 }
+        }
+
+        Timer {
+            id: toastTimer
+            interval: 3000
+            onTriggered: toastNotification.opacity = 0
+        }
+
+        Text {
+            id: toastText
+            anchors.centerIn: parent
+            color: "white"
+            font.pixelSize: 13
+            font.bold: true
+        }
+    }
+
+    // Settings window
     Loader {
         id: settingsLoader
         source: "qrc:/settingsWindow.qml"
