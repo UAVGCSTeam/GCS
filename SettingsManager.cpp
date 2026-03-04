@@ -1,4 +1,4 @@
-#include "settingsmanager.h"
+#include "SettingsManager.h"
 
 /*
  * QSettings API:
@@ -10,6 +10,10 @@
 SettingsManager::SettingsManager(QObject *parent)
     : QObject(parent)
     , m_settings("GCS", "GroundControlStation")
+{
+}
+
+SettingsManager::~SettingsManager()
 {
 }
 

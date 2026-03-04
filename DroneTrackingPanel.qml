@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
+import "./components"
+import "./components" as Components
 
 /*
   Welcome to the wild west....
@@ -66,7 +68,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneStatusDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -180,8 +182,6 @@ Rectangle {
                 */
                 /*
                   TODO:
-                        Make drone list item selectable and display real data.
-                        Make fire page as well-we need real time fire data for this page.
                         Make drone symbols update based on status.
                 */
 
@@ -271,9 +271,12 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: { 
+                            source: {
                                 if (modelData.altitude > 0.05) {
-                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                                    if (GcsStyle.PanelStyle.isLightTheme) {
+                                        return "qrc:/resources/droneStatusLightMode.svg"
+                                    }
+                                    return "qrc:/resources/droneStatusDarkMode.svg"
                                 }
                                 return "qrc:/resources/grounded.png"
                             }
@@ -283,6 +286,7 @@ Rectangle {
                         }
 
                         ColumnLayout {
+                            Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft
                             Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
@@ -291,6 +295,8 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
                                 font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
@@ -301,7 +307,7 @@ Rectangle {
                                 font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
-
+                        
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
@@ -319,7 +325,6 @@ Rectangle {
                 Connections {
                     target: droneController
                     function onDronesChanged() {
-                        // TODO: check to see if telemetry data populates during simulation with ardupilot
                         droneListView.model = droneController ? droneController.drones : [] 
                         console.log("QML received dronesChanged. New count =", droneController.drones.length)
                     } 

@@ -79,7 +79,6 @@ Item {
             repeat: true
             onTriggered: {
                 if (_pendingCenter) {
-                    // console.log("we are in the timer: longitude", _pendingCenter)
                     coordAnim.from = mapview.center
                     coordAnim.to   = _pendingCenter
                     coordAnim.start()
@@ -156,9 +155,12 @@ Item {
 
                     Image {
                         id: markerImage
-                        source: "qrc:/resources/droneMapIconSVG.svg"
+                        readonly property bool isCurrentDroneSelected: droneIsSelected(modelData)
+                        source: isCurrentDroneSelected ? "qrc:/resources/droneMapIconSelected.png" : "qrc:/resources/droneMapIconUnselected.png"
                         width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
                         fillMode: Image.PreserveAspectFit
+                        // Rotate icon to match drone heading (yaw from orientation.z, radians → degrees)
+                        rotation: modelData.orientation ? (modelData.orientation.z * 180 / Math.PI) : 0
                     }
 
                     DroneLabelComponent {
@@ -299,7 +301,7 @@ Item {
             followingDrone = true
             followDrone = activeDrone
             followDroneName = activeDrone.name
-            console.log("Starting to follow the drone!: ", followDroneName)
+            console.log("[QmlMap] Starting to follow the drone!: ", followDroneName)
             if (!followTimer.running) followTimer.start()
         } else {
             console.warn("No drone is currently selected to toggle")
@@ -308,13 +310,23 @@ Item {
 
     function turnOffFollowDrone() {
         if (followingDrone){
-            console.log("Stop following current drone: ", followDroneName)
+            console.log("[QmlMap] Stop following current drone: ", followDroneName)
             followingDrone = false;
             followDrone = null
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
     }
+
+        function droneIsSelected(modelData) { 
+        for (let drone of selectedDrones) { 
+            if (drone.latitude === modelData.latitude) {
+                return true
+            }
+        }
+        return false
+    }
+    
 
     onActiveDroneChanged: {
         if (activeDrone === null) {
@@ -331,7 +343,7 @@ Item {
         target: droneController
         function onDronesChanged() {
             // Refresh the drone markers when the drone list changes
-            droneMarkerView.model = droneController.drones;
+            droneMarkerView.model = droneController ? droneController.drones : [];
         }
     }
 
@@ -358,7 +370,5 @@ Item {
         initialLatitude = initialLatitude
         initialLongitude = initialLongitude
         initialZoomLevel = initialZoomLevel
-        
-        // console.log("[QmlMap.qml] Number of drones in model:", droneController.drones.length)
     }
 }

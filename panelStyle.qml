@@ -19,7 +19,7 @@ QtObject {
     readonly property color secondaryColor: isLightTheme ? "#E8E8ED" : "#282831"         // light grey, charcoal
     readonly property color accentColor: "#007bff"                                       // bright blue
     readonly property color textPrimaryColor: isLightTheme ? "#1D1D1F" : "#ffffff"       // black, white
-    readonly property color textSecondaryColor: isLightTheme ? "#86868B" : "#666666"     // medium grey, dark grey
+    readonly property color textSecondaryColor: isLightTheme ? "#86868B" : "#d1d0d0"     // medium grey, dark grey
 
     // Sizes
     readonly property int sidebarWidth: 50
@@ -109,5 +109,5 @@ QtObject {
     readonly property color commandInProgress: "#FFC107"
     readonly property color commandNotAvailable: textSecondaryColor
 
-    Component.onCompleted: console.log("PanelStyle loaded")
+    Component.onCompleted: console.log("[panelStyle] PanelStyle loaded")
 }

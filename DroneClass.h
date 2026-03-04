@@ -5,8 +5,11 @@
 #include <QString>
 #include <QVector3D>
 #include <QVector>
-#include <cmath>
 #include <QVariant>
+#include <QStringList>
+#include <QDebug>
+#include <cmath>
+
 
 
 class DroneClass : public QObject
@@ -24,6 +27,8 @@ class DroneClass : public QObject
     Q_PROPERTY(QVector3D velocity    READ getVelocity    NOTIFY velocityChanged    FINAL)
     Q_PROPERTY(double    airspeed    READ getAirspeed    NOTIFY airspeedChanged    FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation NOTIFY orientationChanged FINAL)
+    Q_PROPERTY(int       sysID       READ getSysID       NOTIFY sysIDChanged       FINAL)
+    Q_PROPERTY(int       compID      READ getCompID      NOTIFY compIDChanged      FINAL)
 
 public:
     explicit DroneClass(QObject *parent = nullptr);
@@ -85,6 +90,16 @@ public:
     double    getAirspeed()    const { return m_airspeed; }
     void      setAirspeed(double airspeed);                 
 
+    bool      getRequestedTelem() const { return m_requested_telem; }
+    void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
+
+    int      getSysID() const { return m_sysID; }
+    void      setSysID(int sysID) { m_sysID = sysID; }
+
+    int      getCompID() const { return m_compID; }
+    void      setCompID(int compID) { m_compID = compID; }
+
+
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
     void setBatteryVoltage(int millivolts);   // MAVLink SYS_STATUS delivers mV
@@ -133,9 +148,10 @@ private:
     double    m_airspeed;    
     QVector3D m_orientation;
 
-    // Newly added backing fields for adapters
     bool      m_connected = false;
     QString   m_mode;
+
+    bool      m_requested_telem = false; // TODO: evaluate whether this is needed
 };
 
 #endif // DRONECLASS_H

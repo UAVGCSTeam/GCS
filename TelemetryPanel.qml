@@ -134,12 +134,12 @@ Rectangle {
                                             if (modelData.label === "Latitude") { activeDrone.latitude.toFixed(3) }
                                             else if (modelData.label === "Longitude") { activeDrone.longitude.toFixed(3) }
                                             // sysID and compID are no longer implemented. might be implemented in the future
-                                            // else if (modelData.label === "SYS ID") { activeDrone.sysID }
-                                            // else if (modelData.label === "COMP ID") { activeDrone.compID }
+                                            else if (modelData.label === "SYS ID") { activeDrone.sysID }
+                                            else if (modelData.label === "COMP ID") { activeDrone.compID }
                                             else if (modelData.label === "Flight Time") { "---" }
-                                            else if (modelData.label === "Yaw") { activeDrone.orientation.z.toFixed(3) }
-                                            else if (modelData.label === "Pitch") { activeDrone.orientation.y.toFixed(3) }
-                                            else if (modelData.label === "Roll") {  activeDrone.orientation.x.toFixed(3) }
+                                            else if (modelData.label === "Yaw") { (activeDrone.orientation.z * 180 / Math.PI).toFixed(3) }
+                                            else if (modelData.label === "Pitch") { (activeDrone.orientation.y * 180 / Math.PI).toFixed(3) }
+                                            else if (modelData.label === "Roll") { (activeDrone.orientation.x * 180 / Math.PI).toFixed(3) }
                                             else if (modelData.label === "Fail Safe") { "---" }
                                             else if (modelData.label === "Status") { "---" }
                                             else if (modelData.label === "Mode") { "---" }
