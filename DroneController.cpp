@@ -767,7 +767,7 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
 }
 
 
-bool DroneController::sendToCoord(const QString droneName, float lat, float lon) { 
+bool DroneController::sendToCoord(const QString droneName, float lat, float lon) {
     QSharedPointer<DroneClass> drone = getDroneByName(droneName);
     if (drone.isNull()) {
         qWarning() << "[DroneController.cpp::sendToCoord] unknown drone:" << drone;
@@ -1117,18 +1117,6 @@ void DroneController::rebuildUnknownVariant()
     }
 }
 
-
-// Telemetry update for ONE existing drone (same object pointer)
-void DroneController::onTelemetry(const QString &name, double lat, double lon)
-{
-    auto it = std::find_if(droneList.begin(), droneList.end(),
-                           [&](const QSharedPointer<DroneClass> &d)
-                           { return d->getName() == name; });
-    if (it == droneList.end())
-        return;
-    (*it)->setLatitude(lat);  // emits latitudeChanged → QML updates
-    (*it)->setLongitude(lon); // emits longitudeChanged
-}
 // Simple linear interpolation towards a target point
 void moveDroneTowards(double &lat, double &lon, double targetLat, double targetLon, double step)
 {

@@ -211,7 +211,6 @@ public:
     QVariantList drones() const { return m_dronesVariant; }
     Q_INVOKABLE void loadDrones();
     void rebuildVariant();
-    Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
     Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
     {
         QList<QVariantMap> list;
