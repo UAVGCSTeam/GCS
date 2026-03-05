@@ -22,6 +22,7 @@
 #include "MAVLinkSender.h"
 #include "UARTLink.h"
 #include "UDPLink.h"
+#include "unknowndroneclass.h"
 
 
 
@@ -72,6 +73,7 @@ class DroneController : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVariantList drones READ drones NOTIFY dronesChanged)
+    Q_PROPERTY(QVariantList unknownDrones READ unknownDrones NOTIFY unknownDronesChanged)
 public:
     // idk how to pass the parent function
     explicit DroneController(DBManager &gcsdb_in, QObject *parent = nullptr);
@@ -202,12 +204,14 @@ public:
      *       until the interval is changed or the vehicle reboots.
      */
     Q_INVOKABLE bool requestTelem(QSharedPointer<DroneClass> drone);
-    
+
     Q_INVOKABLE DroneClass *getDrone(int index) const;
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
     QVariantList drones() const { return m_dronesVariant; }
+    Q_INVOKABLE void loadDrones();
     void rebuildVariant();
+    Q_INVOKABLE QObject* getDroneByNameQML(const QString &name) const;
     Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
     {
         QList<QVariantMap> list;
@@ -215,6 +219,15 @@ public:
             list.append(v.toMap());
         droneWaypoints[droneName] = list;
     }
+
+    // unknowndronelist
+    QVariantList unknownDrones() const { return m_unknownDronesVariant; }
+    Q_INVOKABLE void loadUnknownDrones();
+    Q_INVOKABLE void setUnknownDroneIgnored(const QString &uid, bool ignored);
+    Q_INVOKABLE void acceptUnknownDrone(const QString &uid);
+    Q_INVOKABLE void removeUnknownDrones(const QString &uid);
+    void rebuildUnknownVariant();
+
 
   Q_INVOKABLE void renameDrone(const QString &xbeeID, const QString &newName);
   Q_INVOKABLE void setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress);
@@ -252,6 +265,7 @@ signals:
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
     void dronesChanged();
+    void unknownDronesChanged();
 
 private:
     // QTimer simulationTimer;       // Timer for simulated movement
@@ -265,6 +279,7 @@ private:
     std::unique_ptr<MAVLinkReceiver> mavRx_;
     QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
     static QList<QSharedPointer<DroneClass>> droneList;
+    static QList<QSharedPointer<UnknownDroneClass>> unknownDroneList;
     
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
@@ -295,6 +310,7 @@ private:
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
+    QVariantList m_unknownDronesVariant; // cached QObject* view for QML
 };
 
 #endif // DRONECONTROLLER_H
