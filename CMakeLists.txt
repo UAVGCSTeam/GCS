@@ -40,6 +40,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MAVLinkReceiver.cpp
         SettingsManager.h
         SettingsManager.cpp
+        Logger.h
+        Logger.cpp
     )
 else()
     if(ANDROID)
