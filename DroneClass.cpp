@@ -162,19 +162,16 @@ void DroneClass::setOrientation(const QVector3D &ori)
 
 void DroneClass::checkHeartbeat()
 {
-    if(m_name == "Firehawk")
+    QDateTime curTime = QDateTime::currentDateTime();
+    qint64 dTime = m_lastHeartBeat.msecsTo(curTime);
+
+    if(dTime > 1000 && m_connected)
     {
-        QDateTime curTime = QDateTime::currentDateTime();
-        qint64 dTime = m_lastHeartBeat.msecsTo(curTime);
-
-        if(dTime > 1000 && m_connected)
-        {
-            setConnected(false);
-            qDebug() << "[DroneClass.cpp]  Disconnected";
-        }
-
-        qDebug() << "[DroneClass.cpp] Connection Status: " << m_connected;
+        setConnected(false);
+        qDebug() << "[DroneClass.cpp]  Disconnected";
     }
+
+    qDebug() << "[DroneClass.cpp] Connection Status: " << m_connected;
 }
 
 void DroneClass::startHeartBeatTimer()

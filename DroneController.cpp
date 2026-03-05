@@ -44,7 +44,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
 
     //temporary sim heartbeat
-    connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::simHeartbeat);
+    connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::useSimulatedHeartbeat);
     heartBeatSimTimer.start(250); //four per second
 }
 
@@ -82,7 +82,7 @@ DroneController::~DroneController()
 }
 
 //temporary sim heartbeat
-void DroneController::simHeartbeat()
+void DroneController::useSimulatedHeartbeat()
 {
     if(checkHeartBeat)
         updateDroneTelem(0, "connected", true);

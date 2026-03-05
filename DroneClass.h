@@ -149,7 +149,7 @@ private:
     QString   m_mode;
     QTimer    m_heartBeatTimer;
     QDateTime m_lastHeartBeat;
-    qint64    m_heartbeatIntervalMs;
+    qint64    m_heartbeatIntervalMs; // m_heartbeatIntervalMs not currently used but can be used for displaying information
 };
 
 #endif // DRONECLASS_H
