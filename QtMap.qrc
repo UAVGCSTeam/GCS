@@ -42,6 +42,7 @@
         <file>plusIcon.png</file>
         <file>discoveryPanelIcon.svg</file>
         <file>discoveryPanelIconDarkMode.svg</file>
+        <file>autoscroll.png</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>

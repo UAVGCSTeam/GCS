@@ -117,7 +117,7 @@ Window {
         }
     }
 
-    // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
+    //Shortcut for toggling follow functionality (cmd + f or ctrl + f)
     Shortcut {
         sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
         onActivated: mapComponent.toggleFollowDrone()
