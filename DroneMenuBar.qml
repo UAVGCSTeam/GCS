@@ -6,15 +6,6 @@ import "qrc:/gcsStyle" as GcsStyle
 import "./components"
 import "./components" as Components
 
-/*
- * DroneMenuBar - Menu bar component to display various features and actions
- * Located below the native window title bar
- * Full-width bar with menu items on the left
- * Contains two dropdown items:
- * 1. "GCS" that opens the manage drone window.
- * 2. "Command Menu" that shows a submenu with the 4 command options.
- */
-
 Rectangle {
     id: menuBar
     property int padding: 2 // padding between the menu bar and the buttons within it
@@ -92,12 +83,6 @@ Rectangle {
             spacing: 2
             
             PopupMenuItem {
-                text: "Manage Drones"
-                windowFile: "manageDroneWindow.qml"
-                menuPopup: gcsMenu
-            }
-            
-            PopupMenuItem {
                 text: "Settings"
                 menuPopup: gcsMenu
                 onMenuItemClicked: mainWindow.openSettingsWindow()
@@ -133,6 +118,13 @@ Rectangle {
                 menuPopup: commandMenu
                 clickable: activeDrone !== null
                 onMenuItemClicked: armUAVConfirmation.open() 
+            }
+            
+            PopupMenuItem {
+                text: "Enable Guided Mode"
+                menuPopup: commandMenu
+                clickable: activeDrone !== null
+                onMenuItemClicked: guidedModeUAVConfirmation.open()
             }
             
             PopupMenuItem {
@@ -177,11 +169,10 @@ Rectangle {
                     ? "Are you sure you want to arm the UAV, " + activeDrone.name + "?"
                     : "NO UAV SELECTED")
         onAccepted: {
-            // TEMP: hardcode a target; replace with your real XBee address or ID later
-            const target = activeDrone.xbeeAddress
-            const ok = droneController.sendArm(target, true)   // true = arm, false = disarm
-            console.log("[DroneMenuBar] ARM ->", target, ok)
-            armConfirmed.open()
+            const targetXbeeAddress = activeDrone.xbeeAddress
+            const ok = droneController.sendArm(targetXbeeAddress, true)   // true = arm, false = disarm
+            // console.log("[DroneMenuBar.qml] Armed: ", targetXbeeAddress, ok)
+            // armConfirmed.open()
         }
     }
 
@@ -192,11 +183,24 @@ Rectangle {
                     ? "Are you sure you want to takeoff: " + activeDrone.name + "?"
                     : "NO UAV SELECTED")
         onAccepted: {
-            // TEMP: hardcode a target; replace with your real XBee address or ID later
-            const target = activeDrone.xbeeAddress
-            const ok = droneController.sendTakeoffCmd(target)   // true = arm, false = disarm
-            console.log("[DroneMenuBar] TAKEOFF ->", target, ok)
-            takeoffConfirmed.open()
+            const targetXbeeAddress = activeDrone.xbeeAddress
+            const ok = droneController.sendTakeoffCmd(targetXbeeAddress, true)   // true = arm, false = disarm
+            // console.log("[DroneMenuBar.qml] Takeoff Response:", targetXbeeAddress, ok)
+            // takeoffConfirmed.open()
+        }
+    }
+
+    Components.UniversalPopup {
+        id: guidedModeUAVConfirmation
+        popupTitle: "Set UAV to Guided Mode"
+        popupMessage: (activeDrone && activeDrone.name
+                    ? "Are you sure you want to set: " + activeDrone.name + " to guided mode?"
+                    : "NO UAV SELECTED")
+        onAccepted: {
+            const targetXbeeAddress = activeDrone.xbeeAddress
+            const ok = droneController.sendGuidedMode(targetXbeeAddress, true)   // true = arm, false = disarm
+            // console.log("[DroneMenuBar.qml] Guided mode Response:", targetXbeeAddress, ok)
+            // guidedModeConfirmed.open()
         }
     }
 
@@ -222,6 +226,14 @@ Rectangle {
         popupVariant: "success"
         popupTitle: "Takeoff"
         popupMessage: "Takeoff command sent to "
+                    + (activeDrone && activeDrone.name ? activeDrone.name : "NO UAV SELECTED")
+    }
+
+    Components.UniversalPopup {
+        id: guidedModeConfirmed
+        popupVariant: "success"
+        popupTitle: "Guided Mode Set"
+        popupMessage: "Guided mode command sent to "
                     + (activeDrone && activeDrone.name ? activeDrone.name : "NO UAV SELECTED")
     }
 }

@@ -68,7 +68,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneStatusDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
@@ -265,9 +265,12 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: { 
+                            source: {
                                 if (modelData.altitude > 0.05) {
-                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                                    if (GcsStyle.PanelStyle.isLightTheme) {
+                                        return "qrc:/resources/droneStatusLightMode.svg"
+                                    }
+                                    return "qrc:/resources/droneStatusDarkMode.svg"
                                 }
                                 return "qrc:/resources/grounded.png"
                             }
@@ -316,7 +319,6 @@ Rectangle {
                 Connections {
                     target: droneController
                     function onDronesChanged() {
-                        // TODO: check to see if telemetry data populates during simulation with ardupilot
                         droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
