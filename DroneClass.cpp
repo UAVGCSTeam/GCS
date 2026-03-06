@@ -171,7 +171,7 @@ void DroneClass::checkHeartbeat()
         qDebug() << "[DroneClass.cpp]  Disconnected";
     }
 
-    qDebug() << "[DroneClass.cpp] Connection Status: " << m_connected;
+    qDebug() << "[DroneClass.cpp] Connection Status for " << m_name << ": " << m_connected;
 }
 
 void DroneClass::startHeartBeatTimer()
