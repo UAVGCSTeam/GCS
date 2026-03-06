@@ -77,7 +77,7 @@ Rectangle {
                         anchors.fill: parent
                         onClicked: {
                             mainPanel.activePanel = "drones"
-                            droneController.loadDrones()
+                            droneController.rebuildVariant()
                         }
                     }
                 }
@@ -156,7 +156,7 @@ Rectangle {
                             case "drones":
                                 return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
                             case "discovery":
-                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs" // replace this with droneController.unknownDrones later on
+                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs"
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -329,7 +329,6 @@ Rectangle {
                     target: droneController
                     function onDronesChanged() {
                         droneListView.model = droneController ? droneController.drones : [] 
-                        console.log("QML received dronesChanged. New count =", droneController.drones.length)
                     } 
                 }
                 Connections {

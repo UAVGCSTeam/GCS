@@ -21,9 +21,6 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         int sysID = -1;
         int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
-        // Should? work with other fields like xbee_id or drone_id if needed
-        // existing table can have added columns for the lati and longi stuff and input here
-        // TODO: Change this, add xbee id?
         
         if (index == 0) { 
             droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
@@ -258,11 +255,6 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
 }
 
 // drone list updaters
-void DroneController::loadDrones()
-{
-    rebuildVariant();
-    emit dronesChanged();
-}
 void DroneController::loadUnknownDrones()
 {
     rebuildUnknownVariant();
@@ -438,8 +430,8 @@ bool DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
 
             if (response) {
                 qInfo() << "[DroneController.cpp] Updated in storage. Updating in memory now";
-            emit dronesChanged();
-            rebuildVariant();
+                emit dronesChanged();
+                rebuildVariant();
                 return true;
             } else {
                 qInfo() << "[DroneController.cpp] Failed to update storage. Not updating memory";
@@ -864,7 +856,7 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
             response = false;
             qInfo() << "[DroneController.cpp::requestTelem] Something went wrong requesting data";
             break;
-}
+        }
     }
     qInfo() << "[DroneController.cpp::requestTelem] Data requested";
     return response;

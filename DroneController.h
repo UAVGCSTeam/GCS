@@ -209,7 +209,6 @@ public:
     // Declaration for retrieving the drone list
     Q_INVOKABLE QVariantList getAllDrones() const;
     QVariantList drones() const { return m_dronesVariant; }
-    Q_INVOKABLE void loadDrones();
     void rebuildVariant();
     Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
     {
