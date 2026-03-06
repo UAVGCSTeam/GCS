@@ -5,6 +5,7 @@
 #include <QtQuickControls2/QQuickStyle>
 
 #include "MapController.h"
+#include "Overlays.h"
 #include "FileHandler.h"
 #include "backend/dbmanager.h"
 #include "DroneController.h"
@@ -40,6 +41,10 @@ int main(int argc, char *argv[])
     // Create and register MapController as an object that the cpp can use
     MapController mapController;
     engine.rootContext()->setContextProperty("mapController", &mapController);
+
+    // Create and register Overlays backend for no-fly-zone data and rendering model
+    Overlays overlays;
+    engine.rootContext()->setContextProperty("overlays", &overlays);
 
     // Register the FileHandler class so that it can be used in QML
     qmlRegisterType<FileHandler>("com.gcs.filehandler", 1, 0, "FileHandler");

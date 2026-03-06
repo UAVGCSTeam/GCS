@@ -171,10 +171,10 @@ Item {
             }
         }
 
-        // No-fly-zone overlay. Model comes from MapController::noFlyZones (GeoJSON parsed in C++).
+        // No-fly-zone overlay. Model comes from Overlays::noFlyZones (GeoJSON parsed in C++).
         MapItemView {
             id: noFlyZoneView
-            model: mapController ? mapController.noFlyZones : []
+            model: overlays ? overlays.noFlyZones : []
             delegate: MapPolygon {
             // Each zone contains a `points` array with `{ lat, lon }` entries.
                 property var zonePoints: (modelData && modelData.points) ? modelData.points : []
