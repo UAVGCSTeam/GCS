@@ -389,16 +389,17 @@ Rectangle {
                 color: GcsStyle.PanelStyle.textPrimaryColor
             }
 
+            // Waypoint queue list -- model is fetched from MissionManager each
+            // time waypointVersion increments (triggered by waypointsChanged signal)
             ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
                 model: {
-                    if (!activeDrone || !waypointManager)
+                    if (!activeDrone)
                         return []
-                    // Force reevaluation whenever waypointVersion changes
                     waypointVersion
-                    return waypointManager.droneWaypoints[activeDrone.name] || []
+                    return missionManager.getWaypoints(activeDrone.xbeeAddress)
                 }
 
                 delegate: Rectangle {
@@ -467,11 +468,13 @@ Rectangle {
             mainPanel.visible = true;
         }
     }
+    // Refresh the waypoint ListView whenever MissionManager reports a change
+    // for the currently selected drone
     Connections {
-        target: waypointManager
-        function onWaypointsUpdated(droneName) {
-            if (activeDrone && droneName === activeDrone.name) {
-                mainPanel.waypointVersion++  // triggers ListView refresh
+        target: missionManager
+        function onWaypointsChanged(uavID) {
+            if (activeDrone && uavID === activeDrone.xbeeAddress) {
+                mainPanel.waypointVersion++
             }
         }
     }
