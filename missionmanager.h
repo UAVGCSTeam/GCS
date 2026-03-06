@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QMap>
-#include <QDateTime>
 #include <QVariantList>
 #include <QStringList>
 #include "uavmission.h"
@@ -44,12 +43,12 @@ public:
 signals:
     // Emitted whenever waypoints are added, removed, or pruned for a drone
     void waypointsChanged(const QString& uavID);
+    // Emitted when a new waypoint is added; wired to DroneController::sendToCoord in main.cpp
+    void waypointAdded(const QString droneName, float lat, float lon);
 
 private:
     QMap<QString, UAVMission*> m_missions;   // xbeeAddress -> active mission
     int                        m_numMissions;
-
-    QDateTime                  m_creationTime;  // when MissionManager was instantiated
 };
 
 #endif // MISSIONMANAGER_H

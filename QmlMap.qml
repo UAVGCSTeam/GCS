@@ -214,13 +214,12 @@ Item {
                 width: parent.width
                 spacing: 2
                 
-                // Delegates to MissionManager via Waypoint.qml's addWaypoint()
                 PopupMenuItem {
                     text: "Go-To"
                     clickable: activeDrone ? true : false
                     onMenuItemClicked: {
                         contextMenu.close()
-                        waypointManager.addWaypoint(
+                        missionManager.addWaypoint(
                             activeDrone,
                             rightClickMenuArea.lastRightClickCoord.latitude,
                             rightClickMenuArea.lastRightClickCoord.longitude

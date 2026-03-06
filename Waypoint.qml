@@ -7,15 +7,6 @@ Item {
     property var mapview
     property var activeDrone: null
 
-    // Signal to update the waypoint list in the UI
-    signal waypointsUpdated(string droneName)
-
-    // Delegates to MissionManager. drone position auto-inserted in C++ for new missions
-    function addWaypoint(drone, clickLat, clickLon) {
-        if (!drone) return
-        missionManager.addWaypoint(drone, clickLat, clickLon)
-    }
-
     // Haversine formula for distance between two geo coordinates
     function distanceMeters(lat1, lon1, lat2, lon2) {
         var R = 6371000; // earth radius in meters
@@ -129,15 +120,4 @@ Item {
         }
     }
 
-    // When MissionManager modifies waypoints, forward them to DroneController
-    // (which needs the drone name, not xbeeAddress) and re-signal to QML listeners
-    Connections {
-        target: missionManager
-        function onWaypointsChanged(uavID) {
-            var droneName = missionManager.getDroneNameForMission(uavID)
-            waypointsUpdated(droneName)
-            var wps = missionManager.getWaypoints(uavID)
-            droneController.updateWaypoints(droneName, wps)
-        }
-    }
 }

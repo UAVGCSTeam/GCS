@@ -7,7 +7,6 @@
 MissionManager::MissionManager(QObject* parent)
     : QObject(parent)
     , m_numMissions(0)
-    , m_creationTime(QDateTime::currentDateTime())
 {
 }
 
@@ -106,7 +105,10 @@ bool MissionManager::addWaypoint(DroneClass* drone, double lat, double lon)
              << "(xbee:" << id << ")"
              << "| wp(" << lat << "," << lon << ")"
              << "| total waypoints:" << mission->getNumWaypoints();
+    // Tells QML whenever waypoints are added, removed, or pruned for a drone
     emit waypointsChanged(id);
+    // Wired to DroneController::sendToCoord in main.cpp. Converts double to float
+    emit waypointAdded(drone->getName(), static_cast<float>(lat), static_cast<float>(lon));
     return true;
 }
 

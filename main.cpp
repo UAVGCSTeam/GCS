@@ -61,6 +61,9 @@ int main(int argc, char *argv[])
     MissionManager missionManager;
     engine.rootContext()->setContextProperty("missionManager", &missionManager);
 
+    QObject::connect(&missionManager, &MissionManager::waypointAdded,
+                     &droneController, &DroneController::sendToCoord);
+
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*
      * main.qml is our entry point for all of our UI/GUI resources.
