@@ -725,15 +725,63 @@ Window {
                                 font.italic: true
                             }
 
-                            CheckBox {
-                                checked: droneController.checkHeartBeat
-                                text: qsTr("Heartbeat Simulation")
+                            // Heartbeat simulation
+                            RowLayout {
+                                spacing: 12
 
-                                onCheckedChanged: {
-                                    droneController.setCheckedHeartBeat(checked)
-                                    // This updates the C++ property when the user clicks the checkbox
-                                    // droneController.checkHeartBeat = checked
-                                    // console.log("HEART: ", droneController.checkHeartBeat)
+                                CheckBox {
+                                    id: simulateHeartbeat
+                                    checked: droneController.checkHeartBeat
+
+                                    indicator: Rectangle {
+                                        width: 18
+                                        height: 18
+                                        radius: 3
+                                        color: simulateHeartbeat.checked 
+                                            ? GcsStyle.PanelStyle.buttonActiveColor 
+                                            : GcsStyle.PanelStyle.secondaryColor
+                                        border.color: simulateHeartbeat.checked 
+                                            ? GcsStyle.PanelStyle.buttonActiveColor 
+                                            : GcsStyle.PanelStyle.defaultBorderColor
+                                        border.width: 1
+
+                                        Text {
+                                            text: "✓"
+                                            color: "white"
+                                            font.pixelSize: 12
+                                            font.weight: Font.Bold
+                                            anchors.centerIn: parent
+                                            visible: simulateHeartbeat.checked
+                                        }
+                                    }
+                                    onCheckedChanged: {
+                                        droneController.setCheckedHeartBeat(checked)
+                                        // This updates the C++ property when the user clicks the checkbox
+                                        // droneController.checkHeartBeat = checked
+                                        // console.log("HEART: ", droneController.checkHeartBeat)
+                                    }                            
+                                }
+
+                                ColumnLayout {
+                                    spacing: 4
+
+                                    Text {
+                                        text: "Heartbeat simulation"
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                    }
+
+                                    Text {
+                                        text: droneController.checkHeartBeat 
+                                            ? "The application will run a timer that simulates a heratbeat being sent to drones."
+                                            : "The application will run a timer that simulates a heratbeat being sent to drones."
+                                        color: GcsStyle.PanelStyle.textSecondaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                        wrapMode: Text.WordWrap
+                                        Layout.preferredWidth: 350
+                                    }
                                 }
                             }
 

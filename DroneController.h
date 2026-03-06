@@ -265,7 +265,7 @@ private:
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
 
     //temporary heartbeat sim
-    void simHeartbeat();
+    void useSimulatedHeartbeat();
     bool checkHeartBeat = false;
 
     DBManager &dbManager;
