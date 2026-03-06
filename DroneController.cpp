@@ -35,7 +35,10 @@ DroneController::DroneController(DBManager &db, QObject *parent)
     }
     qDebug() << "[DroneController.cpp] Loaded" << droneList.size() << "drones from the database.";
 
-    // --- Simulated Drone Movement ---
+    //temporary sim heartbeat
+    connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::useSimulatedHeartbeat);
+    heartBeatSimTimer.start(250); //four per second
+
     // connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
     // simulationTimer.start(250); // Move once per second
     // qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
@@ -74,7 +77,12 @@ DroneController::~DroneController()
 {
 }
 
-
+//temporary sim heartbeat
+void DroneController::useSimulatedHeartbeat()
+{
+    if(checkHeartBeat)
+        updateDroneTelem(droneList[0], "connected", true);
+}
 
 // DroneClass updaters
 // We're changing this here so that by default the DroneClass is 
