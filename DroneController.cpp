@@ -45,6 +45,10 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         "u2", "fc2", "uavtype2", -1, -1, false, nullptr));
     unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
         "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u8", "fc8", "uavtype8", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u9", "fc9", "uavtype9", -1, -1, false, nullptr));
     }
 
     rebuildUnknownVariant();

@@ -272,7 +272,10 @@ Rectangle {
                         Image {
                             id: statusIcon
                             source: {
-                                if (modelData.altitude > 0.05) {
+                                if (modelData.altitude == -1) {
+                                    return "qrc:/resources/warning.png"
+                                }
+                                else if (modelData.altitude > 0.05) {
                                     if (GcsStyle.PanelStyle.isLightTheme) {
                                         return "qrc:/resources/droneStatusLightMode.svg"
                                     }
