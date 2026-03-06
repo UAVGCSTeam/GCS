@@ -75,11 +75,30 @@ bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geom
             return false;
         }
 
+        QVariantList holes;
+        for (int ringIndex = 1; ringIndex < coordinates.size(); ++ringIndex) {
+            if (!coordinates[ringIndex].isArray()) {
+                continue;
+            }
+
+            const QVariantList holePoints = buildPointListFromPolygonRing(coordinates[ringIndex].toArray());
+            if (holePoints.size() < 3) {
+                continue;
+            }
+
+            holes.append(holePoints);
+        }
+
         QVariantMap zone;
         zone["id"] = zoneId;
         zone["type"] = "polygon";
         zone["points"] = points;
+        zone["holes"] = holes;
         zone["label"] = properties.value("NAME").toString(properties.value("name").toString(zoneId));
+        zone["airspace"] = properties.value("Airspace").toString();
+        zone["reason"] = properties.value("Reason").toString();
+        zone["state"] = properties.value("State").toString();
+        zone["area"] = properties.value("Shape__Area").toDouble();
         m_noFlyZones.append(zone);
         return true;
     }
@@ -103,11 +122,30 @@ bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geom
                 continue;
             }
 
+            QVariantList holes;
+            for (int ringIndex = 1; ringIndex < polygon.size(); ++ringIndex) {
+                if (!polygon[ringIndex].isArray()) {
+                    continue;
+                }
+
+                const QVariantList holePoints = buildPointListFromPolygonRing(polygon[ringIndex].toArray());
+                if (holePoints.size() < 3) {
+                    continue;
+                }
+
+                holes.append(holePoints);
+            }
+
             QVariantMap zone;
             zone["id"] = QString("%1_%2").arg(zoneId).arg(polygonIndex++);
             zone["type"] = "polygon";
             zone["points"] = points;
+            zone["holes"] = holes;
             zone["label"] = properties.value("NAME").toString(properties.value("name").toString(zoneId));
+            zone["airspace"] = properties.value("Airspace").toString();
+            zone["reason"] = properties.value("Reason").toString();
+            zone["state"] = properties.value("State").toString();
+            zone["area"] = properties.value("Shape__Area").toDouble();
             m_noFlyZones.append(zone);
             addedAny = true;
         }

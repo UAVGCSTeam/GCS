@@ -178,24 +178,41 @@ Item {
             delegate: MapPolygon {
             // Each zone contains a `points` array with `{ lat, lon }` entries.
                 property var zonePoints: (modelData && modelData.points) ? modelData.points : []
+                property var zoneHoles: (modelData && modelData.holes) ? modelData.holes : []
+                property string zoneAirspace: (modelData && modelData.airspace) ? modelData.airspace : ""
+                property bool isOffshoreTwelveNmBand: zoneAirspace.indexOf("Airspace over waters from US shore to line (12NM)") !== -1
+                property bool shouldFillZone: !isOffshoreTwelveNmBand
 
                 visible: mapwindow.showNoFlyZones && zonePoints.length >= 3
-                color: "#44ff0000"
-                border.color: "#cc0000"
-                border.width: 2
+                color: shouldFillZone ? "#66ff0000" : "transparent"
+                border.color: "#ff0000"
+                border.width: isOffshoreTwelveNmBand ? 2.5 : 2
                 z: 5
 
-                path: {
-                    // Convert stored lat/lon pairs into QGeoCoordinate objects for MapPolygon.
-                    var points = []
-                    for (var i = 0; i < zonePoints.length; i++) {
-                        var p = zonePoints[i]
+                function convertRingToCoordinates(ring) {
+                    var coordinates = []
+                    for (var i = 0; i < ring.length; i++) {
+                        var p = ring[i]
                         if (p.lat === undefined || p.lon === undefined)
                             continue
 
-                        points.push(QtPositioning.coordinate(p.lat, p.lon))
+                        coordinates.push(QtPositioning.coordinate(p.lat, p.lon))
                     }
-                    return points
+                    return coordinates
+                }
+
+                geoShape: {
+                    // Use QtPositioning.polygon(perimeter, holes) so inner rings are cut out.
+                    var outerRing = convertRingToCoordinates(zonePoints)
+                    var holeRings = []
+
+                    for (var i = 0; i < zoneHoles.length; i++) {
+                        var hole = convertRingToCoordinates(zoneHoles[i])
+                        if (hole.length >= 3)
+                            holeRings.push(hole)
+                    }
+
+                    return QtPositioning.polygon(outerRing, holeRings)
                 }
             }
         }
