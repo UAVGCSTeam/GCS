@@ -9,7 +9,6 @@
 #include <QSharedPointer>
 #include <QSharedMemory>
 #include <QMetaType>
-#include <QTimer>
 #include <QFile>
 #include <QTextStream>
 #include <QHash>
@@ -257,6 +256,11 @@ public slots:
     
     // Functions for serial / MAVLink connections
     void onMavlinkMessage(const RxMavlinkMsg& msg);
+    
+    //temporary
+    void setCheckedHeartBeat(bool checked) {
+        checkHeartBeat = checked;
+    }
 
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
@@ -266,9 +270,15 @@ signals:
     void unknownDronesChanged();
 
 private:
+    QTimer heartBeatSimTimer; //temporary
     // QTimer simulationTimer;       // Timer for simulated movement
     // void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
+
+    //temporary heartbeat sim
+    void useSimulatedHeartbeat();
+    bool checkHeartBeat = false;
+
     DBManager &dbManager;
 
     std::unique_ptr<UARTLink>    uartDevice_;
