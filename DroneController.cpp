@@ -1094,7 +1094,7 @@ void DroneController::rebuildVariant()
     {
         m_dronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
     }
-    emit droneschanged();
+    emit dronesChanged();
 }
 
 // called when the unknownDroneList is updated
