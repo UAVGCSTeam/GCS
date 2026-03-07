@@ -1,4 +1,5 @@
 #include "DroneController.h"
+#include "missionmanager.h"
 
 
 
@@ -1010,6 +1011,7 @@ void DroneController::updateDroneTelem(QSharedPointer<DroneClass> drone, const Q
     }
 
     emit dronesChanged();
+    emit droneStateChanged(drone.data());
 } 
 
 
@@ -1073,3 +1075,125 @@ void moveDroneTowards(double &lat, double &lon, double targetLat, double targetL
 //         emit droneStateChanged(drone.data());
 //     }
 // }
+
+void DroneController::setMissionManager(MissionManager* mm)
+{
+    if (missionManager_ == mm)
+        return;
+
+    missionManager_ = mm;
+
+    if (!missionManager_) {
+        qWarning() << "[DroneController] setMissionManager called with nullptr";
+        return;
+    }
+
+    // When waypoints change (added/pruned/removed), if guided is active we may send the next target.
+    QObject::connect(missionManager_, &MissionManager::waypointsChanged,
+                     this, &DroneController::onWaypointsChanged);
+
+    qInfo() << "[DroneController] MissionManager hooked up";
+}
+
+bool DroneController::startGuidedMission(const QString& uavID)
+{
+    if (!missionManager_) {
+        qWarning() << "[DroneController::startGuidedMission] MissionManager not set";
+        return false;
+    }
+
+    if (!mavTx_ || !mavTx_->isLinkOpen()) {
+        qWarning() << "[DroneController::startGuidedMission] MAVLink sender not ready/open";
+        return false;
+    }
+
+    guidedActive_ = true;
+    guidedUavID_ = uavID;
+
+    // Put drone into GUIDED mode (does not arm/takeoff; keep that manual for now)
+    if (!sendGuidedMode(uavID, true)) {
+        qWarning() << "[DroneController::startGuidedMission] Failed to set GUIDED mode for" << uavID;
+        // keep guidedActive_ true/false? safer to turn it off
+        guidedActive_ = false;
+        guidedUavID_.clear();
+        return false;
+    }
+
+    // Immediately send the first target (index 1; index 0 is Origin)
+    sendNextGuidedTarget(uavID);
+
+    qInfo() << "[DroneController] Guided mission START for" << uavID;
+    return true;
+}
+
+void DroneController::stopGuidedMission(const QString& uavID)
+{
+    Q_UNUSED(uavID);
+
+    guidedActive_ = false;
+    guidedUavID_.clear();
+
+    // Optional: take it out of guided mode. If you want to keep it guided, comment this out.
+    // sendGuidedMode(uavID, false);
+
+    qInfo() << "[DroneController] Guided mission STOP";
+}
+
+void DroneController::onWaypointsChanged(const QString& uavID)
+{
+    if (!guidedActive_)
+        return;
+
+    if (uavID != guidedUavID_)
+        return;
+
+    // Whenever MissionManager changes the list (added/pruned), send the new "next" target.
+    sendNextGuidedTarget(uavID);
+}
+
+void DroneController::sendNextGuidedTarget(const QString& uavID)
+{
+    if (!missionManager_)
+        return;
+
+    QVariantList wps = missionManager_->getWaypoints(uavID);
+    if (wps.size() < 2) {
+        qInfo() << "[DroneController] No next waypoint (mission complete) for" << uavID;
+        // Auto-stop when mission is done
+        guidedActive_ = false;
+        guidedUavID_.clear();
+        return;
+    }
+
+    QVariantMap next = wps[1].toMap(); // index 0 = origin, index 1 = next target
+    double lat = next.value("lat").toDouble();
+    double lon = next.value("lon").toDouble();
+
+    bool ok = sendToCoordByUavID(uavID, lat, lon);
+    qInfo() << "[DroneController] Guided next target ->" << uavID << lat << lon << "sent=" << ok;
+}
+
+bool DroneController::sendToCoordByUavID(const QString& uavID, double lat, double lon)
+{
+    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(uavID);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController::sendToCoordByUavID] unknown uavID:" << uavID;
+        return false;
+    }
+
+    if (!mavTx_ || !mavTx_->isLinkOpen()) {
+        qWarning() << "[DroneController::sendToCoordByUavID] MAVLink sender not ready/open";
+        return false;
+    }
+
+    const uint8_t targetSysID  = drone->getSysID();
+    const uint8_t targetCompID = drone->getCompID();
+
+    return mavTx_->sendSetPositionTargetGlobalInt(
+        targetSysID,
+        targetCompID,
+        lat,
+        lon,
+        guidedAltitudeMeters_
+        );
+}

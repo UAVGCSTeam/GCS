@@ -6,6 +6,28 @@ Item {
 
     property var mapview
     property var activeDrone: null
+    property bool guidedRunning: false
+
+    // Functions that continue to the next waypoint after one is visited
+    function sendNextWaypoint(drone) {
+        if (!drone) return
+        var wps = missionManager.getWaypoints(drone.xbeeAddress)
+        if (!wps || wps.length < 2) return
+
+        // Send the next target (index 1, because index 0 is "current position" seed)
+        var next = wps[1]
+        droneController.sendToCoord(drone.name, next.lat, next.lon)
+    }
+
+    function startGuided(drone) {
+        if (!drone) return
+        guidedRunning = true
+        sendNextWaypoint(drone)
+    }
+
+    function stopGuided(drone) {
+        guidedRunning = false
+    }
 
     // Haversine formula for distance between two geo coordinates
     function distanceMeters(lat1, lon1, lat2, lon2) {
@@ -37,6 +59,11 @@ Item {
             ) < 2.0) {
 
             missionManager.pruneFirstWaypoint(drone.xbeeAddress)
+
+            // If guided scheduler is running, advance to the next waypoint after the list updates
+            if (guidedRunning) {
+                Qt.callLater(function() { sendNextWaypoint(drone) })
+            }
         }
     }
     Canvas {

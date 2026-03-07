@@ -61,8 +61,13 @@ int main(int argc, char *argv[])
     MissionManager missionManager;
     engine.rootContext()->setContextProperty("missionManager", &missionManager);
 
-    QObject::connect(&missionManager, &MissionManager::waypointAdded,
-                     &droneController, &DroneController::sendToCoord);
+    // For drone controller to read missions
+    droneController.setMissionManager(&missionManager);
+
+    // Commented out for now because it automatically follows waypoints instead of
+    // going only when "Start guided" is pressed after setting waypoints
+    // QObject::connect(&missionManager, &MissionManager::waypointAdded,
+    //                 &droneController, &DroneController::sendToCoord);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*

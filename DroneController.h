@@ -67,6 +67,7 @@ class UARTLink;
 class UDPLink;
 class MAVLinkSender;
 class MAVLinkReceiver;
+class MissionManager;
 
 class DroneController : public QObject 
 {
@@ -228,6 +229,9 @@ public:
   Q_INVOKABLE void setVelocity(const QString &xbeeID, const QVector3D &newVelocity);
   Q_INVOKABLE void setAirspeed(const QString &xbeeID, const double &newAirspeed);
   Q_INVOKABLE void setOrientation(const QString &xbeeID, const QVector3D &newOrientation);
+  Q_INVOKABLE void setMissionManager(MissionManager *mm);
+  Q_INVOKABLE bool startGuidedMission(const QString &uavID); // same as &xbeeID
+  Q_INVOKABLE void stopGuidedMission(const QString &uavID);
 
 public slots:
     void saveDroneToDB(const QSharedPointer<DroneClass> &drone);
@@ -252,7 +256,6 @@ signals:
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
     void dronesChanged();
-
 private:
     // QTimer simulationTimer;       // Timer for simulated movement
     // void simulateDroneMovement(); // Function to move a drone periodically
@@ -295,6 +298,17 @@ private:
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
+
+    void onWaypointsChanged(const QString& uavID);
+
+    bool sendToCoordByUavID(const QString& uavID, double lat, double lon);
+    void sendNextGuidedTarget(const QString& uavID);
+
+    MissionManager* missionManager_ = nullptr;
+
+    bool guidedActive_ = false;
+    QString guidedUavID_;
+    const float guidedAltitudeMeters_ = 5.0f; // constant altitude for now
 };
 
 #endif // DRONECONTROLLER_H

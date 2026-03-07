@@ -391,6 +391,30 @@ Rectangle {
 
             // Waypoint queue list -- model is fetched from MissionManager each
             // time waypointVersion increments (triggered by waypointsChanged signal)
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+
+                Button {
+                    text: "Start Guided"
+                    enabled: activeDrone !== null
+                    onClicked: {
+                        if (!activeDrone) return
+                        droneController.startGuidedMission(activeDrone.xbeeAddress)
+                    }
+                }
+
+                Button {
+                    text: "Stop Guided"
+                    enabled: activeDrone !== null
+                    onClicked: {
+                        if (!activeDrone) return
+                        droneController.stopGuidedMission(activeDrone.xbeeAddress)
+                    }
+                }
+            }
+
             ListView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
