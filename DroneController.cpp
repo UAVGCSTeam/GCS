@@ -299,7 +299,6 @@ void DroneController::acceptUnknownDrone(const QString &uid)
     removeUnknownDrones(uid);
 
     rebuildVariant();
-    emit dronesChanged();
 }
 void DroneController::removeUnknownDrones(const QString &uid)
 {
@@ -385,7 +384,6 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
         droneList.push_back(drone);
 
         emit droneAdded(drone); // right now this is not being used anywhere
-        emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
         qDebug() << "[DroneController.cpp] dronesChanged signal emitted";
@@ -430,7 +428,6 @@ bool DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
 
             if (response) {
                 qInfo() << "[DroneController.cpp] Updated in storage. Updating in memory now";
-                emit dronesChanged();
                 rebuildVariant();
                 return true;
             } else {
@@ -470,7 +467,6 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
     if (dbManager.deleteDrone(input_xbeeID))
     {
         qDebug() << "[DroneController.cpp] Drone deleted successfully from database:" << input_xbeeID;
-        emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
     }
@@ -480,7 +476,6 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
         // If we removed from memory but failed to delete from DB, sync
         if (found)
         {
-            emit dronesChanged();
             // Adding update to the new QML list
             rebuildVariant();
         }
@@ -497,7 +492,6 @@ void DroneController::deleteALlDrones_UI()
         qDebug() << "[DroneController.cpp]: All drones deleted successfully!";
         // Adding update to the new QML list
         rebuildVariant();
-        emit dronesChanged();
     }
     else
     {
@@ -1100,6 +1094,7 @@ void DroneController::rebuildVariant()
     {
         m_dronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
     }
+    emit droneschanged();
 }
 
 // called when the unknownDroneList is updated
