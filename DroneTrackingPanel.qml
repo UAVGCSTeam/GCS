@@ -14,12 +14,14 @@ import "./components" as Components
 
 Rectangle {
     id: mainPanel
-    width: 250
-    height: 600
-    color: GcsStyle.PanelStyle.primaryColor
-    radius: GcsStyle.PanelStyle.cornerRadius
+    width: 350
+    // 250
+    //height: 600
+    color: GcsStyle.PanelStyle.surfaceBackground
+    // radius: GcsStyle.PanelStyle.cornerRadius
     border.color: GcsStyle.panelStyle.defaultBorderColor
-    border.width: GcsStyle.panelStyle.defaultBorderWidth
+    // border.width: GcsStyle.panelStyle.defaultBorderWidth
+    border.width: 0  // remove the border
 
     signal selectionChanged(var selectedDrones)     // Broadcast the current selection so other components (telemetry, commands, etc.) stay in sync
     signal activeDroneChanged(var anchor)     // Broadcast the current anchor which will be used as the active drone
@@ -39,17 +41,20 @@ Rectangle {
         // Left vertical bar
         Rectangle {
             Layout.fillHeight: true
-            width: GcsStyle.PanelStyle.sidebarWidth
-            color: GcsStyle.PanelStyle.primaryColor
-            radius: GcsStyle.PanelStyle.cornerRadius
+            width: 65
+            // GcsStyle.PanelStyle.sidebarWidth
+            color: GcsStyle.PanelStyle.baseBackground
+            // radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
+            border.color: GcsStyle.panelStyle.defaultBorderColor
+            border.width: GcsStyle.panelStyle.defaultBorderWidth
 
-            Rectangle {
-                anchors.right: parent.right
-                width: parent.width / 2
-                height: parent.height
-                color: parent.color
-            }
+            // Rectangle {
+            //     anchors.right: parent.right
+            //     width: parent.width / 2
+            //     height: parent.height
+            //     color: "white"
+            // }
 
             ColumnLayout {
                 anchors.fill: parent
@@ -61,8 +66,14 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
-                    color: droneListView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
-                    radius: GcsStyle.PanelStyle.buttonRadius
+                    property bool hovered: false
+                    
+                    color: mainPanel.activePanel === "drones" ? GcsStyle.PanelStyle.buttonActiveColor 
+                        : (hovered ? GcsStyle.PanelStyle.hoverBackground : GcsStyle.PanelStyle.buttonColor)
+
+                    border.color: mainPanel.activePanel === "drones" ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: mainPanel.activePanel === "drones" ? GcsStyle.PanelStyle.defaultBorderWidth : 0
+                    radius: 8
 
                     Image {
                         anchors.right: parent.right
@@ -82,13 +93,52 @@ Rectangle {
                     }
                 }
 
-                // Toggle button 2
+                // Toggle button 2 - Mission Planning
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
                     Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
-                    color: discoveryListView.visible ? GcsStyle.PanelStyle.buttonActiveColor : GcsStyle.PanelStyle.buttonColor
-                    radius: GcsStyle.PanelStyle.buttonRadius
+                    
+                    property bool hovered: false
+                    
+                    color: mainPanel.activePanel === "mission" ? GcsStyle.PanelStyle.buttonActiveColor 
+                        : (hovered ? GcsStyle.PanelStyle.hoverBackground : GcsStyle.PanelStyle.buttonColor)
+
+                    border.color: mainPanel.activePanel === "mission" ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: mainPanel.activePanel === "mission" ? GcsStyle.PanelStyle.defaultBorderWidth : 0
+                    radius: 8
+
+                    Image {
+                        anchors.right: parent.right
+                        anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneMapIconSelected.svg" : "qrc:/resources/droneMapIconSelected.svg"
+                        sourceSize.width: GcsStyle.PanelStyle.iconSize
+                        sourceSize.height: GcsStyle.PanelStyle.iconSize
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true                        
+                        onEntered: parent.hovered = true          
+                        onExited: parent.hovered = false 
+                        onClicked: {mainPanel.activePanel = "mission"}
+                    }
+                }
+
+                // Toggle button 3
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    property bool hovered: false
+
+                    color: mainPanel.activePanel === "discovery" ? GcsStyle.PanelStyle.buttonActiveColor 
+                        : (hovered ? GcsStyle.PanelStyle.hoverBackground : GcsStyle.PanelStyle.buttonColor)
+
+                    border.color: mainPanel.activePanel === "discovery" ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: mainPanel.activePanel === "discovery" ? GcsStyle.PanelStyle.defaultBorderWidth : 0
+                    radius: 8
 
                     Image {
                         anchors.right: parent.right
@@ -120,18 +170,19 @@ Rectangle {
             // Header
             Rectangle {
                 Layout.fillWidth: true
-                height: GcsStyle.PanelStyle.headerHeight
+                height: 80 
+                // GcsStyle.PanelStyle.headerHeight
                 color: GcsStyle.PanelStyle.primaryColor
                 radius: GcsStyle.PanelStyle.cornerRadius
                 clip: true
 
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    height: parent.height / 2
-                    color: parent.color
-                }
+                // Rectangle {
+                //     anchors.left: parent.left
+                //     anchors.bottom: parent.bottom
+                //     width: parent.width
+                //     height: parent.height / 2
+                //     color: parent.color
+                // }
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -142,19 +193,23 @@ Rectangle {
                         text: {
                             switch (mainPanel.activePanel) {
                             case "drones":      return "Drone Tracking"
+                            case "mission":     return "Mission Planning"
                             case "discovery":   return "UAV Discovery"
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.headerFontSize
                         font.family: GcsStyle.PanelStyle.fontFamily
                         color: GcsStyle.PanelStyle.textOnPrimaryColor
+                        font.underline: true
                     }
 
                     Text {
                         text: {
                             switch (mainPanel.activePanel) {
                             case "drones":
-                                return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
+                                return droneController ? "Drones in fleet: " + droneController.drones.length : "0 drones in fleet"
+                            case "mission":
+                                return droneController ? "Drones in fleet: " + droneController.drones.length : "0 drones in fleet"
                             case "discovery":
                                 return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs"
                             }
@@ -203,7 +258,10 @@ Rectangle {
                               ? GcsStyle.PanelStyle.listItemHoverColor
                               : (index % 2 === 0
                                  ? GcsStyle.PanelStyle.listItemEvenColor
-                                 : GcsStyle.PanelStyle.listItemOddColor))
+                                 : GcsStyle.PanelStyle.cardBackground))
+
+                    border.color: selected ? GcsStyle.PanelStyle.listItemSelectedBorderColor : "transparent"
+                    border.width: selected ? GcsStyle.PanelStyle.defaultBorderWidth : 0
 
                     MouseArea {
                         anchors.fill: parent
@@ -337,6 +395,298 @@ Rectangle {
                         discoveryListView.model = droneController ? droneController.unknownDrones : []
                     }
                 }
+            }
+
+            // Mission Planning View
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                visible: mainPanel.activePanel === "mission"
+                spacing: 0
+
+                // Search bar
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 8
+                    Layout.rightMargin: 8
+                    height: 36
+                    color: GcsStyle.PanelStyle.baseBackground
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    Layout.bottomMargin: 8
+                    radius: 8
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                        spacing: 6
+
+                        // so that user can enter text
+                        TextInput {
+                            id: searchInput
+                            Layout.fillWidth: true
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            clip: true
+
+                            // The "search..." inside the search bar
+                            Text {
+                                anchors.fill: parent
+                                text: "Search..."
+                                color: GcsStyle.PanelStyle.textSecondaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
+                                visible: !searchInput.text
+                            }
+                        }
+                    }
+                }
+
+                // Active section dropdown
+                Column {
+                    Layout.fillWidth: true
+                    property bool expanded: true
+                    width: parent.width 
+
+                    // creating the active dropdown rectangle
+                    Rectangle {
+                        width: parent.width
+                        height: 36
+                        color: "transparent"
+                        border.color: GcsStyle.panelStyle.defaultBorderColor
+                        border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                            anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+
+                            //active text
+                            Text {
+                                text: "Active (" + droneController.drones.length + ")"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
+                                Layout.fillWidth: true
+                            }
+
+                            // up/down arrows
+                            Text {
+                                text: parent.parent.parent.expanded ? "▲" : "▼"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                            }
+                        }
+
+                        // if clicked then expands
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                        }
+                    }
+
+                    // listing all the drones
+                    ListView {
+                        id: missionListView
+                        width: parent.width
+                        visible: parent.expanded
+                        height: visible ? droneController.drones.length * GcsStyle.PanelStyle.itemHeight : 0 //makes sure that all drones fit in the panel
+                        clip: true
+                        model: droneController.drones
+
+                        //drone itmes
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: GcsStyle.PanelStyle.itemHeight
+                            property bool hovered: false
+                            property bool selected: mainPanel.isIndexSelected(index)
+
+                            // when selected changes colors
+                            color: selected
+                                ? GcsStyle.PanelStyle.listItemSelectedColor
+                                : (hovered
+                                    ? GcsStyle.PanelStyle.hoverBackground
+                                    : GcsStyle.PanelStyle.cardBackground)
+
+                            border.color: selected
+                                ? GcsStyle.PanelStyle.listItemSelectedBorderColor
+                                : GcsStyle.panelStyle.defaultBorderColor
+                            border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: {
+                                    mainPanel.setSingleSelection(index)
+                                    mainPanel.emitSelectionChanged()
+                                }
+                            }
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                                anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                                spacing: 10
+
+                                // Drone icon with battery badge
+                                Item {
+                                    width: 44
+                                    height: 44
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    //drone image
+                                    Image {
+                                        anchors.centerIn: parent
+                                        source: GcsStyle.PanelStyle.isLightTheme
+                                            ? "qrc:/resources/droneStatusLightMode.svg"
+                                            : "qrc:/resources/droneStatusDarkMode.svg"
+                                        sourceSize.width: GcsStyle.PanelStyle.iconSize + 5
+                                        sourceSize.height: GcsStyle.PanelStyle.iconSize + 5
+                                    }
+
+                                    // Red battery badge bottom-left
+                                    Rectangle {
+                                        anchors.bottom: parent.bottom
+                                        anchors.left: parent.left
+                                        width: 30
+                                        height: 14
+                                        radius: 3
+                                        color: "#cc0000"
+
+                                        RowLayout {
+                                            anchors.centerIn: parent
+                                            spacing: 2
+
+                                            Text {
+                                                text: "🔋"
+                                                font.pixelSize: 7
+                                            }
+                                            Text {
+                                                text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "?"
+                                                color: "white"
+                                                font.pixelSize: 8
+                                                font.bold: true
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Name and connection status
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 3
+
+                                    Text {
+                                        text: modelData.name
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                        font.bold: true
+                                    }
+
+                                    RowLayout {
+                                        spacing: 5
+
+                                        Rectangle {
+                                            width: 8
+                                            height: 8
+                                            radius: 4
+                                            color: "#4caf50"
+                                        }
+
+                                        Text {
+                                            text: "Connected"
+                                            color: "#4caf50"
+                                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                            font.family: GcsStyle.PanelStyle.fontFamily
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // Idle section
+                Column {
+                    Layout.fillWidth: true
+                    property bool expanded: false
+
+                    Rectangle {
+                        width: parent.width
+                        height: 36
+                        color: "transparent"
+                        border.color: GcsStyle.panelStyle.defaultBorderColor
+                        border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                            anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+
+                            Text {
+                                text: "Idle (0)"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
+                                Layout.fillWidth: true
+                            }
+                            Text {
+                                text: parent.parent.parent.expanded ? "▲" : "▼"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                        }
+                    }
+                }
+
+                // Inactive section
+                Column {
+                    Layout.fillWidth: true
+                    property bool expanded: false
+
+                    Rectangle {
+                        width: parent.width
+                        height: 36
+                        color: "transparent"
+                        border.color: GcsStyle.panelStyle.defaultBorderColor
+                        border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                            anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+
+                            Text {
+                                text: "Inactive (0)"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
+                                Layout.fillWidth: true
+                            }
+                            Text {
+                                text: parent.parent.parent.expanded ? "▲" : "▼"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                        }
+                    }
+                }
+
+                Item { Layout.fillHeight: true }  // bottom spacer
             }
 
             // Discovery panel

@@ -87,8 +87,10 @@ Window {
         anchors {
             top: droneMenuBar.bottom
             left: parent.left
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
+            bottom: parent.bottom         
+            // margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+        
         onSelectionChanged: function(selected) { updateActiveDrone(selected) }
         onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
         onFollowRequested: function(drone) {
