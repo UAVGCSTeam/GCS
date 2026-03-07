@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 2.15
 import "qrc:/gcsStyle" as GcsStyle
+import "./components"
+import "./components" as Components
 
 /*
   Welcome to the wild west....
@@ -66,14 +68,17 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneStatusDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {mainPanel.activePanel = "drones"}
+                        onClicked: {
+                            mainPanel.activePanel = "drones"
+                            droneController.rebuildVariant()
+                        }
                     }
                 }
 
@@ -96,7 +101,10 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {mainPanel.activePanel = "discovery"}
+                        onClicked: {
+                            mainPanel.activePanel = "discovery"
+                            droneController.loadUnknownDrones()
+                        }
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
@@ -148,7 +156,7 @@ Rectangle {
                             case "drones":
                                 return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
                             case "discovery":
-                                return "x discovered UAVs"  // replace this with droneController.unknownDrones later on
+                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs"
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -263,9 +271,15 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: { 
-                                if (modelData.altitude > 0.05) {
-                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
+                            source: {
+                                if (modelData.altitude == -1) {
+                                    return "qrc:/resources/warning.png"
+                                }
+                                else if (modelData.altitude > 0.05) {
+                                    if (GcsStyle.PanelStyle.isLightTheme) {
+                                        return "qrc:/resources/droneStatusLightMode.svg"
+                                    }
+                                    return "qrc:/resources/droneStatusDarkMode.svg"
                                 }
                                 return "qrc:/resources/grounded.png"
                             }
@@ -275,6 +289,7 @@ Rectangle {
                         }
 
                         ColumnLayout {
+                            Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft
                             Layout.leftMargin: GcsStyle.PanelStyle.defaultMargin
                             spacing: 2
@@ -283,6 +298,8 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                Layout.fillWidth: true
+                                elide: Text.ElideRight
                                 font.family: GcsStyle.PanelStyle.fontFamily
                             }
                             Text {
@@ -293,7 +310,7 @@ Rectangle {
                                 font.family: GcsStyle.PanelStyle.fontFamily
                             }
                         }
-
+                        
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
@@ -311,38 +328,14 @@ Rectangle {
                 Connections {
                     target: droneController
                     function onDronesChanged() {
-                        // TODO: check to see if telemetry data populates during simulation with ardupilot
                         droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
-            }
-
-            // mock data to test list
-            ListModel {
-                id: mockDroneList
-                ListElement {
-                    uavtype: "Arducopter";
-                    uid: "123";
-                    fc: "cub black";
-                    componentid: "1433";
-                    systemid: "1232"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "ArduPlane";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "3";
-                    uid: "jaldfjalfd";
-                    fc: "cube blue";
-                    componentid: "080923";
-                    systemid: "82084"
-                    ignored: false
+                Connections {
+                    target: droneController
+                    function onUnknownDronesChanged() {
+                        discoveryListView.model = droneController ? droneController.unknownDrones : []
+                    }
                 }
             }
 
@@ -356,7 +349,7 @@ Rectangle {
 
                 property int selectedIndex: -1
 
-                model: mockDroneList //placeholder name
+                model: droneController.unknownDrones.filter(u => !u.ignored)
 
                 delegate: Rectangle {
                     id: discoveredItem
@@ -365,7 +358,7 @@ Rectangle {
 
                     // Hides ignored drones
                     height: visible ? (expanded ? 110 : 60) : 0
-                    visible: !ignored // only shows the discovered drone if it isn't ignored
+                    visible: !modelData.ignored // only shows the discovered drone if it isn't ignored
 
                     // local UI state
                     property bool expanded: false
@@ -412,19 +405,22 @@ Rectangle {
                                 spacing: 1
 
                                 Text {
-                                    text: uavtype
+                                    text: modelData.uavType
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
-                                    text: "UID: " + uid;
+                                    text: "UID: " + modelData.uid;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
-                                    text: "FC: " + fc;
+                                    text: "FC: " + modelData.fc;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                             }
 
@@ -464,8 +460,8 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("added!")
+                                            droneController.acceptUnknownDrone(modelData.uid);
                                             discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -499,9 +495,8 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("ignore")
-                                            ignored = true
+                                            droneController.setUnknownDroneIgnored(modelData.uid, true)
                                             discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -523,7 +518,8 @@ Rectangle {
                                     text: "more drone info..."
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-
+                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                    
                                     horizontalAlignment: Text.AlignHCenter
                                 }
                             }
