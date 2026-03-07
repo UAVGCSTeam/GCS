@@ -408,16 +408,19 @@ Rectangle {
                                     text: modelData.uavType
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
                                     text: "UID: " + modelData.uid;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
                                     text: "FC: " + modelData.fc;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                             }
 
@@ -515,7 +518,8 @@ Rectangle {
                                     text: "more drone info..."
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-
+                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                    
                                     horizontalAlignment: Text.AlignHCenter
                                 }
                             }
