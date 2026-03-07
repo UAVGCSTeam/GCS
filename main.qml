@@ -136,18 +136,8 @@ Window {
     }
 
     Component.onCompleted: {
-<<<<<<< HEAD
         overlays.loadNoFlyZones(":/data/National_Security_UAS_Flight_Restrictions.geojson")
-
-        // Once the component is fully loaded, run through our js file to grab the needed info
-        var coords = Coordinates.getAllCoordinates();
-        for (var i = 0; i < 3; i++) {
-            var coord = coords[i]
-            mapController.setLocationMarking(coord.lat, coord.lon)
-        }
-=======
         droneController.openUdp(14550, "127.0.0.1", 14550)
->>>>>>> main
         // droneController.openUART("/dev/ttys005", 57600)
         // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
     }
