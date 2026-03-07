@@ -26,19 +26,19 @@ QtObject {
     readonly property color baseBackground: isLightTheme ? "#D1D1D6" : "#0F1014"     // for side bars, top bar, base background
     readonly property color surfaceBackground: isLightTheme ? "#C7D2E8" : "#161721"  // for side panels
     readonly property color cardBackground: isLightTheme ? "#FDF6F6" : Qt.rgba(0.118, 0.129, 0.188, 1)    // for drone items, clickable items
-    readonly property color hoverBackground: isLightTheme ? "#E8E8ED" : "#252840"    // for hovering over items
+    readonly property color hoverBackground: isLightTheme ? "#E8E8ED" : "#1e3d4a"    // for hovering over items
 
     // Sizes
     readonly property int sidebarWidth: 50
     readonly property int headerHeight: 50
     readonly property int menuBarHeight: 30
-    readonly property int itemHeight: 50
+    readonly property int itemHeight: 60
     readonly property int cornerRadius: 10
 
     // Font sizes (computed from textSizeBase)
-    readonly property int fontSizeLarge: textSizeBase + 6 //18 default value
+    readonly property int fontSizeLarge: textSizeBase + 15.65 //27.65 default value
     readonly property int fontSizeMedium: textSizeBase + 4 //16 default value
-    readonly property int fontSizeSmall: textSizeBase //12 default value
+    readonly property int fontSizeSmall: textSizeBase + 1.33 //13.33 default value
     readonly property int fontSizeXS: textSizeBase - 2 //10 default value
     readonly property int fontSizeXXS: textSizeBase - 4 //8 default value
 
@@ -86,8 +86,8 @@ QtObject {
     readonly property double buttonSpacing: 5
 
     // Borders 
-    readonly property double defaultBorderWidth: 0.5
-    readonly property color defaultBorderColor: isLightTheme ? "#C5C5CC" : "#515151"     // silver, medium grey
+    readonly property double defaultBorderWidth: 0.75   
+    readonly property color defaultBorderColor: isLightTheme ? "#C5C5CC" : Qt.rgba(1, 1, 1, 0.08)    // silver, medium grey "#515151"
 
     // Icon properties
     readonly property int iconSize: 24
@@ -98,8 +98,8 @@ QtObject {
     readonly property color textOnSecondaryColor: textPrimaryColor
 
     // Header-specific properties (scale with textSizeBase)
-    readonly property int headerFontSize: textSizeBase + 6 //18 default value
-    readonly property int subHeaderFontSize: textSizeBase // 12 default value
+    readonly property int headerFontSize: textSizeBase + 15.65 //27.65 default value
+    readonly property int subHeaderFontSize: textSizeBase + 1.33 //13.33 default value
 
     // Battery indicator colors
     readonly property color batteryHighColor: "#4CAF50"
