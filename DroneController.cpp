@@ -1,4 +1,5 @@
 #include "DroneController.h"
+#include <QRandomGenerator>
 
 
 
@@ -22,15 +23,9 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
         
-        if (index == 0) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
-        } else if (index == 1) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
-        } else if (index == 2) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
-        } else { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
-        }
+        // Random battery level (35-92%) for realistic demo variation
+        int batteryLevel = QRandomGenerator::global()->bounded(35, 93);
+        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, batteryLevel, 34.059174611493965, -117.82051240067321, 10, nullptr));
         
         index++;
     }
