@@ -23,7 +23,8 @@
 #include "UDPLink.h"
 #include "unknowndroneclass.h"
 
-
+// For randomly generating battery levels
+#include <QRandomGenerator>
 
 // DATA PATH
 #ifdef _WIN32

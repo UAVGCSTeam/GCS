@@ -1,6 +1,4 @@
 #include "DroneController.h"
-#include <QRandomGenerator>
-
 
 
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
