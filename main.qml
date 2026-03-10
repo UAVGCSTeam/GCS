@@ -20,7 +20,6 @@ Window {
     property var activeDrone: null // DroneClass type
 
     // These are our components that sit on top of our Window object
-
     QmlMap {
         id: mapComponent
         anchors.fill: parent

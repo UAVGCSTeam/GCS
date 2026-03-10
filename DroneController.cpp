@@ -1,8 +1,8 @@
 #include "DroneController.h"
 
 
-
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
+QList<QSharedPointer<UnknownDroneClass>> DroneController::unknownDroneList; // Define the static variable
 
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db)
@@ -21,21 +21,33 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
         
-        if (index == 0) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
-        } else if (index == 1) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
-        } else if (index == 2) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
-        } else { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
-        }
+        // Random battery level (35-92%) for realistic demo variation
+        int batteryLevel = QRandomGenerator::global()->bounded(35, 93);
+        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, batteryLevel, 34.059174611493965, -117.82051240067321, 10, nullptr));
         
         index++;
     }
-    qDebug() << "[DroneController.cpp] Loaded" << droneList.size() << "drones from the database.";
+    // simulated unknown drone list
+    if (unknownDroneList.isEmpty()) {
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u2", "fc2", "uavtype2", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u8", "fc8", "uavtype8", -1, -1, false, nullptr));
+    unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+        "u9", "fc9", "uavtype9", -1, -1, false, nullptr));
+    }
 
-    // --- Simulated Drone Movement ---
+    rebuildUnknownVariant();
+    emit unknownDronesChanged();
+
+    //temporary sim heartbeat
+    connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::useSimulatedHeartbeat);
+    heartBeatSimTimer.start(250); //four per second
+
     // connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
     // simulationTimer.start(250); // Move once per second
     // qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
@@ -74,7 +86,12 @@ DroneController::~DroneController()
 {
 }
 
-
+//temporary sim heartbeat
+void DroneController::useSimulatedHeartbeat()
+{
+    if(checkHeartBeat)
+        updateDroneTelem(droneList[0], "connected", true);
+}
 
 // DroneClass updaters
 // We're changing this here so that by default the DroneClass is 
@@ -238,6 +255,65 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
     }
 }
 
+// drone list updaters
+void DroneController::loadUnknownDrones()
+{
+    rebuildUnknownVariant();
+    emit unknownDronesChanged();
+}
+void DroneController::setUnknownDroneIgnored(const QString &uid, bool ignored)
+{
+    for (const auto &unknownDrone : unknownDroneList) {
+        if (unknownDrone && unknownDrone->getUid() == uid) {
+            unknownDrone->setIgnored(ignored);
+            rebuildUnknownVariant();
+            emit unknownDronesChanged();
+            return;
+        }
+    }
+}
+void DroneController::acceptUnknownDrone(const QString &uid)
+{
+    // finds drone by uid, if not found, then sends warning and doesn't log to db
+    QSharedPointer<UnknownDroneClass> found;
+    for (const auto &unknownDrone : unknownDroneList) {
+        if (unknownDrone && unknownDrone->getUid() == uid) {
+            found = unknownDrone;
+            break;
+        }
+    }
+
+    if (!found) {
+        qWarning() << "acceptUnknownDrone: unknown drone not found for uid: " << uid;
+        return;
+    }
+
+    // these are just to easily identify the newly added drones since we don't have other identifers
+    const QString role = found->getUavType().isEmpty() ? QStringLiteral("Unknown") : found->getUavType();
+    const QString name = role + QStringLiteral(" ") + uid;
+    // uid as placeholder since we won't know xbeeAddress yet
+    const QString xbeeID = uid;
+    const QString xbeeAddress = uid;
+
+    // battery, latitutde, longitude, altitude all unknown (-1)
+    createDrone(name,role,xbeeID,xbeeAddress,-1,-1,-1,-1,nullptr);
+    removeUnknownDrones(uid);
+
+    rebuildVariant();
+}
+void DroneController::removeUnknownDrones(const QString &uid)
+{
+    // loops through the list to find the specific drone index with the
+    // matching uid the user wants to remove
+    for (int i = 0; i < unknownDroneList.size(); ++i) {
+        if (unknownDroneList[i] && unknownDroneList[i]->getUid() == uid) {
+            unknownDroneList.removeAt(i);
+            rebuildUnknownVariant();
+            emit unknownDronesChanged();
+            return;
+        }
+    }
+}
 
 // Steps in saving a drone.
 /* User Clicks button to save drone information
@@ -309,7 +385,6 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
         droneList.push_back(drone);
 
         emit droneAdded(drone); // right now this is not being used anywhere
-        emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
         qDebug() << "[DroneController.cpp] dronesChanged signal emitted";
@@ -354,7 +429,6 @@ bool DroneController::updateDrone(const QSharedPointer<DroneClass> &drone)
 
             if (response) {
                 qInfo() << "[DroneController.cpp] Updated in storage. Updating in memory now";
-                emit dronesChanged();
                 rebuildVariant();
                 return true;
             } else {
@@ -394,7 +468,6 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
     if (dbManager.deleteDrone(input_xbeeID))
     {
         qDebug() << "[DroneController.cpp] Drone deleted successfully from database:" << input_xbeeID;
-        emit dronesChanged();
         // Adding update to the new QML list
         rebuildVariant();
     }
@@ -404,7 +477,6 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
         // If we removed from memory but failed to delete from DB, sync
         if (found)
         {
-            emit dronesChanged();
             // Adding update to the new QML list
             rebuildVariant();
         }
@@ -421,7 +493,6 @@ void DroneController::deleteALlDrones_UI()
         qDebug() << "[DroneController.cpp]: All drones deleted successfully!";
         // Adding update to the new QML list
         rebuildVariant();
-        emit dronesChanged();
     }
     else
     {
@@ -446,6 +517,8 @@ QSharedPointer<DroneClass> DroneController::getDroneByName(const QString &name)
 // If want to query by address
 QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString &address)
 {
+    qDebug() << "Looking for drone with address:" << address;
+
     // First try exact address match
     for (const auto &drone : droneList)
     {
@@ -685,7 +758,7 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
 }
 
 
-bool DroneController::sendToCoord(const QString droneName, float lat, float lon) { 
+bool DroneController::sendToCoord(const QString droneName, float lat, float lon) {
     QSharedPointer<DroneClass> drone = getDroneByName(droneName);
     if (drone.isNull()) {
         qWarning() << "[DroneController.cpp::sendToCoord] unknown drone:" << drone;
@@ -964,7 +1037,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 void DroneController::updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value)
 {
     if (drone.isNull()) return;
-    
+
     // qDebug() << "[DroneController.cpp::updateDroneTelem] Updating drone: " << drone->getName();
     if (field == "connected") {
         drone->setConnected(value.toBool());                 // if you have it
@@ -1002,8 +1075,19 @@ void DroneController::rebuildVariant()
     {
         m_dronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
     }
+    emit dronesChanged();
 }
 
+// called when the unknownDroneList is updated
+void DroneController::rebuildUnknownVariant()
+{
+    m_unknownDronesVariant.clear();
+    m_unknownDronesVariant.reserve(unknownDroneList.size());
+    for (const auto &sp : unknownDroneList)
+    {
+        m_unknownDronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
+    }
+}
 
 // Simple linear interpolation towards a target point
 void moveDroneTowards(double &lat, double &lon, double targetLat, double targetLon, double step)
