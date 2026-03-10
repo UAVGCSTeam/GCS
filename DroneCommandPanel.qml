@@ -426,6 +426,30 @@ Rectangle {
                 }
             }
 
+            // Start Guided button
+            // TODO: Re-enable Stop Guided for post-presentation (requires hover/loiter MAVLink command for immediate stop)
+            Button {
+                width: parent.width * 0.5
+                height: 40
+                enabled: activeDrone !== null
+                onClicked: {
+                    if (activeDrone)
+                        missionManager.startMission(activeDrone.xbeeAddress)
+                }
+                contentItem: Text {
+                    text: "Start Guided"
+                    color: "white"
+                    font.pixelSize: 14
+                    anchors.centerIn: parent
+                }
+                background: Rectangle {
+                    color: "#2e7d32"
+                    radius: 5
+                    border.width: GcsStyle.PanelStyle.defaultBorderWidth
+                    border.color: GcsStyle.PanelStyle.defaultBorderColor
+                }
+            }
+
             Button {
                 text: "Back to Commands"
                 onClicked: {

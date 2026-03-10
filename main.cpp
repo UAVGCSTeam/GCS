@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
     MissionManager missionManager;
     engine.rootContext()->setContextProperty("missionManager", &missionManager);
 
-    QObject::connect(&missionManager, &MissionManager::waypointAdded,
-                     &droneController, &DroneController::sendToCoord);
+    QObject::connect(&missionManager, &MissionManager::navigateToNext,
+                     &droneController, &DroneController::sendToCoordByUavID);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*

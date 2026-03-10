@@ -105,10 +105,14 @@ bool MissionManager::addWaypoint(DroneClass* drone, double lat, double lon)
              << "(xbee:" << id << ")"
              << "| wp(" << lat << "," << lon << ")"
              << "| total waypoints:" << mission->getNumWaypoints();
-    // Tells QML whenever waypoints are added, removed, or pruned for a drone
+
     emit waypointsChanged(id);
-    // Wired to DroneController::sendToCoord in main.cpp. Converts double to float
-    emit waypointAdded(drone->getName(), static_cast<float>(lat), static_cast<float>(lon));
+
+    // Only navigate if guided is active and this is the first target (origin + 1).
+    // Additional waypoints just queue up — the drone gets to them after each prune.
+    if (m_guidedActive && m_guidedUavID == id && mission->getNumWaypoints() == 2) {
+        emit navigateToNext(id, static_cast<float>(lat), static_cast<float>(lon));
+    }
     return true;
 }
 
@@ -130,7 +134,42 @@ bool MissionManager::pruneFirstWaypoint(const QString& uavID)
     }
 
     emit waypointsChanged(uavID);
+
+    // After pruning, send the drone to the new next target if guided is active
+    if (m_guidedActive && m_guidedUavID == uavID) {
+        const QList<Waypoint>& wps = mission->getWaypoints();
+        if (wps.size() >= 2) {
+            emit navigateToNext(uavID, static_cast<float>(wps[1].latitude), static_cast<float>(wps[1].longitude));
+        }
+    }
     return true;
+}
+
+void MissionManager::startMission(const QString& uavID)
+{
+    UAVMission* mission = m_missions.value(uavID, nullptr);
+    if (!mission) {
+        qDebug() << "[MissionManager] startMission: no mission found for" << uavID;
+        return;
+    }
+
+    m_guidedActive = true;
+    m_guidedUavID  = uavID;
+
+    const QList<Waypoint>& wps = mission->getWaypoints();
+    if (wps.size() >= 2) {
+        qDebug() << "[MissionManager] Mission started for" << uavID << "| sending to first waypoint";
+        emit navigateToNext(uavID, static_cast<float>(wps[1].latitude), static_cast<float>(wps[1].longitude));
+    } else {
+        qDebug() << "[MissionManager] startMission: no waypoints queued for" << uavID;
+    }
+}
+
+void MissionManager::stopMission(const QString& uavID)
+{
+    qDebug() << "[MissionManager] Mission stopped for" << uavID;
+    m_guidedActive = false;
+    m_guidedUavID.clear();
 }
 
 bool MissionManager::removeMission(const QString& uavID)

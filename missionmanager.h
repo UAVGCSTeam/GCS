@@ -40,15 +40,22 @@ public:
     Q_INVOKABLE bool        pruneFirstWaypoint(const QString& uavID);
     Q_INVOKABLE bool        removeMission(const QString& uavID);
 
+    // Mission execution control
+    Q_INVOKABLE void        startMission(const QString& uavID);
+    Q_INVOKABLE void        stopMission(const QString& uavID);
+
 signals:
     // Emitted whenever waypoints are added, removed, or pruned for a drone
     void waypointsChanged(const QString& uavID);
-    // Emitted when a new waypoint is added; wired to DroneController::sendToCoord in main.cpp
-    void waypointAdded(const QString droneName, float lat, float lon);
+    // Emitted when the drone should fly to its next waypoint (wired to DroneController::sendToCoordByUavID)
+    void navigateToNext(const QString uavID, float lat, float lon);
 
 private:
     QMap<QString, UAVMission*> m_missions;   // xbeeAddress -> active mission
     int                        m_numMissions;
+
+    bool    m_guidedActive = false;  // true when a mission is actively executing
+    QString m_guidedUavID;           // xbeeAddress of the drone currently being guided
 };
 
 #endif // MISSIONMANAGER_H
