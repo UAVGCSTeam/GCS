@@ -75,7 +75,10 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {mainPanel.activePanel = "drones"}
+                        onClicked: {
+                            mainPanel.activePanel = "drones"
+                            droneController.rebuildVariant()
+                        }
                     }
                 }
 
@@ -98,7 +101,10 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {mainPanel.activePanel = "discovery"}
+                        onClicked: {
+                            mainPanel.activePanel = "discovery"
+                            droneController.loadUnknownDrones()
+                        }
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
@@ -150,7 +156,7 @@ Rectangle {
                             case "drones":
                                 return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
                             case "discovery":
-                                return "x discovered UAVs"  // replace this with droneController.unknownDrones later on
+                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs"
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -266,7 +272,10 @@ Rectangle {
                         Image {
                             id: statusIcon
                             source: {
-                                if (modelData.altitude > 0.05) {
+                                if (modelData.altitude == -1) {
+                                    return "qrc:/resources/warning.png"
+                                }
+                                else if (modelData.altitude > 0.05) {
                                     if (GcsStyle.PanelStyle.isLightTheme) {
                                         return "qrc:/resources/droneStatusLightMode.svg"
                                     }
@@ -322,34 +331,11 @@ Rectangle {
                         droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
-            }
-
-            // mock data to test list
-            ListModel {
-                id: mockDroneList
-                ListElement {
-                    uavtype: "Arducopter";
-                    uid: "123";
-                    fc: "cub black";
-                    componentid: "1433";
-                    systemid: "1232"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "ArduPlane";
-                    uid: "21hadjfalkdj";
-                    fc: "cube orange";
-                    componentid: "1231231";
-                    systemid: "2894293"
-                    ignored: false
-                }
-                ListElement {
-                    uavtype: "3";
-                    uid: "jaldfjalfd";
-                    fc: "cube blue";
-                    componentid: "080923";
-                    systemid: "82084"
-                    ignored: false
+                Connections {
+                    target: droneController
+                    function onUnknownDronesChanged() {
+                        discoveryListView.model = droneController ? droneController.unknownDrones : []
+                    }
                 }
             }
 
@@ -363,7 +349,7 @@ Rectangle {
 
                 property int selectedIndex: -1
 
-                model: mockDroneList //placeholder name
+                model: droneController.unknownDrones.filter(u => !u.ignored)
 
                 delegate: Rectangle {
                     id: discoveredItem
@@ -372,7 +358,7 @@ Rectangle {
 
                     // Hides ignored drones
                     height: visible ? (expanded ? 110 : 60) : 0
-                    visible: !ignored // only shows the discovered drone if it isn't ignored
+                    visible: !modelData.ignored // only shows the discovered drone if it isn't ignored
 
                     // local UI state
                     property bool expanded: false
@@ -419,19 +405,22 @@ Rectangle {
                                 spacing: 1
 
                                 Text {
-                                    text: uavtype
+                                    text: modelData.uavType
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
-                                    text: "UID: " + uid;
+                                    text: "UID: " + modelData.uid;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
-                                    text: "FC: " + fc;
+                                    text: "FC: " + modelData.fc;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                             }
 
@@ -471,8 +460,8 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("added!")
+                                            droneController.acceptUnknownDrone(modelData.uid);
                                             discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -506,9 +495,8 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("ignore")
-                                            ignored = true
+                                            droneController.setUnknownDroneIgnored(modelData.uid, true)
                                             discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -530,7 +518,8 @@ Rectangle {
                                     text: "more drone info..."
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-
+                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                    
                                     horizontalAlignment: Text.AlignHCenter
                                 }
                             }
