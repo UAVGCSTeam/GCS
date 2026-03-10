@@ -68,17 +68,14 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneStatusDarkMode.svg"
+                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneSVG.svg" : "qrc:/resources/droneSVGDarkMode.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
-                            mainPanel.activePanel = "drones"
-                            droneController.rebuildVariant()
-                        }
+                        onClicked: {mainPanel.activePanel = "drones"}
                     }
                 }
 
@@ -101,10 +98,7 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
-                            mainPanel.activePanel = "discovery"
-                            droneController.loadUnknownDrones()
-                        }
+                        onClicked: {mainPanel.activePanel = "discovery"}
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
@@ -156,7 +150,7 @@ Rectangle {
                             case "drones":
                                 return droneController ? droneController.drones.length + " drones in fleet" : "0 drones in fleet"
                             case "discovery":
-                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs"
+                                return "x discovered UAVs"  // replace this with droneController.unknownDrones later on
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -271,15 +265,9 @@ Rectangle {
 
                         Image {
                             id: statusIcon
-                            source: {
-                                if (modelData.altitude == -1) {
-                                    return "qrc:/resources/warning.png"
-                                }
-                                else if (modelData.altitude > 0.05) {
-                                    if (GcsStyle.PanelStyle.isLightTheme) {
-                                        return "qrc:/resources/droneStatusLightMode.svg"
-                                    }
-                                    return "qrc:/resources/droneStatusDarkMode.svg"
+                            source: { 
+                                if (modelData.altitude > 0.05) {
+                                    return GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneStatusSVG.svg" : "qrc:/resources/droneStatusSVGDarkMode.svg"
                                 }
                                 return "qrc:/resources/grounded.png"
                             }
@@ -298,6 +286,7 @@ Rectangle {
                                 text: modelData.name
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                                 font.family: GcsStyle.PanelStyle.fontFamily
@@ -314,6 +303,20 @@ Rectangle {
                         Item { Layout.fillWidth: true } // spacer to push 
                                                 // items to right and column layout to left
 
+                        StatusPill {
+                            readonly property real altitude: modelData.altitude || 0
+                            readonly property bool connected: modelData.connected || false
+                            readonly property bool arming: modelData.arming || false
+
+                            statusVariant: {
+                                if (arming) return "arming"
+                                if (altitude >= 0.05) return "inFlight"
+                                if (connected) return "active"
+                                return "idle"
+                            }
+                        }   
+
+                        
                         Image {
                             id: warningIcon
                             source: {
@@ -328,14 +331,38 @@ Rectangle {
                 Connections {
                     target: droneController
                     function onDronesChanged() {
+                        // TODO: check to see if telemetry data populates during simulation with ardupilot
                         droneListView.model = droneController ? droneController.drones : [] 
                     } 
                 }
-                Connections {
-                    target: droneController
-                    function onUnknownDronesChanged() {
-                        discoveryListView.model = droneController ? droneController.unknownDrones : []
-                    }
+            }
+
+            // mock data to test list
+            ListModel {
+                id: mockDroneList
+                ListElement {
+                    uavtype: "Arducopter";
+                    uid: "123";
+                    fc: "cub black";
+                    componentid: "1433";
+                    systemid: "1232"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "ArduPlane";
+                    uid: "21hadjfalkdj";
+                    fc: "cube orange";
+                    componentid: "1231231";
+                    systemid: "2894293"
+                    ignored: false
+                }
+                ListElement {
+                    uavtype: "3";
+                    uid: "jaldfjalfd";
+                    fc: "cube blue";
+                    componentid: "080923";
+                    systemid: "82084"
+                    ignored: false
                 }
             }
 
@@ -349,7 +376,7 @@ Rectangle {
 
                 property int selectedIndex: -1
 
-                model: droneController.unknownDrones.filter(u => !u.ignored)
+                model: mockDroneList //placeholder name
 
                 delegate: Rectangle {
                     id: discoveredItem
@@ -358,7 +385,7 @@ Rectangle {
 
                     // Hides ignored drones
                     height: visible ? (expanded ? 110 : 60) : 0
-                    visible: !modelData.ignored // only shows the discovered drone if it isn't ignored
+                    visible: !ignored // only shows the discovered drone if it isn't ignored
 
                     // local UI state
                     property bool expanded: false
@@ -405,22 +432,19 @@ Rectangle {
                                 spacing: 1
 
                                 Text {
-                                    text: modelData.uavType
+                                    text: uavtype
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
-                                    text: "UID: " + modelData.uid;
+                                    text: "UID: " + uid;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                                 Text {
-                                    text: "FC: " + modelData.fc;
+                                    text: "FC: " + fc;
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-                                    font.family: GcsStyle.PanelStyle.fontFamily
                                 }
                             }
 
@@ -460,8 +484,8 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("added!")
-                                            droneController.acceptUnknownDrone(modelData.uid);
                                             discoveryListView.selectedIndex = -1
+                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -495,8 +519,9 @@ Rectangle {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             console.log("ignore")
-                                            droneController.setUnknownDroneIgnored(modelData.uid, true)
+                                            ignored = true
                                             discoveryListView.selectedIndex = -1
+                                            mockDroneList.remove(index)
                                         }
                                     }
                                 }
@@ -518,8 +543,7 @@ Rectangle {
                                     text: "more drone info..."
                                     color: GcsStyle.PanelStyle.textPrimaryColor
                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-                                    font.family: GcsStyle.PanelStyle.fontFamily
-                                    
+
                                     horizontalAlignment: Text.AlignHCenter
                                 }
                             }

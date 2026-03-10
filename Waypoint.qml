@@ -33,8 +33,6 @@ Item {
             lon: clickLon
         })
 
-        droneController.sendToCoord(droneName, clickLat, clickLon)
-
         waypointsUpdated(droneName)
     }
 
@@ -164,4 +162,5 @@ Item {
             droneController.updateWaypoints(droneName, wps);
         }
     }
+
 }

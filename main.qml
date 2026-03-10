@@ -1,8 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
+import "coordinates.js" as Coordinates
 import QtQuick.Controls
 import Qt.labs.platform
-import "./components" as Components
 import "qrc:/gcsStyle" as GcsStyle
 
 /*
@@ -20,6 +20,7 @@ Window {
     property var activeDrone: null // DroneClass type
 
     // These are our components that sit on top of our Window object
+
     QmlMap {
         id: mapComponent
         anchors.fill: parent
@@ -32,7 +33,6 @@ Window {
             mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
         }
     }
-
     MapScaleBarIndicator {
         id: mapScaleBar
         anchors {
@@ -41,7 +41,6 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
-
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
@@ -50,6 +49,16 @@ Window {
             leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
             bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
         }
+    }
+
+    MessageLogPanel {
+        id: messageLogPanel
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            margins: GcsStyle.PanelStyle.applicationBorderMargin
+        }
+        z: 1000
     }
 
     // Menu bar above the drone tracking panel
@@ -84,7 +93,7 @@ Window {
         }
         visible: false
     }
-
+    
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -99,15 +108,18 @@ Window {
                 console.warn("Follow requested without a drone reference")
                 return
             }
+
             console.log("[main.qml] Follow requested via modifier click:", drone.name)
+            // Reset the current follow target so the map component doesn't keep the old pointer
             mapComponent.turnOffFollowDrone()
+            // Immediately re-enable follow mode
             mapComponent.turnOnFollowDrone()
         }
     }
 
-    // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
+    //Shortcut for toggling follow functionality (cmd + f or ctrl + f)
     Shortcut {
-        sequence: StandardKey.Find
+        sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
         onActivated: mapComponent.toggleFollowDrone()
     }
 
@@ -117,27 +129,7 @@ Window {
         onActivated: openSettingsWindow()
     }
 
-    // Command ACK toast notification listener
-    // TODO: have drone class handle its own notifications
-    Connections {
-        target: droneController
-        function onCommandAcknowledged(message, success) {
-            toastNotification.show(message, success)
-        }
-    }
-
-    // Toast notification
-    Components.ToastNotification {
-        id: toastNotification
-        anchors {
-            top: droneMenuBar.bottom
-            horizontalCenter: parent.horizontalCenter
-            topMargin: 12
-        }
-    }
-
-
-    // Settings window
+    // Settings window 
     Loader {
         id: settingsLoader
         source: "qrc:/settingsWindow.qml"
@@ -156,9 +148,14 @@ Window {
     }
 
     Component.onCompleted: {
-        droneController.openUdp(14550, "127.0.0.1", 14550)
+        // Once the component is fully loaded, run through our js file to grab the needed info
+        var coords = Coordinates.getAllCoordinates();
+        for (var i = 0; i < 3; i++) {
+            var coord = coords[i]
+            mapController.setLocationMarking(coord.lat, coord.lon)
+        }
         // droneController.openUART("/dev/ttys005", 57600)
-        // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
+        droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
     }
 
     function updateActiveDrone(selected) {
