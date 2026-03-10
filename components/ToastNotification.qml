@@ -1,5 +1,9 @@
 import QtQuick 2.15
 
+/**
+ * // TODO: Temporary notification. 
+ * REMOVE AND USE DANNY'S UniversalPopup.qml ELEMENT
+*/
 Rectangle {
     id: toastNotification
     width: toastText.implicitWidth + 32

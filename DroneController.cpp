@@ -951,7 +951,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         }
 
         qInfo() << "[DroneController.cpp::onMavlinkMessage]" << resultMsg;
-        emit commandAcknowledged(resultMsg, success);
+        emit commandAcknowledged(resultMsg, success);  
         break;
     }
     default:
