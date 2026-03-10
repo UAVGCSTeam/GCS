@@ -10,15 +10,22 @@ Item {
     width: 250
     height: 180
 
-    focus: true
-    Keys.priority: Keys.AfterItem
-
     property bool autoScroll: true
 
-    Shortcut {
-        sequence: StandardKey.Find
-        enabled: main.activeFocus
-        onActivated: console.log("Find message log")
+    ListModel { id:logModel }
+
+    function typeColor(type) {
+        switch (type){
+            case "debug":   return "green";
+            case "info":    return "white";
+            case "warning": return "yellow";
+            case "critical":return "red";
+            case "fatal":   return "pink";
+        }
+    }
+
+    function appendLog(type, message){
+        logModel.append({type: type, message: message})
     }
 
     Rectangle {
@@ -30,51 +37,70 @@ Item {
             anchors.fill: parent
             spacing: 6
 
+
+            RowLayout{
+                Layout.margins: 5
+
             Label {
                 Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-                leftPadding: 5
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
 
                 text: "Message Log"
                 color: "white"
             }
 
+                Button{
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+
+                    background: Image{
+                        anchors.fill: parent
+                        source: "qrc:/resources/warning.png"
+                        sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
+                        sourceSize.height: GcsStyle.PanelStyle.statusIconSize
+                    }
+                }
+            }
+            
+
             ScrollView {
-                id: scrollView
+                id: messageLog
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                ScrollBar.horizontal.interactive: false
-                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+                spacing: 4
+                clip: true
+
                 ScrollBar.vertical.interactive: true
+                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
                 ListView {
-                    id: listView
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true 
                     model: logModel
-                    clip: true
 
-                    delegate: Text {
-                        width: ListView.view.width
-                        wrapMode: Text.Wrap
-                        padding: 5
-                        bottomPadding: 10
+                    delegate: Row {
+                        id: textLine
+                        width: parent.width
 
-                        text: input
+                        spacing: 8
+
+                        Text{
+                            id: info
+                            leftPadding: 5
+
+                            text: "[" + type + "]"
+                            color: typeColor(type)
+                        }
+                        Text{
+                            width: textLine.width - info.width - textLine.spacing
+                            wrapMode: Text.WordWrap
+
+                            text: " " + message
                         color: "white"
                     }
                 }
 
-                ListModel {
-                    id: logModel
+                    onContentHeightChanged: {
+                        if (autoScroll) {positionViewAtEnd()}
                 }
-
-                onContentHeightChanged: if (main.autoScroll) {autoScroll()} 
-
-                function autoScroll() {
-                    contentItem.contentY = contentItem.contentHeight - contentItem.height
                 }
             }
 
@@ -93,13 +119,30 @@ Item {
                 }
             }
         }
-
         Button {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             height: parent.height / 10
             text: "add text"
-            onPressed: logModel.append({input: "This message is super long in order to test for wrapping and message."})
+            onPressed: {
+                switch (Math.floor(Math.random()*6)){
+                    case 1: 
+                        appendLog("debug","debug message is long in order to test if wrapping works");
+                        break;
+                    case 2:
+                        appendLog("info","info message");
+                        break;
+                    case 3: 
+                        appendLog("warning","warning message");
+                        break;
+                    case 4: 
+                        appendLog("critical","critical message")
+                        break;
+                    case 5: 
+                        appendLog("fatal","fatal message");
+                        break;
+                }
+            }
         }
     }
 }
