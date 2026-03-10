@@ -112,7 +112,7 @@ Rectangle {
                         anchors.right: parent.right
                         anchors.rightMargin: GcsStyle.PanelStyle.iconRightMargin
                         anchors.verticalCenter: parent.verticalCenter
-                        source: GcsStyle.PanelStyle.isLightTheme ? "qrc:/resources/droneMapIconSelected.svg" : "qrc:/resources/droneMapIconSelected.svg"
+                        source: "qrc:/resources/missionPlanIcon.svg"
                         sourceSize.width: GcsStyle.PanelStyle.iconSize
                         sourceSize.height: GcsStyle.PanelStyle.iconSize
                     }

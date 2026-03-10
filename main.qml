@@ -80,6 +80,18 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
+        allowAutoShow: droneTrackingPanel.activePanel !== "mission"
+    }
+
+    MissionPlanPanel {
+        id: missionPlanPanel
+        activeDrone: mainWindow.activeDrone
+        visible: droneTrackingPanel.activePanel === "mission"
+        anchors {
+            top: droneMenuBar.bottom
+            right: parent.right
+            bottom: parent.bottom
+        }
     }
     
     DroneTrackingPanel {

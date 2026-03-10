@@ -14,7 +14,8 @@ QtObject {
 
     // Color scheme
     readonly property color listItemHoverColor: isLightTheme ? "#D1D1D6" : "#384250"     // light silver, blue-grey slate
-    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : "#495B76"  // soft blue-grey, muted steel blue
+    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : Qt.rgba(0, 0.831, 1, 0.12)  // soft blue-grey, dark aqua
+    readonly property color listItemSelectedBorderColor: isLightTheme ? "#A0B0D0" : Qt.rgba(0, 0.831, 1, 0.40) // blue-grey, aqua border
     readonly property color primaryColor: isLightTheme ? "#FDF6F6" : "#161720"           // subtle warm pink white, dark navy
     readonly property color secondaryColor: isLightTheme ? "#E8E8ED" : "#282831"         // light grey, charcoal
     readonly property color accentColor: "#007bff"                                       // bright blue
@@ -46,7 +47,7 @@ QtObject {
     readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
     readonly property color buttonColor2: isLightTheme ? "#DCDCE2" : "#282830"           // pale grey, charcoal
-    readonly property color buttonActiveColor: "#4B88A2"                                  // teal blue
+    readonly property color buttonActiveColor: Qt.rgba(0, 0.831, 1, 0.12)               // dark aqua, matches selection color
     readonly property color buttonHoverColor: isLightTheme ? "#C5C5CC" : "#364357"       // silver, slate blue
     readonly property color buttonPressedColor: listItemHoverColor
     readonly property color buttonUnavailableColor: isLightTheme ? "#E5E5EA" : "#212129" // light grey, dark charcoal
