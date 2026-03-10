@@ -32,14 +32,14 @@ QtObject {
     readonly property int sidebarWidth: 50
     readonly property int headerHeight: 50
     readonly property int menuBarHeight: 30
-    readonly property int itemHeight: 60
+    readonly property int itemHeight: 68
     readonly property int cornerRadius: 10
 
     // Font sizes (computed from textSizeBase)
     readonly property int fontSizeLarge: textSizeBase + 15.65 //27.65 default value
     readonly property int fontSizeMedium: textSizeBase + 4 //16 default value
     readonly property int fontSizeSmall: textSizeBase + 1.33 //13.33 default value
-    readonly property int fontSizeXS: textSizeBase - 2 //10 default value
+    readonly property int fontSizeXS: textSizeBase //12 default value
     readonly property int fontSizeXXS: textSizeBase - 4 //8 default value
 
     // Button properties
@@ -52,9 +52,12 @@ QtObject {
     readonly property color buttonPressedColor: listItemHoverColor
     readonly property color buttonUnavailableColor: isLightTheme ? "#E5E5EA" : "#212129" // light grey, dark charcoal
     readonly property color buttonBorderColor: isLightTheme ? "#B0B0B5" : "#c8c8c8"      // grey, light grey
-    
+
+    // Battery Pill colors + sizes
+    readonly property color lowBatteryColor: Qt.rgba(0.5, 0, 0, 0.8)
+
     // Danger/warning button colors
-    readonly property color buttonDangerColor: "#c62828"
+    readonly property color buttonDangerColor: "#FF0000"
     readonly property color buttonDangerHoverColor: "#ff8e8e"
     readonly property color buttonDangerTextColor: "#ffffff"
 
