@@ -252,6 +252,12 @@ public slots:
                        double input_longitude,
                        double input_altitude,
                        QObject *parent);
+    void createAndAddDroneToUI(const QString &input_name,
+                               const uint8_t &input_sysID,
+                               const uint8_t &input_compID,
+                               const QObject *parent);
+
+
     bool updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
@@ -318,6 +324,31 @@ private:
      *       when debug output is enabled.
      */
     void onUdpBytesReceived(const QByteArray& bytes);
+
+
+    /**
+     * function onNewUDPPeer()
+     * @brief Handles data received from a previously unknown UDP peer.
+     *
+     * This function attempts to parse an incoming UDP datagram as a MAVLink
+     * message using a fresh parsing state. It is intended for scenarios where
+     * new peers may appear dynamically and need to be identified based on
+     * incoming traffic.
+     *
+     * - If a valid MAVLink message is detected, creates a new drone entry
+     *   in the UI using:
+     *      - A generated name based on the sender’s UDP port.
+     *      - The parsed system ID (sysid).
+     *      - The parsed component ID (compid).
+     *
+     * @param bytes           Raw UDP datagram payload.
+     * @param senderUDPPort   Source UDP port of the sender.
+     * @note The generated drone name format is "My Drone <port>".
+     * @warning No validation is performed (within this function) to prevent 
+     *          duplicate drone entries if multiple valid packets are 
+     *          received from the same peer.
+     */
+    void onNewUDPPeer(const QByteArray& bytes, const int& senderUDPPort);
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML

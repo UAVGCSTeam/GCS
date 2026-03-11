@@ -1,4 +1,5 @@
 #include "DroneClass.h"
+#include <QRandomGenerator>
 
 
 
@@ -18,7 +19,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_orientation(QVector3D(-1, -1, -1))
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "[DroneClass.cpp::constructor #1] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -46,7 +47,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_orientation(QVector3D(-1, -1, -1))
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "[DroneClass.cpp::constructor #2] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -54,9 +55,13 @@ DroneClass::DroneClass(const QString &input_name,
                        const QString &input_role,
                        const QString &input_xbeeID,
                        const QString &input_xbeeAddress,
+                       const uint8_t &input_sysID,
+                       const uint8_t &input_compID, 
                        QObject *parent)
     : QObject(parent)
     , m_name(input_name)
+    , m_sysID(input_sysID)
+    , m_compID(input_compID)
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_xbeeID(input_xbeeID)
@@ -66,11 +71,23 @@ DroneClass::DroneClass(const QString &input_name,
     , m_longitude(-1)
     , m_altitude(-1)
     , m_velocity(QVector3D(-1, -1, -1))
-    , m_airspeed(-1)    // temporary
+    , m_airspeed(-1)
     , m_orientation(QVector3D(-1, -1, -1))
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+
+    // If xbeeAddress is not provided, auto-generate a 2-digit value.
+    if (m_xbeeAddress == "-1") {
+        const int xbeeAddressNum = QRandomGenerator::global()->bounded(10, 100); // [10, 99]
+        m_xbeeAddress = QString::number(xbeeAddressNum);
+    }
+
+    qDebug() << "[DroneClass.cpp::constructor #3] Created drone:" 
+        << m_name 
+        << "with ID:" << m_xbeeID 
+        << "and address:" << m_xbeeAddress
+        << "and sysID:" << m_sysID
+        << "and compID:" << m_compID;
 }
 
 

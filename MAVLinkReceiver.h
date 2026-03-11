@@ -26,7 +26,15 @@ class MAVLinkReceiver : public QObject {
     Q_OBJECT
 public:
     explicit MAVLinkReceiver(QObject* parent=nullptr);
-    ~MAVLinkReceiver();                 // ← add this (no inline definition)
+    ~MAVLinkReceiver();
+    RxMavlinkMsg getMAVLinkFromBytes(const QByteArray& data);
+
+    /**
+     * Parse bytes as MAVLink using a fresh parser state (no shared state with other streams).
+     * Use this for the first packet from a new peer so decoding is not corrupted by
+     * previous packets from other peers. See getMAVLinkFromBytes for shared-state parsing.
+     */
+    RxMavlinkMsg getMAVLinkFromBytesWithFreshState(const QByteArray& data);
 
 public slots:
     void onBytes(const QByteArray& data);

@@ -87,7 +87,7 @@ public:
                                         float alt_m) const;
 
 private:
-    qint64 writeToLink(const QByteArray& bytes) const;
+    qint64 writeToLink(const QByteArray& bytes, uint8_t targetSysID) const;
     UARTLink* UARTLink_;
     UDPLink*  UDPLink_;
     QByteArray packCommandLong(uint8_t sys, uint8_t comp,

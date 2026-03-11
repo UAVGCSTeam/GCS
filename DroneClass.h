@@ -51,9 +51,11 @@ public:
     that is stored persistently in the database.
     */
     DroneClass(const QString &input_name, 
-                const QString &input_role,
-                const QString &input_xbeeID,
-                const QString &input_xbeeAddress,
+                const QString &input_role = "no role assigned",
+                const QString &input_xbeeID = "-1",
+                const QString &input_xbeeAddress = "-1",
+                const uint8_t &input_sysID = 0,
+                const uint8_t &input_compID = 0, 
                 QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
@@ -162,8 +164,10 @@ private:
     QTimer    m_heartBeatTimer; // Designates when to check for a new heartbeat
     QDateTime m_lastHeartBeat; // The specific time when the last heartbeat was heard
     qint64    m_heartbeatIntervalMs; // TODO: currently not implemented. can be used to display the interval 
-                                    // between heartbeats 
+    // between heartbeats 
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
+    
+    int       m_udp;
 };
 
 #endif // DRONECLASS_H
