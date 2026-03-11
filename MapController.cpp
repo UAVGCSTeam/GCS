@@ -13,7 +13,6 @@ MapController::MapController(QObject *parent)
     // Defines all variables within our map
     : QObject(parent), m_currentMapType(0), m_supportedMapTypesCount(3)
 {
-
 }
 
 
