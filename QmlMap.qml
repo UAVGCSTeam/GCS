@@ -155,9 +155,11 @@ Item {
 
                     Image {
                         id: markerImage
-                        source: "qrc:/resources/droneMapIconSVG.svg"
+                        readonly property bool isCurrentDroneSelected: droneIsSelected(modelData)
+                        source: isCurrentDroneSelected ? "qrc:/resources/droneMapIconSelected.png" : "qrc:/resources/droneMapIconUnselected.png"
                         width: 100 // controlling w or h affects the whole image due to preserving the aspect fit
                         fillMode: Image.PreserveAspectFit
+                        rotation: modelData.orientation ? (modelData.orientation.z * 180 / Math.PI) : 0
                     }
 
                     DroneLabelComponent {
@@ -313,6 +315,17 @@ Item {
             followDroneName = ""
             if (followTimer.running) followTimer.stop()
         }
+    }
+
+    function droneIsSelected(modelData) {
+        if (!selectedDrones || selectedDrones.length === 0) return false
+        for (let i = 0; i < selectedDrones.length; i++) {
+            const drone = selectedDrones[i]
+            if (drone && drone.name === modelData.name) {
+                return true
+            }
+        }
+        return false
     }
 
     onActiveDroneChanged: {
