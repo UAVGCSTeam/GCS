@@ -260,7 +260,8 @@ public slots:
     void onMavlinkMessage(const RxMavlinkMsg& msg);
     
     //temporary
-    void setCheckedHeartBeat(bool checked) {
+    void setCheckedHeartBeat(bool checked)
+    {
         checkHeartBeat = checked;
     }
 

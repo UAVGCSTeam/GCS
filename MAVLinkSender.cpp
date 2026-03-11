@@ -8,7 +8,8 @@
 MAVLinkSender::MAVLinkSender(UARTLink* link, QObject* p) : QObject(p), UARTLink_(link) {}
 MAVLinkSender::MAVLinkSender(UDPLink*  link, QObject* p) : QObject(p), UDPLink_(link) {}
 
-bool MAVLinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const {
+bool MAVLinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const
+{
     if(!isLinkOpen()) return false;
     qDebug() << "[MAVLinkSender.cpp::sendTelemRequest] requesting from sysID" << sysID << "compID" << compID;
     QByteArray bytes = packCommandLong(
@@ -25,7 +26,8 @@ bool MAVLinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command)
 bool MAVLinkSender::sendCommand(uint8_t sysID, uint8_t compID,
                                 uint16_t command, float p1,
                                 float p2,float p3,float p4,
-                                float p5,float p6,float p7) const {
+                                float p5,float p6,float p7) const
+{
     if(!isLinkOpen()) return false;
     QByteArray bytes = packCommandLong(
         sysID,
@@ -37,14 +39,16 @@ bool MAVLinkSender::sendCommand(uint8_t sysID, uint8_t compID,
 }
 
 
-bool MAVLinkSender::isLinkOpen() const {
+bool MAVLinkSender::isLinkOpen() const
+{
     if (UARTLink_) return UARTLink_->isOpen();
     if (UDPLink_)  return UDPLink_->isOpen();
     return false;
 }
 
 
-qint64 MAVLinkSender::writeToLink(const QByteArray& bytes) const {
+qint64 MAVLinkSender::writeToLink(const QByteArray& bytes) const
+{
     if (UARTLink_) return UARTLink_->writeBytes(bytes);
     if (UDPLink_)  return UDPLink_->writeBytes(bytes);
     return -1;
@@ -54,7 +58,8 @@ qint64 MAVLinkSender::writeToLink(const QByteArray& bytes) const {
 QByteArray MAVLinkSender::packCommandLong(uint8_t targetSys, uint8_t targetComp,
                                           uint16_t command, float p1,
                                           float p2,float p3,float p4,
-                                          float p5,float p6,float p7) const {
+                                          float p5,float p6,float p7) const
+{
     mavlink_message_t msg;
     mavlink_command_long_t cmd{};
     cmd.target_system = targetSys;
@@ -74,7 +79,8 @@ QByteArray MAVLinkSender::packCommandLong(uint8_t targetSys, uint8_t targetComp,
 
 bool MAVLinkSender::sendSetPositionTargetGlobalInt(uint8_t targetSys, uint8_t targetComp,
                                                    double lat_deg, double lon_deg,
-                                                   float alt_m) const {
+                                                   float alt_m) const
+{
     if (!isLinkOpen()) return false;
 
     mavlink_message_t msg{};

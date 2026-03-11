@@ -1,7 +1,8 @@
 #include "dbmanager.h"
 
 
-DBManager::DBManager(QObject *parent) : QObject(parent) {
+DBManager::DBManager(QObject *parent): QObject(parent)
+{
     gcs_db_connection = QSqlDatabase::addDatabase("QSQLITE"); // Signals for Qt that the DB will be in SQLite
 
     // Set database file path directly to gcs.db
@@ -27,7 +28,8 @@ DBManager::DBManager(QObject *parent) : QObject(parent) {
 
 
 // Destructor: Close database connection
-DBManager::~DBManager() {
+DBManager::~DBManager()
+{
     if (gcs_db_connection.isOpen()) {
         gcs_db_connection.close();
         qDebug() << "[dbmanager.cpp] Database connection closed.";
@@ -37,7 +39,8 @@ DBManager::~DBManager() {
 
 
 // Initialize Database (Check if DB exists, create if not)
-void DBManager::initDB() {
+void DBManager::initDB()
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open!";
     }
@@ -53,7 +56,8 @@ void DBManager::initDB() {
 
 
 
-bool DBManager::createDroneTable() {
+bool DBManager::createDroneTable()
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot create table.";
         return false;
@@ -82,7 +86,8 @@ bool DBManager::createDroneTable() {
 
 
 
-bool DBManager::isOpen() const {
+bool DBManager::isOpen() const
+{
     return gcs_db_connection.isOpen();
 }
 
@@ -91,7 +96,8 @@ bool DBManager::isOpen() const {
 // CRUD ME
 bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
                             const QString& xbeeID, const QString& xbeeAddress,
-                            int* newDroneID) {
+                            int* newDroneID)
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot add drone.";
         return false;
@@ -147,7 +153,8 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
 
 
 
-bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
+bool DBManager::deleteDrone(const QString& xbeeIdOrAddress)
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot delete drone.";
         return false;
@@ -168,7 +175,8 @@ bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
 
 
 
-bool DBManager::deleteAllDrones() {
+bool DBManager::deleteAllDrones()
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot delete all drones.";
         return false;
@@ -187,7 +195,8 @@ bool DBManager::deleteAllDrones() {
 
 
 bool DBManager::editDrone(int droneID, const QString& droneName, const QString& droneRole,
-                          const QString& xbeeID, const QString& xbeeAddress) {
+                          const QString& xbeeID, const QString& xbeeAddress)
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot edit drone.";
         return false;
@@ -255,7 +264,8 @@ bool DBManager::editDrone(int droneID, const QString& droneName, const QString& 
 
 // Testing funtion, to print on console
 // Shows how to query to fetch all drones, useful for drone list
-void DBManager::printDroneList() {
+void DBManager::printDroneList()
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot fetch drones.";
     }
@@ -285,7 +295,8 @@ void DBManager::printDroneList() {
 
 
 
-bool DBManager::checkIfDroneExists(const QString& droneName) {
+bool DBManager::checkIfDroneExists(const QString& droneName)
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot check existence.";
         return false;
@@ -307,7 +318,8 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
 
 
 // Lets use this function to have "default" drones. 
-bool DBManager::createInitialDrones() {
+bool DBManager::createInitialDrones()
+{
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot insert initial drones.";
         return false;
@@ -416,7 +428,8 @@ bool DBManager::createInitialDrones() {
 
 
 // NEW: Method to fetch all drones from the database for initial startup and helper function
-QList<QVariantMap> DBManager::fetchAllDrones() {
+QList<QVariantMap> DBManager::fetchAllDrones()
+{
     QList<QVariantMap> drones;
     if (!gcs_db_connection.isOpen()) {
         qCritical() << "[dbmanager.cpp] Database is not open! Cannot fetch drones.";

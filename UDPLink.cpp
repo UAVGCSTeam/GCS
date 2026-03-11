@@ -1,12 +1,14 @@
 #include "UDPLink.h"
 
-UDPLink::UDPLink(QObject* p) : QObject(p) {
+UDPLink::UDPLink(QObject* p) : QObject(p)
+{
     connect(&socket_, &QUdpSocket::readyRead, this, &UDPLink::onReadyRead);
 }
 
 bool UDPLink::open(quint16 localPort,
                    const QHostAddress& remoteHost,
-                   quint16 remotePort) {
+                   quint16 remotePort)
+{
     Q_UNUSED(remoteHost);
     Q_UNUSED(remotePort);
 
@@ -28,7 +30,8 @@ bool UDPLink::open(quint16 localPort,
     return true;
 }
 
-bool UDPLink::listen(quint16 port) {
+bool UDPLink::listen(quint16 port)
+{
     if (socket_.state() == QAbstractSocket::BoundState) socket_.close();
     if (!socket_.bind(QHostAddress::AnyIPv4, port)) {
         qWarning() << "[UDPLink::listen] Listen bind failed on port" << port << ":" << socket_.errorString();
@@ -41,7 +44,8 @@ bool UDPLink::listen(quint16 port) {
 
 void UDPLink::close() { socket_.close(); }
 
-qint64 UDPLink::writeBytes(const QByteArray& b) {
+qint64 UDPLink::writeBytes(const QByteArray& b)
+{
     if (socket_.state() != QAbstractSocket::BoundState) {
         qWarning() << "[UDPLink::writeBytes] writeBytes: socket not bound, state=" << socket_.state();
         return -1;
@@ -66,7 +70,8 @@ void UDPLink::onReadyRead() {
     readPendingDatagrams();
 }
 
-void UDPLink::readPendingDatagrams() {
+void UDPLink::readPendingDatagrams()
+{
     while (socket_.hasPendingDatagrams()) {
         QNetworkDatagram datagram = socket_.receiveDatagram();
         if (!datagram.isValid()) {

@@ -11,7 +11,8 @@ MAVLinkReceiver::MAVLinkReceiver(QObject* parent)
 
 MAVLinkReceiver::~MAVLinkReceiver() = default;   // ← now Impl is complete
 
-void MAVLinkReceiver::onBytes(const QByteArray& data) {
+void MAVLinkReceiver::onBytes(const QByteArray& data)
+{
     mavlink_message_t msg;
     for (unsigned char b : data) {
         if (mavlink_parse_char(MAVLINK_COMM_0, b, &msg, &d_->status)) {

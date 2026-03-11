@@ -35,7 +35,8 @@ extern "C" {
 
 class UARTLink;
 class UDPLink;
-class MAVLinkSender : public QObject {
+class MAVLinkSender : public QObject
+{
     Q_OBJECT
 public:
     explicit MAVLinkSender(UARTLink* link, QObject* parent=nullptr);

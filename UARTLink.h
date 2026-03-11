@@ -3,7 +3,8 @@
 #include <QSerialPort>
 #include <QByteArray>
 
-class UARTLink : public QObject {
+class UARTLink : public QObject
+{
     Q_OBJECT
 public:
     explicit UARTLink(QObject* parent=nullptr);

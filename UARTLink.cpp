@@ -5,10 +5,12 @@
     https://doc.qt.io/qt-6/qserialport-members.html
 */
 
-UARTLink::UARTLink(QObject* p):QObject(p){
+UARTLink::UARTLink(QObject* p): QObject(p)
+{
     connect(&serial_, &QSerialPort::readyRead, this, &UARTLink::onReadyRead);
 }
-bool UARTLink::open(const QString& port, int baud){
+bool UARTLink::open(const QString& port, int baud)
+{
     if (serial_.isOpen()) serial_.close();
     serial_.setPortName(port);
     serial_.setBaudRate(baud);
@@ -23,14 +25,16 @@ bool UARTLink::open(const QString& port, int baud){
     return true;
 }
 void UARTLink::close(){ serial_.close(); }
-qint64 UARTLink::writeBytes(const QByteArray& b){
+qint64 UARTLink::writeBytes(const QByteArray& b)
+{
     if (!serial_.isOpen()) return -1;
     const qint64 n = serial_.write(b);      // QSerialPort::write returns qint64
     if (n == -1) emit linkError(serial_.errorString());
     return n;
 }
 
-void UARTLink::onReadyRead(){
+void UARTLink::onReadyRead()
+{
     emit bytesReceived(serial_.readAll());
 
 }

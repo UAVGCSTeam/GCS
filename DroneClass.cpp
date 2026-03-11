@@ -74,14 +74,16 @@ DroneClass::DroneClass(const QString &input_name,
 }
 
 
-void DroneClass::setName(const QString &inputName){
+void DroneClass::setName(const QString &inputName)
+{
     if (m_name != inputName){
         m_name = inputName;
         emit nameChanged();
     }
 }
 
-void DroneClass::setXbeeAddress(const QString &inputXbeeAddress){
+void DroneClass::setXbeeAddress(const QString &inputXbeeAddress)
+{
     if (m_xbeeAddress != inputXbeeAddress){
         m_xbeeAddress = inputXbeeAddress;
         emit xbeeAddressChanged();
@@ -239,7 +241,8 @@ void DroneClass::setModeField(const QString& m)
     emit dataChanged();
 }
 
-void DroneClass::setModeField(const QString& field, const QVariant& value) {
+void DroneClass::setModeField(const QString& field, const QVariant& value)
+{
     Q_UNUSED(field);          // keep for future field-specific handling
     setModeField(value.toString());
 }

@@ -22,7 +22,8 @@ struct RxMavlinkMsg {
 };
 Q_DECLARE_METATYPE(RxMavlinkMsg)
 
-class MAVLinkReceiver : public QObject {
+class MAVLinkReceiver : public QObject
+{
     Q_OBJECT
 public:
     explicit MAVLinkReceiver(QObject* parent=nullptr);

@@ -6,7 +6,8 @@
 #include <QDebug>
 #include <QNetworkDatagram>
 
-class UDPLink : public QObject {
+class UDPLink : public QObject
+{
     Q_OBJECT
 public:
     explicit UDPLink(QObject* parent = nullptr);
@@ -74,7 +75,10 @@ public:
      *
      * @warning Only IPv4 is used (AnyIPv4). IPv6 is not supported by this bind call.
      */
-    bool   isOpen() const { return socket_.state() == QAbstractSocket::BoundState; }
+    bool   isOpen() const
+    {
+        return socket_.state() == QAbstractSocket::BoundState;
+    }
     qint64 writeBytes(const QByteArray& bytes);
 
 signals:

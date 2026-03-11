@@ -25,7 +25,8 @@
 
 
 
-class DBManager : public QObject {
+class DBManager : public QObject
+{
     Q_OBJECT
 public: 
     // Constructor

@@ -98,7 +98,8 @@ void DroneController::useSimulatedHeartbeat()
 // not able to be updated from QML. Only C++ can update drones
 // in the DroneController class
 
-void DroneController::renameDrone(const QString &xbeeID, const QString &newName) {
+void DroneController::renameDrone(const QString &xbeeID, const QString &newName)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QString currentName = drone->getName(); 
@@ -111,7 +112,8 @@ void DroneController::renameDrone(const QString &xbeeID, const QString &newName)
         }
     }
 }
-void DroneController::setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress) {
+void DroneController::setXbeeAddress(const QString &xbeeID, const QString &newXbeeAddress)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QString currentXbeeAddress = drone->getName(); 
@@ -124,7 +126,8 @@ void DroneController::setXbeeAddress(const QString &xbeeID, const QString &newXb
         }
     }
 }
-void DroneController::setBatteryLevel(const QString &xbeeID, const double &newBattery) {
+void DroneController::setBatteryLevel(const QString &xbeeID, const double &newBattery)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             double currentBatteryLevel = drone->getBatteryLevel(); 
@@ -137,7 +140,8 @@ void DroneController::setBatteryLevel(const QString &xbeeID, const double &newBa
         }
     }
 }
-void DroneController::setRole(const QString &xbeeID, const QString &newRole) {
+void DroneController::setRole(const QString &xbeeID, const QString &newRole)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QString currentRole = drone->getName(); 
@@ -150,7 +154,8 @@ void DroneController::setRole(const QString &xbeeID, const QString &newRole) {
         }
     }
 }
-void DroneController::setXbeeID(const QString &xbeeID, const QString &newXbeeID) {
+void DroneController::setXbeeID(const QString &xbeeID, const QString &newXbeeID)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QString currentXbeeID = drone->getName(); 
@@ -163,7 +168,8 @@ void DroneController::setXbeeID(const QString &xbeeID, const QString &newXbeeID)
         }
     }
 }
-void DroneController::setPosition(const QString &xbeeID, const QVector3D &newPosition) {
+void DroneController::setPosition(const QString &xbeeID, const QVector3D &newPosition)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QVector3D currentPosition = drone->getPosition(); 
@@ -176,7 +182,8 @@ void DroneController::setPosition(const QString &xbeeID, const QVector3D &newPos
         }
     }
 }
-void DroneController::setLatitude(const QString &xbeeID, const double &newLatitude) {
+void DroneController::setLatitude(const QString &xbeeID, const double &newLatitude)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             double currentLatitude = drone->getLatitude(); 
@@ -189,7 +196,8 @@ void DroneController::setLatitude(const QString &xbeeID, const double &newLatitu
         }
     }
 }
-void DroneController::setLongitude(const QString &xbeeID, const double &newLongitude) {
+void DroneController::setLongitude(const QString &xbeeID, const double &newLongitude)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             double currentLongitude = drone->getLongitude(); 
@@ -202,7 +210,8 @@ void DroneController::setLongitude(const QString &xbeeID, const double &newLongi
         }
     }
 }
-void DroneController::setAltitude(const QString &xbeeID, const double &newAltitude) {
+void DroneController::setAltitude(const QString &xbeeID, const double &newAltitude)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             double currentAltitude = drone->getAltitude(); 
@@ -215,7 +224,8 @@ void DroneController::setAltitude(const QString &xbeeID, const double &newAltitu
         }
     }
 }
-void DroneController::setVelocity(const QString &xbeeID, const QVector3D &newVelocity) {
+void DroneController::setVelocity(const QString &xbeeID, const QVector3D &newVelocity)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QVector3D currentVelocity = drone->getVelocity(); 
@@ -228,7 +238,8 @@ void DroneController::setVelocity(const QString &xbeeID, const QVector3D &newVel
         }
     }
 }
-void DroneController::setAirspeed(const QString &xbeeID, const double &newAirspeed) {
+void DroneController::setAirspeed(const QString &xbeeID, const double &newAirspeed)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             double currentAirspeed = drone->getAirspeed(); 
@@ -241,7 +252,8 @@ void DroneController::setAirspeed(const QString &xbeeID, const double &newAirspe
         }
     }
 }
-void DroneController::setOrientation(const QString &xbeeID, const QVector3D &newOrientation) {
+void DroneController::setOrientation(const QString &xbeeID, const QVector3D &newOrientation)
+{
     for (auto &drone : droneList) {
         if (drone->getXbeeID() == xbeeID) {
             QVector3D currentOrientation = drone->getOrientation(); 
@@ -558,7 +570,8 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
 
 // Gets drones, but is used to REBUILD the drone list; so it refreshes and keeps the drone list up to date
 QVariantList DroneController::getDrones() const
-{ // DOUBLE CHECK THIS BRANDON
+{
+    // DOUBLE CHECK THIS BRANDON
     QVariantList result;
 
     // Ensure the database is open
@@ -719,7 +732,8 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
 }
 
 
-bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff) { 
+bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff)
+{
     if (!takeoff) {
         return true;
     }
@@ -758,7 +772,8 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
 }
 
 
-bool DroneController::sendToCoord(const QString droneName, float lat, float lon) {
+bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
+{
     QSharedPointer<DroneClass> drone = getDroneByName(droneName);
     if (drone.isNull()) {
         qWarning() << "[DroneController.cpp::sendToCoord] unknown drone:" << drone;
@@ -791,7 +806,8 @@ bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
 }
 
 
-bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float lon) {
+bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float lon)
+{
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(uavID);
     if (drone.isNull()) {
         qWarning() << "[DroneController.cpp::sendToCoordByUavID] unknown drone with xbeeAddress:" << uavID;
@@ -815,7 +831,8 @@ bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float l
     return response;
 }
 
-bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode) {
+bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode)
+{
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
         qWarning() << "[DroneController.cpp::sendGuidedMode] unknown drone:" << droneKeyOrAddr;
@@ -847,7 +864,8 @@ bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableG
 }
 
 
-bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
+bool DroneController::requestTelem(QSharedPointer<DroneClass> drone)
+{
     if (drone.isNull()) {
         qWarning() << "[DroneController.cpp::requestTelem] drone is null";
         return false;
