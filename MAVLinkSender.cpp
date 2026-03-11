@@ -11,7 +11,7 @@ MAVLinkSender::MAVLinkSender(UDPLink*  link, QObject* p) : QObject(p), UDPLink_(
 bool MAVLinkSender::sendTelemRequest(uint8_t sysID, uint8_t compID, int command) const
 {
     if(!isLinkOpen()) return false;
-    qDebug() << "[MAVLinkSender.cpp::sendTelemRequest] requesting from sysID" << sysID << "compID" << compID;
+    qDebug() << "requesting from sysID" << sysID << "compID" << compID;
     QByteArray bytes = packCommandLong(
         sysID,
         compID,

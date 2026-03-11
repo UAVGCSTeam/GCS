@@ -94,14 +94,14 @@ bool MissionManager::addWaypoint(DroneClass* drone, double lat, double lon)
         m_missions.insert(id, mission);
         m_numMissions++;
         mission->addWaypoint(Waypoint(drone->getLatitude(), drone->getLongitude()));
-        qDebug() << "[MissionManager] New mission created:"
+        qDebug() << "New mission created:"
                  << drone->getName() << "(xbee:" << id << ")"
                  << "| origin:" << drone->getLatitude() << drone->getLongitude()
                  << "| active missions:" << m_numMissions;
     }
 
     mission->addWaypoint(Waypoint(lat, lon));
-    qDebug() << "[MissionManager] Waypoint added:" << drone->getName()
+    qDebug() << "Waypoint added:" << drone->getName()
              << "(xbee:" << id << ")"
              << "| wp(" << lat << "," << lon << ")"
              << "| total waypoints:" << mission->getNumWaypoints();
@@ -125,7 +125,7 @@ bool MissionManager::pruneFirstWaypoint(const QString& uavID)
         return false;
 
     mission->removeFirst();
-    qDebug() << "[MissionManager] Pruned first waypoint:" << getDroneNameForMission(uavID)
+    qDebug() << "Pruned first waypoint:" << getDroneNameForMission(uavID)
              << "(xbee:" << uavID << ")"
              << "| remaining:" << mission->getNumWaypoints();
 
@@ -149,7 +149,7 @@ void MissionManager::startMission(const QString& uavID)
 {
     UAVMission* mission = m_missions.value(uavID, nullptr);
     if (!mission) {
-        qDebug() << "[MissionManager] startMission: no mission found for" << uavID;
+        qDebug() << "startMission: no mission found for" << uavID;
         return;
     }
 
@@ -158,16 +158,16 @@ void MissionManager::startMission(const QString& uavID)
 
     const QList<Waypoint>& wps = mission->getWaypoints();
     if (wps.size() >= 2) {
-        qDebug() << "[MissionManager] Mission started for" << uavID << "| sending to first waypoint";
+        qDebug() << "Mission started for" << uavID << "| sending to first waypoint";
         emit navigateToNext(uavID, static_cast<float>(wps[1].latitude), static_cast<float>(wps[1].longitude));
     } else {
-        qDebug() << "[MissionManager] startMission: no waypoints queued for" << uavID;
+        qDebug() << "startMission: no waypoints queued for" << uavID;
     }
 }
 
 void MissionManager::stopMission(const QString& uavID)
 {
-    qDebug() << "[MissionManager] Mission stopped for" << uavID;
+    qDebug() << "Mission stopped for" << uavID;
     m_guidedActive = false;
     m_guidedUavID.clear();
 }
@@ -183,7 +183,7 @@ bool MissionManager::removeMission(const QString& uavID)
     m_missions.remove(uavID);
     delete mission;
     m_numMissions--;
-    qDebug() << "[MissionManager] Mission removed:" << name
+    qDebug() << "Mission removed:" << name
              << "(xbee:" << uavID << ")"
              << "| runtime:" << runtime << "s"
              << "| active missions:" << m_numMissions;

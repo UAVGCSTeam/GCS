@@ -50,7 +50,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
 
     // connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
     // simulationTimer.start(250); // Move once per second
-    // qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
+    // qDebug() << "Simulation timer started for drone movement.";
 }
 
 // method so QML can retrieve the drone list.
@@ -368,7 +368,7 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
     if (!drone)
         return;
 
-    qDebug() << "[DroneController.cpp::saveDroneToDB] saveDroneToDB called with:" << drone->getName()
+    qDebug() << "saveDroneToDB called with:" << drone->getName()
              << drone->getRole()
              << drone->getXbeeID()
              << drone->getXbeeAddress();
@@ -378,7 +378,7 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
     {
         if (d->getXbeeAddress() == drone->getXbeeAddress())
         {
-            qDebug() << "[DroneController.cpp::saveDroneToDB] Drone already exists with address:" << drone->getXbeeAddress();
+            qDebug() << "Drone already exists with address:" << drone->getXbeeAddress();
             return;
         }
     }
@@ -391,7 +391,7 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
                               drone->getXbeeAddress(),
                               &newDroneID))
     {
-        qDebug() << "[DroneController.cpp] Drone created in DB successfully with ID:" << newDroneID;
+        qDebug() << "Drone created in DB successfully with ID:" << newDroneID;
 
         // Add to the in-memory list
         droneList.push_back(drone);
@@ -399,8 +399,8 @@ void DroneController::saveDroneToDB(const QSharedPointer<DroneClass> &drone)
         emit droneAdded(drone); // right now this is not being used anywhere
         // Adding update to the new QML list
         rebuildVariant();
-        qDebug() << "[DroneController.cpp] dronesChanged signal emitted";
-        qDebug() << "[DroneController.cpp] Drone saved:" << drone->getName();
+        qDebug() << "dronesChanged signal emitted";
+        qDebug() << "Drone saved:" << drone->getName();
     }
     else
     {
@@ -471,7 +471,7 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
         {
             droneList.removeAt(i);
             found = true;
-            qDebug() << "[DroneController.cpp] Removed drone from memory with ID/address:" << input_xbeeID;
+            qDebug() << "Removed drone from memory with ID/address:" << input_xbeeID;
             break;
         }
     }
@@ -479,7 +479,7 @@ void DroneController::deleteDrone(const QString &input_xbeeID)
     // Now delete from database, even if not found in memory
     if (dbManager.deleteDrone(input_xbeeID))
     {
-        qDebug() << "[DroneController.cpp] Drone deleted successfully from database:" << input_xbeeID;
+        qDebug() << "Drone deleted successfully from database:" << input_xbeeID;
         // Adding update to the new QML list
         rebuildVariant();
     }
@@ -502,7 +502,7 @@ void DroneController::deleteALlDrones_UI()
     {
         droneList.clear(); // also delete drones in C++ memory
 
-        qDebug() << "[DroneController.cpp]: All drones deleted successfully!";
+        qDebug() << "All drones deleted successfully!";
         // Adding update to the new QML list
         rebuildVariant();
     }
@@ -536,7 +536,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     {
         if (drone->getXbeeAddress() == address)
         {
-            // qDebug() << "[DroneController.cpp::getDroneByXbeeAddress] Found drone by address:" << drone->getName();
+            // qDebug() << "Found drone by address:" << drone->getName();
             return drone;
         }
     }
@@ -546,7 +546,7 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     {
         if (drone->getXbeeID() == address)
         {
-            qDebug() << "[DroneController.cpp::getDroneByXbeeAddress] Found drone by XBee ID:" << drone->getName();
+            qDebug() << "Found drone by XBee ID:" << drone->getName();
             return drone;
         }
     }
@@ -557,12 +557,12 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
         if (drone->getXbeeAddress().contains(address, Qt::CaseInsensitive) ||
             address.contains(drone->getXbeeAddress(), Qt::CaseInsensitive))
         {
-            qDebug() << "[DroneController.cpp::getDroneByXbeeAddress] Found drone by partial address match:" << drone->getName();
+            qDebug() << "Found drone by partial address match:" << drone->getName();
             return drone;
         }
     }
 
-    qDebug() << "[DroneController.cpp::getDroneByXbeeAddress] No drone found with address:" << address;
+    qDebug() << "No drone found with address:" << address;
     return QSharedPointer<DroneClass>(); // Return null pointer if not found
 }
 
@@ -596,7 +596,7 @@ QVariantList DroneController::getDrones() const
             drone["xbeeAddress"] = query.value(4).toString();
             result.append(drone);
         }
-        qDebug() << "[DroneController.cpp] Found" << result.size() << "drones in database";
+        qDebug() << "Found" << result.size() << "drones in database";
 
         // Initialize droneList with database contents
         droneList.clear();
@@ -669,7 +669,7 @@ void DroneController::onUdpBytesReceived(const QByteArray& bytes)
     const int size = bytes.size();
     const int previewLen = qMin(size, 32);
     QByteArray hex = bytes.left(previewLen).toHex(' ');
-    qDebug() << "[DroneController.cpp::onUdpBytesReceived] UDP received" << size << "bytes"
+    qDebug() << "UDP received" << size << "bytes"
              << (previewLen < size ? QString("(first %1):").arg(previewLen) : ":")
              << hex;
 }
@@ -708,7 +708,7 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
         qWarning() << "[DroneController.cpp::sendArm] sendArm: unknown drone/address:" << droneKeyOrAddr;
         return false;
     }
-    // qDebug() << "[DroneController.cpp::sendArm] Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
+    // qDebug() << "Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
 
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
         qWarning() << "[DroneController.cpp::sendArm] MAVLink sender not ready; call openUDP() or openUART() first";
@@ -742,7 +742,7 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
         qWarning() << "[DroneController.cpp::sendTakeoffCmd] unknown drone:" << droneKeyOrAddr;
         return false;
     }
-    // qDebug() << "[DroneController.cpp::sendTakeoffCmd] Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
+    // qDebug() << "Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
         qWarning() << "[DroneController.cpp::sendTakeoffCmd] MAVLink sender not ready; call openUDP() or openUART() first";
         return false;
@@ -779,7 +779,7 @@ bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
         qWarning() << "[DroneController.cpp::sendToCoord] unknown drone:" << drone;
         return false;
     }
-    qDebug() << "[DroneController.cpp::sendToCoord] Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
+    qDebug() << "Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
         qWarning() << "[DroneController.cpp::sendToCoord] MAVLink sender not ready; call openUDP() or openUART() first";
         return false;
@@ -838,7 +838,7 @@ bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableG
         qWarning() << "[DroneController.cpp::sendGuidedMode] unknown drone:" << droneKeyOrAddr;
         return false;
     }
-    // qDebug() << "[DroneController.cpp::sendGuidedMode] Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
+    // qDebug() << "Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
 
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
         qWarning() << "[DroneController.cpp::sendGuidedMode] MAVLink sender not ready; call openUDP() or openUART() first";
@@ -927,10 +927,10 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
         map.insert(hashKey, d);
         d->setSysID(sysID);
         d->setCompID(compID);
-        qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
+        qDebug() << "Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
         return d;
     }
-    qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] No drone found with sysID" << sysID <<  "and compID" << compID;
+    qDebug() << "No drone found with sysID" << sysID <<  "and compID" << compID;
     
     return {};
 }
@@ -952,7 +952,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 
     auto drone = droneForSysId_lazyBind(sysID, compID, droneList, dronesMap_);
     if (drone.isNull()) {
-        qDebug() << "[DroneController.cpp::onMavlinkMessage] NULL Drone";
+        qDebug() << "NULL Drone";
         return;
     }
 
@@ -968,11 +968,11 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         if (!drone->getRequestedTelem()) {
             bool ok = requestTelem(drone);
             if (ok) drone->setRequestedTelem(true);
-            else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting telem";
+            else qDebug() << "ERROR requesting telem";
         }
 
         bool armed = hb.base_mode & MAV_MODE_FLAG_SAFETY_ARMED;
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Armed =" << armed;
+        // qDebug() << "Armed =" << armed;
         uint32_t custom_mode = hb.custom_mode;
 
         switch(custom_mode) {
@@ -993,7 +993,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Got system status";
+        // qDebug() << "Got system status";
         mavlink_sys_status_t s;
         mavlink_msg_sys_status_decode(&msg, &s);
         updateDroneTelem(drone, "battery_v",   s.voltage_battery/1000.0);
@@ -1005,7 +1005,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         mavlink_msg_global_position_int_decode(&msg, &p);
 
         const double altMeters = static_cast<double>(p.relative_alt) / 1000.0;
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Altitude: " <<  altMeters << "m";
+        // qDebug() << "Altitude: " <<  altMeters << "m";
         updateDroneTelem(drone, "lat",   p.lat/1e7);
         updateDroneTelem(drone, "lon",   p.lon/1e7);
         updateDroneTelem(drone, "alt_m", altMeters);
@@ -1013,7 +1013,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Got attitude";
+        // qDebug() << "Got attitude";
         mavlink_attitude_t a;
         mavlink_msg_attitude_decode(&msg, &a);
         updateDroneTelem(drone, "roll", a.roll);
@@ -1022,7 +1022,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_LONG: {
-        qDebug() << "[DroneController.cpp::onMavlinkMessage] Got COMMAND_LONG (76)";
+        qDebug() << "Got COMMAND_LONG (76)";
         mavlink_command_long_t cmd;
         mavlink_msg_command_long_decode(&msg, &cmd);
         qInfo().nospace()
@@ -1071,7 +1071,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     default:
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] unexpected message type: " << msg.msgid;
+        // qDebug() << "unexpected message type: " << msg.msgid;
         break;
     }
 }
@@ -1081,7 +1081,7 @@ void DroneController::updateDroneTelem(QSharedPointer<DroneClass> drone, const Q
 {
     if (drone.isNull()) return;
 
-    // qDebug() << "[DroneController.cpp::updateDroneTelem] Updating drone: " << drone->getName();
+    // qDebug() << "Updating drone: " << drone->getName();
     if (field == "connected") {
         drone->setConnected(value.toBool());                 // if you have it
     } else if (field == "battery_v") {
@@ -1101,7 +1101,7 @@ void DroneController::updateDroneTelem(QSharedPointer<DroneClass> drone, const Q
     } else if (field == "yaw") {
         drone->setYaw(value.toDouble());
     } else if (field == "base_mode" || field == "custom_mode") {
-        // qDebug() << "[DroneController.cpp::updateDroneTelem] Base mode:" << value;
+        // qDebug() << "Base mode:" << value;
         drone->setModeField(field, value);                   // generic hook if you prefer
     }
 

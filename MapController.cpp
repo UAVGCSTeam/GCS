@@ -38,9 +38,9 @@ void MapController::changeMapType(int index)
     if (index < m_supportedMapTypesCount) {
         m_currentMapType = index;
         emit mapTypeChanged(index);
-        qDebug() << "[MapController.cpp] Changed to map type:" << index;
+        qDebug() << "Changed to map type:" << index;
     } else {
-        qDebug() << "[MapController.cpp] Unsupported map type index:" << index;
+        qDebug() << "Unsupported map type index:" << index;
     }
 }
 

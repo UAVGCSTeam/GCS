@@ -18,7 +18,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_orientation(QVector3D(-1, -1, -1))
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -46,7 +46,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_orientation(QVector3D(-1, -1, -1))
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -70,7 +70,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_orientation(QVector3D(-1, -1, -1))
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -170,10 +170,10 @@ void DroneClass::checkHeartbeat()
     if(dTime > 1000 && m_connected)
     {
         setConnected(false);
-        // qDebug() << "[DroneClass.cpp::checkHeartbeat] " << m_name << " Disconnected";
+        // qDebug() << m_name << " Disconnected";
     }
 
-    // qDebug() << "[DroneClass.cpp::checkHeartbeat] Connection Status for " << m_name << ": " << m_connected;
+    // qDebug() << "Connection Status for " << m_name << ": " << m_connected;
 }
 
 void DroneClass::startHeartBeatTimer()

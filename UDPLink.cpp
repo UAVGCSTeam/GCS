@@ -61,7 +61,7 @@ qint64 UDPLink::writeBytes(const QByteArray& b)
                    << "to" << _remoteAddress.toString() << ":" << _remotePort;
         emit linkError(socket_.errorString());
     } else {
-        // qDebug() << "[UDPLink::writeBytes] sent" << n << "bytes to" << _remoteAddress.toString() << ":" << _remotePort;
+        // qDebug() << "sent" << n << "bytes to" << _remoteAddress.toString() << ":" << _remotePort;
     }
     return n;
 }
