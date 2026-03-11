@@ -43,6 +43,9 @@
         <file>discoveryPanelIcon.svg</file>
         <file>discoveryPanelIconDarkMode.svg</file>
         <file>autoscroll.png</file>
+        <file>flightIcon.svg</file>
+        <file>missionPlanningIcon.svg</file>
+        <file>batteryIcon.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
