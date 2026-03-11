@@ -90,7 +90,10 @@ Rectangle {
                         hoverEnabled: true                        
                         onEntered: parent.hovered = true          
                         onExited: parent.hovered = false 
-                        onClicked: {mainPanel.activePanel = "drones"}
+                        onClicked: {
+                            mainPanel.activePanel = "drones"
+                            droneController.rebuildVariant()
+                        }
                     }
                 }
 
@@ -156,7 +159,10 @@ Rectangle {
                         hoverEnabled: true                        
                         onEntered: parent.hovered = true          
                         onExited: parent.hovered = false 
-                        onClicked: {mainPanel.activePanel = "discovery"}
+                        onClicked: {
+                            mainPanel.activePanel = "discovery"
+                            droneController.loadUnknownDrones()
+                        }
                     }
                 }
                 Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
@@ -213,7 +219,7 @@ Rectangle {
                             case "mission":
                                 return droneController ? "Drones in fleet: " + droneController.drones.length : "0 drones in fleet"
                             case "discovery":
-                                return "x discovered UAVs"  // replace this with droneController.unknownDrones later on
+                                return droneController ? droneController.unknownDrones.filter(u => !u.ignored).length + " discovered UAVs" : "0 discovered UAVs"
                             }
                         }
                         font.pixelSize: GcsStyle.PanelStyle.subHeaderFontSize
@@ -646,14 +652,16 @@ Rectangle {
                         ignored: false
                     }
                 }
-            }
 
+                Item { Layout.fillHeight: true }  // bottom spacer
+            }
 
             // Mission Planning View
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 visible: mainPanel.activePanel === "mission"
+                Layout.topMargin: 0 
                 spacing: 0
 
                 // Search bar
@@ -1001,190 +1009,264 @@ Rectangle {
                         }
                     }
                 }
-                Item { Layout.fillHeight: true }  // bottom spacer
+                Item { Layout.fillHeight: true }
             }
-
             // Discovery panel
-            ListView {
-                id: discoveryListView
+            ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                clip: true
                 visible: mainPanel.activePanel === "discovery"
+                spacing: 0
 
-                property int selectedIndex: -1
+                // Search bar
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: 8
+                    Layout.rightMargin: 8
+                    Layout.bottomMargin: 8
+                    height: 36
+                    color: GcsStyle.PanelStyle.baseBackground
+                    border.color: GcsStyle.panelStyle.defaultBorderColor
+                    border.width: GcsStyle.panelStyle.defaultBorderWidth
+                    radius: 8
 
-                model: mockDroneList //placeholder name
-
-                delegate: Rectangle {
-                    id: discoveredItem
-                    width: parent ? parent.width : 0
-                    clip: true
-
-                    // Hides ignored drones
-                    height: visible ? (expanded ? 110 : 60) : 0
-                    visible: !ignored // only shows the discovered drone if it isn't ignored
-
-                    // local UI state
-                    property bool expanded: false
-                    property bool hovered: false
-                    property bool selected: discoveryListView.selectedIndex === index
-
-                    // dynamic background color rule:
-                    // selected > hovered > alternating row color (unchanged)
-                    color: selected
-                           ? GcsStyle.PanelStyle.listItemSelectedColor
-                           : (hovered
-                              ? GcsStyle.PanelStyle.listItemHoverColor
-                              : (index % 2 === 0
-                                 ? GcsStyle.PanelStyle.listItemEvenColor
-                                 : GcsStyle.PanelStyle.listItemOddColor))
-
-                    MouseArea {
+                    RowLayout {
                         anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onEntered: discoveredItem.hovered = true
-                        onExited: discoveredItem.hovered = false
+                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                        spacing: 6
 
-                        onClicked: {
-                            discoveredItem.expanded = !discoveredItem.expanded
-                            discoveryListView.selectedIndex =
-                                    (discoveryListView.selectedIndex === index )
-                                        ? -1 : index
+                        TextInput {
+                            id: discoverySearchInput
+                            Layout.fillWidth: true
+                            color: GcsStyle.PanelStyle.textPrimaryColor
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                            clip: true
+
+                            Text {
+                                anchors.fill: parent
+                                text: "Search..."
+                                color: GcsStyle.PanelStyle.textSecondaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
+                                visible: !discoverySearchInput.text
+                            }
                         }
                     }
+                }
+                ListView {
+                    id: discoveryListView
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
 
-                    ColumnLayout {
-                        anchors.left: parent.left
-                        anchors.right: parent.right
+                    property int selectedIndex: -1
 
-                        RowLayout {
-                            id: collapsedView
-                            Layout.fillWidth: true
-                            Layout.margins: GcsStyle.PanelStyle.defaultMargin
-                            spacing: 15
+                    model: droneController.unknownDrones.filter(u => !u.ignored)
 
-                            ColumnLayout {
+                    delegate: Rectangle {
+                        id: discoveredItem
+                        width: ListView.view.width
+                        clip: true
+
+                        // Hides ignored drones
+                        height: visible ? (expanded ? 110 : GcsStyle.PanelStyle.itemHeight) : 0
+                        visible: !modelData.ignored // only shows the discovered drone if it isn't ignored
+
+                        // local UI state
+                        property bool expanded: false
+                        property bool hovered: false
+                        property bool selected: discoveryListView.selectedIndex === index
+
+                        // when selected changes colors
+                        color: selected
+                            ? GcsStyle.PanelStyle.listItemSelectedColor
+                            : (hovered
+                                ? GcsStyle.PanelStyle.hoverBackground
+                                : GcsStyle.PanelStyle.cardBackground)
+
+                        border.color: selected
+                            ? GcsStyle.PanelStyle.listItemSelectedBorderColor
+                            : GcsStyle.panelStyle.defaultBorderColor
+                        border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onEntered: discoveredItem.hovered = true
+                            onExited: discoveredItem.hovered = false
+
+                            onClicked: {
+                                discoveredItem.expanded = !discoveredItem.expanded
+                                discoveryListView.selectedIndex =
+                                        (discoveryListView.selectedIndex === index )
+                                            ? -1 : index
+                            }
+                        }
+
+                        ColumnLayout {
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+
+                            RowLayout {
+                                id: collapsedView
                                 Layout.fillWidth: true
-                                spacing: 1
+                                Layout.margins: GcsStyle.PanelStyle.defaultMargin
+                                spacing: 15
 
-                                Text {
-                                    text: uavtype
-                                    color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                //drone icon
+                                Item {
+                                    width: 23
+                                    height: 23
+                                    Layout.alignment: Qt.AlignVCenter
+                                    Layout.leftMargin: 8
+
+                                    Image {
+                                        anchors.centerIn: parent
+                                        source: GcsStyle.PanelStyle.isLightTheme
+                                            ? "qrc:/resources/droneStatusLightMode.svg"
+                                            : "qrc:/resources/droneStatusDarkMode.svg"
+                                        sourceSize.width: GcsStyle.PanelStyle.iconSize + 8
+                                        sourceSize.height: GcsStyle.PanelStyle.iconSize + 8
+                                    }
                                 }
-                                Text {
-                                    text: "UID: " + uid;
-                                    color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Layout.leftMargin: 8
+                                    spacing: 2
+
+                                    Text {
+                                        text: modelData.uavType
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                        font.bold: true
+                                    }
+
+                                    Text {
+                                        text: "UID: " + modelData.uid;
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                    }
+                                    Text {
+                                        text: "FC: " + modelData.fc;
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                    }
                                 }
-                                Text {
-                                    text: "FC: " + fc;
-                                    color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+
+                                RowLayout {
+                                    Layout.alignment: Qt.AlignRight
+                                    spacing: 4
+
+                                    //spacer all buttons are pushed towards the right
+                                    Item { Layout.fillWidth: true }
+
+                                    // Add drone button
+                                    Button {
+                                        Layout.preferredHeight: 27
+                                        Layout.preferredWidth: 27
+                                        padding: 0
+
+                                        contentItem: Item {
+                                            anchors.fill: parent
+                                            Image {
+                                                anchors.centerIn: parent
+                                                source: "qrc:/resources/plusIcon.png"
+                                                height: GcsStyle.PanelStyle.statusIconSize
+                                                width: GcsStyle.PanelStyle.statusIconSize
+                                                fillMode: Image.PreserveAspectFit
+                                            }
+                                        }
+
+                                        background: Rectangle {
+                                            radius: GcsStyle.PanelStyle.buttonRadius
+                                            color: "#b0ffa8"
+                                        }
+
+                                        MouseArea {
+                                            // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                console.log("added!")
+                                                droneController.acceptUnknownDrone(modelData.uid);
+                                                discoveryListView.selectedIndex = -1
+                                            }
+                                        }
+                                    }
+
+                                    // Ignore drone button
+                                    Button {
+                                        Layout.preferredHeight: 27
+                                        Layout.preferredWidth: 27
+                                        padding: 0
+
+                                        contentItem: Item {
+                                            anchors.fill: parent
+                                            Image {
+                                                anchors.centerIn: parent
+                                                source: "qrc:/resources/xIcon.png"
+                                                height: GcsStyle.PanelStyle.statusIconSize
+                                                width: GcsStyle.PanelStyle.statusIconSize
+                                                fillMode: Image.PreserveAspectFit
+                                            }
+                                        }
+
+                                        background: Rectangle {
+                                            radius: GcsStyle.PanelStyle.buttonRadius
+                                            color: "#ffa8a8"
+                                        }
+
+                                        MouseArea {
+                                            // This mouse area gives us the ability to add a pointer hand when the button is hovered
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                console.log("ignore")
+                                                droneController.setUnknownDroneIgnored(modelData.uid, true)
+                                                discoveryListView.selectedIndex = -1
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
-                            RowLayout {
-                                Layout.alignment: Qt.AlignRight
-                                spacing: 4
+                            Item {
+                                id: expandedView
+                                visible: discoveredItem.expanded
+                                Layout.fillWidth: true
 
-                                //spacer all buttons are pushed towards the right
-                                Item { Layout.fillWidth: true }
+                                ColumnLayout {
+                                    anchors.fill: parent
 
-                                // Add drone button
-                                Button {
-                                    Layout.preferredHeight: 23
-                                    Layout.preferredWidth: 23
-                                    padding: 0
+                                    Text {
+                                        Layout.fillWidth: true
+                                        Layout.margins: GcsStyle.PanelStyle.defaultMargin
 
-                                    contentItem: Item {
-                                        anchors.fill: parent
-                                        Image {
-                                            anchors.centerIn: parent
-                                            source: "qrc:/resources/plusIcon.png"
-                                            height: GcsStyle.PanelStyle.statusIconSize
-                                            width: GcsStyle.PanelStyle.statusIconSize
-                                            fillMode: Image.PreserveAspectFit
-                                        }
-                                    }
-
-                                    background: Rectangle {
-                                        radius: GcsStyle.PanelStyle.buttonRadius
-                                        color: "#b0ffa8"
-                                    }
-
-                                    MouseArea {
-                                        // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            console.log("added!")
-                                            discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
-                                        }
-                                    }
-                                }
-
-                                // Ignore drone button
-                                Button {
-                                    Layout.preferredHeight: 23
-                                    Layout.preferredWidth: 23
-                                    padding: 0
-
-                                    contentItem: Item {
-                                        anchors.fill: parent
-                                        Image {
-                                            anchors.centerIn: parent
-                                            source: "qrc:/resources/xIcon.png"
-                                            height: GcsStyle.PanelStyle.statusIconSize
-                                            width: GcsStyle.PanelStyle.statusIconSize
-                                            fillMode: Image.PreserveAspectFit
-                                        }
-                                    }
-
-                                    background: Rectangle {
-                                        radius: GcsStyle.PanelStyle.buttonRadius
-                                        color: "#ffa8a8"
-                                    }
-
-                                    MouseArea {
-                                        // This mouse area gives us the ability to add a pointer hand when the button is hovered
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            console.log("ignore")
-                                            ignored = true
-                                            discoveryListView.selectedIndex = -1
-                                            mockDroneList.remove(index)
-                                        }
+                                        text: "more drone info..."
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                        
+                                        horizontalAlignment: Text.AlignHCenter
                                     }
                                 }
                             }
                         }
-
-                        Item {
-                            id: expandedView
-                            visible: discoveredItem.expanded
-                            Layout.fillWidth: true
-
-                            ColumnLayout {
-                                anchors.fill: parent
-
-                                Text {
-                                    Layout.fillWidth: true
-                                    Layout.margins: GcsStyle.PanelStyle.defaultMargin
-
-                                    text: "more drone info..."
-                                    color: GcsStyle.PanelStyle.textPrimaryColor
-                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
-
-                                    horizontalAlignment: Text.AlignHCenter
-                                }
-                            }
+                    }
+                    Connections {
+                        target: droneController
+                        function onUnknownDronesChanged() {
+                            discoveryListView.model = droneController ? droneController.unknownDrones : []
                         }
                     }
                 }

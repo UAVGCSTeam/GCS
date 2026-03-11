@@ -17,6 +17,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
+    startHeartBeatTimer();
     qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -44,6 +45,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
+    startHeartBeatTimer();
     qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -67,6 +69,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
 {
+    startHeartBeatTimer();
     qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -155,13 +158,48 @@ void DroneClass::setOrientation(const QVector3D &ori)
     emit orientationChanged();
 }
 
+// ----- Heartbeat ------
+
+void DroneClass::checkHeartbeat()
+{
+    QDateTime curTime = QDateTime::currentDateTime();
+    qint64 dTime = m_lastHeartBeat.msecsTo(curTime);
+
+    if(dTime > 1000 && m_connected)
+    {
+        setConnected(false);
+        // qDebug() << "[DroneClass.cpp::checkHeartbeat] " << m_name << " Disconnected";
+    }
+
+    // qDebug() << "[DroneClass.cpp::checkHeartbeat] Connection Status for " << m_name << ": " << m_connected;
+}
+
+void DroneClass::startHeartBeatTimer()
+{
+    //set current time
+    m_lastHeartBeat = QDateTime::currentDateTime();
+
+    //connect timer
+    connect(&m_heartBeatTimer, &QTimer::timeout, this, &DroneClass::checkHeartbeat);
+    m_heartBeatTimer.start(500); // check every half second
+}
+
 // ----- Adapters used by DroneController -----
 
 void DroneClass::setConnected(bool v)
 {
+    if(v)
+    {
+        QDateTime curTime = QDateTime::currentDateTime();
+        m_heartbeatIntervalMs = m_lastHeartBeat.msecsTo(curTime);
+        m_lastHeartBeat = curTime;
+    }
+
     if (m_connected == v) return;
+    
     m_connected = v;
     emit dataChanged();
+    emit connectionStatusChanged(m_connected);
 }
 
 void DroneClass::setBatteryVoltage(int millivolts)

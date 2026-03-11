@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls
 import Qt.labs.platform
+import "./components" as Components
 import "qrc:/gcsStyle" as GcsStyle
 
 /*
@@ -19,7 +20,6 @@ Window {
     property var activeDrone: null // DroneClass type
 
     // These are our components that sit on top of our Window object
-
     QmlMap {
         id: mapComponent
         anchors.fill: parent
@@ -32,6 +32,7 @@ Window {
             mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
         }
     }
+
     MapScaleBarIndicator {
         id: mapScaleBar
         anchors {
@@ -40,6 +41,7 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
+
     MapDisplayTypeButton {
         id: mapTypeButton
         anchors {
@@ -82,7 +84,7 @@ Window {
         }
         visible: false
     }
-    
+
     DroneTrackingPanel {
         id: droneTrackingPanel
         anchors {
@@ -99,18 +101,15 @@ Window {
                 console.warn("Follow requested without a drone reference")
                 return
             }
-
             console.log("[main.qml] Follow requested via modifier click:", drone.name)
-            // Reset the current follow target so the map component doesn't keep the old pointer
             mapComponent.turnOffFollowDrone()
-            // Immediately re-enable follow mode
             mapComponent.turnOnFollowDrone()
         }
     }
 
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
     Shortcut {
-        sequence: StandardKey.Find       // cmd + f (macOS) / ctrl + f (Windows)
+        sequence: StandardKey.Find
         onActivated: mapComponent.toggleFollowDrone()
     }
 
@@ -120,7 +119,27 @@ Window {
         onActivated: openSettingsWindow()
     }
 
-    // Settings window 
+    // Command ACK toast notification listener
+    // TODO: have drone class handle its own notifications
+    Connections {
+        target: droneController
+        function onCommandAcknowledged(message, success) {
+            toastNotification.show(message, success)
+        }
+    }
+
+    // Toast notification
+    Components.ToastNotification {
+        id: toastNotification
+        anchors {
+            top: droneMenuBar.bottom
+            horizontalCenter: parent.horizontalCenter
+            topMargin: 12
+        }
+    }
+
+
+    // Settings window
     Loader {
         id: settingsLoader
         source: "qrc:/settingsWindow.qml"

@@ -40,7 +40,7 @@ QtObject {
     readonly property int fontSizeMedium: textSizeBase + 4 //16 default value
     readonly property int fontSizeSmall: textSizeBase + 1.33 //13.33 default value
     readonly property int fontSizeXS: textSizeBase //12 default value
-    readonly property int fontSizeXXS: textSizeBase - 4 //8 default value
+    readonly property int fontSizeXXS: textSizeBase - 2 //10 default value
 
     // Button properties
     readonly property int buttonSize: 40

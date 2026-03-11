@@ -49,7 +49,33 @@ Rectangle {
         sequence: "Ctrl+Shift+P"
         onActivated: commandMenu.open()
     }
-    
+
+    // Arm drone: Cmd+Shift+A (Mac) / Ctrl+Shift+A (Windows)
+    Shortcut {
+        sequence: "Ctrl+Shift+A"
+        onActivated: {
+            commandMenu.close()
+            armUAVConfirmation.open()
+        }
+    }
+
+    // Set guided mode: Cmd+Shift+G (Mac) / Ctrl+Shift+G (Windows)
+    Shortcut {
+        sequence: "Ctrl+Shift+G"
+        onActivated: {
+            commandMenu.close()
+            guidedModeUAVConfirmation.open()
+        }
+    }
+
+    // Takeoff: Cmd+Shift+T (Mac) / Ctrl+Shift+T (Windows)
+    Shortcut {
+        sequence: "Ctrl+Shift+T"
+        onActivated: {
+            commandMenu.close()
+            takeoffUAVConfirmation.open()
+        }
+    }
 
     Shortcut {
         sequence: "Escape"
