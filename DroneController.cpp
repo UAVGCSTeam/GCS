@@ -791,6 +791,30 @@ bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
 }
 
 
+bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float lon) {
+    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(uavID);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController.cpp::sendToCoordByUavID] unknown drone with xbeeAddress:" << uavID;
+        return false;
+    }
+    if (!mavTx_ || !mavTx_->isLinkOpen()) {
+        qWarning() << "[DroneController.cpp::sendToCoordByUavID] MAVLink sender not ready";
+        return false;
+    }
+
+    bool response = mavTx_->sendSetPositionTargetGlobalInt(
+        drone->getSysID(),
+        drone->getCompID(),
+        static_cast<double>(lat),
+        static_cast<double>(lon),
+        5.0f
+    );
+
+    qInfo() << "[DroneController.cpp::sendToCoordByUavID] SendToCoord:"
+            << drone->getName() << uavID << "sent=" << response;
+    return response;
+}
+
 bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode) {
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
@@ -967,6 +991,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         updateDroneTelem(drone, "lat",   p.lat/1e7);
         updateDroneTelem(drone, "lon",   p.lon/1e7);
         updateDroneTelem(drone, "alt_m", altMeters);
+        emit droneStateChanged(drone.data());
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {

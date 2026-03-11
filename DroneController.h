@@ -147,6 +147,7 @@ public:
     Q_INVOKABLE bool sendTakeoffCmd(const QString &droneKeyOrAddr, bool takeoff);
 
     Q_INVOKABLE bool sendToCoord(const QString droneName, float lat, float lon);
+    Q_INVOKABLE bool sendToCoordByUavID(const QString uavID, float lat, float lon);
 
     /**
      * function sendGuidedMode()
