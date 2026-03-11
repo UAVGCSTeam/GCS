@@ -80,7 +80,15 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
-        allowAutoShow: droneTrackingPanel.activePanel !== "mission"
+        allowAutoShow: droneTrackingPanel.activePanel === "drones"
+
+        Connections {
+            target: droneTrackingPanel
+            function onActivePanelChanged() {
+                if (droneTrackingPanel.activePanel !== "drones")
+                    droneCommandPanel.visible = false
+            }
+        }
     }
 
     MissionPlanPanel {

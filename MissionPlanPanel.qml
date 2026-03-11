@@ -291,7 +291,7 @@ Rectangle {
                         Behavior on opacity { NumberAnimation { duration: 100 } }
 
                         ColumnLayout {
-                            anchors.top: parent.top
+                            anchors.verticalCenter: parent.verticalCenter
                             anchors.left: parent.left
                             anchors.right: parent.right
                             anchors.margins: 10
@@ -407,32 +407,6 @@ Rectangle {
                     onEntered: parent.saveHover = true
                     onExited:  parent.saveHover = false
                     onClicked: { if (activeDrone) missionManager.startMission(activeDrone.xbeeAddress) }
-                }
-            }
-
-            // Placeholder — loading a saved route from the drone is not yet supported by the backend
-            Rectangle {
-                Layout.fillWidth: true
-                height: 40
-                radius: GcsStyle.PanelStyle.buttonRadius
-                color: loadHover ? Qt.rgba(0, 0.831, 1, 0.20) : GcsStyle.PanelStyle.listItemSelectedColor
-                border.color: GcsStyle.PanelStyle.listItemSelectedBorderColor
-                border.width: 1
-                property bool loadHover: false
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Load Route Into Drone"
-                    color: GcsStyle.PanelStyle.textPrimaryColor
-                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                    font.family: GcsStyle.PanelStyle.fontFamily
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onEntered: parent.loadHover = true
-                    onExited:  parent.loadHover = false
                 }
             }
 
