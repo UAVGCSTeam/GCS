@@ -14,7 +14,6 @@ Item {
     property real heightFraction: 0.25  // Default: bottom 1/4 of drone panel
     property real heightFractionMin: 0.1
     property real heightFractionMax: 0.75
-    property bool autoScroll: true
     property real _resizeStartY: 0
     property real _resizeStartFraction: 0.25
 
@@ -84,22 +83,13 @@ Item {
 
             Label {
                 Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
                 text: "Message Log"
                 color: "white"
+                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                font.family: GcsStyle.PanelStyle.fontFamily
             }
 
-                Button{
-                    Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-
-                    background: Image{
-                        anchors.fill: parent
-                        source: "qrc:/resources/warning.png"
-                        sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
-                        sourceSize.height: GcsStyle.PanelStyle.statusIconSize
-                    }
-                }
             }
             
 
@@ -123,68 +113,31 @@ Item {
 
                         spacing: 8
 
-                        Text{
+                        Text {
                             id: info
                             leftPadding: 5
                             width: 75
-
                             text: "[" + type + "]"
                             color: typeColor(type)
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                            font.family: GcsStyle.PanelStyle.fontFamily
                         }
-                        Text{
+                        Text {
                             width: textLine.width - info.width - textLine.spacing
                             wrapMode: Text.WordWrap
-
                             text: " " + message
-                        color: "white"
-                    }
+                            color: "white"
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                            font.family: GcsStyle.PanelStyle.fontFamily
+                        }
                 }
 
                     onContentHeightChanged: {
-                        if (autoScroll) {positionViewAtEnd()}
-                }
+                        if (settingsManager && settingsManager.logAutoScroll) { positionViewAtEnd() }
+                    }
                 }
             }
 
-            Button {
-                Layout.alignment: Qt.AlignBottom | Qt.AlignRight
-
-                background: Image{
-                    anchors.fill: parent
-                    source: main.autoScroll ? "qrc:/resources/autoscroll.png" : "qrc:/resources/warning.png"
-                    sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
-                    sourceSize.height: GcsStyle.PanelStyle.statusIconSize
-                }
-
-                onPressed: {
-                    main.autoScroll = !main.autoScroll 
-                }
-            }
-        }
-        Button {
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            height: parent.height / 10
-            text: "add text"
-            onPressed: {
-                switch (Math.floor(Math.random()*6)){
-                    case 1: 
-                        appendLog("debug","debug message is long in order to test if wrapping works");
-                        break;
-                    case 2:
-                        appendLog("info","info message");
-                        break;
-                    case 3: 
-                        appendLog("warning","warning message");
-                        break;
-                    case 4: 
-                        appendLog("critical","critical message")
-                        break;
-                    case 5: 
-                        appendLog("fatal","fatal message");
-                        break;
-                }
-            }
         }
     }
 }

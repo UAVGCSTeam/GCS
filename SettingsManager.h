@@ -28,6 +28,9 @@ class SettingsManager : public QObject
     Q_PROPERTY(int     textSizeBase READ textSizeBase WRITE setTextSizeBase NOTIFY textSizeBaseChanged)
     Q_PROPERTY(QString fontFamily   READ fontFamily   WRITE setFontFamily   NOTIFY fontFamilyChanged)
 
+    // Logging settings
+    Q_PROPERTY(bool logAutoScroll READ logAutoScroll WRITE setLogAutoScroll NOTIFY logAutoScrollChanged)
+
     // Startup settings
     Q_PROPERTY(double homeLat                READ homeLat                WRITE setHomeLat                NOTIFY homeLatChanged)
     Q_PROPERTY(double homeLong               READ homeLong               WRITE setHomeLong               NOTIFY homeLongChanged)
@@ -52,6 +55,12 @@ public:
     void setTextSizeBase(int size);
     void setFontFamily(const QString &family);
 
+    // Logging getters
+    bool logAutoScroll() const;
+
+    // Logging setters
+    void setLogAutoScroll(bool enabled);
+
     // Startup getters
     double homeLat() const;
     double homeLong() const;
@@ -74,6 +83,7 @@ public:
 
 signals:
     void currentThemeChanged();
+    void logAutoScrollChanged();
     void textSizeBaseChanged();
     void fontFamilyChanged();
     void homeLatChanged();
