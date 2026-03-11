@@ -1,8 +1,9 @@
 #include "Logger.h"
 
 //define static variables
-QFile* Logger::logFile = nullptr;
-QMutex Logger::mutex;
+QFile*  Logger::logFile = nullptr;
+QMutex  Logger::mutex;
+QString Logger::logs;
 
 void Logger::init()
 {
@@ -29,6 +30,11 @@ void Logger::close()
 {
     QMutexLocker locker(&mutex);
 
+    //pass all logs
+    QTextStream out(logFile);
+    out << logs << Qt::endl;
+    out.flush();
+
     //clear message handler
     qInstallMessageHandler(0);
 
@@ -50,30 +56,30 @@ void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const Q
     //ensure thread safety
     QMutexLocker locker(&mutex);
 
-    QTextStream out(logFile);
     QString entry;
 
     //get type of message and add in outptut
     switch(type)
     {
-        case QtDebugMsg:    entry += "[Debug] "; break;
-        case QtInfoMsg:     entry += "[Info] "; break;
-        case QtWarningMsg:  entry += "[Warning] "; break;
+        case QtDebugMsg:    entry += "[Debug] ";    break;
+        case QtInfoMsg:     entry += "[Info] ";     break;
+        case QtWarningMsg:  entry += "[Warning] ";  break;
         case QtCriticalMsg: entry += "[Critical] "; break;
-        case QtFatalMsg:    entry += "[Fatal] "; break;
+        case QtFatalMsg:    entry += "[Fatal] ";    break;
     }
 
     //add time to output
     entry += time.toString(" yyyy.MM.dd hh:mm:ss ");
 
     //add context to output (line and file)
-    entry += QString(" (%1:%2)  ").arg(context.file).arg(context.line);
+    entry += QString(" (%1:%2)  ").arg(QFileInfo(QString::fromUtf8(context.file)).fileName()).arg(context.line);
 
     //add message given by user
     entry += msg;
+    entry += "\n";
 
-    out << entry << Qt::endl;
-    out.flush();
+    //pass entry to log str
+    logs += entry;
 }
 
 QString Logger::devBuildRoot()

@@ -219,10 +219,8 @@ Item {
                     clickable: activeDrone ? true : false
                     onMenuItemClicked: {
                         contextMenu.close()
-                        waypointManager.addWaypoint(
-                            activeDrone.name,
-                            activeDrone.latitude,
-                            activeDrone.longitude,
+                        missionManager.addWaypoint(
+                            activeDrone,
                             rightClickMenuArea.lastRightClickCoord.latitude,
                             rightClickMenuArea.lastRightClickCoord.longitude
                         )

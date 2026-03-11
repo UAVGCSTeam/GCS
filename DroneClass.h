@@ -7,7 +7,9 @@
 #include <QVector>
 #include <QVariant>
 #include <QStringList>
+#include <QDateTime>
 #include <QDebug>
+#include <QTimer>
 #include <cmath>
 
 
@@ -27,6 +29,7 @@ class DroneClass : public QObject
     Q_PROPERTY(QVector3D velocity    READ getVelocity    NOTIFY velocityChanged    FINAL)
     Q_PROPERTY(double    airspeed    READ getAirspeed    NOTIFY airspeedChanged    FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation NOTIFY orientationChanged FINAL)
+    Q_PROPERTY(bool      connection  READ getConnection  NOTIFY connectionStatusChanged FINAL)
     Q_PROPERTY(int       sysID       READ getSysID       NOTIFY sysIDChanged       FINAL)
     Q_PROPERTY(int       compID      READ getCompID      NOTIFY compIDChanged      FINAL)
 
@@ -88,7 +91,9 @@ public:
     void      setAltitude(double altitude);  
 
     double    getAirspeed()    const { return m_airspeed; }
-    void      setAirspeed(double airspeed);                 
+    void      setAirspeed(double airspeed);
+
+    bool      getConnection() const {return m_connected;}
 
     bool      getRequestedTelem() const { return m_requested_telem; }
     void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
@@ -115,6 +120,10 @@ public:
     void setVelocity(float x, float y, float z);
     void setOrientation(float x, float y, float z);
 
+    //check for heartbeat
+    void checkHeartbeat();
+    void startHeartBeatTimer();
+
 signals:
     void nameChanged();
     void xbeeAddressChanged();
@@ -131,6 +140,7 @@ signals:
     void airspeedChanged();  
     void orientationChanged();
     void dataChanged();
+    void connectionStatusChanged(bool connection);
 
 private:
     QString   m_name;
@@ -147,10 +157,12 @@ private:
     QVector3D m_velocity;
     double    m_airspeed;    
     QVector3D m_orientation;
-
     bool      m_connected = false;
     QString   m_mode;
-
+    QTimer    m_heartBeatTimer; // Designates when to check for a new heartbeat
+    QDateTime m_lastHeartBeat; // The specific time when the last heartbeat was heard
+    qint64    m_heartbeatIntervalMs; // TODO: currently not implemented. can be used to display the interval 
+                                    // between heartbeats 
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
 };
 

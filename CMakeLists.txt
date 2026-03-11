@@ -28,6 +28,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         FileHandler.h FileHandler.cpp
         backend/dbmanager.h backend/dbmanager.cpp
         DroneClass.h DroneClass.cpp
+        unknowndroneclass.h unknowndroneclass.cpp
         DroneController.h DroneController.cpp
         requirements.txt
         UARTLink.cpp
@@ -42,6 +43,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         SettingsManager.cpp
         Logger.h
         Logger.cpp
+        uavmission.h uavmission.cpp
+        missionmanager.h missionmanager.cpp
     )
 else()
     if(ANDROID)

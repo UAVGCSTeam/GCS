@@ -22,6 +22,8 @@ class Logger
 
         static QFile* logFile;
 
+        static QString logs;
+
         static QString devBuildRoot();
 };
 
