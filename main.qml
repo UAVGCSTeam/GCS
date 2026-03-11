@@ -51,16 +51,6 @@ Window {
         }
     }
 
-    MessageLogPanel {
-        id: messageLogPanel
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        z: 1000
-    }
-
     // Menu bar above the drone tracking panel
     DroneMenuBar {
         id: droneMenuBar
@@ -99,8 +89,7 @@ Window {
         anchors {
             top: droneMenuBar.bottom
             left: parent.left
-            bottom: parent.bottom         
-            // margins: GcsStyle.PanelStyle.applicationBorderMargin
+            bottom: parent.bottom
         }
         
         onSelectionChanged: function(selected) { updateActiveDrone(selected) }
@@ -117,6 +106,24 @@ Window {
             // Immediately re-enable follow mode
             mapComponent.turnOnFollowDrone()
         }
+    }
+
+    MessageLogPanel {
+        id: messageLogPanel
+        droneStatusPanel: droneTrackingPanel
+        anchors {
+            bottom: droneTrackingPanel.bottom
+            left: droneTrackingPanel.left
+            leftMargin: 65  // Keep to the right of the left sidebar
+            right: droneTrackingPanel.right
+        }
+        z: 1000
+    }
+
+    Binding {
+        target: droneTrackingPanel
+        property: "overlayBottomHeight"
+        value: messageLogPanel.height
     }
 
     //Shortcut for toggling follow functionality (cmd + f or ctrl + f)

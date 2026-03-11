@@ -15,8 +15,8 @@ import "./components" as Components
 Rectangle {
     id: mainPanel
     width: 350
-    // 250
-    //height: 600
+    property real overlayBottomHeight: 0  // Space reserved for overlapping log panel; content scrolls above it
+
     color: GcsStyle.PanelStyle.surfaceBackground
     // radius: GcsStyle.PanelStyle.cornerRadius
     border.color: GcsStyle.panelStyle.defaultBorderColor
@@ -36,7 +36,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         spacing: 0
-        anchors.margins: parent.border.width
+        anchors.margins: 0
 
         // Left vertical bar
         Rectangle {
@@ -44,10 +44,8 @@ Rectangle {
             width: 65
             // GcsStyle.PanelStyle.sidebarWidth
             color: GcsStyle.PanelStyle.baseBackground
-            // radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
-            border.color: GcsStyle.panelStyle.defaultBorderColor
-            border.width: GcsStyle.panelStyle.defaultBorderWidth
+            border.width: 0
 
             // Rectangle {
             //     anchors.right: parent.right
@@ -163,10 +161,11 @@ Rectangle {
             }
         }
 
-        // Right view
+        // Right view (bottom padding reserves space for log panel overlay so list scrolls)
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.bottomMargin: overlayBottomHeight
             spacing: 0
 
             // Header
@@ -275,8 +274,9 @@ Rectangle {
                 // Active section dropdown
                 Column {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     property bool expanded: true
-                    width: parent.width 
+                    width: parent.width
 
                     // creating the active dropdown rectangle
                     Rectangle {
@@ -319,9 +319,10 @@ Rectangle {
                         id: trackListView
                         width: parent.width
                         visible: parent.expanded
-                        height: visible ? Math.min(droneController.drones.length * GcsStyle.PanelStyle.itemHeight, 7 * GcsStyle.PanelStyle.itemHeight) : 0 //makes sure that all drones fit in the panel
+                        height: visible ? Math.max(0, parent.height - 36) : 0
                         clip: true
                         model: droneController.drones
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                         //drone items
                         delegate: Rectangle {
@@ -616,8 +617,6 @@ Rectangle {
                     }
                 }
 
-                Item { Layout.fillHeight: true }  // bottom spacer
-
                 // // mock data to test list
                 ListModel {
                     id: mockDroneList
@@ -699,8 +698,9 @@ Rectangle {
                 // Active section dropdown
                 Column {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     property bool expanded: true
-                    width: parent.width 
+                    width: parent.width
 
                     // creating the active dropdown rectangle
                     Rectangle {
@@ -743,9 +743,10 @@ Rectangle {
                         id: missionListView
                         width: parent.width
                         visible: parent.expanded
-                        height: visible ? Math.min(droneController.drones.length * GcsStyle.PanelStyle.itemHeight, 7 * GcsStyle.PanelStyle.itemHeight) : 0 //makes sure that all drones fit in the panel
+                        height: visible ? Math.max(0, parent.height - 36) : 0
                         clip: true
                         model: droneController.drones
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                         //drone items
                         delegate: Rectangle {
@@ -1001,7 +1002,6 @@ Rectangle {
                         }
                     }
                 }
-                Item { Layout.fillHeight: true }  // bottom spacer
             }
 
             // Discovery panel
@@ -1011,6 +1011,7 @@ Rectangle {
                 Layout.fillHeight: true
                 clip: true
                 visible: mainPanel.activePanel === "discovery"
+                ScrollBar.vertical: ScrollBar { policy: ScrollBar.AlwaysOn }
 
                 property int selectedIndex: -1
 

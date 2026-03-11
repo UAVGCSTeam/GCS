@@ -7,10 +7,16 @@ import "./components" as Components
 
 Item {
     id: main
-    width: 250
-    height: 180
+    width: droneStatusPanel ? droneStatusPanel.width : 250
+    height: droneStatusPanel ? droneStatusPanel.height * heightFraction : 180
 
+    property var droneStatusPanel: null
+    property real heightFraction: 0.25  // Default: bottom 1/4 of drone panel
+    property real heightFractionMin: 0.1
+    property real heightFractionMax: 0.75
     property bool autoScroll: true
+    property real _resizeStartY: 0
+    property real _resizeStartFraction: 0.25
 
     ListModel { id:logModel }
 
@@ -37,6 +43,41 @@ Item {
             anchors.fill: parent
             spacing: 6
 
+            // Draggable resize handle at top
+            Rectangle {
+                id: resizeHandle
+                Layout.fillWidth: true
+                Layout.preferredHeight: 12
+                color: Qt.rgba(1, 1, 1, 0.15)
+                Layout.alignment: Qt.AlignHCenter
+
+                Rectangle {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 40
+                    height: 4
+                    radius: 2
+                    color: Qt.rgba(1, 1, 1, 0.5)
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.SizeVerCursor
+                    preventStealing: true
+                    onPressed: {
+                        _resizeStartY = resizeHandle.mapToGlobal(mouse.x, mouse.y).y
+                        _resizeStartFraction = heightFraction
+                    }
+                    onPositionChanged: {
+                        if (pressed && droneStatusPanel) {
+                            var currentGlobalY = resizeHandle.mapToGlobal(mouse.x, mouse.y).y
+                            var deltaY = _resizeStartY - currentGlobalY
+                            var deltaFraction = deltaY / droneStatusPanel.height
+                            heightFraction = Math.max(heightFractionMin, Math.min(heightFractionMax, _resizeStartFraction + deltaFraction))
+                        }
+                    }
+                }
+            }
 
             RowLayout{
                 Layout.margins: 5
@@ -85,6 +126,7 @@ Item {
                         Text{
                             id: info
                             leftPadding: 5
+                            width: 75
 
                             text: "[" + type + "]"
                             color: typeColor(type)
