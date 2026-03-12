@@ -27,6 +27,7 @@ Rectangle {
     signal selectionChanged(var selectedDrones)     // Broadcast the current selection so other components (telemetry, commands, etc.) stay in sync
     signal activeDroneChanged(var anchor)     // Broadcast the current anchor which will be used as the active drone
     signal followRequested(var drone)     // Dedicated signal for the "follow" shortcut so main.qml can toggle map following
+    signal settingsClicked()     // Opens application settings
 
     property var selectedIndexes: [] // Stores which rows are selected
     property int lastSelectedIndex: -1 // Remembers last drone the user clicked (so Shift-click knows where to start)
@@ -166,7 +167,32 @@ Rectangle {
                         }
                     }
                 }
-                Item { Layout.fillHeight: true } // Bottom spacer to push buttons up
+
+                Item { Layout.fillHeight: true } // Spacer to push settings button to bottom
+
+                // Settings button
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredWidth: GcsStyle.PanelStyle.buttonSize
+                    Layout.preferredHeight: GcsStyle.PanelStyle.buttonSize
+                    Layout.bottomMargin: GcsStyle.PanelStyle.sidebarTopMargin
+                    color: GcsStyle.PanelStyle.buttonColor
+                    radius: GcsStyle.PanelStyle.buttonRadius
+
+                    Image {
+                        anchors.centerIn: parent
+                        source: "qrc:/resources/settingsButton.svg"
+                        sourceSize.width: GcsStyle.PanelStyle.iconSize
+                        sourceSize.height: GcsStyle.PanelStyle.iconSize
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: mainPanel.settingsClicked()
+                    }
+                }
             }
         }
 

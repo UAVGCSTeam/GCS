@@ -96,6 +96,7 @@ Window {
         
         onSelectionChanged: function(selected) { updateActiveDrone(selected) }
         onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
+        onSettingsClicked: openSettingsWindow()
         onFollowRequested: function(drone) {
             if (!drone) {
                 console.warn("Follow requested without a drone reference")
@@ -164,8 +165,12 @@ Window {
     }
 
     function openSettingsWindow() {
-        settingsLoader.item.show()
-        settingsLoader.item.raise()
+        if (settingsLoader.item && settingsLoader.item.visible) {
+            settingsLoader.item.close()
+        } else {
+            settingsLoader.item.show()
+            settingsLoader.item.raise()
+        }
     }
 
     // Save map state when app closes (for "leave at last location" settings feature)
