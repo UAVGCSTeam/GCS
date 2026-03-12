@@ -11,6 +11,13 @@ Item {
     height: droneStatusPanel ? droneStatusPanel.height * heightFraction : 180
 
     property var droneStatusPanel: null
+
+    Connections {
+        target: logger
+        function onLogEntryAdded(type, message) {
+            appendLog(type, message)
+        }
+    }
     property real heightFraction: 0.25  // Default: bottom 1/4 of drone panel
     property real heightFractionMin: 0.1
     property real heightFractionMax: 0.75

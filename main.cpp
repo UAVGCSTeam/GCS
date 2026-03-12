@@ -46,6 +46,9 @@ int main(int argc, char *argv[])
     SettingsManager settingsManager;
     engine.rootContext()->setContextProperty("settingsManager", &settingsManager);
 
+    // Expose Logger to QML for MessageLogPanel
+    engine.rootContext()->setContextProperty("logger", Logger::instance());
+
     // Create and register MapController as an object that the cpp can use
     MapController mapController;
     engine.rootContext()->setContextProperty("mapController", &mapController);

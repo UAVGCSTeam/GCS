@@ -1,12 +1,23 @@
 #include "Logger.h"
+#include <QFileInfo>
 
 //define static variables
 QFile*  Logger::logFile = nullptr;
 QMutex  Logger::mutex;
 QString Logger::logs;
+Logger* Logger::s_instance = nullptr;
+
+Logger::Logger(QObject *parent) : QObject(parent) {}
+
+Logger* Logger::instance()
+{
+    return s_instance;
+}
 
 void Logger::init()
 {
+    s_instance = new Logger();
+
     //get file name
     QString basePath = devBuildRoot();
     QString logDir = basePath + "/log";
@@ -45,7 +56,7 @@ void Logger::close()
     //cleaner way to do this with Q?
     delete logFile;
     logFile = nullptr;
-
+    // s_instance kept alive until app exit (queued emits may still be pending)
 }
 
 void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -53,33 +64,38 @@ void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const Q
     //get message timestamp
     QDateTime time = QDateTime::currentDateTime();
 
-    //ensure thread safety
-    QMutexLocker locker(&mutex);
-
-    QString entry;
-
-    //get type of message and add in outptut
-    switch(type)
-    {
-        case QtDebugMsg:    entry += "[Debug] ";    break;
-        case QtInfoMsg:     entry += "[Info] ";     break;
-        case QtWarningMsg:  entry += "[Warning] ";  break;
-        case QtCriticalMsg: entry += "[Critical] "; break;
-        case QtFatalMsg:    entry += "[Fatal] ";    break;
+    QString typeStr;
+    switch (type) {
+        case QtDebugMsg:    typeStr = "debug";    break;
+        case QtInfoMsg:     typeStr = "info";     break;
+        case QtWarningMsg:  typeStr = "warning";  break;
+        case QtCriticalMsg: typeStr = "critical"; break;
+        case QtFatalMsg:    typeStr = "fatal";    break;
     }
 
-    //add time to output
-    entry += time.toString(" yyyy.MM.dd hh:mm:ss ");
+    {
+        QMutexLocker locker(&mutex);
 
-    //add context to output (line and file)
-    entry += QString(" (%1:%2)  ").arg(QFileInfo(QString::fromUtf8(context.file)).fileName()).arg(context.line);
+        QString entry;
+        switch (type) {
+            case QtDebugMsg:    entry += "[Debug] ";    break;
+            case QtInfoMsg:     entry += "[Info] ";     break;
+            case QtWarningMsg:  entry += "[Warning] ";  break;
+            case QtCriticalMsg: entry += "[Critical] "; break;
+            case QtFatalMsg:    entry += "[Fatal] ";    break;
+        }
+        entry += time.toString(" yyyy.MM.dd hh:mm:ss ");
+        entry += QString(" (%1:%2)  ").arg(QFileInfo(QString::fromUtf8(context.file)).fileName()).arg(context.line);
+        entry += msg;
+        entry += "\n";
+        logs += entry;
+    }
 
-    //add message given by user
-    entry += msg;
-    entry += "\n";
-
-    //pass entry to log str
-    logs += entry;
+    // emit for QML panel after releasing mutex (avoids deadlock if slot logs)
+    if (s_instance)
+        QMetaObject::invokeMethod(s_instance, [typeStr, msg]() {
+            emit s_instance->logEntryAdded(typeStr, msg);
+        }, Qt::QueuedConnection);
 }
 
 QString Logger::devBuildRoot()
