@@ -22,6 +22,7 @@ Rectangle {
     border.color: GcsStyle.panelStyle.defaultBorderColor
     // border.width: GcsStyle.panelStyle.defaultBorderWidth
     border.width: 0  // remove the border
+    property real overlayBottomHeight: 0  // Space reserved for overlapping log panel; content scrolls above it
 
     signal selectionChanged(var selectedDrones)     // Broadcast the current selection so other components (telemetry, commands, etc.) stay in sync
     signal activeDroneChanged(var anchor)     // Broadcast the current anchor which will be used as the active drone
@@ -169,10 +170,11 @@ Rectangle {
             }
         }
 
-        // Right view
+        // Right view (bottom padding reserves space for log panel overlay so list scrolls)
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.bottomMargin: overlayBottomHeight
             spacing: 0
 
             // Header

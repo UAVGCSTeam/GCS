@@ -55,6 +55,21 @@ void SettingsManager::setFontFamily(const QString &family) {
 }
 
 // =============================================================================
+// LOGGING SETTINGS
+// =============================================================================
+
+bool SettingsManager::logAutoScroll() const {
+    return m_settings.value("logging/autoScroll", true).toBool();
+}
+
+void SettingsManager::setLogAutoScroll(bool enabled) {
+    if (logAutoScroll() != enabled) {
+        m_settings.setValue("logging/autoScroll", enabled);
+        emit logAutoScrollChanged();
+    }
+}
+
+// =============================================================================
 // STARTUP SETTINGS
 // =============================================================================
 
@@ -127,4 +142,3 @@ void SettingsManager::setLastMapZoom(double zoom) {
         emit lastMapZoomChanged();
     }
 }
-

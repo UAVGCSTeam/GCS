@@ -107,6 +107,24 @@ Window {
         }
     }
 
+    MessageLogPanel {
+        id: messageLogPanel
+        droneStatusPanel: droneTrackingPanel
+        anchors {
+            bottom: droneTrackingPanel.bottom
+            left: droneTrackingPanel.left
+            leftMargin: 65  // Keep to the right of the left sidebar
+            right: droneTrackingPanel.right
+        }
+        z: 1000
+    }
+
+    Binding {
+        target: droneTrackingPanel
+        property: "overlayBottomHeight"
+        value: messageLogPanel.height
+    }
+
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
     Shortcut {
         sequence: StandardKey.Find

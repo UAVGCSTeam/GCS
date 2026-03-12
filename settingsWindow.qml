@@ -31,6 +31,7 @@ Window {
     property string fontFamily: settingsManager.fontFamily 
     property string colorTheme: settingsManager.currentTheme
     property bool leaveAtLastMapLocation: settingsManager.leaveAtLastMapLocation
+    property bool logAutoScroll: settingsManager.logAutoScroll
     property string homeLat: String(settingsManager.homeLat)
     property string homeLong: String(settingsManager.homeLong)
 
@@ -77,6 +78,7 @@ Window {
                fontFamily !== settingsManager.fontFamily ||
                colorTheme !== settingsManager.currentTheme ||
                leaveAtLastMapLocation !== settingsManager.leaveAtLastMapLocation ||
+               logAutoScroll !== settingsManager.logAutoScroll ||
                homeLat !== String(settingsManager.homeLat) ||
                homeLong !== String(settingsManager.homeLong)
     }
@@ -189,6 +191,7 @@ Window {
                                 settingsManager.textSizeBase = textSize
                                 settingsManager.fontFamily = fontFamily
                                 settingsManager.leaveAtLastMapLocation = leaveAtLastMapLocation
+                                settingsManager.logAutoScroll = logAutoScroll
                                 
                                 // Only save coordinates if they're valid numbers
                                 var latVal = parseFloat(homeLat)
@@ -460,6 +463,61 @@ Window {
                                 }
                             }
 
+                            // Logging Section
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.topMargin: 8
+                                spacing: 16
+
+                                Text {
+                                    text: "Logging:"
+                                    color: GcsStyle.PanelStyle.textPrimaryColor
+                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                    font.weight: Font.Medium
+                                }
+
+                                RowLayout {
+                                    spacing: 12
+
+                                    CheckBox {
+                                        id: logAutoScrollCheckbox
+                                        checked: logAutoScroll
+
+                                        indicator: Rectangle {
+                                            width: 18
+                                            height: 18
+                                            radius: 3
+                                            color: logAutoScrollCheckbox.checked
+                                                ? GcsStyle.PanelStyle.buttonActiveColor
+                                                : GcsStyle.PanelStyle.secondaryColor
+                                            border.color: logAutoScrollCheckbox.checked
+                                                ? GcsStyle.PanelStyle.buttonActiveColor
+                                                : GcsStyle.PanelStyle.defaultBorderColor
+                                            border.width: 1
+
+                                            Text {
+                                                text: "✓"
+                                                color: "white"
+                                                font.pixelSize: 12
+                                                font.weight: Font.Bold
+                                                anchors.centerIn: parent
+                                                visible: logAutoScrollCheckbox.checked
+                                            }
+                                        }
+
+                                        onCheckedChanged: logAutoScroll = checked
+                                    }
+
+                                    Text {
+                                        text: "Auto-scroll message log"
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                    }
+                                }
+                            }
+
                             // Spacer
                             Item {
                                 Layout.fillHeight: true
@@ -727,6 +785,7 @@ Window {
 
                             // Heartbeat simulation
                             RowLayout {
+                                Layout.topMargin: 16
                                 spacing: 12
 
                                 CheckBox {
@@ -756,10 +815,7 @@ Window {
                                     }
                                     onCheckedChanged: {
                                         droneController.setCheckedHeartBeat(checked)
-                                        // This updates the C++ property when the user clicks the checkbox
-                                        // droneController.checkHeartBeat = checked
-                                        // console.log("HEART: ", droneController.checkHeartBeat)
-                                    }                            
+                                    }
                                 }
 
                                 ColumnLayout {
