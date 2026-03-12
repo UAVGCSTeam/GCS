@@ -953,6 +953,15 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
             else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting telem";
         }
 
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Request hardware UID once per drone (response arrives as AUTOPILOT_VERSION)
+        if (!drone->getRequestedAutopilotVersion() && mavTx_ && mavTx_->isLinkOpen()) {
+            bool ok = mavTx_->sendAutopilotVersionRequest(sysID, compID);
+            if (ok) drone->setRequestedAutopilotVersion(true);
+            else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting autopilot version";
+        }
+        ////////////////////////////////////////////////////////////////////////////////////
+
         bool armed = hb.base_mode & MAV_MODE_FLAG_SAFETY_ARMED;
         // qDebug() << "[DroneController.cpp::onMavlinkMessage] Armed =" << armed;
         uint32_t custom_mode = hb.custom_mode;
@@ -1052,6 +1061,27 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         emit commandAcknowledged(resultMsg, success);  
         break;
     }
+    ////////////////////////////////////////////////////////////////////////////////////
+    // Handle AUTOPILOT_VERSION response and log the UID
+    case MAVLINK_MSG_ID_AUTOPILOT_VERSION: {
+        mavlink_autopilot_version_t av;
+        mavlink_msg_autopilot_version_decode(&msg, &av);
+
+        // Log the 64-bit uid field
+        QString uid64 = QString::number(av.uid, 16).rightJustified(16, '0');
+
+        // Log the 128-bit uid2 field (18 bytes; ArduPilot fills first 12 for STM32 hardware)
+        QString uid128;
+        for (int i = 0; i < 18; ++i)
+            uid128 += QString("%1").arg(av.uid2[i], 2, 16, QChar('0'));
+
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] AUTOPILOT_VERSION"
+                << " sysID=" << sysID << " compID=" << compID
+                << " uid64=0x"  << uid64
+                << " uid128=0x" << uid128;
+        break;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////
     default:
         // qDebug() << "[DroneController.cpp::onMavlinkMessage] unexpected message type: " << msg.msgid;
         break;

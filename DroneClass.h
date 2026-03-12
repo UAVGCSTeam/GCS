@@ -98,6 +98,12 @@ public:
     bool      getRequestedTelem() const { return m_requested_telem; }
     void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
 
+    ////////////////////////////////////////////////////////////////////////////////////
+    //  Track whether AUTOPILOT_VERSION (UID) has been requested for this drone
+    bool      getRequestedAutopilotVersion() const { return m_requested_autopilot_version; }
+    void      setRequestedAutopilotVersion(bool v) { m_requested_autopilot_version = v; }
+    ////////////////////////////////////////////////////////////////////////////////////
+
     int      getSysID() const { return m_sysID; }
     void      setSysID(int sysID) { m_sysID = sysID; }
 
@@ -164,6 +170,10 @@ private:
     qint64    m_heartbeatIntervalMs; // TODO: currently not implemented. can be used to display the interval 
                                     // between heartbeats 
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
+    ////////////////////////////////////////////////////////////////////////////////////
+    //  track whether UID was requested
+    bool      m_requested_autopilot_version = false;
+    ////////////////////////////////////////////////////////////////////////////////////
 };
 
 #endif // DRONECLASS_H

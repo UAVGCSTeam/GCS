@@ -72,6 +72,20 @@ QByteArray MAVLinkSender::packCommandLong(uint8_t targetSys, uint8_t targetComp,
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////
+//  Send AutoPilot Version Request
+bool MAVLinkSender::sendAutopilotVersionRequest(uint8_t sysID, uint8_t compID) const {
+    if (!isLinkOpen()) return false;
+    QByteArray bytes = packCommandLong(
+        sysID,
+        compID,
+        MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, // 520
+        1.0f  // param1 = 1 → respond with AUTOPILOT_VERSION
+    );
+    return writeToLink(bytes) > 0;
+}
+////////////////////////////////////////////////////////////////////////////////////
+
 bool MAVLinkSender::sendSetPositionTargetGlobalInt(uint8_t targetSys, uint8_t targetComp,
                                                    double lat_deg, double lon_deg,
                                                    float alt_m) const {

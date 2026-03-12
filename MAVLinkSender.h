@@ -86,6 +86,12 @@ public:
                                         double lat_deg, double lon_deg,
                                         float alt_m) const;
 
+    ////////////////////////////////////////////////////////////////////////////////////
+    //  Sends MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES (520) to ask the drone for
+    // an AUTOPILOT_VERSION response containing its 128-bit hardware UID.
+    bool sendAutopilotVersionRequest(uint8_t sysID, uint8_t compID) const;
+    ////////////////////////////////////////////////////////////////////////////////////
+
 private:
     qint64 writeToLink(const QByteArray& bytes) const;
     UARTLink* UARTLink_;
