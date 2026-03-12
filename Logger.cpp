@@ -91,8 +91,8 @@ void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const Q
         logs += entry;
     }
 
-    // emit for QML panel after releasing mutex (avoids deadlock if slot logs)
-    if (s_instance)
+    // emit for QML panel only for qDebug messages (avoids deadlock if slot logs)
+    if (s_instance && type == QtDebugMsg)
         QMetaObject::invokeMethod(s_instance, [typeStr, msg]() {
             emit s_instance->logEntryAdded(typeStr, msg);
         }, Qt::QueuedConnection);
