@@ -280,7 +280,10 @@ Rectangle {
 
                 // Active section dropdown
                 Column {
+                    id: trackActiveSection
                     Layout.fillWidth: true
+                    Layout.fillHeight: trackActiveSection.expanded  // ← fills space only when expanded
+                    Layout.preferredHeight: expanded ? -1 : 36 // ← 36 = just the header when collapsed
                     property bool expanded: true
                     width: parent.width 
 
@@ -313,10 +316,16 @@ Rectangle {
                             }
                         }
 
-                        // if clicked then expands
+                        // Active section header MouseArea mouse expands
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                            onClicked: {
+                                trackActiveSection.expanded = !trackActiveSection.expanded
+                                if (trackActiveSection.expanded) {
+                                    trackIdleSection.expanded = false
+                                    trackInactiveSection.expanded = false
+                                }
+                            }
                         }
                     }
 
@@ -325,7 +334,282 @@ Rectangle {
                         id: trackListView
                         width: parent.width
                         visible: parent.expanded
-                        height: visible ? Math.min(droneController.drones.length * GcsStyle.PanelStyle.itemHeight, 7 * GcsStyle.PanelStyle.itemHeight) : 0 //makes sure that all drones fit in the panel
+                        height: parent.height - 36
+                        clip: true
+                        
+                        model: droneController.drones
+
+                        //drone items
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: GcsStyle.PanelStyle.itemHeight
+                            property bool hovered: false
+                            property bool selected: mainPanel.isIndexSelected(index)
+
+                            // when selected changes colors
+                            color: selected
+                                ? GcsStyle.PanelStyle.listItemSelectedColor
+                                : (hovered
+                                    ? GcsStyle.PanelStyle.hoverBackground
+                                    : GcsStyle.PanelStyle.cardBackground)
+
+                            border.color: selected
+                                ? GcsStyle.PanelStyle.listItemSelectedBorderColor
+                                : GcsStyle.panelStyle.defaultBorderColor
+                            border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                            // allows for multiselect
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: (mouse) => {
+                                    const isShift = mouse.modifiers & Qt.ShiftModifier
+                                    const isCmd = mouse.modifiers & Qt.MetaModifier
+                                    const isCtrl = mouse.modifiers & Qt.ControlModifier
+                                    const ctrlOrCmd = isCmd || isCtrl
+                                    const hasModifier = isShift || ctrlOrCmd
+
+                                    const alreadySelected = !hasModifier
+                                                            && mainPanel.selectedIndexes.length === 1
+                                                            && mainPanel.selectedIndexes[0] === index
+                                    if (alreadySelected) {
+                                        mainPanel.clearSelection()
+                                        return
+                                    }
+
+                                    if (isShift && ctrlOrCmd) {
+                                        mainPanel.setSingleSelection(index)
+                                        mainPanel.emitSelectionChanged()
+                                        mainPanel.followRequested(modelData)
+                                        return
+                                    }
+
+                                    if (isShift) {
+                                        var anchor = mainPanel.selectionAnchorIndex
+                                        if (anchor === -1) {
+                                            if (mainPanel.selectedIndexes.length > 0) {
+                                                anchor = mainPanel.selectedIndexes[0]
+                                            } else if (mainPanel.lastSelectedIndex !== -1) {
+                                                anchor = mainPanel.lastSelectedIndex
+                                            } else {
+                                                anchor = index
+                                            }
+                                            mainPanel.selectionAnchorIndex = anchor
+                                        }
+                                        mainPanel.selectRange(anchor, index)
+                                    } else if (ctrlOrCmd) {
+                                        mainPanel.toggleSelection(index)
+                                    } else {
+                                        mainPanel.setSingleSelection(index)
+                                    }
+
+                                    mainPanel.emitSelectionChanged()
+                                    
+                                }
+                            }
+
+                            //drone icon + battery pill
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                                anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                                spacing: 16
+
+                                // Drone icon with battery badge
+                                Item {
+                                    width: 44
+                                    height: 44
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    //drone image
+                                    Image {
+                                        anchors.centerIn: parent
+                                        source: GcsStyle.PanelStyle.isLightTheme
+                                            ? "qrc:/resources/droneStatusLightMode.svg"
+                                            : "qrc:/resources/droneStatusDarkMode.svg"
+                                        sourceSize.width: GcsStyle.PanelStyle.iconSize + 8
+                                        sourceSize.height: GcsStyle.PanelStyle.iconSize + 8
+                                    }
+
+                                    // Red battery badge bottom-left
+                                    Rectangle {
+                                        anchors.bottom: parent.bottom
+                                        anchors.left: parent.left
+                                        width: trackActiveBattRow.width + 11
+                                        height: 16
+                                        radius: 10
+                                        anchors.leftMargin: -5 // for centering
+                                        anchors.bottomMargin: -1
+                                        color: GcsStyle.PanelStyle.lowBatteryColor
+                                        border.color: Qt.rgba(255, 255, 255, 0.5) 
+                                        border.width: 0.5
+
+                                        Row {
+                                            id: trackActiveBattRow
+                                            anchors.centerIn: parent
+                                            spacing: 4
+
+                                            Image {
+                                                source: "qrc:/resources/batteryIcon.svg"
+                                                sourceSize.width: 15
+                                                sourceSize.height: 13
+                                                y: (trackActiveBattText.implicitHeight - 13) / 2
+                                            }
+
+                                            Text {
+                                                id: trackActiveBattText
+                                                text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "?"
+                                                color: "white"
+                                                font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Name and connection status
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    Text {
+                                        text: modelData.name
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                        font.bold: true
+                                    }
+
+                                    Row {
+                                        spacing: 4
+
+                                        // Connected pill
+                                        Rectangle {
+                                            height: 18
+                                            width: trackConnRow.width + 14
+                                            radius: 8
+                                            color: Qt.rgba(0, 0, 0, 0.25)
+                                            border.color: GcsStyle.PanelStyle.defaultBorderColor
+                                            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+
+                                            Row {
+                                                id: trackConnRow
+                                                anchors.centerIn: parent
+                                                spacing: 4
+
+                                                Rectangle {
+                                                    width: 6
+                                                    height: 6   
+                                                    radius: 3
+                                                    color: "#4caf50"
+                                                    y: (trackConnText.implicitHeight - 6) / 2 + 1
+                                                }
+
+                                                Text {
+                                                    id: trackConnText
+                                                    text: "Connected"
+                                                    color: "#4caf50" 
+                                                    // Qt.rgba(255, 255, 255, 0.5)
+                                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                                    y: (parent.height - implicitHeight) / 2 + 1
+                                                }
+                                            }
+                                        }
+
+                                        // Status pill
+                                        Rectangle {
+                                            height: 18
+                                            width: trackStatusRow.width + 14
+                                            radius: 8
+                                            color: Qt.rgba(0, 0, 0, 0.25)
+                                            border.color: GcsStyle.PanelStyle.defaultBorderColor
+                                            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+
+                                            Row {
+                                                id: trackStatusRow
+                                                anchors.centerIn: parent
+                                                spacing: 4
+
+                                                Image {
+                                                    source: "qrc:/resources/flightIcon.svg"
+                                                    sourceSize.width: 11
+                                                    sourceSize.height: 11
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                }
+
+                                                Text {
+                                                    id: trackStatusText
+                                                    text: modelData.status ? modelData.status : "Flying"
+                                                    color: Qt.rgba(255, 255, 255, 0.5)
+                                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                                    y: (parent.height - implicitHeight) / 2 + 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // Idle section
+                Column {
+                    id: trackIdleSection
+                    Layout.fillWidth: true
+                    Layout.fillHeight: trackIdleSection.expanded
+                    Layout.preferredHeight: expanded ? -1 : 36
+                    property bool expanded: false
+
+                    Rectangle {
+                        width: parent.width
+                        height: 36
+                        color: "transparent"
+                        border.color: GcsStyle.panelStyle.defaultBorderColor
+                        border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                            anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+
+                            Text {
+                                text: "Idle (" + droneController.drones.length + ")"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                font.family: GcsStyle.PanelStyle.fontFamily
+                                Layout.fillWidth: true
+                            }
+                            Text {
+                                text: parent.parent.parent.expanded ? "▲" : "▼"
+                                color: GcsStyle.PanelStyle.textPrimaryColor
+                            }
+                        }
+
+                        // Idle section header MouseArea
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                trackIdleSection.expanded = !trackIdleSection.expanded
+                                if (trackIdleSection.expanded) {
+                                    trackActiveSection.expanded = false
+                                    trackInactiveSection.expanded = false
+                                }
+                            }
+                        }
+                    }
+
+                    // listing all the drones
+                    ListView {
+                        id: trackIdleListView
+                        width: parent.width
+                        visible: parent.expanded
+                        height: parent.height - 36
                         clip: true
                         model: droneController.drones
 
@@ -428,7 +712,7 @@ Rectangle {
                                     Rectangle {
                                         anchors.bottom: parent.bottom
                                         anchors.left: parent.left
-                                        width: trackBattRow.width + 11
+                                        width: trackIdleBattRow.width + 11
                                         height: 16
                                         radius: 10
                                         anchors.leftMargin: -5 // for centering
@@ -438,7 +722,7 @@ Rectangle {
                                         border.width: 0.5
 
                                         Row {
-                                            id: trackBattRow
+                                            id: trackIdleBattRow
                                             anchors.centerIn: parent
                                             spacing: 4
 
@@ -446,11 +730,11 @@ Rectangle {
                                                 source: "qrc:/resources/batteryIcon.svg"
                                                 sourceSize.width: 15
                                                 sourceSize.height: 13
-                                                y: (trackBattText.implicitHeight - 13) / 2
+                                                y: (trackIdleBattText.implicitHeight - 13) / 2
                                             }
 
                                             Text {
-                                                id: trackBattText
+                                                id: trackIdleBattText
                                                 text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "?"
                                                 color: "white"
                                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
@@ -495,15 +779,15 @@ Rectangle {
                                                     width: 6
                                                     height: 6   
                                                     radius: 3
-                                                    color: "#4caf50"
+                                                    color: "#af874c"
                                                     y: (trackConnText.implicitHeight - 6) / 2 + 1
                                                 }
 
                                                 Text {
                                                     id: trackConnText
-                                                    text: "Connected"
-                                                    color: "#4caf50" 
-                                                    // Qt.rgba(255, 255, 255, 0.5)
+                                                    text: "Low Connection"
+                                                    color: "#af874c" 
+                                                    // Qt.rgba(11, 9, 9, 0.5)
                                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
                                                     font.family: GcsStyle.PanelStyle.fontFamily
                                                     y: (parent.height - implicitHeight) / 2 + 1
@@ -514,14 +798,14 @@ Rectangle {
                                         // Status pill
                                         Rectangle {
                                             height: 18
-                                            width: trackStatusRow.width + 14
+                                            width: trackIdleStatusRow.width + 14
                                             radius: 8
                                             color: Qt.rgba(0, 0, 0, 0.25)
                                             border.color: GcsStyle.PanelStyle.defaultBorderColor
                                             border.width: GcsStyle.PanelStyle.defaultBorderWidth
 
                                             Row {
-                                                id: trackStatusRow
+                                                id: trackIdleStatusRow
                                                 anchors.centerIn: parent
                                                 spacing: 4
 
@@ -533,8 +817,8 @@ Rectangle {
                                                 }
 
                                                 Text {
-                                                    id: trackStatusText
-                                                    text: modelData.status ? modelData.status : "Flying"
+                                                    id: trackIdleStatusText
+                                                    text: modelData.status ? modelData.status : "Grounded"
                                                     color: Qt.rgba(255, 255, 255, 0.5)
                                                     font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
                                                     font.family: GcsStyle.PanelStyle.fontFamily
@@ -548,46 +832,13 @@ Rectangle {
                         }
                     }
                 }
-                // Idle section
-                Column {
-                    Layout.fillWidth: true
-                    property bool expanded: false
-
-                    Rectangle {
-                        width: parent.width
-                        height: 36
-                        color: "transparent"
-                        border.color: GcsStyle.panelStyle.defaultBorderColor
-                        border.width: GcsStyle.panelStyle.defaultBorderWidth
-
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
-                            anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
-
-                            Text {
-                                text: "Idle (0)"
-                                color: GcsStyle.PanelStyle.textPrimaryColor
-                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                font.family: GcsStyle.PanelStyle.fontFamily
-                                Layout.fillWidth: true
-                            }
-                            Text {
-                                text: parent.parent.parent.expanded ? "▲" : "▼"
-                                color: GcsStyle.PanelStyle.textPrimaryColor
-                            }
-                        }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: parent.parent.expanded = !parent.parent.expanded
-                        }
-                    }
-                }
 
                 // Inactive section
                 Column {
+                    id: trackInactiveSection
                     Layout.fillWidth: true
+                    Layout.fillHeight: trackInactiveSection.expanded
+                    Layout.preferredHeight: expanded ? -1 : 36
                     property bool expanded: false
 
                     Rectangle {
@@ -615,9 +866,16 @@ Rectangle {
                             }
                         }
 
+                        // Inactive section header MouseArea
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                            onClicked: {
+                                trackInactiveSection.expanded = !trackInactiveSection.expanded
+                                if (trackInactiveSection.expanded) {
+                                    trackActiveSection.expanded = false
+                                    trackIdleSection.expanded = false
+                                }
+                            }
                         }
                     }
                 }
@@ -706,7 +964,10 @@ Rectangle {
 
                 // Active section dropdown
                 Column {
+                    id: missionActiveSection       
                     Layout.fillWidth: true
+                    Layout.fillHeight: missionActiveSection.expanded  // ← fills space only when expanded
+                    Layout.preferredHeight: expanded ? -1 : 36 // ← 36 = just the header when collapsed
                     property bool expanded: true
                     width: parent.width 
 
@@ -739,10 +1000,16 @@ Rectangle {
                             }
                         }
 
-                        // if clicked then expands
+                        // Active section header MouseArea mouse expands
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                            onClicked: {
+                                missionActiveSection.expanded = !missionActiveSection.expanded
+                                if (missionActiveSection.expanded) {
+                                    missionIdleSection.expanded = false
+                                    missionInactiveSection.expanded = false
+                                }
+                            }
                         }
                     }
 
@@ -853,7 +1120,7 @@ Rectangle {
                                     Rectangle {
                                         anchors.bottom: parent.bottom
                                         anchors.left: parent.left
-                                        width: missionBattRow.width + 11
+                                        width: missionActiveBattRow.width + 11
                                         height: 16
                                         radius: 10
                                         anchors.leftMargin: -5 // for centering
@@ -863,7 +1130,7 @@ Rectangle {
                                         border.width: 0.5
 
                                         Row {
-                                            id: missionBattRow
+                                            id: missionActiveBattRow
                                             anchors.centerIn: parent
                                             spacing: 4
 
@@ -871,11 +1138,11 @@ Rectangle {
                                                 source: "qrc:/resources/batteryIcon.svg"
                                                 sourceSize.width: 15
                                                 sourceSize.height: 13
-                                                y: (missionBattText.implicitHeight - 13) / 2
+                                                y: (missionActiveBattText.implicitHeight - 13) / 2
                                             }
 
                                             Text {
-                                                id: missionBattText
+                                                id: missionActiveBattText
                                                 text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "?"
                                                 color: "white"
                                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
@@ -975,8 +1242,12 @@ Rectangle {
                 }
                 // Idle section
                 Column {
+                    id: missionIdleSection
                     Layout.fillWidth: true
+                    Layout.fillHeight: missionIdleSection.expanded
+                    Layout.preferredHeight: missionIdleSection.expanded ? -1 : 36
                     property bool expanded: false
+                    spacing: 0
 
                     Rectangle {
                         width: parent.width
@@ -991,7 +1262,7 @@ Rectangle {
                             anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
 
                             Text {
-                                text: "Idle (0)"
+                                text: "Idle (" + droneController.drones.length + ")"
                                 color: GcsStyle.PanelStyle.textPrimaryColor
                                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                                 font.family: GcsStyle.PanelStyle.fontFamily
@@ -1003,9 +1274,243 @@ Rectangle {
                             }
                         }
 
+                        // Idle section header MouseArea
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: parent.parent.expanded = !parent.parent.expanded
+                            onClicked: {
+                                missionIdleSection.expanded = !missionIdleSection.expanded
+                                if (missionIdleSection.expanded) {
+                                    missionActiveSection.expanded = false
+                                }
+                            }
+                        }
+                    }
+                    // listing all the drones
+                    ListView {
+                        id: missionIdleListView
+                        width: parent.width
+                        visible: parent.expanded
+                        height: parent.height - 36
+                        // height: visible ? Math.min(droneController.drones.length * GcsStyle.PanelStyle.itemHeight, 7 * GcsStyle.PanelStyle.itemHeight) : 0 //makes sure that all drones fit in the panel
+                        clip: true
+                        model: droneController.drones
+
+                        //drone items
+                        delegate: Rectangle {
+                            width: ListView.view.width
+                            height: GcsStyle.PanelStyle.itemHeight
+                            property bool hovered: false
+                            property bool selected: mainPanel.isIndexSelected(index)
+
+                            // when selected changes colors
+                            color: selected
+                                ? GcsStyle.PanelStyle.listItemSelectedColor
+                                : (hovered
+                                    ? GcsStyle.PanelStyle.hoverBackground
+                                    : GcsStyle.PanelStyle.cardBackground)
+
+                            border.color: selected
+                                ? GcsStyle.PanelStyle.listItemSelectedBorderColor
+                                : GcsStyle.panelStyle.defaultBorderColor
+                            border.width: GcsStyle.panelStyle.defaultBorderWidth
+
+                            // allows for multiselect
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: (mouse) => {
+                                    const isShift = mouse.modifiers & Qt.ShiftModifier
+                                    const isCmd = mouse.modifiers & Qt.MetaModifier
+                                    const isCtrl = mouse.modifiers & Qt.ControlModifier
+                                    const ctrlOrCmd = isCmd || isCtrl
+                                    const hasModifier = isShift || ctrlOrCmd
+
+                                    const alreadySelected = !hasModifier
+                                                            && mainPanel.selectedIndexes.length === 1
+                                                            && mainPanel.selectedIndexes[0] === index
+                                    if (alreadySelected) {
+                                        mainPanel.clearSelection()
+                                        return
+                                    }
+
+                                    if (isShift && ctrlOrCmd) {
+                                        mainPanel.setSingleSelection(index)
+                                        mainPanel.emitSelectionChanged()
+                                        mainPanel.followRequested(modelData)
+                                        return
+                                    }
+
+                                    if (isShift) {
+                                        var anchor = mainPanel.selectionAnchorIndex
+                                        if (anchor === -1) {
+                                            if (mainPanel.selectedIndexes.length > 0) {
+                                                anchor = mainPanel.selectedIndexes[0]
+                                            } else if (mainPanel.lastSelectedIndex !== -1) {
+                                                anchor = mainPanel.lastSelectedIndex
+                                            } else {
+                                                anchor = index
+                                            }
+                                            mainPanel.selectionAnchorIndex = anchor
+                                        }
+                                        mainPanel.selectRange(anchor, index)
+                                    } else if (ctrlOrCmd) {
+                                        mainPanel.toggleSelection(index)
+                                    } else {
+                                        mainPanel.setSingleSelection(index)
+                                    }
+
+                                    mainPanel.emitSelectionChanged()
+                                    
+                                }
+                            }
+
+                            //drone icon + battery pill
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
+                                anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
+                                spacing: 16
+
+                                // Drone icon with battery badge
+                                Item {
+                                    width: 44
+                                    height: 44
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    //drone image
+                                    Image {
+                                        anchors.centerIn: parent
+                                        source: GcsStyle.PanelStyle.isLightTheme
+                                            ? "qrc:/resources/droneStatusLightMode.svg"
+                                            : "qrc:/resources/droneStatusDarkMode.svg"
+                                        sourceSize.width: GcsStyle.PanelStyle.iconSize + 8
+                                        sourceSize.height: GcsStyle.PanelStyle.iconSize + 8
+                                    }
+
+                                    // Red battery badge bottom-left
+                                    Rectangle {
+                                        anchors.bottom: parent.bottom
+                                        anchors.left: parent.left
+                                        width: missionIdleBattRow.width + 11
+                                        height: 16
+                                        radius: 10
+                                        anchors.leftMargin: -5 // for centering
+                                        anchors.bottomMargin: -1
+                                        color: GcsStyle.PanelStyle.lowBatteryColor
+                                        border.color: Qt.rgba(255, 255, 255, 0.5) 
+                                        border.width: 0.5
+
+                                        Row {
+                                            id: missionIdleBattRow
+                                            anchors.centerIn: parent
+                                            spacing: 4
+
+                                            Image {
+                                                source: "qrc:/resources/batteryIcon.svg"
+                                                sourceSize.width: 15
+                                                sourceSize.height: 13
+                                                y: (missionIdleBattText.implicitHeight - 13) / 2
+                                            }
+
+                                            Text {
+                                                id: missionIdleBattText
+                                                text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "?"
+                                                color: "white"
+                                                font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Name and connection status
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    Text {
+                                        text: modelData.name
+                                        color: GcsStyle.PanelStyle.textPrimaryColor
+                                        font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                                        font.family: GcsStyle.PanelStyle.fontFamily
+                                        Layout.fillWidth: true
+                                        elide: Text.ElideRight
+                                        font.bold: true
+                                    }
+
+                                    Row {
+                                        spacing: 4
+
+                                        // Connected pill
+                                        Rectangle {
+                                            height: 18
+                                            width: missionConnRow.width + 14
+                                            radius: 8
+                                            color: Qt.rgba(0, 0, 0, 0.25)
+                                            border.color: GcsStyle.PanelStyle.defaultBorderColor
+                                            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+
+                                            Row {
+                                                id: missionConnRow
+                                                anchors.centerIn: parent
+                                                spacing: 4
+
+                                                Rectangle {
+                                                    width: 6
+                                                    height: 6   
+                                                    radius: 3
+                                                    color: "#af874c"
+                                                    y: (missionConnText.implicitHeight - 6) / 2 + 1
+                                                }
+
+                                                Text {
+                                                    id: missionConnText
+                                                    text: "Low Connection"
+                                                    color: "#af874c" 
+                                                    // Qt.rgba(11, 9, 9, 0.5)
+                                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                                    y: (parent.height - implicitHeight) / 2 + 1
+                                                }
+                                            }
+                                        }
+
+                                        // Status pill
+                                        Rectangle {
+                                            height: 18
+                                            width: missionIdleStatusRow.width + 14
+                                            radius: 8
+                                            color: Qt.rgba(0, 0, 0, 0.25)
+                                            border.color: GcsStyle.PanelStyle.defaultBorderColor
+                                            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+
+                                            Row {
+                                                id: missionIdleStatusRow
+                                                anchors.centerIn: parent
+                                                spacing: 4
+
+                                                Image {
+                                                    source: "qrc:/resources/flightIcon.svg"
+                                                    sourceSize.width: 11
+                                                    sourceSize.height: 11
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                }
+
+                                                Text {
+                                                    id: missionIdleStatusText
+                                                    text: modelData.status ? modelData.status : "Grounded"
+                                                    color: Qt.rgba(255, 255, 255, 0.5)
+                                                    font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
+                                                    font.family: GcsStyle.PanelStyle.fontFamily
+                                                    y: (parent.height - implicitHeight) / 2 + 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
