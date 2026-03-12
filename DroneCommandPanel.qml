@@ -111,14 +111,14 @@ Rectangle {
                                 border.width: 0
                                 color: GcsStyle.PanelStyle.buttonColor
                             }
-                        }
 
-                        MouseArea {
+                            MouseArea {
                             anchors.fill: parent
-                            anchors.margins: -8
+                            // anchors.margins: -8
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: mainPanel.expanded = !mainPanel.expanded
+                        }
                         }
                     }
                 }
