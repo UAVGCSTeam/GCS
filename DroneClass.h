@@ -54,6 +54,9 @@ public:
                 const QString &input_role,
                 const QString &input_xbeeID,
                 const QString &input_xbeeAddress,
+                const uint8_t &input_sysID = 0,
+                const uint8_t &input_compID = 0, 
+                int input_udpPort = -1,
                 QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
@@ -104,6 +107,8 @@ public:
     int      getCompID() const { return m_compID; }
     void      setCompID(int compID) { m_compID = compID; }
 
+    int       getUdpPort() const { return m_udp; }
+    void      setUdpPort(int port) { m_udp = port; }
 
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
@@ -162,8 +167,10 @@ private:
     QTimer    m_heartBeatTimer; // Designates when to check for a new heartbeat
     QDateTime m_lastHeartBeat; // The specific time when the last heartbeat was heard
     qint64    m_heartbeatIntervalMs; // TODO: currently not implemented. can be used to display the interval 
-                                    // between heartbeats 
+    // between heartbeats 
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
+    
+    int       m_udp;
 };
 
 #endif // DRONECLASS_H

@@ -75,9 +75,17 @@ public:
      * @warning Only IPv4 is used (AnyIPv4). IPv6 is not supported by this bind call.
      */
     bool   isOpen() const { return socket_.state() == QAbstractSocket::BoundState; }
-    qint64 writeBytes(const QByteArray& bytes);
+    qint64 writeBytes(const QByteArray& bytes, uint8_t targetSysID);
+    /// Send to a specific remote port (for UDP). Uses current _remoteAddress.
+    qint64 writeBytes(const QByteArray& bytes, quint16 remotePort);
+
+private:
+    bool remotePortExists(int remotePort);
 
 signals:
+    void newUDPPeer(QByteArray bytes, int senderPort); // Pass bytes by value so the slot
+                                                    // always receives a valid copy
+                                                    // (no reference lifetime issues).
     void bytesReceived(const QByteArray& bytes);
     void linkError(const QString& msg);
 
@@ -89,6 +97,7 @@ private:
 
     QUdpSocket  socket_;
     QHostAddress _remoteAddress;
-    quint16      _remotePort{0};
+    QMap<uint8_t, int> _remotePortsMap; 
+    int _currentID = 1; // temporary variable representing the system ID 
     bool         _hasPeer{false};
 };
