@@ -126,7 +126,7 @@ Item {
                             width: 75
                             text: "[" + type + "]"
                             color: typeColor(type)
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
                             font.family: GcsStyle.PanelStyle.fontFamily
                         }
                         Text {
@@ -134,7 +134,7 @@ Item {
                             wrapMode: Text.WordWrap
                             text: " " + message
                             color: "white"
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                            font.pixelSize: GcsStyle.PanelStyle.fontSizeXXS
                             font.family: GcsStyle.PanelStyle.fontFamily
                         }
                 }

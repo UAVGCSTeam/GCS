@@ -57,7 +57,7 @@ qint64 UDPLink::writeBytes(const QByteArray& b, uint8_t targetSysID) {
                    << "to" << _remoteAddress.toString() << ":" << remotePort;
         emit linkError(socket_.errorString());
     } else {
-        qDebug() << "[UDPLink::writeBytes] sent" << n << "bytes to" << _remoteAddress.toString() << ":" << remotePort;
+        qDebug() << "[UDPLink::writeBytes #1] sent" << n << "bytes to" << _remoteAddress.toString() << ":" << remotePort;
     }
     return n;
 }
@@ -77,7 +77,7 @@ qint64 UDPLink::writeBytes(const QByteArray& b, quint16 remotePort) {
                    << "to" << _remoteAddress.toString() << ":" << remotePort;
         emit linkError(socket_.errorString());
     } else {
-        qDebug() << "[UDPLink::writeBytes] sent" << n << "bytes to" << _remoteAddress.toString() << ":" << remotePort;
+        qDebug() << "[UDPLink::writeBytes #2] sent" << n << "bytes to" << _remoteAddress.toString() << ":" << remotePort;
     }
     return n;
 }

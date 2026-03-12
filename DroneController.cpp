@@ -771,8 +771,13 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
         targetSysID,
         targetCompID,
         MAV_CMD_COMPONENT_ARM_DISARM,
-        arm ? 1.0f : 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        1.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
         drone->getUdpPort());
 
     // qInfo() << "[DroneController.cpp::sendArm] Arm" << (arm ? "ON" : "OFF")
