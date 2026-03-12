@@ -281,15 +281,16 @@ Rectangle {
                 }
 
                 // Active section dropdown
-                Column {
+                ColumnLayout {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     property bool expanded: true
-                    width: parent.width 
+                    width: parent.width
 
                     // creating the active dropdown rectangle
                     Rectangle {
-                        width: parent.width
-                        height: 36
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 36
                         color: "transparent"
                         border.color: GcsStyle.panelStyle.defaultBorderColor
                         border.width: GcsStyle.panelStyle.defaultBorderWidth
@@ -322,14 +323,20 @@ Rectangle {
                         }
                     }
 
-                    // listing all the drones
-                    ListView {
-                        id: trackListView
-                        width: parent.width
+                    // listing all the drones - fills remaining space so it shrinks when log panel expands
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: parent.expanded
+                        Layout.preferredHeight: parent.expanded ? -1 : 0
+                        Layout.maximumHeight: parent.expanded ? Infinity : 0
                         visible: parent.expanded
-                        height: visible ? Math.min(droneController.drones.length * GcsStyle.PanelStyle.itemHeight, 7 * GcsStyle.PanelStyle.itemHeight) : 0 //makes sure that all drones fit in the panel
                         clip: true
-                        model: droneController.drones
+                        ListView {
+                            id: trackListView
+                            anchors.fill: parent
+                            visible: parent.visible
+                            clip: true
+                            model: droneController.drones
 
                         //drone items
                         delegate: Rectangle {
@@ -549,6 +556,7 @@ Rectangle {
                             }
                         }
                     }
+                    }
                 }
                 // Idle section
                 Column {
@@ -707,15 +715,16 @@ Rectangle {
                 }
 
                 // Active section dropdown
-                Column {
+                ColumnLayout {
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     property bool expanded: true
-                    width: parent.width 
+                    width: parent.width
 
                     // creating the active dropdown rectangle
                     Rectangle {
-                        width: parent.width
-                        height: 36
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 36
                         color: "transparent"
                         border.color: GcsStyle.panelStyle.defaultBorderColor
                         border.width: GcsStyle.panelStyle.defaultBorderWidth
@@ -748,14 +757,20 @@ Rectangle {
                         }
                     }
 
-                    // listing all the drones
-                    ListView {
-                        id: missionListView
-                        width: parent.width
+                    // listing all the drones - fills remaining space so it shrinks when log panel expands
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: parent.expanded
+                        Layout.preferredHeight: parent.expanded ? -1 : 0
+                        Layout.maximumHeight: parent.expanded ? Infinity : 0
                         visible: parent.expanded
-                        height: visible ? Math.min(droneController.drones.length * GcsStyle.PanelStyle.itemHeight, 7 * GcsStyle.PanelStyle.itemHeight) : 0 //makes sure that all drones fit in the panel
                         clip: true
-                        model: droneController.drones
+                        ListView {
+                            id: missionListView
+                            anchors.fill: parent
+                            visible: parent.visible
+                            clip: true
+                            model: droneController.drones
 
                         //drone items
                         delegate: Rectangle {
@@ -973,6 +988,7 @@ Rectangle {
                                 }
                             }
                         }
+                    }
                     }
                 }
                 // Idle section
