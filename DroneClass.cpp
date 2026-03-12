@@ -17,6 +17,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
     qDebug() << "[DroneClass.cpp::constructor #1] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
@@ -45,6 +46,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
     qDebug() << "[DroneClass.cpp::constructor #2] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
@@ -57,6 +59,7 @@ DroneClass::DroneClass(const QString &input_name,
                        const QString &input_xbeeAddress,
                        const uint8_t &input_sysID,
                        const uint8_t &input_compID, 
+                       int input_udpPort,
                        QObject *parent)
     : QObject(parent)
     , m_name(input_name)
@@ -73,6 +76,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(input_udpPort)
 {
     startHeartBeatTimer();
 

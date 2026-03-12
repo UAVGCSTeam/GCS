@@ -76,6 +76,8 @@ public:
      */
     bool   isOpen() const { return socket_.state() == QAbstractSocket::BoundState; }
     qint64 writeBytes(const QByteArray& bytes, uint8_t targetSysID);
+    /// Send to a specific remote port (for UDP). Uses current _remoteAddress.
+    qint64 writeBytes(const QByteArray& bytes, quint16 remotePort);
 
 private:
     bool remotePortExists(int remotePort);

@@ -51,11 +51,12 @@ public:
     that is stored persistently in the database.
     */
     DroneClass(const QString &input_name, 
-                const QString &input_role = "no role assigned",
-                const QString &input_xbeeID = "-1",
-                const QString &input_xbeeAddress = "-1",
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const QString &input_xbeeAddress,
                 const uint8_t &input_sysID = 0,
                 const uint8_t &input_compID = 0, 
+                int input_udpPort = -1,
                 QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
@@ -106,6 +107,8 @@ public:
     int      getCompID() const { return m_compID; }
     void      setCompID(int compID) { m_compID = compID; }
 
+    int       getUdpPort() const { return m_udp; }
+    void      setUdpPort(int port) { m_udp = port; }
 
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);

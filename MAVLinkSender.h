@@ -41,11 +41,12 @@ public:
     explicit MAVLinkSender(UARTLink* link, QObject* parent=nullptr);
     explicit MAVLinkSender(UDPLink*  link, QObject* parent=nullptr);
     bool isLinkOpen() const;
-    bool sendTelemRequest(uint8_t sys, uint8_t comp, int command) const;
+    bool sendTelemRequest(uint8_t sys, uint8_t comp, int command, int udpPort = -1) const;
     bool sendCommand(uint8_t sysID, uint8_t compID,
                     uint16_t command, float p1=0,
                     float p2=0,float p3=0,float p4=0,
-                    float p5=0,float p6=0,float p7=0) const;
+                    float p5=0,float p6=0,float p7=0,
+                    int udpPort = -1) const;
 
                     
     /**
@@ -84,10 +85,10 @@ public:
      */
     bool sendSetPositionTargetGlobalInt(uint8_t targetSys, uint8_t targetComp,
                                         double lat_deg, double lon_deg,
-                                        float alt_m) const;
+                                        float alt_m, int udpPort = -1) const;
 
 private:
-    qint64 writeToLink(const QByteArray& bytes, uint8_t targetSysID) const;
+    qint64 writeToLink(const QByteArray& bytes, uint8_t targetSysID, int udpPort = -1) const;
     UARTLink* UARTLink_;
     UDPLink*  UDPLink_;
     QByteArray packCommandLong(uint8_t sys, uint8_t comp,
