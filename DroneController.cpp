@@ -1079,6 +1079,29 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
                 << " sysID=" << sysID << " compID=" << compID
                 << " uid64=0x"  << uid64
                 << " uid128=0x" << uid128;
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Persist uid64 into drone storage using xbeeAddress as temporary UID field
+        const QString prevAddress = drone->getXbeeAddress();
+        if (prevAddress != uid64) {
+            drone->setXbeeAddress(uid64);
+            const bool saved = updateDrone(drone);
+            if (saved) {
+                qInfo() << "[DroneController.cpp::onMavlinkMessage][STEP4][UID_DB_SAVE] SUCCESS"
+                        << " sysID=" << sysID << " compID=" << compID
+                        << " xbeeAddress(uid64)=0x" << uid64;
+            } else {
+                drone->setXbeeAddress(prevAddress);
+                qWarning() << "[DroneController.cpp::onMavlinkMessage][STEP4][UID_DB_SAVE] FAIL"
+                           << " sysID=" << sysID << " compID=" << compID
+                           << " attempted uid64=0x" << uid64;
+            }
+        } else {
+            qInfo() << "[DroneController.cpp::onMavlinkMessage][UID_DB_SAVE] SKIP"
+                    << " uid64 already stored for drone" << drone->getName()
+                    << " value=0x" << uid64;
+        }
+        ////////////////////////////////////////////////////////////////////////////////////
         break;
     }
     ////////////////////////////////////////////////////////////////////////////////////
