@@ -71,13 +71,24 @@ QVariantList DroneController::getAllDrones() const
         droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in DroneClass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
+
+        const double altitudeMeters = drone->getAltitude();
+        QString status;
+        if (altitudeMeters > 0.2) {
+            status = QStringLiteral("Flying");
+        } else if (drone->getBatteryLevel() > 0) {
+            status = QStringLiteral("Connected");
+        } else {
+            status = QStringLiteral("Not Connected");
+        }
+
         // Adds placeholder values for status and battery and leave other fields blank
-        droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
+        droneMap["status"] = status;
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 
         droneMap["latitude"] = drone->getLatitude();
         droneMap["longitude"] = drone->getLongitude();
-        droneMap["altitude"] = drone->getAltitude();
+        droneMap["altitude"] = altitudeMeters;
         droneMap["airspeed"] = drone->getAirspeed();
 
         list.append(droneMap);

@@ -30,6 +30,7 @@ class DroneClass : public QObject
     Q_PROPERTY(double    airspeed    READ getAirspeed    NOTIFY airspeedChanged    FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation NOTIFY orientationChanged FINAL)
     Q_PROPERTY(bool      connection  READ getConnection  NOTIFY connectionStatusChanged FINAL)
+    Q_PROPERTY(QString   status      READ getStatus      NOTIFY statusChanged      FINAL)
     Q_PROPERTY(int       sysID       READ getSysID       NOTIFY sysIDChanged       FINAL)
     Q_PROPERTY(int       compID      READ getCompID      NOTIFY compIDChanged      FINAL)
 
@@ -97,6 +98,7 @@ public:
     void      setAirspeed(double airspeed);
 
     bool      getConnection() const {return m_connected;}
+    QString   getStatus()      const { return m_status; }
 
     bool      getRequestedTelem() const { return m_requested_telem; }
     void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
@@ -146,6 +148,7 @@ signals:
     void orientationChanged();
     void dataChanged();
     void connectionStatusChanged(bool connection);
+    void statusChanged();
 
 private:
     QString   m_name;
@@ -163,6 +166,7 @@ private:
     double    m_airspeed;    
     QVector3D m_orientation;
     bool      m_connected = false;
+    QString   m_status;
     QString   m_mode;
     QTimer    m_heartBeatTimer; // Designates when to check for a new heartbeat
     QDateTime m_lastHeartBeat; // The specific time when the last heartbeat was heard
@@ -171,6 +175,9 @@ private:
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
     
     int       m_udp;
+
+    // Recompute high-level status string from telemetry fields
+    void      updateStatus();
 };
 
 #endif // DRONECLASS_H

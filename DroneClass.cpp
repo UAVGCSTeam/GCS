@@ -20,6 +20,8 @@ DroneClass::DroneClass(QObject *parent) :
     , m_udp(-1)
 {
     startHeartBeatTimer();
+    // Initialize status based on default fields
+    updateStatus();
     qDebug() << "[DroneClass.cpp::constructor #1] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -49,6 +51,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_udp(-1)
 {
     startHeartBeatTimer();
+    updateStatus();
     qDebug() << "[DroneClass.cpp::constructor #2] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -79,6 +82,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_udp(input_udpPort)
 {
     startHeartBeatTimer();
+    updateStatus();
 
     // If xbeeAddress is not provided, auto-generate a 2-digit value.
     if (m_xbeeAddress == "-1") {
@@ -128,6 +132,7 @@ void DroneClass::setBatteryLevel(double inputBatteryLevel)
     if (m_batteryLevel == inputBatteryLevel) return;
     m_batteryLevel = inputBatteryLevel;
     emit batteryChanged();
+    updateStatus();
 }
 
 void DroneClass::setPosition(const QVector3D &pos)
@@ -156,6 +161,7 @@ void DroneClass::setAltitude(double alt)
     if (m_altitude == alt) return;
     m_altitude = alt;
     emit altitudeChanged();
+    updateStatus();
 }
 
 void DroneClass::setVelocity(const QVector3D &vel)
@@ -217,10 +223,11 @@ void DroneClass::setConnected(bool v)
     }
 
     if (m_connected == v) return;
-    
+
     m_connected = v;
     emit dataChanged();
     emit connectionStatusChanged(m_connected);
+    updateStatus();
 }
 
 void DroneClass::setBatteryVoltage(int millivolts)
@@ -263,6 +270,32 @@ void DroneClass::setModeField(const QString& m)
 void DroneClass::setModeField(const QString& field, const QVariant& value) {
     Q_UNUSED(field);          // keep for future field-specific handling
     setModeField(value.toString());
+}
+
+// ----- Status computation -----
+
+void DroneClass::updateStatus()
+{
+    QString newStatus;
+
+    // Basic rule:
+    //  - If connected and altitude > 0.2 m  -> "Flying"
+    //  - Else if connected                 -> "Connected"
+    //  - Else                              -> "Not Connected"
+    if (m_connected && m_altitude > 0.2) {
+        newStatus = QStringLiteral("Flying");
+    } else if (m_connected) {
+        newStatus = QStringLiteral("Connected");
+    } else {
+        newStatus = QStringLiteral("Not Connected");
+    }
+
+    if (m_status == newStatus)
+        return;
+
+    m_status = newStatus;
+    emit statusChanged();
+    emit dataChanged();
 }
 
 
