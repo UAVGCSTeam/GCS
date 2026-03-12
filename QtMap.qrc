@@ -17,6 +17,7 @@
         <file>DroneCommandPanel.qml</file>
         <file>MissionPlanPanel.qml</file>
         <file>settingsWindow.qml</file>
+        <file>components/ToastNotification.qml</file>
     </qresource>
     <qresource prefix="/resources">
         <file>cppLOGO.svg</file>
