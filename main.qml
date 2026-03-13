@@ -35,7 +35,7 @@ Window {
         id: mapScaleBar
         anchors {
             bottom: parent.bottom
-            left: mapTypeButton.right
+            left: noFlyZoneButton.right
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
     }
@@ -46,6 +46,31 @@ Window {
             left: parent.left
             leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
             bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
+        }
+    }
+    Button {
+        id: noFlyZoneButton
+        anchors {
+            bottom: parent.bottom
+            left: mapTypeButton.right
+            leftMargin: GcsStyle.PanelStyle.defaultBorderWidth
+            bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
+        }
+        text: mapComponent.showNoFlyZones ? "No Fly Zones: On" : "No Fly Zones: Off"
+        onClicked: mapComponent.showNoFlyZones = !mapComponent.showNoFlyZones
+        background: Rectangle {
+            color: noFlyZoneButton.pressed ? GcsStyle.PanelStyle.secondaryColor : GcsStyle.PanelStyle.buttonColor2
+            border.color: GcsStyle.PanelStyle.defaultBorderColor
+            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+            radius: GcsStyle.PanelStyle.buttonRadius
+        }
+        contentItem: Text {
+            text: noFlyZoneButton.text
+            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+            font.family: GcsStyle.PanelStyle.fontFamily
+            color: GcsStyle.PanelStyle.textPrimaryColor
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
     }
 
