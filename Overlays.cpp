@@ -72,6 +72,8 @@ ZoneRing Overlays::buildZoneRing(const QJsonArray &ring) const
 
 bool Overlays::pointInRing(double lat, double lon, const ZoneRing &ring)
 {
+    // Standard even-odd ray-casting test against one polygon ring.
+    // Coordinates are stored as QPointF(x=lon, y=lat).
     bool inside = false;
     const int n = ring.points.size();
     int j = n - 1;
@@ -88,11 +90,13 @@ bool Overlays::pointInRing(double lat, double lon, const ZoneRing &ring)
 
 bool Overlays::isPointInNoFlyZone(double lat, double lon) const
 {
+    // Fast path: scan pre-built native index instead of iterating QVariant data from QML.
     for (const NoFlyZoneData &zone : m_zoneIndex) {
         if (zone.skipHitTest) continue;
         // Bounding-box pre-filter: skip full ray-cast if outside the AABB
         if (lat < zone.minLat || lat > zone.maxLat || lon < zone.minLon || lon > zone.maxLon)
             continue;
+        // Must be inside outer ring and outside every hole to be considered blocked.
         if (!pointInRing(lat, lon, zone.outer)) continue;
         bool inHole = false;
         for (const ZoneRing &hole : zone.holes) {
@@ -151,6 +155,7 @@ bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geom
         {
             NoFlyZoneData idx;
             idx.outer = buildZoneRing(coordinates[0].toArray());
+            // Keep behavior aligned with map rendering: offshore 12NM band is border-only.
             idx.skipHitTest = properties.value("Airspace").toString()
                 .contains("Airspace over waters from US shore to line (12NM)");
             double minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
