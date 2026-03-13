@@ -1,7 +1,6 @@
 #include "DroneController.h"
 
 
-
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
 QList<QSharedPointer<UnknownDroneClass>> DroneController::unknownDroneList; // Define the static variable
 
@@ -22,15 +21,9 @@ DroneController::DroneController(DBManager &db, QObject *parent)
         int compID = -1;
         QString xbeeAddress = record["xbee_address"].toString();
         
-        if (index == 0) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06126372594308, -117.83284231468927, 10, nullptr));
-        } else if (index == 1) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06202196849312, -117.82905560740794, 10, nullptr));
-        } else if (index == 2) { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.06025272532348, -117.82775448760746, 10, nullptr));
-        } else { 
-            droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, 67, 34.059174611493965, -117.82051240067321, 10, nullptr));
-        }
+        // Random battery level (35-92%) for realistic demo variation
+        int batteryLevel = QRandomGenerator::global()->bounded(35, 93);
+        droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, batteryLevel, 34.059174611493965, -117.82051240067321, 10, nullptr));
         
         index++;
     }
@@ -798,6 +791,30 @@ bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
 }
 
 
+bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float lon) {
+    QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(uavID);
+    if (drone.isNull()) {
+        qWarning() << "[DroneController.cpp::sendToCoordByUavID] unknown drone with xbeeAddress:" << uavID;
+        return false;
+    }
+    if (!mavTx_ || !mavTx_->isLinkOpen()) {
+        qWarning() << "[DroneController.cpp::sendToCoordByUavID] MAVLink sender not ready";
+        return false;
+    }
+
+    bool response = mavTx_->sendSetPositionTargetGlobalInt(
+        drone->getSysID(),
+        drone->getCompID(),
+        static_cast<double>(lat),
+        static_cast<double>(lon),
+        5.0f
+    );
+
+    qInfo() << "[DroneController.cpp::sendToCoordByUavID] SendToCoord:"
+            << drone->getName() << uavID << "sent=" << response;
+    return response;
+}
+
 bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode) {
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
@@ -974,6 +991,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         updateDroneTelem(drone, "lat",   p.lat/1e7);
         updateDroneTelem(drone, "lon",   p.lon/1e7);
         updateDroneTelem(drone, "alt_m", altMeters);
+        emit droneStateChanged(drone.data());
         break;
     }
     case MAVLINK_MSG_ID_ATTITUDE: {
@@ -1001,57 +1019,37 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     case MAVLINK_MSG_ID_COMMAND_ACK: {
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Got msg id ack";
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
         qInfo().nospace()
-            << "[DroneController.cpp::onMavlinkMessage] COMMAND_ACK (for COMMAND_LONG, 76) cmd=" << ack.command
+            << "[DroneController.cpp::onMavlinkMessage] COMMAND_ACK cmd=" << ack.command
             << " result=" << static_cast<int>(ack.result)
             << " (sysID=" << static_cast<int>(sysID)
             << ", compID=" << static_cast<int>(compID) << ")";
 
-        switch(ack.result) {
-        case 0:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_ACCEPTED (0)"; // Command is valid (is supported and has valid parameters), and was executed.
-            break;
-        case 1:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_TEMPORARILY_REJECTED (1)"; // Command is valid, but cannot be executed at this time. This is used to indicate a problem that should be fixed just by waiting (e.g. a state machine is busy, can't arm because have not got GPS lock, etc.). Retrying later should work.
-            break;
-        case 2:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_DENIED (2)"; // Command is invalid; it is supported but one or more parameter values are invalid (i.e. parameter reserved, value allowed by spec but not supported by flight stack, and so on). Retrying the same command and parameters will not work.
-            break;
-        case 3:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_UNSUPPORTED (3)"; // Command is not supported (unknown).
-            break;
-        case 4:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_FAILED (4)"; // Command is valid, but execution has failed. This is used to indicate any non-temporary or unexpected problem, i.e. any problem that must be fixed before the command can succeed/be retried. For example, attempting to write a file when out of memory, attempting to arm when sensors are not calibrated, etc.
-            break;
-        case 5:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_IN_PROGRESS (5)"; // Command is valid and is being executed. This will be followed by further progress updates, i.e. the component may send further COMMAND_ACK messages with result MAV_RESULT_IN_PROGRESS (at a rate decided by the implementation), and must terminate by sending a COMMAND_ACK message with final result of the operation. The COMMAND_ACK.progress field can be used to indicate the progress of the operation.
-            break;
-        case 6:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_CANCELLED (6)"; // Command has been cancelled (as a result of receiving a COMMAND_CANCEL message).
-            break;
-        case 7:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_COMMAND_LONG_ONLY (7)"; // Command is only accepted when sent as a COMMAND_LONG.
-            break;
-        case 8:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_COMMAND_INT_ONLY (8)"; // Command is only accepted when sent as a COMMAND_INT.
-            break;
-        case 9:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_COMMAND_UNSUPPORTED_MAV_FRAME (9)"; // Command is invalid because a frame is required and the specified frame is not supported.
-            break;
-        case 10:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_NOT_IN_CONTROL (10)"; //  Command has been rejected because source system is not in control of the target system/component.
-            break;
-        case 11:
-            qInfo() << "[DroneController.cpp::onMavlinkMessage] MAV_RESULT_ENUM_END (11)"; //
-            break;
+        QString cmdName;
+        switch (ack.command) {
+            case MAV_CMD_COMPONENT_ARM_DISARM: cmdName = "Arm/Disarm"; break;
+            case MAV_CMD_NAV_TAKEOFF:          cmdName = "Takeoff";    break;
+            case MAV_CMD_DO_SET_MODE:          cmdName = "Set Mode";   break;
+            default: cmdName = QString("Command %1").arg(ack.command); break;
         }
 
+        QString resultMsg;
+        bool success = false;
+        switch (ack.result) {
+            case 0: resultMsg = cmdName + " accepted";             success = true;  break;
+            case 1: resultMsg = cmdName + " temporarily rejected"; success = false; break;
+            case 2: resultMsg = cmdName + " denied";               success = false; break;
+            case 3: resultMsg = cmdName + " unsupported";          success = false; break;
+            case 4: resultMsg = cmdName + " failed";               success = false; break;
+            case 5: resultMsg = cmdName + " in progress";          success = true;  break;
+            case 6: resultMsg = cmdName + " cancelled";            success = false; break;
+            default: resultMsg = cmdName + " result: " + QString::number(ack.result); break;
+        }
 
-        // updateDroneTelem(drone, "last_command", static_cast<int>(ack.command));
-        // updateDroneTelem(drone, "last_result",  static_cast<int>(ack.result));
+        qInfo() << "[DroneController.cpp::onMavlinkMessage]" << resultMsg;
+        emit commandAcknowledged(resultMsg, success);  
         break;
     }
     default:

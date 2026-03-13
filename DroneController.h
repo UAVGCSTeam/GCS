@@ -23,7 +23,8 @@
 #include "UDPLink.h"
 #include "unknowndroneclass.h"
 
-
+// For randomly generating battery levels
+#include <QRandomGenerator>
 
 // DATA PATH
 #ifdef _WIN32
@@ -146,6 +147,7 @@ public:
     Q_INVOKABLE bool sendTakeoffCmd(const QString &droneKeyOrAddr, bool takeoff);
 
     Q_INVOKABLE bool sendToCoord(const QString droneName, float lat, float lon);
+    Q_INVOKABLE bool sendToCoordByUavID(const QString uavID, float lat, float lon);
 
     /**
      * function sendGuidedMode()
@@ -267,6 +269,7 @@ signals:
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
     void droneStateChanged(const DroneClass *drone);
     void dronesChanged();
+    void commandAcknowledged(const QString &message, bool success);
     void unknownDronesChanged();
 
 private:

@@ -271,10 +271,8 @@ Item {
                             noFlyZoneWarningPopup.open()
                             return
                         }
-                        waypointManager.addWaypoint(
-                            activeDrone.name,
-                            activeDrone.latitude,
-                            activeDrone.longitude,
+                        missionManager.addWaypoint(
+                            activeDrone,
                             coord.latitude,
                             coord.longitude
                         )
