@@ -266,12 +266,17 @@ Item {
                     clickable: activeDrone ? true : false
                     onMenuItemClicked: {
                         contextMenu.close()
+                        var coord = rightClickMenuArea.lastRightClickCoord
+                        if (overlays.isPointInNoFlyZone(coord.latitude, coord.longitude)) {
+                            noFlyZoneWarningPopup.open()
+                            return
+                        }
                         waypointManager.addWaypoint(
                             activeDrone.name,
                             activeDrone.latitude,
                             activeDrone.longitude,
-                            rightClickMenuArea.lastRightClickCoord.latitude,
-                            rightClickMenuArea.lastRightClickCoord.longitude
+                            coord.latitude,
+                            coord.longitude
                         )
                         clickedCoordLabelItem.coordinate = rightClickMenuArea
                     }
@@ -373,7 +378,6 @@ Item {
         }
         return false
     }
-    
 
     onActiveDroneChanged: {
         if (activeDrone === null) {
@@ -394,6 +398,14 @@ Item {
         }
     }
 
+
+    UniversalPopup {
+        id: noFlyZoneWarningPopup
+        popupVariant: "warning"
+        popupTitle: "No-Fly Zone"
+        popupMessage: "Waypoints cannot be placed inside a no-fly zone."
+        isNotification: true
+    }
 
     Connections {
         target: mapController

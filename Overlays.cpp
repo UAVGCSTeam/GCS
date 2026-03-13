@@ -26,6 +26,7 @@ void Overlays::clearNoFlyZones()
     }
 
     m_noFlyZones.clear();
+    m_zoneIndex.clear();
     emit noFlyZonesChanged();
 }
 
@@ -55,6 +56,51 @@ QVariantList Overlays::buildPointListFromPolygonRing(const QJsonArray &ring) con
     }
 
     return points;
+}
+
+ZoneRing Overlays::buildZoneRing(const QJsonArray &ring) const
+{
+    ZoneRing zr;
+    for (const QJsonValue &v : ring) {
+        if (!v.isArray()) continue;
+        const QJsonArray c = v.toArray();
+        if (c.size() < 2 || !c[0].isDouble() || !c[1].isDouble()) continue;
+        zr.points.append(QPointF(c[0].toDouble(), c[1].toDouble())); // x=lon, y=lat
+    }
+    return zr;
+}
+
+bool Overlays::pointInRing(double lat, double lon, const ZoneRing &ring)
+{
+    bool inside = false;
+    const int n = ring.points.size();
+    int j = n - 1;
+    for (int i = 0; i < n; ++i) {
+        const double xi = ring.points[i].x(), yi = ring.points[i].y();
+        const double xj = ring.points[j].x(), yj = ring.points[j].y();
+        if (((yi > lat) != (yj > lat)) &&
+            (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi))
+            inside = !inside;
+        j = i;
+    }
+    return inside;
+}
+
+bool Overlays::isPointInNoFlyZone(double lat, double lon) const
+{
+    for (const NoFlyZoneData &zone : m_zoneIndex) {
+        if (zone.skipHitTest) continue;
+        // Bounding-box pre-filter: skip full ray-cast if outside the AABB
+        if (lat < zone.minLat || lat > zone.maxLat || lon < zone.minLon || lon > zone.maxLon)
+            continue;
+        if (!pointInRing(lat, lon, zone.outer)) continue;
+        bool inHole = false;
+        for (const ZoneRing &hole : zone.holes) {
+            if (pointInRing(lat, lon, hole)) { inHole = true; break; }
+        }
+        if (!inHole) return true;
+    }
+    return false;
 }
 
 bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties)
@@ -100,6 +146,30 @@ bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geom
         zone["state"] = properties.value("State").toString();
         zone["area"] = properties.value("Shape__Area").toDouble();
         m_noFlyZones.append(zone);
+
+        // Build index entry for fast hit-testing
+        {
+            NoFlyZoneData idx;
+            idx.outer = buildZoneRing(coordinates[0].toArray());
+            idx.skipHitTest = properties.value("Airspace").toString()
+                .contains("Airspace over waters from US shore to line (12NM)");
+            double minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+            for (const QPointF &p : idx.outer.points) {
+                if (p.y() < minLat) minLat = p.y();
+                if (p.y() > maxLat) maxLat = p.y();
+                if (p.x() < minLon) minLon = p.x();
+                if (p.x() > maxLon) maxLon = p.x();
+            }
+            idx.minLat = minLat; idx.maxLat = maxLat;
+            idx.minLon = minLon; idx.maxLon = maxLon;
+            for (int ringIndex = 1; ringIndex < coordinates.size(); ++ringIndex) {
+                if (!coordinates[ringIndex].isArray()) continue;
+                ZoneRing hole = buildZoneRing(coordinates[ringIndex].toArray());
+                if (hole.points.size() >= 3)
+                    idx.holes.append(hole);
+            }
+            m_zoneIndex.append(idx);
+        }
         return true;
     }
 
@@ -147,6 +217,30 @@ bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geom
             zone["state"] = properties.value("State").toString();
             zone["area"] = properties.value("Shape__Area").toDouble();
             m_noFlyZones.append(zone);
+
+            // Build index entry for fast hit-testing
+            {
+                NoFlyZoneData idx;
+                idx.outer = buildZoneRing(polygon[0].toArray());
+                idx.skipHitTest = properties.value("Airspace").toString()
+                    .contains("Airspace over waters from US shore to line (12NM)");
+                double minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+                for (const QPointF &p : idx.outer.points) {
+                    if (p.y() < minLat) minLat = p.y();
+                    if (p.y() > maxLat) maxLat = p.y();
+                    if (p.x() < minLon) minLon = p.x();
+                    if (p.x() > maxLon) maxLon = p.x();
+                }
+                idx.minLat = minLat; idx.maxLat = maxLat;
+                idx.minLon = minLon; idx.maxLon = maxLon;
+                for (int ringIndex = 1; ringIndex < polygon.size(); ++ringIndex) {
+                    if (!polygon[ringIndex].isArray()) continue;
+                    ZoneRing hole = buildZoneRing(polygon[ringIndex].toArray());
+                    if (hole.points.size() >= 3)
+                        idx.holes.append(hole);
+                }
+                m_zoneIndex.append(idx);
+            }
             addedAny = true;
         }
 
@@ -195,6 +289,7 @@ bool Overlays::loadNoFlyZones(const QString &geoJsonPath)
     // Replace previous data on each load so the overlay reflects the latest source file.
     const QVariantList existingZones = m_noFlyZones;
     m_noFlyZones.clear();
+    m_zoneIndex.clear();
 
     // Parse each GeoJSON feature into our simplified zone model used by QML.
     for (const QJsonValue &featureValue : features) {
