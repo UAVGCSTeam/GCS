@@ -107,6 +107,98 @@ bool Overlays::isPointInNoFlyZone(double lat, double lon) const
     return false;
 }
 
+bool Overlays::lineSegmentIntersectSegment(const QPointF &p1, const QPointF &p2, const QPointF &p3, const QPointF &p4)
+{
+    // Test if line segment p1-p2 intersects line segment p3-p4 using orientation method.
+    // This approach checks orientation of ordered triplets to determine intersection.
+
+    auto orientation = [](const QPointF &p, const QPointF &q, const QPointF &r) -> int {
+        // Find orientation of ordered triplet (p, q, r).
+        // Returns 0 if collinear, 1 if clockwise, 2 if counterclockwise.
+        double val = (q.y() - p.y()) * (r.x() - q.x()) - (q.x() - p.x()) * (r.y() - q.y());
+        if (qAbs(val) < 1e-12) return 0;  // collinear
+        return (val > 0) ? 1 : 2;
+    };
+
+    auto onSegment = [](const QPointF &p, const QPointF &q, const QPointF &r) -> bool {
+        // Check if point q lies on segment pr (assumes p, q, r are collinear).
+        return q.x() <= qMax(p.x(), r.x()) && q.x() >= qMin(p.x(), r.x()) &&
+               q.y() <= qMax(p.y(), r.y()) && q.y() >= qMin(p.y(), r.y());
+    };
+
+    int o1 = orientation(p1, p2, p3);
+    int o2 = orientation(p1, p2, p4);
+    int o3 = orientation(p3, p4, p1);
+    int o4 = orientation(p3, p4, p2);
+
+    // General case: segments intersect if orientations differ
+    if (o1 != o2 && o3 != o4)
+        return true;
+
+    // Special cases: collinear points
+    if (o1 == 0 && onSegment(p1, p3, p2)) return true;
+    if (o2 == 0 && onSegment(p1, p4, p2)) return true;
+    if (o3 == 0 && onSegment(p3, p1, p4)) return true;
+    if (o4 == 0 && onSegment(p3, p2, p4)) return true;
+
+    return false;
+}
+
+bool Overlays::lineSegmentCrossesRing(double lat1, double lon1, double lat2, double lon2, const ZoneRing &ring)
+{
+    // Test if line segment from (lat1, lon1) to (lat2, lon2) crosses any edge of the ring.
+    // Uses simple cartographic projection (lon → x, lat → y) for small geographic areas.
+
+    const QPointF p1(lon1, lat1);
+    const QPointF p2(lon2, lat2);
+
+    const int n = ring.points.size();
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        // Each edge of the ring: from ring[j] to ring[i]
+        const QPointF p3 = ring.points[j];
+        const QPointF p4 = ring.points[i];
+        if (lineSegmentIntersectSegment(p1, p2, p3, p4))
+            return true;
+    }
+    return false;
+}
+
+bool Overlays::doesLineSegmentCrossNoFlyZone(double lat1, double lon1, double lat2, double lon2) const
+{
+    // Check if the path from (lat1, lon1) to (lat2, lon2) crosses any no-fly-zone boundary.
+    // Uses bounding-box prefiltering to skip zones that cannot intersect the segment AABB.
+
+    if (m_zoneIndex.isEmpty())
+        return false;
+
+    // Compute AABB of the segment for quick zone rejection
+    const double segMinLat = qMin(lat1, lat2);
+    const double segMaxLat = qMax(lat1, lat2);
+    const double segMinLon = qMin(lon1, lon2);
+    const double segMaxLon = qMax(lon1, lon2);
+
+    for (const NoFlyZoneData &zone : m_zoneIndex) {
+        if (zone.skipHitTest) continue;
+
+        // Quick AABB rejection: skip if segment and zone do not overlap geographically
+        if (segMaxLat < zone.minLat || segMinLat > zone.maxLat ||
+            segMaxLon < zone.minLon || segMinLon > zone.maxLon)
+            continue;
+
+        // Test against outer ring boundary
+        if (lineSegmentCrossesRing(lat1, lon1, lat2, lon2, zone.outer))
+            return true;
+
+        // Test against hole boundaries (exit holes don't block, but entry/exit does)
+        for (const ZoneRing &hole : zone.holes) {
+            if (lineSegmentCrossesRing(lat1, lon1, lat2, lon2, hole))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties)
 {
     // Converts a GeoJSON geometry object into one or more internal zone records.

@@ -267,7 +267,30 @@ Item {
                     onMenuItemClicked: {
                         contextMenu.close()
                         var coord = rightClickMenuArea.lastRightClickCoord
+                        var startLat = activeDrone.latitude
+                        var startLon = activeDrone.longitude
+
+                        var missionWaypoints = missionManager.getWaypoints(activeDrone.xbeeAddress)
+                        if (missionWaypoints && missionWaypoints.length > 1) {
+                            var lastWaypoint = missionWaypoints[missionWaypoints.length - 1]
+                            if (lastWaypoint && lastWaypoint.lat !== undefined && lastWaypoint.lon !== undefined) {
+                                startLat = lastWaypoint.lat
+                                startLon = lastWaypoint.lon
+                            }
+                        }
+
                         if (overlays.isPointInNoFlyZone(coord.latitude, coord.longitude)) {
+                            noFlyZoneWarningPopup.popupMessage = "Waypoints cannot be placed inside a no-fly zone."
+                            noFlyZoneWarningPopup.open()
+                            return
+                        }
+                        // Check if the path to the new waypoint crosses a no-fly zone.
+                        // Uses the last placed waypoint as the segment start when available,
+                        // otherwise falls back to the current drone position.
+                        if (overlays.doesLineSegmentCrossNoFlyZone(
+                                startLat, startLon,
+                                coord.latitude, coord.longitude)) {
+                            noFlyZoneWarningPopup.popupMessage = "Waypoint path crosses a no-fly zone."
                             noFlyZoneWarningPopup.open()
                             return
                         }
