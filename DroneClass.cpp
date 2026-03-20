@@ -33,6 +33,7 @@ DroneClass::DroneClass(const QString &input_name,
                        double input_latitude,
                        double input_longitude,
                        double input_altitude,
+                       int input_udpPort,
                        QObject *parent)
     : QObject(parent)
     , m_name(input_name)
@@ -47,7 +48,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
-    , m_udp(-1)
+    , m_udp(input_udpPort)
 {
     startHeartBeatTimer();
     updateStatus();

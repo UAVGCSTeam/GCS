@@ -85,7 +85,6 @@ QVariantList DroneController::getAllDrones() const
         }
         
         // Adds placeholder values for status and battery and leave other fields blank
-        droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
         droneMap["status"] = drone->getStatus();
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 

@@ -113,7 +113,7 @@ public:
 
     int       getUdpPort() const { return m_udp; }
     void      setUdpPort(int port) { m_udp = port; }
-    
+
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
     void setBatteryVoltage(int millivolts);   // MAVLink SYS_STATUS delivers mV
@@ -177,7 +177,7 @@ private:
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
     
     int       m_udp;
-    
+
     // Recompute high-level status string from telemetry fields
     void      updateStatus();
 };
