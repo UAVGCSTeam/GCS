@@ -255,6 +255,7 @@ public slots:
     void createAndAddDroneToUI(const QString &input_name,
                                const uint8_t &input_sysID,
                                const uint8_t &input_compID,
+                               int senderUDPPort,
                                const QObject *parent);
 
 

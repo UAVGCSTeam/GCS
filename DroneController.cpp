@@ -71,8 +71,22 @@ QVariantList DroneController::getAllDrones() const
         droneMap["role"] = drone->getRole(); // <-- we been using "drone type" in UI and everything but its called drone role in DroneClass.h lul
         droneMap["xbeeId"] = drone->getXbeeID();
         droneMap["xbeeAddress"] = drone->getXbeeAddress();
+        
+        const double altitudeMeters = drone->getAltitude(); // Bro who wrote this code? Why is this here?? 
+                                                            // Status should already be calculated at this stage, why is it being calculated here??
+                                                            // Call me: @onlinekook
+        QString status;
+        if (altitudeMeters > 0.2) {
+            status = QStringLiteral("Flying");
+        } else if (drone->getBatteryLevel() > 0) {
+            status = QStringLiteral("Connected");
+        } else {
+            status = QStringLiteral("Not Connected");
+        }
+        
         // Adds placeholder values for status and battery and leave other fields blank
         droneMap["status"] = drone->getBatteryLevel() > 0 ? "Connected" : "Not Connected";
+        droneMap["status"] = drone->getStatus();
         droneMap["battery"] = drone->getBatteryLevel() > 0 ? QString::number(drone->getBatteryLevel()) + "%" : "Battery not received";
 
         droneMap["latitude"] = drone->getLatitude();
@@ -349,6 +363,7 @@ void DroneController::createDrone(const QString &input_name,
         input_xbeeAddress,
         0,  // sysID
         0,  // compID
+        -1, // udpPort (not from UDP)
         nullptr
     );
     drone->setBatteryLevel(input_batteryLevel);
@@ -361,6 +376,7 @@ void DroneController::createDrone(const QString &input_name,
 void DroneController::createAndAddDroneToUI(const QString &input_name,
                                   const uint8_t &input_sysID,
                                   const uint8_t &input_compID,
+                                  int senderUDPPort,
                                   const QObject *parent)
 {
     qDebug() << "[DroneController.cpp::createAndAddDroneToUI] Creating drone";
@@ -371,6 +387,7 @@ void DroneController::createAndAddDroneToUI(const QString &input_name,
         "-1",
         input_sysID,
         input_compID,
+        senderUDPPort,
         nullptr
     );
     saveDroneToDB(drone);
@@ -708,7 +725,7 @@ void DroneController::onNewUDPPeer(const QByteArray& bytes, const int& senderUDP
         return;
     }
     QString name = "My Drone " + QString::number(senderUDPPort);
-    createAndAddDroneToUI(name, m.sysid, m.compid, nullptr);
+    createAndAddDroneToUI(name, m.sysid, m.compid, senderUDPPort, nullptr);
 }
 
 bool DroneController::openUART(const QString& port, int baud)
@@ -757,7 +774,14 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
         targetSysID,
         targetCompID,
         MAV_CMD_COMPONENT_ARM_DISARM,
-        arm ? 1.0f : 0.0f);
+        1.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        drone->getUdpPort());
 
     // qInfo() << "[DroneController.cpp::sendArm] Arm" << (arm ? "ON" : "OFF")
     //         << "->" << drone->getName() << drone->getXbeeAddress()
@@ -795,7 +819,8 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
         0.0f,  // yaw
         0.0f,  // lat (0 = use current for Copter)
         0.0f,  // lon (0 = use current for Copter)
-        5.0f   // alt meters above home
+        5.0f,  // alt meters above home
+        drone->getUdpPort());
     );
 
     qInfo() << "[DroneController.cpp::sendTakeoffCmd] Takeoff:"
@@ -827,14 +852,14 @@ bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
         targetCompID,
         static_cast<double>(lat),
         static_cast<double>(lon),
-        5.0f   // altitude meters above home
+        5.0f,   // altitude meters above home
+        drone->getUdpPort());
     );
 
     qInfo() << "[DroneController.cpp::sendToCoord] SendToCoord:"
     << drone->getName() << drone->getXbeeAddress()
     << "sent=" << response;
     return response;
-    return true;
 }
 
 
@@ -854,7 +879,8 @@ bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float l
         drone->getCompID(),
         static_cast<double>(lat),
         static_cast<double>(lon),
-        5.0f
+        5.0f,
+        drone->getUdpPort()
     );
 
     qInfo() << "[DroneController.cpp::sendToCoordByUavID] SendToCoord:"
@@ -884,8 +910,9 @@ bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableG
         targetCompID,
         MAV_CMD_DO_SET_MODE, 
         MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, // param1
-        4.0f                                // param2 = GUIDED
-    );
+        4.0f,                               // param2 = GUIDED
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f,      // p3..p7
+        drone->getUdpPort());
 
     // qInfo() << "[DroneController.cpp::sendTakeoffCmd] Guided mode enabled" << (takeoff ? "ON" : "OFF")
     //     << "->" << drone->getName() << drone->getXbeeAddress()
@@ -918,7 +945,7 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
     
     bool response = true;
     for (int cmd : requestDataCommands) {
-        if (!mavTx_->sendTelemRequest(targetSysID, targetCompID, cmd)) {
+        if (!mavTx_->sendTelemRequest(targetSysID, targetCompID, cmd, drone->getUdpPort())) {
             response = false;
             qInfo() << "[DroneController.cpp::requestTelem] Something went wrong requesting data";
             break;

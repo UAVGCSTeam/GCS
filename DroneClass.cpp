@@ -17,8 +17,10 @@ DroneClass::DroneClass(QObject *parent) :
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
+    updateStatus();
     qDebug() << "[DroneClass.cpp::constructor #1] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -45,8 +47,10 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
+    updateStatus();
     qDebug() << "[DroneClass.cpp::constructor #2] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
@@ -73,8 +77,10 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
+    updateStatus();
 
     // If xbeeAddress is not provided, auto-generate a 2-digit value.
     if (m_xbeeAddress == "-1") {
@@ -124,6 +130,7 @@ void DroneClass::setBatteryLevel(double inputBatteryLevel)
     if (m_batteryLevel == inputBatteryLevel) return;
     m_batteryLevel = inputBatteryLevel;
     emit batteryChanged();
+    updateStatus();
 }
 
 void DroneClass::setPosition(const QVector3D &pos)
@@ -131,6 +138,7 @@ void DroneClass::setPosition(const QVector3D &pos)
     if (m_position == pos) return;
     m_position = pos;
     emit positionChanged();
+    updateStatus();
 }
 
 void DroneClass::setLatitude(double lat)
@@ -138,6 +146,7 @@ void DroneClass::setLatitude(double lat)
     if (m_latitude == lat) return;
     m_latitude = lat;
     emit latitudeChanged();
+    updateStatus();
 }
 
 void DroneClass::setLongitude(double longitude)
@@ -145,6 +154,7 @@ void DroneClass::setLongitude(double longitude)
     if (m_longitude == longitude) return;
     m_longitude = longitude;
     emit longitudeChanged();
+    updateStatus();
 }
 
 void DroneClass::setAltitude(double alt)
@@ -152,6 +162,7 @@ void DroneClass::setAltitude(double alt)
     if (m_altitude == alt) return;
     m_altitude = alt;
     emit altitudeChanged();
+    updateStatus();
 }
 
 void DroneClass::setVelocity(const QVector3D &vel)
@@ -159,6 +170,7 @@ void DroneClass::setVelocity(const QVector3D &vel)
     if (m_velocity == vel) return;
     m_velocity = vel;
     emit velocityChanged();
+    updateStatus();
 }
 
 void DroneClass::setAirspeed(double air)
@@ -166,6 +178,7 @@ void DroneClass::setAirspeed(double air)
     if (m_airspeed == air) return;
     m_airspeed = air;
     emit airspeedChanged();
+    updateStatus();
 }
 
 void DroneClass::setOrientation(const QVector3D &ori)
@@ -173,6 +186,7 @@ void DroneClass::setOrientation(const QVector3D &ori)
     if (m_orientation == ori) return;
     m_orientation = ori;
     emit orientationChanged();
+    updateStatus();
 }
 
 // ----- Heartbeat ------
@@ -217,6 +231,7 @@ void DroneClass::setConnected(bool v)
     m_connected = v;
     emit dataChanged();
     emit connectionStatusChanged(m_connected);
+    updateStatus();
 }
 
 void DroneClass::setBatteryVoltage(int millivolts)
@@ -261,6 +276,29 @@ void DroneClass::setModeField(const QString& field, const QVariant& value) {
     setModeField(value.toString());
 }
 
+void DroneClass::updateStatus()
+{
+    QString newStatus;
+
+    // Basic rule:
+    //  - If connected and altitude > 0.2 m  -> "Flying"
+    //  - Else if connected                 -> "Connected"
+    //  - Else                              -> "Not Connected"
+    if (m_connected && m_altitude > 0.2) {
+        newStatus = QStringLiteral("Flying");
+    } else if (m_connected) {
+        newStatus = QStringLiteral("Connected");
+    } else {
+        newStatus = QStringLiteral("Not Connected");
+    }
+
+    if (m_status == newStatus)
+        return;
+
+    m_status = newStatus;
+    emit statusChanged();
+    emit dataChanged();
+}
 
 // ----- QML helpers -----
 

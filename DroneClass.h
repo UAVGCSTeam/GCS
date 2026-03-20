@@ -30,6 +30,7 @@ class DroneClass : public QObject
     Q_PROPERTY(double    airspeed    READ getAirspeed    NOTIFY airspeedChanged    FINAL)
     Q_PROPERTY(QVector3D orientation READ getOrientation NOTIFY orientationChanged FINAL)
     Q_PROPERTY(bool      connection  READ getConnection  NOTIFY connectionStatusChanged FINAL)
+    Q_PROPERTY(QString   status      READ getStatus      NOTIFY statusChanged      FINAL)
     Q_PROPERTY(int       sysID       READ getSysID       NOTIFY sysIDChanged       FINAL)
     Q_PROPERTY(int       compID      READ getCompID      NOTIFY compIDChanged      FINAL)
 
@@ -51,11 +52,12 @@ public:
     that is stored persistently in the database.
     */
     DroneClass(const QString &input_name, 
-                const QString &input_role = "no role assigned",
-                const QString &input_xbeeID = "-1",
-                const QString &input_xbeeAddress = "-1",
+                const QString &input_role,
+                const QString &input_xbeeID,
+                const QString &input_xbeeAddress,
                 const uint8_t &input_sysID = 0,
                 const uint8_t &input_compID = 0, 
+                int input_udpPort = -1,
                 QObject *parent = nullptr);
 
     // Getters/Setters used by Q_PROPERTY
@@ -97,6 +99,9 @@ public:
 
     bool      getConnection() const {return m_connected;}
 
+    QString   getStatus()      const { return m_status; }
+    void      setStatus(int newStatus) { m_status = newStatus; }
+
     bool      getRequestedTelem() const { return m_requested_telem; }
     void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
 
@@ -106,7 +111,9 @@ public:
     int      getCompID() const { return m_compID; }
     void      setCompID(int compID) { m_compID = compID; }
 
-
+    int       getUdpPort() const { return m_udp; }
+    void      setUdpPort(int port) { m_udp = port; }
+    
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
     void setBatteryVoltage(int millivolts);   // MAVLink SYS_STATUS delivers mV
@@ -143,6 +150,7 @@ signals:
     void orientationChanged();
     void dataChanged();
     void connectionStatusChanged(bool connection);
+    void statusChanged();
 
 private:
     QString   m_name;
@@ -160,6 +168,7 @@ private:
     double    m_airspeed;    
     QVector3D m_orientation;
     bool      m_connected = false;
+    QString   m_status;
     QString   m_mode;
     QTimer    m_heartBeatTimer; // Designates when to check for a new heartbeat
     QDateTime m_lastHeartBeat; // The specific time when the last heartbeat was heard
@@ -168,6 +177,9 @@ private:
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
     
     int       m_udp;
+    
+    // Recompute high-level status string from telemetry fields
+    void      updateStatus();
 };
 
 #endif // DRONECLASS_H
