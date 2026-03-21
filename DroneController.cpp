@@ -8,15 +8,7 @@ DroneController::DroneController(DBManager &db, QObject *parent)
 {
     // function loads all drones from the database on startup
     qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
-
-    // UNCOMMENT THIS IF YOU WANT TO USE THE DRONES FROM THE DATABASE AGAIN
-    // loadDBDronesAsSimulated(dbManager);
-
     rebuildUnknownVariant();
-
-    //temporary sim heartbeat
-    connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::useSimulatedHeartbeat);
-    heartBeatSimTimer.start(250); //four per second
 }
 
 
@@ -62,13 +54,6 @@ QVariantList DroneController::getAllDrones() const
 
 DroneController::~DroneController()
 {
-}
-
-//temporary sim heartbeat
-void DroneController::useSimulatedHeartbeat()
-{
-    if(checkHeartBeat)
-        updateDroneTelem(droneList[0], "connected", true);
 }
 
 // DroneClass updaters
@@ -631,8 +616,8 @@ bool DroneController::openUdp(quint16 localPort,
         // Uncomment the following connection to test basic UDP connection
         // connect(udp_.get(), &UDPLink::bytesReceived,
         //         this,        &DroneController::onUdpBytesReceived);
-        // This connections listens for udp packets from previously
-        // unknown udp ports
+
+        // This connections listens for udp packets from previously unknown udp ports
         connect(udp_.get(), &UDPLink::newUDPPeer,
                 this,        &DroneController::onNewUDPPeer);
     }
@@ -941,7 +926,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
-        // qInfo() << "Got a heartbeat";
         mavlink_heartbeat_t hb;
         mavlink_msg_heartbeat_decode(&msg, &hb);
         updateDroneTelem(drone, "connected", true);
@@ -1108,55 +1092,4 @@ void moveDroneTowards(double &lat, double &lon, double targetLat, double targetL
 
     lat += dLat * ratio;
     lon += dLon * ratio;
-}
-
-/**
- * @brief Loads drone records from the database and initializes them as simulated drones.
- *
- * The drones are initialized with a fixed default GPS position and altitude
- * for simulation purposes.
- *
- * Additionally, if the unknownDroneList is empty, a predefined set of
- * simulated unknown drones is created and appended to the list.
- *
- * @note sysID and compID are currently unused and default to -1.
- * @note A fixed location (latitude, longitude, altitude) is used for all drones.
- * @note Battery levels are randomly generated.
- * @note This is not part of the DroneController class
- * @todo this will be deprecated as we lean more heavily into ardupilot simulation
- *
- * @sideeffects
- * - Modifies DroneController::droneList by appending new DroneClass instances.
- * - May append simulated entries to DroneController::unknownDroneList.
- */
-void loadDBDronesAsSimulated(DBManager &db)
-{
-    QList<QVariantMap> droneRecords = db.fetchAllDrones();
-
-    for (const QVariantMap &record : droneRecords)
-    {
-        QString name = record["drone_name"].toString();
-        QString role = record["drone_role"].toString();
-        QString xbeeID = record["xbee_id"].toString();
-        QString xbeeAddress = record["xbee_address"].toString();
-
-        // Random battery level (35-92%) for realistic demo variation
-        int batteryLevel = QRandomGenerator::global()->bounded(35, 93);
-        DroneController::droneList.append(QSharedPointer<DroneClass>::create(
-            name, role, xbeeID, xbeeAddress, batteryLevel,
-            34.059174611493965, -117.82051240067321, 10, nullptr));
-    }
-    // simulated unknown drone list
-    if (DroneController::unknownDroneList.isEmpty()) {
-        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-            "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
-        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-            "u2", "fc2", "uavtype2", -1, -1, false, nullptr));
-        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-            "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
-        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-            "u8", "fc8", "uavtype8", -1, -1, false, nullptr));
-        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-            "u9", "fc9", "uavtype9", -1, -1, false, nullptr));
-    }
 }

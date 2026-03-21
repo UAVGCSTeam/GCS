@@ -269,11 +269,6 @@ public slots:
     // Functions for serial / MAVLink connections
     void onMavlinkMessage(const RxMavlinkMsg& msg);
     
-    //temporary
-    void setCheckedHeartBeat(bool checked) {
-        checkHeartBeat = checked;
-    }
-
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
@@ -283,11 +278,8 @@ signals:
     void unknownDronesChanged();
 
 private:
-    QTimer heartBeatSimTimer; //temporary
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
 
-    //temporary heartbeat sim
-    void useSimulatedHeartbeat();
     bool checkHeartBeat = false;
 
     DBManager &dbManager;
