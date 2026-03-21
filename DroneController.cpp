@@ -953,26 +953,8 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
             if (ok) drone->setRequestedTelem(true);
             else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting telem";
         }
-
         bool armed = hb.base_mode & MAV_MODE_FLAG_SAFETY_ARMED;
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] Armed =" << armed;
         uint32_t custom_mode = hb.custom_mode;
-
-        switch(custom_mode) {
-        case 0:
-            // qInfo() << "[DroneController.cpp::onMavlinkMessage] The current mode: stabalize (0)";
-            break;
-        case 3:
-            // qInfo() << "[DroneController.cpp::onMavlinkMessage] The current mode: auto (3)";
-            break;
-        case 4:
-            // qInfo() << "[DroneController.cpp::onMavlinkMessage] The current mode: guided (4)";
-            break;
-        case 5:
-            // qInfo() << "[DroneController.cpp::onMavlinkMessage] The current mode: loiter (5)";
-            break;
-        }
-
         break;
     }
     case MAVLINK_MSG_ID_SYS_STATUS: {
@@ -1049,7 +1031,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     default:
-        // qDebug() << "[DroneController.cpp::onMavlinkMessage] unexpected message type: " << msg.msgid;
+        qWarning() << "[DroneController.cpp::onMavlinkMessage] unexpected message type: " << msg.msgid;
         break;
     }
 }
@@ -1079,7 +1061,6 @@ void DroneController::updateDroneTelem(QSharedPointer<DroneClass> drone, const Q
     } else if (field == "yaw") {
         drone->setYaw(value.toDouble());
     } else if (field == "base_mode" || field == "custom_mode") {
-        // qDebug() << "[DroneController.cpp::updateDroneTelem] Base mode:" << value;
         drone->setModeField(field, value);                   // generic hook if you prefer
     }
 
