@@ -125,9 +125,9 @@ public:
      *       MAVLink messages, keeping transport-layer details separate from the
      *       MAVLinkReceiver.
      */
-    Q_INVOKABLE bool openUDP(quint16 localPort,
+    Q_INVOKABLE bool openUDP(uint16_t localPort,
                              const QString &remoteHost = QStringLiteral("127.0.0.1"),
-                             quint16 remotePort = 14550);
+                             uint16_t remotePort = 14550);
 
     
     /**
@@ -293,7 +293,7 @@ public slots:
     void createAndAddDroneToUI(const QString &input_name,
                                const uint8_t &input_sysID,
                                const uint8_t &input_compID,
-                               const quint16 senderUDPPort,
+                               const uint16_t senderUDPPort,
                                const QObject *parent);
 
 
@@ -302,7 +302,7 @@ public slots:
     void deleteALlDrones_UI();
     
     // Functions for serial / MAVLink connections
-    void onMavlinkMessage(const RxMavlinkMsg& msg, quint16 senderUDPPort);
+    void onMavlinkMessage(const RxMavlinkMsg& msg, uint16_t senderUDPPort);
     
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);

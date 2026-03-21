@@ -48,7 +48,7 @@ qint64 MAVLinkSender::writeToLink(const QByteArray& bytes, uint8_t targetSysID, 
     if (UARTLink_) return UARTLink_->writeBytes(bytes);
     if (UDPLink_) {
         if (udpPort >= 0)
-            return UDPLink_->writeBytes(bytes, static_cast<quint16>(udpPort));
+            return UDPLink_->writeBytes(bytes, static_cast<uint16_t>(udpPort));
         return UDPLink_->writeBytes(bytes, targetSysID);
     }
     return -1;

@@ -35,12 +35,12 @@ public:
      *
      * @warning Only IPv4 is used (AnyIPv4). IPv6 is not supported by this bind call.
      */
-    bool   open(quint16 localPort,
+    bool   open(uint16_t localPort,
                 const QHostAddress& remoteHost = QHostAddress::LocalHost,
-                quint16 remotePort = 14550);
+                uint16_t remotePort = 14550);
 
     /// Bind to @p port and receive any UDP datagrams sent to it (from any host). Use for listen-only.
-    bool   listen(quint16 port);
+    bool   listen(uint16_t port);
 
     void   close();
 
@@ -76,12 +76,12 @@ public:
      */
     bool   isOpen() const { return socket_.state() == QAbstractSocket::BoundState; }
     // Send to a specific remote port
-    qint64 writeBytes(const QByteArray& bytes, quint16 remotePort);
+    qint64 writeBytes(const QByteArray& bytes, uint16_t remotePort);
 
 private:
 
 signals:
-    void bytesReceived(const QByteArray& bytes, quint16 senderPort);
+    void bytesReceived(const QByteArray& bytes, uint16_t senderPort);
     void linkError(const QString& msg);
 
 private slots:

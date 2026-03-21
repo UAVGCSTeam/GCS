@@ -318,7 +318,7 @@ void DroneController::createDrone(const QString &input_name,
 void DroneController::createAndAddDroneToUI(const QString &input_name,
                                   const uint8_t &input_sysID,
                                   const uint8_t &input_compID,
-                                  const quint16 senderUDPPort,
+                                  const uint16_t senderUDPPort,
                                   const QObject *parent)
 {
     qDebug() << "Creating drone";
@@ -607,9 +607,9 @@ DroneClass *DroneController::getDrone(int index) const
 
 
 
-bool DroneController::openUDP(quint16 localPort,
+bool DroneController::openUDP(uint16_t localPort,
                               const QString& remoteHost,
-                              quint16 remotePort)
+                              uint16_t remotePort)
 {
     if (!udp_) {
         udp_ = std::make_unique<UDPLink>(this);
@@ -624,7 +624,7 @@ bool DroneController::openUDP(quint16 localPort,
         QObject::disconnect(udpMavlinkBytesConn_);
     }
     udpMavlinkBytesConn_ = connect(udp_.get(), &UDPLink::bytesReceived, this,
-            [this](const QByteArray& bytes, quint16 senderPort) {
+            [this](const QByteArray& bytes, uint16_t senderPort) {
                 if (!mavRx_) { return; }
                 const RxMavlinkMsg m = mavRx_->getMAVLinkFromBytes(bytes);
                 if (m.msgid == 0 && m.payload.isEmpty()) { return; }
@@ -896,7 +896,7 @@ QSharedPointer<DroneClass> DroneController::getDroneBySysID(uint8_t sysID)
     return {};
 }
 
-void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, quint16 senderUDPPort)
+void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDPPort)
 {
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
     mavlink_message_t msg{};

@@ -4,9 +4,9 @@ UDPLink::UDPLink(QObject* p) : QObject(p) {
     connect(&socket_, &QUdpSocket::readyRead, this, &UDPLink::onReadyRead);
 }
 
-bool UDPLink::open(quint16 localPort,
+bool UDPLink::open(uint16_t localPort,
                    const QHostAddress& remoteHost,
-                   quint16 remotePort) {
+                   uint16_t remotePort) {
     Q_UNUSED(remoteHost);
     Q_UNUSED(remotePort);
 
@@ -27,7 +27,7 @@ bool UDPLink::open(quint16 localPort,
     return true;
 }
 
-bool UDPLink::listen(quint16 port) {
+bool UDPLink::listen(uint16_t port) {
     if (socket_.state() == QAbstractSocket::BoundState) socket_.close();
     if (!socket_.bind(QHostAddress::AnyIPv4, port)) {
         qWarning() << "Listen bind failed on port" << port << ":" << socket_.errorString();
@@ -40,7 +40,7 @@ bool UDPLink::listen(quint16 port) {
 
 void UDPLink::close() { socket_.close(); }
 
-qint64 UDPLink::writeBytes(const QByteArray& b, quint16 remotePort) {
+qint64 UDPLink::writeBytes(const QByteArray& b, uint16_t remotePort) {
     if (socket_.state() != QAbstractSocket::BoundState) {
         qWarning() << "WriteBytes(port): socket not bound, state=" << socket_.state();
         return -1;
