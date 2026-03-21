@@ -111,6 +111,8 @@ void UDPLink::readPendingDatagrams() {
         const quint16 senderPort = datagram.senderPort();
 
         if (!remotePortExists(senderPort)) {
+            // TODO: This needs to be updated so that the currentID matches the system ID 
+            // of the incoming message. Right now it's just hardcoded to iterate through 
             _remoteAddress = senderAddress;
             _remotePortsMap.insert(_currentID, senderPort);
             qInfo() << "New remote peer added:" << _remoteAddress.toString() << ":" << senderPort << ":" << _currentID;

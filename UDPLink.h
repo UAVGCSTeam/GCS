@@ -96,7 +96,8 @@ private:
     void readPendingDatagrams();
 
     QUdpSocket  socket_;
-    QHostAddress _remoteAddress;
+    QHostAddress _remoteAddress; // The remote address (127.0.0.1 for example) will be the same for 
+                                 // all incoming connections 
     QMap<uint8_t, int> _remotePortsMap; 
     int _currentID = 1; // temporary variable representing the system ID 
     bool         _hasPeer{false};
