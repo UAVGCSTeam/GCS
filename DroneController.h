@@ -69,6 +69,9 @@ class UDPLink;
 class MAVLinkSender;
 class MAVLinkReceiver;
 
+// Friend function 
+void loadDBDronesAsSimulated(DBManager &db);
+
 class DroneController : public QObject 
 {
     Q_OBJECT
@@ -252,6 +255,13 @@ public slots:
                        double input_longitude,
                        double input_altitude,
                        QObject *parent);
+    void createAndAddDroneToUI(const QString &input_name,
+                               const uint8_t &input_sysID,
+                               const uint8_t &input_compID,
+                               int senderUDPPort,
+                               const QObject *parent);
+
+
     bool updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
@@ -259,11 +269,6 @@ public slots:
     // Functions for serial / MAVLink connections
     void onMavlinkMessage(const RxMavlinkMsg& msg);
     
-    //temporary
-    void setCheckedHeartBeat(bool checked) {
-        checkHeartBeat = checked;
-    }
-
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
@@ -273,13 +278,8 @@ signals:
     void unknownDronesChanged();
 
 private:
-    QTimer heartBeatSimTimer; //temporary
-    // QTimer simulationTimer;       // Timer for simulated movement
-    // void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
 
-    //temporary heartbeat sim
-    void useSimulatedHeartbeat();
     bool checkHeartBeat = false;
 
     DBManager &dbManager;
@@ -288,12 +288,29 @@ private:
     std::unique_ptr<UDPLink>     udp_;
     std::unique_ptr<MAVLinkSender> mavTx_;
     std::unique_ptr<MAVLinkReceiver> mavRx_;
-    QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
+    QHash<uint32_t, QSharedPointer<DroneClass>> m_drone_map;
     static QList<QSharedPointer<DroneClass>> droneList;
     static QList<QSharedPointer<UnknownDroneClass>> unknownDroneList;
-    
+
+    friend void loadDBDronesAsSimulated(DBManager &db);
+
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
+
+    /**
+     * function getDroneBySysID()
+     * Find drone for a given system ID.
+     * 
+     * // TODO: Instead of adding a new drone from the list to the map, this function 
+     * should return a null ptr so that the function that called it can CREATE a drone.
+     * The newly created drone should be added to both the list and the map stored 
+     * within the DroneController class. 
+     * Once that's been done, the drone list should not be needed in here; only the map.
+     *
+     * @warning inefficient due to looping 
+     * @todo implement map structure in DroneController class (checkout m_drone_map)
+     */
+    QSharedPointer<DroneClass> getDroneBySysID(uint8_t sysID);
     void updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value);
 
     /**
@@ -318,6 +335,31 @@ private:
      *       when debug output is enabled.
      */
     void onUdpBytesReceived(const QByteArray& bytes);
+
+
+    /**
+     * function onNewUDPPeer()
+     * @brief Handles data received from a previously unknown UDP peer.
+     *
+     * This function attempts to parse an incoming UDP datagram as a MAVLink
+     * message using a fresh parsing state. It is intended for scenarios where
+     * new peers may appear dynamically and need to be identified based on
+     * incoming traffic.
+     *
+     * - If a valid MAVLink message is detected, creates a new drone entry
+     *   in the UI using:
+     *      - A generated name based on the sender’s UDP port.
+     *      - The parsed system ID (sysid).
+     *      - The parsed component ID (compid).
+     *
+     * @param bytes           Raw UDP datagram payload.
+     * @param senderUDPPort   Source UDP port of the sender.
+     * @note The generated drone name format is "My Drone <port>".
+     * @warning No validation is performed (within this function) to prevent 
+     *          duplicate drone entries if multiple valid packets are 
+     *          received from the same peer.
+     */
+    void onNewUDPPeer(const QByteArray& bytes, const int& senderUDPPort);
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML

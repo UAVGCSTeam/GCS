@@ -99,7 +99,6 @@ Window {
                 console.warn("Follow requested without a drone reference")
                 return
             }
-            console.log("[main.qml] Follow requested via modifier click:", drone.name)
             mapComponent.turnOffFollowDrone()
             mapComponent.turnOnFollowDrone()
         }

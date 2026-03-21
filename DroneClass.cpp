@@ -16,9 +16,11 @@ DroneClass::DroneClass(QObject *parent) :
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    updateStatus();
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -44,9 +46,11 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(-1)
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    updateStatus();
+    qDebug() << "Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
 }
 
 
@@ -54,9 +58,14 @@ DroneClass::DroneClass(const QString &input_name,
                        const QString &input_role,
                        const QString &input_xbeeID,
                        const QString &input_xbeeAddress,
+                       const uint8_t &input_sysID,
+                       const uint8_t &input_compID, 
+                       int input_udpPort,
                        QObject *parent)
     : QObject(parent)
     , m_name(input_name)
+    , m_sysID(input_sysID)
+    , m_compID(input_compID)
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_xbeeID(input_xbeeID)
@@ -66,11 +75,25 @@ DroneClass::DroneClass(const QString &input_name,
     , m_longitude(-1)
     , m_altitude(-1)
     , m_velocity(QVector3D(-1, -1, -1))
-    , m_airspeed(-1)    // temporary
+    , m_airspeed(-1)
     , m_orientation(QVector3D(-1, -1, -1))
+    , m_udp(input_udpPort)
 {
     startHeartBeatTimer();
-    qDebug() << "[DroneClass.cpp::constructor] Created drone:" << m_name << "with ID:" << m_xbeeID << "and address:" << m_xbeeAddress;
+    updateStatus();
+
+    // If xbeeAddress is not provided, auto-generate a 2-digit value.
+    if (m_xbeeAddress == "-1") {
+        const int xbeeAddressNum = QRandomGenerator::global()->bounded(10, 100); // [10, 99]
+        m_xbeeAddress = QString::number(xbeeAddressNum);
+    }
+
+    qDebug() << "Created drone:" 
+        << m_name 
+        << "with ID:" << m_xbeeID 
+        << "and address:" << m_xbeeAddress
+        << "and sysID:" << m_sysID
+        << "and compID:" << m_compID;
 }
 
 
@@ -121,6 +144,7 @@ void DroneClass::setLatitude(double lat)
     if (m_latitude == lat) return;
     m_latitude = lat;
     emit latitudeChanged();
+    updateStatus();
 }
 
 void DroneClass::setLongitude(double longitude)
@@ -168,10 +192,10 @@ void DroneClass::checkHeartbeat()
     if(dTime > 1000 && m_connected)
     {
         setConnected(false);
-        // qDebug() << "[DroneClass.cpp::checkHeartbeat] " << m_name << " Disconnected";
+        // qDebug() d<< m_name << " Disconnected";
     }
 
-    // qDebug() << "[DroneClass.cpp::checkHeartbeat] Connection Status for " << m_name << ": " << m_connected;
+    // qDebug() << "Connection Status for " << m_name << ": " << m_connected;
 }
 
 void DroneClass::startHeartBeatTimer()
@@ -200,6 +224,7 @@ void DroneClass::setConnected(bool v)
     m_connected = v;
     emit dataChanged();
     emit connectionStatusChanged(m_connected);
+    updateStatus();
 }
 
 void DroneClass::setBatteryVoltage(int millivolts)
@@ -244,6 +269,29 @@ void DroneClass::setModeField(const QString& field, const QVariant& value) {
     setModeField(value.toString());
 }
 
+void DroneClass::updateStatus()
+{
+    QString newStatus;
+
+    // Basic rule:
+    //  - If connected and altitude > 0.2 m  -> "Flying"
+    //  - Else if connected                 -> "Connected"
+    //  - Else                              -> "Not Connected"
+    if (m_connected && m_altitude > 0.2) {
+        newStatus = QStringLiteral("Flying");
+    } else if (m_connected) {
+        newStatus = QStringLiteral("Connected");
+    } else {
+        newStatus = QStringLiteral("Not Connected");
+    }
+
+    if (m_status == newStatus)
+        return;
+
+    m_status = newStatus;
+    emit statusChanged();
+    emit dataChanged();
+}
 
 // ----- QML helpers -----
 
