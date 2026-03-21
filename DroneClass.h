@@ -100,15 +100,15 @@ public:
     bool      getConnection() const {return m_connected;}
 
     QString   getStatus()      const { return m_status; }
-    void      setStatus(int newStatus) { m_status = newStatus; }
+    void      setStatus(QString newStatus) { m_status = newStatus; }
 
     bool      getRequestedTelem() const { return m_requested_telem; }
     void      setRequestedTelem(bool requested) { m_requested_telem = requested; }
 
-    int      getSysID() const { return m_sysID; }
+    int       getSysID() const { return m_sysID; }
     void      setSysID(int sysID) { m_sysID = sysID; }
 
-    int      getCompID() const { return m_compID; }
+    int       getCompID() const { return m_compID; }
     void      setCompID(int compID) { m_compID = compID; }
 
     int       getUdpPort() const { return m_udp; }

@@ -819,7 +819,7 @@ bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff
         0.0f,  // lat (0 = use current for Copter)
         0.0f,  // lon (0 = use current for Copter)
         5.0f,  // alt meters above home
-        drone->getUdpPort());
+        drone->getUdpPort()
     );
 
     qInfo() << "[DroneController.cpp::sendTakeoffCmd] Takeoff:"
@@ -852,7 +852,7 @@ bool DroneController::sendToCoord(const QString droneName, float lat, float lon)
         static_cast<double>(lat),
         static_cast<double>(lon),
         5.0f,   // altitude meters above home
-        drone->getUdpPort());
+        drone->getUdpPort()
     );
 
     qInfo() << "[DroneController.cpp::sendToCoord] SendToCoord:"

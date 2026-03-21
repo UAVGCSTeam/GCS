@@ -78,7 +78,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_velocity(QVector3D(-1, -1, -1))
     , m_airspeed(-1)
     , m_orientation(QVector3D(-1, -1, -1))
-    , m_udp(input_udptPort)
+    , m_udp(input_udpPort)
 {
     startHeartBeatTimer();
     updateStatus();
