@@ -1,67 +1,29 @@
 #include "DroneController.h"
 
-
 QList<QSharedPointer<DroneClass>> DroneController::droneList; // Define the static variable
 QList<QSharedPointer<UnknownDroneClass>> DroneController::unknownDroneList; // Define the static variable
 
 DroneController::DroneController(DBManager &db, QObject *parent)
     : QObject(parent), dbManager(db)
 {
-    int index = 0; 
-
     // function loads all drones from the database on startup
     qRegisterMetaType<mavlink_message_t>("mavlink_message_t");
 
-    // UNCOMMENT THIS IF YOU WANT TO USE THE HARDCODED DRONES 
-    // FROM THE DATABASE AGAIN
-    // QList<QVariantMap> droneRecords = dbManager.fetchAllDrones();
-
-    // for (const QVariantMap &record : droneRecords)
-    // {
-    //     QString name = record["drone_name"].toString();
-    //     QString role = record["drone_role"].toString();
-    //     QString xbeeID = record["xbee_id"].toString();
-    //     int sysID = -1;
-    //     int compID = -1;
-    //     QString xbeeAddress = record["xbee_address"].toString();
-        
-    //     // Random battery level (35-92%) for realistic demo variation
-    //     int batteryLevel = QRandomGenerator::global()->bounded(35, 93);
-    //     droneList.append(QSharedPointer<DroneClass>::create(name, role, xbeeID, xbeeAddress, batteryLevel, 34.059174611493965, -117.82051240067321, 10, nullptr));
-        
-    //     index++;
-    // }
-    // // simulated unknown drone list
-    // if (unknownDroneList.isEmpty()) {
-    // unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-    //     "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
-    // unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-    //     "u2", "fc2", "uavtype2", -1, -1, false, nullptr));
-    // unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-    //     "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
-    // unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-    //     "u8", "fc8", "uavtype8", -1, -1, false, nullptr));
-    // unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
-    //     "u9", "fc9", "uavtype9", -1, -1, false, nullptr));
-    // }
+    // UNCOMMENT THIS IF YOU WANT TO USE THE DRONES FROM THE DATABASE AGAIN
+    // loadDBDronesAsSimulated(dbManager);
 
     rebuildUnknownVariant();
-    emit unknownDronesChanged();
 
     //temporary sim heartbeat
     connect(&heartBeatSimTimer, &QTimer::timeout, this, &DroneController::useSimulatedHeartbeat);
     heartBeatSimTimer.start(250); //four per second
-
-    // connect(&simulationTimer, &QTimer::timeout, this, &DroneController::simulateDroneMovement);
-    // simulationTimer.start(250); // Move once per second
-    // qDebug() << "[DroneController.cpp] Simulation timer started for drone movement.";
 }
+
+
 
 // method so QML can retrieve the drone list.
 QVariantList DroneController::getAllDrones() const
 {
-    // qInfo() << "[DroneController.cpp] DEBUGGING" << Qt::endl;
-    // int index = 0;
     QVariantList list;
     for (const QSharedPointer<DroneClass> &drone : droneList)
     {
@@ -94,7 +56,6 @@ QVariantList DroneController::getAllDrones() const
         droneMap["airspeed"] = drone->getAirspeed();
 
         list.append(droneMap);
-        // index++;
     }
     return list;
 }
@@ -276,7 +237,6 @@ void DroneController::setOrientation(const QString &xbeeID, const QVector3D &new
 void DroneController::loadUnknownDrones()
 {
     rebuildUnknownVariant();
-    emit unknownDronesChanged();
 }
 void DroneController::setUnknownDroneIgnored(const QString &uid, bool ignored)
 {
@@ -284,7 +244,6 @@ void DroneController::setUnknownDroneIgnored(const QString &uid, bool ignored)
         if (unknownDrone && unknownDrone->getUid() == uid) {
             unknownDrone->setIgnored(ignored);
             rebuildUnknownVariant();
-            emit unknownDronesChanged();
             return;
         }
     }
@@ -326,7 +285,6 @@ void DroneController::removeUnknownDrones(const QString &uid)
         if (unknownDroneList[i] && unknownDroneList[i]->getUid() == uid) {
             unknownDroneList.removeAt(i);
             rebuildUnknownVariant();
-            emit unknownDronesChanged();
             return;
         }
     }
@@ -954,59 +912,14 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
     return response;
 }
 
-/**
- * Helper: find (or lazily bind) a drone for a sysid.
- * 
- * @warning: inefficient do to looping 
- */
-QSharedPointer<DroneClass> droneForSysIdList(uint8_t sysID, QList<QSharedPointer<DroneClass>>& list)
+QSharedPointer<DroneClass> DroneController::getDroneBySysID(uint8_t sysID)
 {
-    for (QSharedPointer<DroneClass> drone : list) {
-        if (drone->getSysID() == sysID) {
-            return drone;
-        }
+    for (const QSharedPointer<DroneClass> drone : droneList) {
+        if (drone->getSysID() == sysID) { return drone; }
     }
-    qDebug() << "[DroneController.cpp::droneForSysIdList] No drone found with sysID" << sysID;
-    
+    qWarning() << "[DroneController.cpp::getDroneBySysID] No drone found with sysID" << sysID;
     return {};
 }
-
-/**
- * Helper: find (or lazily bind) a drone for a sysid.
- * Header must have: QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
- * 
- * // TODO: This function needs to be renamed 😔
- * // TODO: Instead of adding a new drone from the list to the map, this function 
- * should return a null ptr so that the function that called it can CREATE a drone.
- * The newly created drone should be added to both the list and the map. 
- * Once that's been done, the drone list should not be needed here; only the map.
- */
-QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
-                                                  uint8_t compID,
-                                                  QList<QSharedPointer<DroneClass>>& list,
-                                                  QHash<uint32_t, QSharedPointer<DroneClass>>& map)
-{
-    uint32_t hashKey = sysID * 93 + compID * 89; // relying on only one ID will inevitably lead to overlap
-    if (map.contains(hashKey)) return map.value(hashKey);
-
-    if (!list.isEmpty()) {
-        // TEMP heuristic: bind first drone we have (until you provide a real mapping)
-        auto d = list.first();
-        if (d->getSysID() == 1) 
-        return d;
-        map.insert(hashKey, d);
-        d->setSysID(sysID);
-        d->setCompID(compID);
-        qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
-        return d;
-    }
-    qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] No drone found with sysID" << sysID <<  "and compID" << compID;
-    
-    return {};
-}
-
-
-
 
 void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 {
@@ -1020,7 +933,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     uint8_t sysID = msg.sysid;
     uint8_t compID = msg.compid; 
 
-    auto drone = droneForSysIdList(sysID, droneList);
+    auto drone = getDroneBySysID(sysID);
     if (drone.isNull()) {
         qDebug() << "[DroneController.cpp::onMavlinkMessage] NULL Drone";
         return;
@@ -1109,11 +1022,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     case MAVLINK_MSG_ID_COMMAND_ACK: {
         mavlink_command_ack_t ack;
         mavlink_msg_command_ack_decode(&msg, &ack);
-        // qInfo().nospace()
-        //     << "[DroneController.cpp::onMavlinkMessage] COMMAND_ACK cmd=" << ack.command
-        //     << " result=" << static_cast<int>(ack.result)
-        //     << " (sysID=" << static_cast<int>(sysID)
-        //     << ", compID=" << static_cast<int>(compID) << ")";
 
         QString cmdName;
         switch (ack.command) {
@@ -1200,6 +1108,7 @@ void DroneController::rebuildUnknownVariant()
     {
         m_unknownDronesVariant << QVariant::fromValue(static_cast<QObject *>(sp.data()));
     }
+    emit unknownDronesChanged();
 }
 
 // Simple linear interpolation towards a target point
@@ -1220,33 +1129,53 @@ void moveDroneTowards(double &lat, double &lon, double targetLat, double targetL
     lon += dLon * ratio;
 }
 
-// void DroneController::simulateDroneMovement()
-// {
-//     double step = 0.00005; // small step toward waypoint
+/**
+ * @brief Loads drone records from the database and initializes them as simulated drones.
+ *
+ * The drones are initialized with a fixed default GPS position and altitude
+ * for simulation purposes.
+ *
+ * Additionally, if the unknownDroneList is empty, a predefined set of
+ * simulated unknown drones is created and appended to the list.
+ *
+ * @note sysID and compID are currently unused and default to -1.
+ * @note A fixed location (latitude, longitude, altitude) is used for all drones.
+ * @note Battery levels are randomly generated.
+ * @note This is not part of the DroneController class
+ * @todo this will be deprecated as we lean more heavily into ardupilot simulation
+ *
+ * @sideeffects
+ * - Modifies DroneController::droneList by appending new DroneClass instances.
+ * - May append simulated entries to DroneController::unknownDroneList.
+ */
+void loadDBDronesAsSimulated(DBManager &db)
+{
+    QList<QVariantMap> droneRecords = db.fetchAllDrones();
 
-//     for (auto &drone : droneList) {
-//         if (!drone) continue;
+    for (const QVariantMap &record : droneRecords)
+    {
+        QString name = record["drone_name"].toString();
+        QString role = record["drone_role"].toString();
+        QString xbeeID = record["xbee_id"].toString();
+        QString xbeeAddress = record["xbee_address"].toString();
 
-//         double lat = drone->getLatitude();
-//         double lon = drone->getLongitude();
-
-//         // Get the next waypoint for this drone
-//         QList<QVariantMap> wps;
-//         if (droneWaypoints.contains(drone->getName()) && !droneWaypoints[drone->getName()].isEmpty())
-//         {
-//             wps = droneWaypoints[drone->getName()];
-//         }
-//         if (wps.size() < 2)
-//             continue; // nothing to move toward
-//         double targetLat = wps[1]["lat"].toDouble();
-//         double targetLon = wps[1]["lon"].toDouble();
-
-//         // Move towards it
-//         moveDroneTowards(lat, lon, targetLat, targetLon, step);
-
-//         // Update drone position
-//         drone->setLatitude(lat);
-//         drone->setLongitude(lon);
-//         emit droneStateChanged(drone.data());
-//     }
-// }
+        // Random battery level (35-92%) for realistic demo variation
+        int batteryLevel = QRandomGenerator::global()->bounded(35, 93);
+        DroneController::droneList.append(QSharedPointer<DroneClass>::create(
+            name, role, xbeeID, xbeeAddress, batteryLevel,
+            34.059174611493965, -117.82051240067321, 10, nullptr));
+    }
+    // simulated unknown drone list
+    if (DroneController::unknownDroneList.isEmpty()) {
+        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u1", "fc1", "uavtype1", -1, -1, false, nullptr));
+        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u2", "fc2", "uavtype2", -1, -1, false, nullptr));
+        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u3", "fc3", "uavtype3", -1, -1, false, nullptr));
+        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u8", "fc8", "uavtype8", -1, -1, false, nullptr));
+        DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+            "u9", "fc9", "uavtype9", -1, -1, false, nullptr));
+    }
+}

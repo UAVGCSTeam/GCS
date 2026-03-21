@@ -131,7 +131,6 @@ void DroneClass::setBatteryLevel(double inputBatteryLevel)
     if (m_batteryLevel == inputBatteryLevel) return;
     m_batteryLevel = inputBatteryLevel;
     emit batteryChanged();
-    updateStatus();
 }
 
 void DroneClass::setPosition(const QVector3D &pos)
@@ -139,7 +138,6 @@ void DroneClass::setPosition(const QVector3D &pos)
     if (m_position == pos) return;
     m_position = pos;
     emit positionChanged();
-    updateStatus();
 }
 
 void DroneClass::setLatitude(double lat)
@@ -155,7 +153,6 @@ void DroneClass::setLongitude(double longitude)
     if (m_longitude == longitude) return;
     m_longitude = longitude;
     emit longitudeChanged();
-    updateStatus();
 }
 
 void DroneClass::setAltitude(double alt)
@@ -163,7 +160,6 @@ void DroneClass::setAltitude(double alt)
     if (m_altitude == alt) return;
     m_altitude = alt;
     emit altitudeChanged();
-    updateStatus();
 }
 
 void DroneClass::setVelocity(const QVector3D &vel)
@@ -171,7 +167,6 @@ void DroneClass::setVelocity(const QVector3D &vel)
     if (m_velocity == vel) return;
     m_velocity = vel;
     emit velocityChanged();
-    updateStatus();
 }
 
 void DroneClass::setAirspeed(double air)
@@ -179,7 +174,6 @@ void DroneClass::setAirspeed(double air)
     if (m_airspeed == air) return;
     m_airspeed = air;
     emit airspeedChanged();
-    updateStatus();
 }
 
 void DroneClass::setOrientation(const QVector3D &ori)
@@ -187,7 +181,6 @@ void DroneClass::setOrientation(const QVector3D &ori)
     if (m_orientation == ori) return;
     m_orientation = ori;
     emit orientationChanged();
-    updateStatus();
 }
 
 // ----- Heartbeat ------

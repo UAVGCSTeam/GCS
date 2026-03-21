@@ -69,6 +69,9 @@ class UDPLink;
 class MAVLinkSender;
 class MAVLinkReceiver;
 
+// Friend function 
+void loadDBDronesAsSimulated(DBManager &db);
+
 class DroneController : public QObject 
 {
     Q_OBJECT
@@ -281,8 +284,6 @@ signals:
 
 private:
     QTimer heartBeatSimTimer; //temporary
-    // QTimer simulationTimer;       // Timer for simulated movement
-    // void simulateDroneMovement(); // Function to move a drone periodically
     QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
 
     //temporary heartbeat sim
@@ -295,12 +296,23 @@ private:
     std::unique_ptr<UDPLink>     udp_;
     std::unique_ptr<MAVLinkSender> mavTx_;
     std::unique_ptr<MAVLinkReceiver> mavRx_;
-    QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
+    QHash<uint32_t, QSharedPointer<DroneClass>> m_drone_map;
     static QList<QSharedPointer<DroneClass>> droneList;
     static QList<QSharedPointer<UnknownDroneClass>> unknownDroneList;
-    
+
+    friend void loadDBDronesAsSimulated(DBManager &db);
+
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
+
+    /**
+     * function getDroneBySysID()
+     * Find drone for a given system ID.
+     * 
+     * @warning inefficient due to looping 
+     * @todo implement map structure in DroneController class (checkout m_drone_map)
+     */
+    QSharedPointer<DroneClass> getDroneBySysID(uint8_t sysID);
     void updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value);
 
     /**
