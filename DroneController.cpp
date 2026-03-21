@@ -861,8 +861,7 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
 
     const QList<int> requestDataCommands = {
         MAVLINK_MSG_ID_GLOBAL_POSITION_INT,
-        // MAVLINK_MSG_ID_SYS_STATUS, // WARNING: They consume quite some bandwidth, so use only for important status and error messages
-        // more on status text: https://mavlink.io/en/messages/common.html#STATUSTEXT
+        MAVLINK_MSG_ID_SYS_STATUS, // contains the battery
         MAVLINK_MSG_ID_ATTITUDE
     };
 
