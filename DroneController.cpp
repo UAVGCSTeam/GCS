@@ -318,7 +318,7 @@ void DroneController::createDrone(const QString &input_name,
 void DroneController::createAndAddDroneToUI(const QString &input_name,
                                   const uint8_t &input_sysID,
                                   const uint8_t &input_compID,
-                                  const quint16 senderUDPPort,
+                                  const uint16_t senderUDPPort,
                                   const QObject *parent)
 {
     qDebug() << "Creating drone";
@@ -332,7 +332,7 @@ void DroneController::createAndAddDroneToUI(const QString &input_name,
         senderUDPPort,
         nullptr
     );
-    saveDroneToDB(drone);
+    // saveDroneToDB(drone); // temp don't save
     droneList.append(drone);
     rebuildVariant();
 }
@@ -607,9 +607,9 @@ DroneClass *DroneController::getDrone(int index) const
 
 
 
-bool DroneController::openUDP(quint16 localPort,
+bool DroneController::openUDP(uint16_t localPort,
                               const QString& remoteHost,
-                              quint16 remotePort)
+                              uint16_t remotePort)
 {
     if (!udp_) {
         udp_ = std::make_unique<UDPLink>(this);
@@ -624,7 +624,7 @@ bool DroneController::openUDP(quint16 localPort,
         QObject::disconnect(udpMavlinkBytesConn_);
     }
     udpMavlinkBytesConn_ = connect(udp_.get(), &UDPLink::bytesReceived, this,
-            [this](const QByteArray& bytes, quint16 senderPort) {
+            [this](const QByteArray& bytes, uint16_t senderPort) {
                 if (!mavRx_) { return; }
                 const RxMavlinkMsg m = mavRx_->getMAVLinkFromBytes(bytes);
                 if (m.msgid == 0 && m.payload.isEmpty()) { return; }
@@ -888,6 +888,13 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
     return response;
 }
 
+
+QString fauxRequestUIDFromAutopilot()
+{
+    return "20260321";
+}
+
+
 QSharedPointer<DroneClass> DroneController::getDroneBySysID(uint8_t sysID)
 {
     for (const QSharedPointer<DroneClass> drone : droneList) {
@@ -897,7 +904,18 @@ QSharedPointer<DroneClass> DroneController::getDroneBySysID(uint8_t sysID)
     return {};
 }
 
-void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, quint16 senderUDPPort)
+
+QSharedPointer<UnknownDroneClass> DroneController::getUnknownDroneBySysID(const uint8_t sysID)
+{
+    for (const QSharedPointer<UnknownDroneClass> drone : unknownDroneList) {
+        if (drone->getSysID() == sysID) { return drone; }
+    }
+    qWarning() << "No unknown drone found with sysID" << sysID;
+    return {};
+}
+
+
+void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDPPort)
 {
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
     mavlink_message_t msg{};
@@ -910,10 +928,44 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, quint16 senderUDPP
     uint8_t compID = msg.compid; 
 
     auto drone = getDroneBySysID(sysID);
-    if (drone.isNull()) {
-        QString name = "My Drone " + QString::number(senderUDPPort);
-        createAndAddDroneToUI(name, sysID, compID, senderUDPPort, nullptr);
-        return;
+    if (drone.isNull()) { // Not already in app
+        auto unknownDrone = getUnknownDroneBySysID(sysID);
+        if (unknownDrone.isNull()) { // Not already in discovery panel
+            QString UID = fauxRequestUIDFromAutopilot(); // Request the UID from the autopilot
+            std::tuple<QString, QString, QString> droneInfo = dbManager.getDroneInfoByUID(UID);
+
+            if (std::get<1>(droneInfo) == "") {
+                qInfo() << "No drone found in the DB";
+                DroneController::unknownDroneList.append(QSharedPointer<UnknownDroneClass>::create(
+                    UID,
+                    "fc9",
+                    "uavtype1",
+                    sysID,
+                    compID,
+                    senderUDPPort,
+                    false,
+                    nullptr));
+                return;
+            }
+            else { // Already saved this drone in DB before
+                QString name = std::get<0>(droneInfo);
+                QString UID = std::get<1>(droneInfo);
+                QString role = std::get<2>(droneInfo); // not yet assigned 
+                qInfo() << "Drone found in DB:"
+                << name
+                << UID
+                << role;
+                createAndAddDroneToUI(name, sysID, compID, senderUDPPort, nullptr);
+                drone = getDroneBySysID(sysID);
+                if (drone.isNull()) {
+                    qWarning() << "createAndAddDroneToUI succeeded but getDroneBySysID still null for sysID"
+                               << sysID;
+                    return;
+                }
+            }
+        }
+        else return; // the drone is already in the unknown drone list.
+                     // doesn't matter whether it's ignored or not, we don't need the following telem
     }
 
     switch (msg.msgid) {

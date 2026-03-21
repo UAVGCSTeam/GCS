@@ -15,6 +15,7 @@
 #include <QByteArray>
 #include <QMetaObject>
 #include <cstdint>
+#include <tuple>
 
 #include "DroneClass.h"
 #include "backend/dbmanager.h"
@@ -23,9 +24,6 @@
 #include "UARTLink.h"
 #include "UDPLink.h"
 #include "unknowndroneclass.h"
-
-// For randomly generating battery levels
-#include <QRandomGenerator>
 
 // DATA PATH
 #ifdef _WIN32
@@ -125,9 +123,9 @@ public:
      *       MAVLink messages, keeping transport-layer details separate from the
      *       MAVLinkReceiver.
      */
-    Q_INVOKABLE bool openUDP(quint16 localPort,
+    Q_INVOKABLE bool openUDP(uint16_t localPort,
                              const QString &remoteHost = QStringLiteral("127.0.0.1"),
-                             quint16 remotePort = 14550);
+                             uint16_t remotePort = 14550);
 
     
     /**
@@ -264,6 +262,7 @@ public:
     Q_INVOKABLE void acceptUnknownDrone(const QString &uid);
     Q_INVOKABLE void removeUnknownDrones(const QString &uid);
     void rebuildUnknownVariant();
+    QSharedPointer<UnknownDroneClass> getUnknownDroneBySysID(const uint8_t sysID);
 
 
   Q_INVOKABLE void renameDrone(const QString &xbeeID, const QString &newName);
@@ -293,7 +292,7 @@ public slots:
     void createAndAddDroneToUI(const QString &input_name,
                                const uint8_t &input_sysID,
                                const uint8_t &input_compID,
-                               const quint16 senderUDPPort,
+                               const uint16_t senderUDPPort,
                                const QObject *parent);
 
 
@@ -302,7 +301,7 @@ public slots:
     void deleteALlDrones_UI();
     
     // Functions for serial / MAVLink connections
-    void onMavlinkMessage(const RxMavlinkMsg& msg, quint16 senderUDPPort);
+    void onMavlinkMessage(const RxMavlinkMsg& msg, uint16_t senderUDPPort);
     
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);

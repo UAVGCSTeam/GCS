@@ -8,8 +8,9 @@ UnknownDroneClass::UnknownDroneClass(QObject *parent) :
 UnknownDroneClass::UnknownDroneClass(const QString &uid,
                                      const QString &fc,
                                      const QString &uavType,
-                                     int sysID,
-                                     int compID,
+                                     const uint8_t sysID,
+                                     const uint8_t compID,
+                                     const uint16_t UDPPort,
                                      bool ignored,
                                      QObject *parent)
     : QObject(parent)
@@ -18,6 +19,7 @@ UnknownDroneClass::UnknownDroneClass(const QString &uid,
     , m_uavType(uavType)
     , m_sysID(sysID)
     , m_compID(compID)
+    , m_udp_port(UDPPort)
     , m_ignored(ignored)
 {
 }
@@ -43,18 +45,25 @@ void UnknownDroneClass::setUavType(const QString &uavType)
     emit uavTypeChanged();
 }
 
-void UnknownDroneClass::setSysID(int sysID)
+void UnknownDroneClass::setSysID(uint8_t sysID)
 {
     if (m_sysID == sysID) return;
     m_sysID = sysID;
     emit sysIDChanged();
 }
 
-void UnknownDroneClass::setCompID(int compID)
+void UnknownDroneClass::setCompID(uint8_t compID)
 {
     if (m_compID == compID) return;
     m_compID = compID;
     emit compIDChanged();
+}
+
+void UnknownDroneClass::setUDPPort(uint16_t UDPPort)
+{
+    if (m_udp_port == UDPPort) return;
+    m_udp_port = UDPPort;
+    emit UDPPortChanged();
 }
 
 void UnknownDroneClass::setIgnored(bool ignored)

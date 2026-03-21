@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QString> // Mostly to avoid having to bind stuff on database, mostly cause all the examples are using QString
 #include <QDebug>
+#include <tuple>
 
 
 
@@ -60,6 +61,7 @@ public:
     bool deleteDrone(const QString& xbeeId);
     bool deleteAllDrones();
     void printDroneList(); // essentially Reading the drone, has some basecode
+    std::tuple<QString, QString, QString> getDroneInfoByUID(const QString& droneUID);
 
     // Declaration to fetch all drone records from the database
     QList<QVariantMap> fetchAllDrones();

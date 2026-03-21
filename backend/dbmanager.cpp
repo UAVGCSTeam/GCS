@@ -306,6 +306,35 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
 
 
 
+std::tuple<QString, QString, QString> DBManager::getDroneInfoByUID(const QString& droneUID) {
+    const auto empty = std::tuple<QString, QString, QString>{QString(), QString(), QString()};
+    if (!gcs_db_connection.isOpen()) {
+        qCritical() << "[dbmanager.cpp] Database is not open! Cannot fetch drone info.";
+        return empty;
+    }
+
+    QSqlQuery query(gcs_db_connection);
+    query.prepare("SELECT drone_name, hardware_uid, drone_role FROM drones WHERE hardware_uid = :droneUID");
+    query.bindValue(":droneUID", droneUID);
+
+    if (!query.exec()) {
+        qCritical() << "[dbmanager.cpp] Error fetching drone by UID:" << query.lastError().text();
+        return empty;
+    }
+
+    if (!query.next()) {
+        return empty;
+    }
+
+    return {
+        query.value(0).toString(),
+        query.value(1).toString(),
+        query.value(2).toString(),
+    };
+}
+
+
+
 // Lets use this function to have "default" drones. 
 bool DBManager::createInitialDrones() {
     if (!gcs_db_connection.isOpen()) {

@@ -37,7 +37,7 @@ public:
     RxMavlinkMsg getMAVLinkFromBytesWithFreshState(const QByteArray& data);
 
 public slots:
-    void onBytes(const QByteArray& data, quint16 senderPort);
+    void onBytes(const QByteArray& data, uint16_t senderPort);
     // void onBytes(const QByteArray& data);
 
 signals:
