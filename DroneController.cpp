@@ -318,7 +318,7 @@ void DroneController::createDrone(const QString &input_name,
 void DroneController::createAndAddDroneToUI(const QString &input_name,
                                   const uint8_t &input_sysID,
                                   const uint8_t &input_compID,
-                                  int senderUDPPort,
+                                  const quint16 senderUDPPort,
                                   const QObject *parent)
 {
     qDebug() << "Creating drone";
@@ -607,29 +607,29 @@ DroneClass *DroneController::getDrone(int index) const
 
 
 
-bool DroneController::openUdp(quint16 localPort,
+bool DroneController::openUDP(quint16 localPort,
                               const QString& remoteHost,
                               quint16 remotePort)
 {
     if (!udp_) {
         udp_ = std::make_unique<UDPLink>(this);
-        // Uncomment the following connection to test basic UDP connection
-        // connect(udp_.get(), &UDPLink::bytesReceived,
-        //         this,        &DroneController::onUdpBytesReceived);
-
-        // This connections listens for udp packets from previously unknown udp ports
-        connect(udp_.get(), &UDPLink::newUDPPeer,
-                this,        &DroneController::onNewUDPPeer);
     }
     if (!mavTx_) mavTx_ = std::make_unique<MAVLinkSender>(udp_.get(), this);
     
     if (!mavRx_) {
         mavRx_ = std::make_unique<MAVLinkReceiver>(this);
-        connect(udp_.get(), &UDPLink::bytesReceived,
-                mavRx_.get(), &MAVLinkReceiver::onBytes);
-        connect(mavRx_.get(), &MAVLinkReceiver::messageReceived,
-                this,         &DroneController::onMavlinkMessage);
     }
+    // Keeps sender port out of MAVLinkReceiver — glues it here with a lambda.
+    if (udpMavlinkBytesConn_) {
+        QObject::disconnect(udpMavlinkBytesConn_);
+    }
+    udpMavlinkBytesConn_ = connect(udp_.get(), &UDPLink::bytesReceived, this,
+            [this](const QByteArray& bytes, quint16 senderPort) {
+                if (!mavRx_) { return; }
+                const RxMavlinkMsg m = mavRx_->getMAVLinkFromBytes(bytes);
+                if (m.msgid == 0 && m.payload.isEmpty()) { return; }
+                onMavlinkMessage(m, senderPort);
+            });
 
     const bool ok = udp_->open(localPort, QHostAddress(remoteHost), remotePort);
     if (!ok) {
@@ -652,23 +652,6 @@ void DroneController::onUdpBytesReceived(const QByteArray& bytes)
              << hex;
 }
 
-void DroneController::onNewUDPPeer(const QByteArray& bytes, const int& senderUDPPort) 
-{
-    if (!mavRx_) {
-        qWarning() << "mavRx_ is null; cannot parse MAVLink";
-        return;
-    }
-    RxMavlinkMsg m = mavRx_->getMAVLinkFromBytesWithFreshState(bytes);
-    if (m.msgid == 0 && m.payload.isEmpty()) {
-        // No complete MAVLink message in this packet (e.g. partial or non-MAVLink data)
-        const int preview = qMin(bytes.size(), 20);
-        qDebug() << "No MAVLink message in packet from port" << senderUDPPort
-        << "size=" << bytes.size() << "first bytes (hex):" << bytes.left(preview).toHex(' ');
-        return;
-    }
-    QString name = "My Drone " + QString::number(senderUDPPort);
-    createAndAddDroneToUI(name, m.sysid, m.compid, senderUDPPort, nullptr);
-}
 
 bool DroneController::openUART(const QString& port, int baud)
 {
@@ -678,11 +661,18 @@ bool DroneController::openUART(const QString& port, int baud)
     //  set up receiver & wire signals
     if (!mavRx_) {
         mavRx_ = std::make_unique<MAVLinkReceiver>(this);
-        connect(uartDevice_.get(), &UARTLink::bytesReceived,
-                mavRx_.get(), &MAVLinkReceiver::onBytes);
-        connect(mavRx_.get(), &MAVLinkReceiver::messageReceived,
-                this,        &DroneController::onMavlinkMessage);
     }
+    // Serial has no UDP port; pass 0 (not used for routing on UART).
+    if (uartMavlinkBytesConn_) {
+        QObject::disconnect(uartMavlinkBytesConn_);
+    }
+    uartMavlinkBytesConn_ = connect(uartDevice_.get(), &UARTLink::bytesReceived, this,
+            [this](const QByteArray& bytes) {
+                if (!mavRx_) { return; }
+                const RxMavlinkMsg m = mavRx_->getMAVLinkFromBytes(bytes);
+                if (m.msgid == 0 && m.payload.isEmpty()) { return; }
+                onMavlinkMessage(m, 0);
+            });
 
     const bool ok = uartDevice_->open(port, baud);
     if (!ok) {
@@ -871,12 +861,13 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
 
     const QList<int> requestDataCommands = {
         MAVLINK_MSG_ID_GLOBAL_POSITION_INT,
-        MAVLINK_MSG_ID_SYS_STATUS,
+        // MAVLINK_MSG_ID_SYS_STATUS, // WARNING: They consume quite some bandwidth, so use only for important status and error messages
+        // more on status text: https://mavlink.io/en/messages/common.html#STATUSTEXT
         MAVLINK_MSG_ID_ATTITUDE
     };
 
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
-        qWarning() << "MAVLink sender not ready; call openUdp() (or openUART()) first";
+        qWarning() << "MAVLink sender not ready; call openUDP() (or openUART()) first";
         return false;
     }
 
@@ -906,7 +897,7 @@ QSharedPointer<DroneClass> DroneController::getDroneBySysID(uint8_t sysID)
     return {};
 }
 
-void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
+void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, quint16 senderUDPPort)
 {
     // Rebuild a mavlink_message_t from the envelope so we can use decode helpers
     mavlink_message_t msg{};
@@ -920,7 +911,8 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
 
     auto drone = getDroneBySysID(sysID);
     if (drone.isNull()) {
-        qDebug() << "NULL Drone";
+        QString name = "My Drone " + QString::number(senderUDPPort);
+        createAndAddDroneToUI(name, sysID, compID, senderUDPPort, nullptr);
         return;
     }
 
@@ -1015,7 +1007,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         break;
     }
     default:
-        qWarning() << "unexpected message type: " << msg.msgid;
+        qInfo() << "Unexpected MAVLink message type: " << msg.msgid;
         break;
     }
 }
