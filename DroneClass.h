@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <cmath>
+#include <QRandomGenerator>
 
 
 
@@ -173,10 +174,9 @@ private:
     QTimer    m_heartBeatTimer; // Designates when to check for a new heartbeat
     QDateTime m_lastHeartBeat; // The specific time when the last heartbeat was heard
     qint64    m_heartbeatIntervalMs; // TODO: currently not implemented. can be used to display the interval 
-    // between heartbeats 
+                                     // between heartbeats 
     bool      m_requested_telem = false; // TODO: evaluate whether this is needed
-    
-    int       m_udp;
+    int       m_udp;           // keeps track of which UDP port this drone should send to
 
     // Recompute high-level status string from telemetry fields
     void      updateStatus();

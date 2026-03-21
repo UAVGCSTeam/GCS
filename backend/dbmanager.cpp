@@ -226,7 +226,7 @@ bool DBManager::editDrone(int droneID, const QString& droneName, const QString& 
 
     // If no values to update, return false
     if (values.isEmpty()) {
-        qWarning() << "[DroneController::editDrone] No fields provided for update!";
+        qWarning() << "No fields provided for update!";
         return false;
     }
 
