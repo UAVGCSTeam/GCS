@@ -11,10 +11,15 @@ MAVLinkReceiver::MAVLinkReceiver(QObject* parent)
 
 MAVLinkReceiver::~MAVLinkReceiver() = default;   // ← now Impl is complete
 
-void MAVLinkReceiver::onBytes(const QByteArray& data) {
+void MAVLinkReceiver::onBytes(const QByteArray& data, uint16_t senderPort) {
     RxMavlinkMsg out = getMAVLinkFromBytes(data);
     emit messageReceived(out);
 }
+
+// void MAVLinkReceiver::onBytes(const QByteArray& data) {
+//     RxMavlinkMsg out = getMAVLinkFromBytes(data);
+//     emit messageReceived(out);
+// }
 
 RxMavlinkMsg MAVLinkReceiver::getMAVLinkFromBytes(const QByteArray& data) {
     mavlink_message_t msg;
