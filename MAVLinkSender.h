@@ -86,11 +86,19 @@ public:
                                         double lat_deg, double lon_deg,
                                         float alt_m) const;
 
-    ////////////////////////////////////////////////////////////////////////////////////
-    //  Sends MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES (520) to ask the drone for
-    // an AUTOPILOT_VERSION response containing its 128-bit hardware UID.
-    bool sendAutopilotVersionRequest(uint8_t sysID, uint8_t compID) const;
-    ////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * @brief Sends AUTOPILOT_VERSION request to retrieve the drone's hardware UID.
+     *
+     * Sends a MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES (520) command to request
+     * an AUTOPILOT_VERSION response containing the 128-bit hardware UID.
+     *
+     * @param targetSys   Target system ID (vehicle MAVLink system ID).
+     * @param targetComp  Target component ID (e.g., autopilot component).
+     *
+     * @return true if the command was successfully written to the link;
+     *         false if the link is not open or the write fails.
+     */
+    bool sendAutopilotVersionRequest(uint8_t targetSys, uint8_t targetComp) const;
 
 private:
     qint64 writeToLink(const QByteArray& bytes) const;

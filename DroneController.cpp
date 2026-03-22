@@ -893,12 +893,13 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
  * The newly created drone should be added to both the list and the map. 
  * Once that's been done, the drone list should not be needed here; only the map.
  */
-QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
-                                                  uint8_t compID,
+QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t targetSys,
+                                                  uint8_t targetComp,
                                                   QList<QSharedPointer<DroneClass>>& list,
-                                                  QHash<uint32_t, QSharedPointer<DroneClass>>& map)
+                                                  QHash<uint32_t, QSharedPointer<DroneClass>>& map,
+                                                  MAVLinkSender* mavTx = nullptr)
 {
-    uint32_t hashKey = sysID * 93 + compID * 89; // relying on only one ID will inevitably lead to overlap
+    uint32_t hashKey = targetSys * 93 + targetComp * 89; // relying on only one ID will inevitably lead to overlap
     if (map.contains(hashKey)) return map.value(hashKey);
 
     if (!list.isEmpty()) {
@@ -907,12 +908,22 @@ QSharedPointer<DroneClass> droneForSysId_lazyBind(uint8_t sysID,
         if (d->getSysID() == 1) 
         return d;
         map.insert(hashKey, d);
-        d->setSysID(sysID);
-        d->setCompID(compID);
-        qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] Bound sysID" << sysID <<  "and compID" << compID << "to drone" << d->getName();
+        d->setSysID(targetSys);
+        d->setCompID(targetComp);
+        qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] Bound sysID" << targetSys <<  "and compID" << targetComp << "to drone" << d->getName();
         return d;
     }
-    qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] No drone found with sysID" << sysID <<  "and compID" << compID;
+    
+    // No drone found - request UID to identify this drone
+    if (mavTx && mavTx->isLinkOpen()) {
+        bool ok = mavTx->sendAutopilotVersionRequest(targetSys, targetComp);
+        if (ok) {
+            qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] Sent AUTOPILOT_VERSION request for sysID" << targetSys << "compID" << targetComp;
+        } else {
+            qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] ERROR requesting AUTOPILOT_VERSION for sysID" << targetSys << "compID" << targetComp;
+        }
+    }
+    qDebug() << "[DroneController.cpp::droneForSysId_lazyBind] No drone found with sysID" << targetSys <<  "and compID" << targetComp;
     
     return {};
 }
@@ -932,7 +943,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
     uint8_t sysID = msg.sysid;
     uint8_t compID = msg.compid; 
 
-    auto drone = droneForSysId_lazyBind(sysID, compID, droneList, dronesMap_);
+    auto drone = droneForSysId_lazyBind(sysID, compID, droneList, dronesMap_, mavTx_);
     if (drone.isNull()) {
         qDebug() << "[DroneController.cpp::onMavlinkMessage] NULL Drone";
         return;
@@ -952,15 +963,6 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
             if (ok) drone->setRequestedTelem(true);
             else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting telem";
         }
-
-        ////////////////////////////////////////////////////////////////////////////////////
-        //  Request hardware UID once per drone (response arrives as AUTOPILOT_VERSION)
-        if (!drone->getRequestedAutopilotVersion() && mavTx_ && mavTx_->isLinkOpen()) {
-            bool ok = mavTx_->sendAutopilotVersionRequest(sysID, compID);
-            if (ok) drone->setRequestedAutopilotVersion(true);
-            else qDebug() << "[DroneController.cpp::onMavlinkMessage] ERROR requesting autopilot version";
-        }
-        ////////////////////////////////////////////////////////////////////////////////////
 
         bool armed = hb.base_mode & MAV_MODE_FLAG_SAFETY_ARMED;
         // qDebug() << "[DroneController.cpp::onMavlinkMessage] Armed =" << armed;
@@ -1061,16 +1063,12 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
         emit commandAcknowledged(resultMsg, success);  
         break;
     }
-    ////////////////////////////////////////////////////////////////////////////////////
-    // Handle AUTOPILOT_VERSION response and log the UID
     case MAVLINK_MSG_ID_AUTOPILOT_VERSION: {
         mavlink_autopilot_version_t av;
         mavlink_msg_autopilot_version_decode(&msg, &av);
 
-        // Log the 64-bit uid field
+        // Extract and log the UIDs
         QString uid64 = QString::number(av.uid, 16).rightJustified(16, '0');
-
-        // Log the 128-bit uid2 field (18 bytes; ArduPilot fills first 12 for STM32 hardware)
         QString uid128;
         for (int i = 0; i < 18; ++i)
             uid128 += QString("%1").arg(av.uid2[i], 2, 16, QChar('0'));
@@ -1080,31 +1078,10 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m)
                 << " uid64=0x"  << uid64
                 << " uid128=0x" << uid128;
 
-        ////////////////////////////////////////////////////////////////////////////////////
-        //  Persist uid64 into drone storage using xbeeAddress as temporary UID field
-        const QString prevAddress = drone->getXbeeAddress();
-        if (prevAddress != uid64) {
-            drone->setXbeeAddress(uid64);
-            const bool saved = updateDrone(drone);
-            if (saved) {
-                qInfo() << "[DroneController.cpp::onMavlinkMessage][STEP4][UID_DB_SAVE] SUCCESS"
-                        << " sysID=" << sysID << " compID=" << compID
-                        << " xbeeAddress(uid64)=0x" << uid64;
-            } else {
-                drone->setXbeeAddress(prevAddress);
-                qWarning() << "[DroneController.cpp::onMavlinkMessage][STEP4][UID_DB_SAVE] FAIL"
-                           << " sysID=" << sysID << " compID=" << compID
-                           << " attempted uid64=0x" << uid64;
-            }
-        } else {
-            qInfo() << "[DroneController.cpp::onMavlinkMessage][UID_DB_SAVE] SKIP"
-                    << " uid64 already stored for drone" << drone->getName()
-                    << " value=0x" << uid64;
-        }
-        ////////////////////////////////////////////////////////////////////////////////////
+        // Update drone object with UID128
+        drone->setUID128(uid128);
         break;
     }
-    ////////////////////////////////////////////////////////////////////////////////////
     default:
         // qDebug() << "[DroneController.cpp::onMavlinkMessage] unexpected message type: " << msg.msgid;
         break;

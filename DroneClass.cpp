@@ -8,6 +8,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_xbeeAddress("")
     , m_role("")
     , m_xbeeID("")
+    , m_uid128("")
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_latitude(-1)    // temporary
@@ -36,6 +37,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_xbeeID(input_xbeeID)
+    , m_uid128("")
     , m_batteryLevel(input_batteryLevel)
     , m_position(QVector3D(-1, -1, -1))
     , m_latitude(input_latitude)
@@ -60,6 +62,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_xbeeAddress(input_xbeeAddress)
     , m_role(input_role)
     , m_xbeeID(input_xbeeID)
+    , m_uid128("")
     , m_batteryLevel(-1)
     , m_position(QVector3D(-1, -1, -1))
     , m_latitude(-1)
