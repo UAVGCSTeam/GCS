@@ -13,6 +13,7 @@
 #include <QTextStream>
 #include <QHash>
 #include <QByteArray>
+#include <QMetaObject>
 #include <cstdint>
 
 #include "DroneClass.h"
@@ -69,9 +70,6 @@ class UDPLink;
 class MAVLinkSender;
 class MAVLinkReceiver;
 
-// Friend function 
-void loadDBDronesAsSimulated(DBManager &db);
-
 class DroneController : public QObject 
 {
     Q_OBJECT
@@ -83,10 +81,53 @@ public:
     ~DroneController();
 
     Q_INVOKABLE QVariantList getDrones() const;
+
+    /**
+     * function openUART()
+     * @brief Initializes and opens a UART connection for MAVLink communication.
+     *
+     * This function sets up the required UART transport and MAVLink components,
+     * including the UARTLink, MAVLinkSender, and MAVLinkReceiver. It also establishes
+     * a signal-slot connection to process incoming serial byte streams and convert
+     * them into MAVLink messages.
+     *
+     * If a previous UART-to-MAVLink connection exists, it is disconnected before
+     * creating a new one to prevent duplicate signal handling.
+     *
+     * @param port The serial port identifier (e.g., "/dev/ttyUSB0", "COM3").
+     * @param baud The baud rate for the UART connection.
+     *
+     * @return true if the UART connection was successfully opened.
+     * @return false if the serial port failed to open.
+     */
     Q_INVOKABLE bool openUART(const QString &port, int baud = 57600);
-    Q_INVOKABLE bool openUdp(quint16 localPort,
+    
+
+    /**
+     * function openUDP()
+     * @brief Initializes and opens a UDP connection for MAVLink communication.
+     *
+     * Incoming UDP data is forwarded to the MAVLinkReceiver for parsing. Valid
+     * MAVLink messages are then passed to onMavlinkMessage() along with the sender's
+     * port information.
+     *
+     * If a previous UDP-to-MAVLink connection exists, it is disconnected before
+     * creating a new one to prevent duplicate signal handling.
+     *
+     * @param localPort   The local UDP port to bind and listen on.
+     * @param remoteHost  The target remote host address (IP or hostname).
+     * @param remotePort  The target remote UDP port for outgoing messages.
+     *
+     * @return true if the UDP connection was successfully opened.
+     * @return false if the UDP socket failed to bind or initialize.
+     *
+     * @note The sender port is captured via a lambda and passed along with parsed
+     *       MAVLink messages, keeping transport-layer details separate from the
+     *       MAVLinkReceiver.
+     */
+    Q_INVOKABLE bool openUDP(uint16_t localPort,
                              const QString &remoteHost = QStringLiteral("127.0.0.1"),
-                             quint16 remotePort = 14550);
+                             uint16_t remotePort = 14550);
 
     
     /**
@@ -152,6 +193,7 @@ public:
     Q_INVOKABLE bool sendToCoord(const QString droneName, float lat, float lon);
     Q_INVOKABLE bool sendToCoordByUavID(const QString uavID, float lat, float lon);
 
+    
     /**
      * function sendGuidedMode()
      * @brief Sends a MAVLink command to set the target drone to Guided mode.
@@ -214,13 +256,6 @@ public:
     Q_INVOKABLE QVariantList getAllDrones() const;
     QVariantList drones() const { return m_dronesVariant; }
     void rebuildVariant();
-    Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
-    {
-        QList<QVariantMap> list;
-        for (const QVariant &v : wps)
-            list.append(v.toMap());
-        droneWaypoints[droneName] = list;
-    }
 
     // unknowndronelist
     QVariantList unknownDrones() const { return m_unknownDronesVariant; }
@@ -258,7 +293,7 @@ public slots:
     void createAndAddDroneToUI(const QString &input_name,
                                const uint8_t &input_sysID,
                                const uint8_t &input_compID,
-                               int senderUDPPort,
+                               const uint16_t senderUDPPort,
                                const QObject *parent);
 
 
@@ -267,7 +302,7 @@ public slots:
     void deleteALlDrones_UI();
     
     // Functions for serial / MAVLink connections
-    void onMavlinkMessage(const RxMavlinkMsg& msg);
+    void onMavlinkMessage(const RxMavlinkMsg& msg, uint16_t senderUDPPort);
     
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
@@ -278,28 +313,23 @@ signals:
     void unknownDronesChanged();
 
 private:
-    QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
-
     bool checkHeartBeat = false;
-
     DBManager &dbManager;
-
     std::unique_ptr<UARTLink>    uartDevice_;
     std::unique_ptr<UDPLink>     udp_;
     std::unique_ptr<MAVLinkSender> mavTx_;
     std::unique_ptr<MAVLinkReceiver> mavRx_;
+    QMetaObject::Connection udpMavlinkBytesConn_; // Holds functor-based connects so openUDP can replace wiring without duplicates.
+    QMetaObject::Connection uartMavlinkBytesConn_; // Holds functor-based connects so openUART can replace wiring without duplicates.
     QHash<uint32_t, QSharedPointer<DroneClass>> m_drone_map;
     static QList<QSharedPointer<DroneClass>> droneList;
     static QList<QSharedPointer<UnknownDroneClass>> unknownDroneList;
-
-    friend void loadDBDronesAsSimulated(DBManager &db);
 
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
 
     /**
      * function getDroneBySysID()
-     * Find drone for a given system ID.
      * 
      * // TODO: Instead of adding a new drone from the list to the map, this function 
      * should return a null ptr so that the function that called it can CREATE a drone.
@@ -335,31 +365,6 @@ private:
      *       when debug output is enabled.
      */
     void onUdpBytesReceived(const QByteArray& bytes);
-
-
-    /**
-     * function onNewUDPPeer()
-     * @brief Handles data received from a previously unknown UDP peer.
-     *
-     * This function attempts to parse an incoming UDP datagram as a MAVLink
-     * message using a fresh parsing state. It is intended for scenarios where
-     * new peers may appear dynamically and need to be identified based on
-     * incoming traffic.
-     *
-     * - If a valid MAVLink message is detected, creates a new drone entry
-     *   in the UI using:
-     *      - A generated name based on the sender’s UDP port.
-     *      - The parsed system ID (sysid).
-     *      - The parsed component ID (compid).
-     *
-     * @param bytes           Raw UDP datagram payload.
-     * @param senderUDPPort   Source UDP port of the sender.
-     * @note The generated drone name format is "My Drone <port>".
-     * @warning No validation is performed (within this function) to prevent 
-     *          duplicate drone entries if multiple valid packets are 
-     *          received from the same peer.
-     */
-    void onNewUDPPeer(const QByteArray& bytes, const int& senderUDPPort);
 
     // Trying out caching QVariantList for QML property usage
     QVariantList m_dronesVariant; // cached QObject* view for QML
