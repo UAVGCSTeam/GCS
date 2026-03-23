@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Layouts 1.15
 import "qrc:/gcsStyle" as GcsStyle
-
+import "."
 /*
  * UAVListItem — ListView row for a fleet UAV
  * ListView only injects index/modelData on the delegate *root*. Prefer a wrapper Item
@@ -109,40 +109,12 @@ Rectangle {
                 sourceSize.height: GcsStyle.PanelStyle.iconSize + 8
             }
 
-            Rectangle {
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                width: battRow.width + 11
-                height: 16
-                radius: 10
-                anchors.leftMargin: -5
-                anchors.bottomMargin: -1
-                color: GcsStyle.PanelStyle.lowBatteryColor
-                border.color: Qt.rgba(255, 255, 255, 0.5)
-                border.width: 0.5
-
-                Row {
-                    id: battRow
-                    anchors.centerIn: parent
-                    spacing: 4
-
-                    Image {
-                        source: "qrc:/resources/batteryIcon.svg"
-                        sourceSize.width: 15
-                        sourceSize.height: 13
-                        y: (battText.implicitHeight - 13) / 2
-                    }
-
-                    Text {
-                        id: battText
-                        text: modelData.batteryLevel ? modelData.batteryLevel + "%" : "?"
-                        color: "white"
-                        font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
-                    }
-                }
+            BatteryIcon {
+                batteryLevel: modelData ? modelData.batteryLevel : undefined
             }
         }
 
+        // Name, connection status, and operational status
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 4
@@ -159,71 +131,8 @@ Rectangle {
 
             Row {
                 spacing: 4
-
-                // UAV connection status
-                Rectangle {
-                    height: 18
-                    width: connRow.width + 14
-                    radius: 8
-                    color: Qt.rgba(0, 0, 0, 0.25)
-                    border.color: GcsStyle.PanelStyle.defaultBorderColor
-                    border.width: GcsStyle.PanelStyle.defaultBorderWidth
-
-                    Row {
-                        id: connRow
-                        anchors.centerIn: parent
-                        spacing: 4
-
-                        Rectangle {
-                            width: 6
-                            height: 6
-                            radius: 3
-                            color: "#4caf50"
-                            y: (connLabel.implicitHeight - 6) / 2 + 1
-                        }
-
-                        Text {
-                            id: connLabel
-                            text: "Connected"
-                            color: "#4caf50"
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
-                            font.family: GcsStyle.PanelStyle.fontFamily
-                            y: (parent.height - implicitHeight) / 2 + 1
-                        }
-                    }
-                }
-
-                // Status icon
-                Rectangle {
-                    height: 18
-                    width: statusRow.width + 14
-                    radius: 8
-                    color: Qt.rgba(0, 0, 0, 0.25)
-                    border.color: GcsStyle.PanelStyle.defaultBorderColor
-                    border.width: GcsStyle.PanelStyle.defaultBorderWidth
-
-                    Row {
-                        id: statusRow
-                        anchors.centerIn: parent
-                        spacing: 4
-
-                        Image {
-                            source: "qrc:/resources/flightIcon.svg"
-                            sourceSize.width: 11
-                            sourceSize.height: 11
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        Text {
-                            id: statusLabel
-                            text: modelData.status ? modelData.status : "Flying"
-                            color: Qt.rgba(255, 255, 255, 0.5)
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeXS
-                            font.family: GcsStyle.PanelStyle.fontFamily
-                            y: (parent.height - implicitHeight) / 2 + 1
-                        }
-                    }
-                }
+                ConnectionStatusIcon { }
+                OperationalStatusIcon { status: modelData.status }
             }
         }
     }
