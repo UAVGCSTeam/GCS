@@ -105,6 +105,17 @@ Window {
         }
     }
 
+    TrackingPanelQuickCommands {
+        anchors {
+            top: droneTrackingPanel.top
+            left: droneTrackingPanel.right
+            leftMargin: 8
+        }
+        visible: droneTrackingPanel.activePanel === "drones"
+        commandDrone: mainWindow.activeDrone
+        z: 10
+    }
+
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
     Shortcut {
         sequence: StandardKey.Find
