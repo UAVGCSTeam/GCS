@@ -13,6 +13,9 @@
         <file>components/PopupMenuItem.qml</file>
         <file>components/StyledComboBox.qml</file>
         <file>components/UAVListItem.qml</file>
+        <file>components/BatteryIcon.qml</file>
+        <file>components/ConnectionStatusIcon.qml</file>
+        <file>components/OperationalStatusIcon.qml</file>
         <file>Waypoint.qml</file>
         <file>components/UniversalPopup.qml</file>
         <file>DroneCommandPanel.qml</file>
