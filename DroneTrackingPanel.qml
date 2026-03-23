@@ -38,9 +38,7 @@ Rectangle {
         Rectangle {
             Layout.fillHeight: true
             width: 65
-            // GcsStyle.PanelStyle.sidebarWidth
             color: GcsStyle.PanelStyle.baseBackground
-            // radius: GcsStyle.PanelStyle.cornerRadius
             clip: true
             border.color: GcsStyle.panelStyle.defaultBorderColor
             border.width: GcsStyle.panelStyle.defaultBorderWidth
@@ -158,7 +156,6 @@ Rectangle {
             }
         }
 
-        // Right view
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -209,218 +206,28 @@ Rectangle {
                 }
             }
 
-            // ==========================
+            // ==========================================
             // Drone list view
-            ColumnLayout {
-                id: droneListView
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+            UAVListPanel {
+                id: trackDroneListPanel
+                panel: mainPanel
+                listModel: droneController.drones
+                inactiveCount: 0
                 visible: mainPanel.activePanel === "drones"
-                spacing: 0
-
-                // Search bar
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 8
-                    Layout.rightMargin: 8
-                    height: 36
-                    color: GcsStyle.PanelStyle.baseBackground
-                    border.color: GcsStyle.panelStyle.defaultBorderColor
-                    border.width: GcsStyle.panelStyle.defaultBorderWidth
-                    Layout.bottomMargin: 8
-                    radius: 8
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
-                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
-                        spacing: 6
-
-                        // so that user can enter text
-                        TextInput {
-                            id: trackSearchInput
-                            Layout.fillWidth: true
-                            color: GcsStyle.PanelStyle.textPrimaryColor
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                            font.family: GcsStyle.PanelStyle.fontFamily
-                            clip: true
-
-                            // The "search..." inside the search bar
-                            Text {
-                                anchors.fill: parent
-                                text: "Search..."
-                                color: GcsStyle.PanelStyle.textSecondaryColor
-                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                font.family: GcsStyle.PanelStyle.fontFamily
-                                visible: !trackSearchInput.text
-                            }
-                        }
-                    }
-                }
-
-                // Active section of drone list view
-                MenuCollapsableBar {
-                    id: trackActiveSection
-                    expanded: true
-                    title: "Active (" + droneController.drones.length + ")"
-                    model: droneController.drones
-                    collapsePeersWhenExpanded: [trackIdleSection, trackInactiveSection]
-
-                    delegate: Item {
-                        width: ListView.view.width
-                        height: GcsStyle.PanelStyle.itemHeight
-
-                        readonly property int delegateIndex: index
-                        readonly property var delegateModelData: modelData
-
-                        UAVListItem {
-                            width: parent.width
-                            height: parent.height
-                            panel: mainPanel
-                            index: delegateIndex
-                            modelData: delegateModelData
-                        }
-                    }
-                }
-
-                // Idle section of drone list view
-                MenuCollapsableBar {
-                    id: trackIdleSection
-                    expanded: false
-                    title: "Idle (" + droneController.drones.length + ")"
-                    model: droneController.drones
-                    collapsePeersWhenExpanded: [trackActiveSection, trackInactiveSection]
-
-                    delegate: Item {
-                        width: ListView.view.width
-                        height: GcsStyle.PanelStyle.itemHeight
-
-                        readonly property int delegateIndex: index
-                        readonly property var delegateModelData: modelData
-
-                        UAVListItem {
-                            width: parent.width
-                            height: parent.height
-                            panel: mainPanel
-                            index: delegateIndex
-                            modelData: delegateModelData
-                        }
-                    }
-                }
-
-                // Inactive section of drone list view
-                MenuCollapsableBar {
-                    id: trackInactiveSection
-                    expanded: false
-                    title: "Inactive (0)"
-                    model: droneController.drones
-                    collapsePeersWhenExpanded: [trackActiveSection, trackIdleSection]
-                }
-                Item { Layout.fillHeight: true }  // bottom spacer
             }
 
-            // ==========================
+            // ==========================================
             // Mission Planning View
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+            UAVMissionListPanel {
+                id: trackUAVMissionPanel
+                panel: mainPanel
+                listModel: droneController.drones
                 visible: mainPanel.activePanel === "mission"
-                Layout.topMargin: 0 
-                spacing: 0
-
-                // Search bar
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 8
-                    Layout.rightMargin: 8
-                    height: 36
-                    color: GcsStyle.PanelStyle.baseBackground
-                    border.color: GcsStyle.panelStyle.defaultBorderColor
-                    border.width: GcsStyle.panelStyle.defaultBorderWidth
-                    Layout.bottomMargin: 8
-                    radius: 8
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: GcsStyle.PanelStyle.defaultMargin
-                        anchors.rightMargin: GcsStyle.PanelStyle.defaultMargin
-                        spacing: 6
-
-                        // so that user can enter text
-                        TextInput {
-                            id: missionSearchInput
-                            Layout.fillWidth: true
-                            color: GcsStyle.PanelStyle.textPrimaryColor
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                            font.family: GcsStyle.PanelStyle.fontFamily
-                            clip: true
-
-                            // The "search..." inside the search bar
-                            Text {
-                                anchors.fill: parent
-                                text: "Search..."
-                                color: GcsStyle.PanelStyle.textSecondaryColor
-                                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                                font.family: GcsStyle.PanelStyle.fontFamily
-                                visible: !missionSearchInput.text
-                            }
-                        }
-                    }
-                }
-
-                // Active section of mission planning view
-                MenuCollapsableBar {
-                    id: trackActiveSectionMissionPanel
-                    expanded: true
-                    title: "Active (" + droneController.drones.length + ")"
-                    model: droneController.drones
-                    collapsePeersWhenExpanded: [trackIdleSectionMissionPanel]
-
-                    delegate: Item {
-                        width: ListView.view.width
-                        height: GcsStyle.PanelStyle.itemHeight
-
-                        readonly property int delegateIndex: index
-                        readonly property var delegateModelData: modelData
-
-                        UAVListItem {
-                            width: parent.width
-                            height: parent.height
-                            panel: mainPanel
-                            index: delegateIndex
-                            modelData: delegateModelData
-                        }
-                    }
-                }
-
-                // Idle section of mission planning view
-                MenuCollapsableBar {
-                    id: trackIdleSectionMissionPanel
-                    expanded: false
-                    title: "Idle (" + droneController.drones.length + ")"
-                    model: droneController.drones
-                    collapsePeersWhenExpanded: [trackActiveSectionMissionPanel]
-
-                    delegate: Item {
-                        width: ListView.view.width
-                        height: GcsStyle.PanelStyle.itemHeight
-
-                        readonly property int delegateIndex: index
-                        readonly property var delegateModelData: modelData
-
-                        UAVListItem {
-                            width: parent.width
-                            height: parent.height
-                            panel: mainPanel
-                            index: delegateIndex
-                            modelData: delegateModelData
-                        }
-                    }
-                }
             }
 
-            // ==========================
-            // Discovery panel
+            // ==========================================
+            // Discovery panel view
+            // TODO: Turn this panel into a component 
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -753,9 +560,9 @@ Rectangle {
     // Keep ListView's built-in currentIndex aligned with our selection rules
     function syncCurrentIndex() {
         if (selectedIndexes.length === 1) {
-            trackActiveSection.listView.currentIndex = selectedIndexes[0]
+            trackDroneListPanel.uavListPanel.currentIndex = selectedIndexes[0]
         } else {
-            trackActiveSection.listView.currentIndex = -1
+            trackDroneListPanel.uavListPanel.currentIndex = -1
         }
     }
 
@@ -766,11 +573,11 @@ Rectangle {
     // Turn selected indexes into real drone objects and emit the public signal
     function emitSelectionChanged() {
         var selected = []
-        var model = trackActiveSection.listView.model
+        var model = trackDroneListPanel.uavListPanel.model
 
         for (var i = 0; i < selectedIndexes.length; ++i) {
             var idx = selectedIndexes[i]
-            if (idx >= 0 && idx < trackActiveSection.listView.count) {
+            if (idx >= 0 && idx < trackDroneListPanel.uavListPanel.count) {
                 var droneData = model && model[idx] !== undefined ? model[idx] : null
                 if (droneData) {
                     selected.push(droneData)
@@ -785,10 +592,10 @@ Rectangle {
     // This will let main.qml know the active drone is updated
     onSelectionChanged: function(selected) {
         var idx = selectionAnchorIndex
-        if (idx < 0 || idx >= trackActiveSection.listView.count)
+        if (idx < 0 || idx >= trackDroneListPanel.uavListPanel.count)
             return
 
-        var model = trackActiveSection.listView.model
+        var model = trackDroneListPanel.uavListPanel.model
         var drone = model ? model[idx] : null
 
         activeDroneChanged(drone)

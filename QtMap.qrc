@@ -16,6 +16,8 @@
         <file>components/BatteryIcon.qml</file>
         <file>components/ConnectionStatusIcon.qml</file>
         <file>components/OperationalStatusIcon.qml</file>
+        <file>components/UAVListPanel.qml</file>
+        <file>components/UAVMissionListPanel.qml</file>
         <file>components/MenuCollapsableBar.qml</file>
         <file>Waypoint.qml</file>
         <file>components/UniversalPopup.qml</file>
