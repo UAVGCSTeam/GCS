@@ -14,8 +14,8 @@ QtObject {
 
     // Color scheme
     readonly property color listItemHoverColor: isLightTheme ? "#D1D1D6" : "#384250"     // light silver, blue-grey slate
-    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : Qt.rgba(0, 0.831, 1, 0.12)  // soft blue-grey, blue (?)
-    readonly property color listItemSelectedBorderColor: isLightTheme ? "#A0B0D0" : Qt.rgba(0, 0.831, 1, 0.40) // placeholder, blue (?)
+    readonly property color listItemSelectedColor: isLightTheme ? "#C7D2E8" : Qt.rgba(0, 0.831, 1, 0.12)  // soft blue-grey, dark aqua
+    readonly property color listItemSelectedBorderColor: isLightTheme ? "#A0B0D0" : Qt.rgba(0, 0.831, 1, 0.40) // blue-grey, aqua border
     readonly property color primaryColor: isLightTheme ? "#FDF6F6" : "#161720"           // subtle warm pink white, dark navy
     readonly property color secondaryColor: isLightTheme ? "#E8E8ED" : "#282831"         // light grey, charcoal
     readonly property color accentColor: "#007bff"                                       // bright blue
@@ -32,22 +32,22 @@ QtObject {
     readonly property int sidebarWidth: 50
     readonly property int headerHeight: 50
     readonly property int menuBarHeight: 30
-    readonly property int itemHeight: 68
+    readonly property int itemHeight: 60
     readonly property int cornerRadius: 10
 
     // Font sizes (computed from textSizeBase)
     readonly property int fontSizeLarge: textSizeBase + 15.65 //27.65 default value
     readonly property int fontSizeMedium: textSizeBase + 4 //16 default value
     readonly property int fontSizeSmall: textSizeBase + 1.33 //13.33 default value
-    readonly property int fontSizeXS: textSizeBase //12 default value
-    readonly property int fontSizeXXS: textSizeBase - 2 //10 default value
+    readonly property int fontSizeXS: textSizeBase - 2 //10 default value
+    readonly property int fontSizeXXS: textSizeBase - 4 //8 default value
 
     // Button properties
     readonly property int buttonSize: 40
     readonly property int buttonRadius: 6
     readonly property color buttonColor: "transparent"
     readonly property color buttonColor2: isLightTheme ? "#DCDCE2" : "#282830"           // pale grey, charcoal
-    readonly property color buttonActiveColor: Qt.rgba(0, 0.831, 1, 0.12)                                // teal blue
+    readonly property color buttonActiveColor: Qt.rgba(0, 0.831, 1, 0.12)               // dark aqua, matches selection color
     readonly property color buttonHoverColor: isLightTheme ? "#C5C5CC" : "#364357"       // silver, slate blue
     readonly property color buttonPressedColor: listItemHoverColor
     readonly property color buttonUnavailableColor: isLightTheme ? "#E5E5EA" : "#212129" // light grey, dark charcoal
@@ -57,7 +57,7 @@ QtObject {
     readonly property color lowBatteryColor: Qt.rgba(0.5, 0, 0, 0.8)
 
     // Danger/warning button colors
-    readonly property color buttonDangerColor: "#FF0000"
+    readonly property color buttonDangerColor: "#c62828"
     readonly property color buttonDangerHoverColor: "#ff8e8e"
     readonly property color buttonDangerTextColor: "#ffffff"
 
