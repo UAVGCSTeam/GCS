@@ -12,6 +12,7 @@
         <file>components/MenuButton.qml</file>
         <file>components/PopupMenuItem.qml</file>
         <file>components/StyledComboBox.qml</file>
+        <file>components/UAVListItem.qml</file>
         <file>Waypoint.qml</file>
         <file>components/UniversalPopup.qml</file>
         <file>DroneCommandPanel.qml</file>
