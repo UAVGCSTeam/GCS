@@ -36,6 +36,9 @@ Rectangle {
 
         // Left vertical bar
         Rectangle {
+            // TODO: Turn each of these buttons that select the view into a component. 
+            // This should just be a list
+
             Layout.fillHeight: true
             width: 65
             color: GcsStyle.PanelStyle.baseBackground
