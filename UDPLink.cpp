@@ -4,9 +4,9 @@ UDPLink::UDPLink(QObject* p) : QObject(p) {
     connect(&socket_, &QUdpSocket::readyRead, this, &UDPLink::onReadyRead);
 }
 
-bool UDPLink::open(quint16 localPort,
+bool UDPLink::open(uint16_t localPort,
                    const QHostAddress& remoteHost,
-                   quint16 remotePort) {
+                   uint16_t remotePort) {
     Q_UNUSED(remoteHost);
     Q_UNUSED(remotePort);
 
@@ -16,48 +16,50 @@ bool UDPLink::open(quint16 localPort,
 
     _hasPeer = false;
     _remoteAddress = QHostAddress();
-    _remotePort = 0;
 
     if (!socket_.bind(QHostAddress::AnyIPv4, localPort)) {
-        qWarning() << "[UDPLink::open] Bind failed on port" << localPort << ":" << socket_.errorString();
+        qWarning() << "Bind failed on port" << localPort << ":" << socket_.errorString();
         emit linkError(QString("Bind failed: %1").arg(socket_.errorString()));
         return false;
     }
-    qInfo() << "[UDPLink::open] Bound to 0.0.0.0:" << localPort
+    qInfo() << "Bound to 0.0.0.0:" << localPort
             << "(dynamic peer; waiting for first datagram)";
     return true;
 }
 
-bool UDPLink::listen(quint16 port) {
+bool UDPLink::listen(uint16_t port) {
     if (socket_.state() == QAbstractSocket::BoundState) socket_.close();
     if (!socket_.bind(QHostAddress::AnyIPv4, port)) {
-        qWarning() << "[UDPLink::listen] Listen bind failed on port" << port << ":" << socket_.errorString();
+        qWarning() << "Listen bind failed on port" << port << ":" << socket_.errorString();
         emit linkError(QString("Bind failed: %1").arg(socket_.errorString()));
         return false;
     }
-    qInfo() << "[UDPLink::listen] Listening on port" << port << "(0.0.0.0:" << port << ")";
+    qInfo() << "Listening on port" << port << "(0.0.0.0:" << port << ")";
     return true;
 }
 
 void UDPLink::close() { socket_.close(); }
 
-qint64 UDPLink::writeBytes(const QByteArray& b) {
+qint64 UDPLink::writeBytes(const QByteArray& b, uint16_t remotePort) {
     if (socket_.state() != QAbstractSocket::BoundState) {
-        qWarning() << "[UDPLink::writeBytes] writeBytes: socket not bound, state=" << socket_.state();
+        qWarning() << "WriteBytes(port): socket not bound, state=" << socket_.state();
         return -1;
     }
     if (!_hasPeer) {
-        qWarning() << "[UDPLink::writeBytes] writeBytes: no remote peer discovered yet; dropping" << b.size() << "bytes";
+        qWarning() << "WriteBytes(port): no remote peer discovered yet; dropping" << b.size() << "bytes";
         return -1;
     }
-
-    const qint64 n = socket_.writeDatagram(b, _remoteAddress, _remotePort);
+    if (_remoteAddress == QHostAddress()) {
+        qWarning() << "WriteBytes(port): no remote address discovered yet; dropping" << b.size() << "bytes";
+        return -1;
+    }
+    const qint64 n = socket_.writeDatagram(b, _remoteAddress, remotePort);
     if (n == -1) {
-        qWarning() << "[UDPLink::writeBytes] writeDatagram failed:" << socket_.errorString()
-                   << "to" << _remoteAddress.toString() << ":" << _remotePort;
+        qWarning() << "WriteDatagram failed:" << socket_.errorString()
+                   << "to" << _remoteAddress.toString() << ":" << remotePort;
         emit linkError(socket_.errorString());
     } else {
-        // qDebug() << "[UDPLink::writeBytes] sent" << n << "bytes to" << _remoteAddress.toString() << ":" << _remotePort;
+        qDebug() << "Sent" << n << "bytes to" << _remoteAddress.toString() << ":" << remotePort;
     }
     return n;
 }
@@ -69,20 +71,10 @@ void UDPLink::onReadyRead() {
 void UDPLink::readPendingDatagrams() {
     while (socket_.hasPendingDatagrams()) {
         QNetworkDatagram datagram = socket_.receiveDatagram();
-        if (!datagram.isValid()) {
-            continue;
-        }
-
+        if (!datagram.isValid()) { continue; }
         const QHostAddress senderAddress = datagram.senderAddress();
-        const quint16 senderPort = datagram.senderPort();
-
-        if (!_hasPeer || senderAddress != _remoteAddress || senderPort != _remotePort) {
-            _remoteAddress = senderAddress;
-            _remotePort = senderPort;
-            _hasPeer = true;
-            qInfo() << "[UDPLink::readPendingDatagrams] Remote peer set to" << _remoteAddress.toString() << ":" << _remotePort;
-        }
-
-        emit bytesReceived(datagram.data());
+        if (senderAddress != _remoteAddress) { _remoteAddress = senderAddress; }
+        emit bytesReceived(datagram.data(), datagram.senderPort());
+        _hasPeer = true;
     }
 }

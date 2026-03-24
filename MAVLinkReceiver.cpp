@@ -11,14 +11,43 @@ MAVLinkReceiver::MAVLinkReceiver(QObject* parent)
 
 MAVLinkReceiver::~MAVLinkReceiver() = default;   // ← now Impl is complete
 
-void MAVLinkReceiver::onBytes(const QByteArray& data) {
+void MAVLinkReceiver::onBytes(const QByteArray& data, uint16_t senderPort) {
+    RxMavlinkMsg out = getMAVLinkFromBytes(data);
+    emit messageReceived(out);
+}
+
+// void MAVLinkReceiver::onBytes(const QByteArray& data) {
+//     RxMavlinkMsg out = getMAVLinkFromBytes(data);
+//     emit messageReceived(out);
+// }
+
+RxMavlinkMsg MAVLinkReceiver::getMAVLinkFromBytes(const QByteArray& data) {
     mavlink_message_t msg;
-    for (unsigned char b : data) {
-        if (mavlink_parse_char(MAVLINK_COMM_0, b, &msg, &d_->status)) {
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(data.constData());
+    const int n = data.size();
+    for (int i = 0; i < n; ++i) {
+        if (mavlink_parse_char(MAVLINK_COMM_0, p[i], &msg, &d_->status)) {
             RxMavlinkMsg out{ msg.sysid, msg.compid, msg.msgid,
                              QByteArray(reinterpret_cast<const char*>(_MAV_PAYLOAD(&msg)),
                                         static_cast<int>(msg.len)) };
-            emit messageReceived(out);
+            return out;
         }
     }
+    return RxMavlinkMsg{0, 0, 0, QByteArray()};
+}
+
+RxMavlinkMsg MAVLinkReceiver::getMAVLinkFromBytesWithFreshState(const QByteArray& data) {
+    mavlink_message_t msg;
+    mavlink_status_t fresh{};
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(data.constData());
+    const int n = data.size();
+    for (int i = 0; i < n; ++i) {
+        if (mavlink_parse_char(MAVLINK_COMM_0, p[i], &msg, &fresh)) {
+            RxMavlinkMsg out{ msg.sysid, msg.compid, msg.msgid,
+                             QByteArray(reinterpret_cast<const char*>(_MAV_PAYLOAD(&msg)),
+                                        static_cast<int>(msg.len)) };
+            return out;
+        }
+    }
+    return RxMavlinkMsg{0, 0, 0, QByteArray()};
 }
