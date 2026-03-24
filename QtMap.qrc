@@ -24,6 +24,7 @@
         <file>DroneCommandPanel.qml</file>
         <file>settingsWindow.qml</file>
         <file>MissionPlanPanel.qml</file>
+        <file>TrackingPanelQuickCommands.qml</file>
         <file>components/ToastNotification.qml</file>
     </qresource>
     <qresource prefix="/resources">
@@ -45,6 +46,10 @@
         <file>flightIcon.svg</file>
         <file>missionPlanningIcon.svg</file>
         <file>batteryIcon.svg</file>
+        <file>armIcon.svg</file>
+        <file>guidedModeIcon.svg</file>
+        <file>takeoffIcon.svg</file>
+        <file>returnHomeIcon.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>

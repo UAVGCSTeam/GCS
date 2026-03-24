@@ -28,7 +28,6 @@ Rectangle {
     property int selectionAnchorIndex: -1 // Anchor index used for Shift-range selections
     property bool multiSelectActive: selectedIndexes.length > 1 
     property string activePanel: "drones"   // "drones", "discovery"
-
     RowLayout {
         anchors.fill: parent
         spacing: 0
@@ -595,8 +594,10 @@ Rectangle {
     // This will let main.qml know the active drone is updated
     onSelectionChanged: function(selected) {
         var idx = selectionAnchorIndex
-        if (idx < 0 || idx >= trackDroneListPanel.uavListPanel.count)
+        if (idx < 0 || idx >= trackDroneListPanel.uavListPanel.count) {
+            activeDroneChanged(null)
             return
+        }
 
         var model = trackDroneListPanel.uavListPanel.model
         var drone = model ? model[idx] : null
