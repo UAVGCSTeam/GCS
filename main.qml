@@ -99,7 +99,6 @@ Window {
                 console.warn("Follow requested without a drone reference")
                 return
             }
-            console.log("[main.qml] Follow requested via modifier click:", drone.name)
             mapComponent.turnOffFollowDrone()
             mapComponent.turnOnFollowDrone()
         }
@@ -167,7 +166,7 @@ Window {
     }
 
     Component.onCompleted: {
-        droneController.openUdp(14550, "127.0.0.1", 14550)
+        droneController.openUDP(14550, "127.0.0.1", 14550)
         // droneController.openUART("/dev/ttys005", 57600)
         // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
     }

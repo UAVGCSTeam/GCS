@@ -13,6 +13,7 @@
 #include <QTextStream>
 #include <QHash>
 #include <QByteArray>
+#include <QMetaObject>
 #include <cstdint>
 
 #include "DroneClass.h"
@@ -80,10 +81,53 @@ public:
     ~DroneController();
 
     Q_INVOKABLE QVariantList getDrones() const;
+
+    /**
+     * function openUART()
+     * @brief Initializes and opens a UART connection for MAVLink communication.
+     *
+     * This function sets up the required UART transport and MAVLink components,
+     * including the UARTLink, MAVLinkSender, and MAVLinkReceiver. It also establishes
+     * a signal-slot connection to process incoming serial byte streams and convert
+     * them into MAVLink messages.
+     *
+     * If a previous UART-to-MAVLink connection exists, it is disconnected before
+     * creating a new one to prevent duplicate signal handling.
+     *
+     * @param port The serial port identifier (e.g., "/dev/ttyUSB0", "COM3").
+     * @param baud The baud rate for the UART connection.
+     *
+     * @return true if the UART connection was successfully opened.
+     * @return false if the serial port failed to open.
+     */
     Q_INVOKABLE bool openUART(const QString &port, int baud = 57600);
-    Q_INVOKABLE bool openUdp(quint16 localPort,
+    
+
+    /**
+     * function openUDP()
+     * @brief Initializes and opens a UDP connection for MAVLink communication.
+     *
+     * Incoming UDP data is forwarded to the MAVLinkReceiver for parsing. Valid
+     * MAVLink messages are then passed to onMavlinkMessage() along with the sender's
+     * port information.
+     *
+     * If a previous UDP-to-MAVLink connection exists, it is disconnected before
+     * creating a new one to prevent duplicate signal handling.
+     *
+     * @param localPort   The local UDP port to bind and listen on.
+     * @param remoteHost  The target remote host address (IP or hostname).
+     * @param remotePort  The target remote UDP port for outgoing messages.
+     *
+     * @return true if the UDP connection was successfully opened.
+     * @return false if the UDP socket failed to bind or initialize.
+     *
+     * @note The sender port is captured via a lambda and passed along with parsed
+     *       MAVLink messages, keeping transport-layer details separate from the
+     *       MAVLinkReceiver.
+     */
+    Q_INVOKABLE bool openUDP(uint16_t localPort,
                              const QString &remoteHost = QStringLiteral("127.0.0.1"),
-                             quint16 remotePort = 14550);
+                             uint16_t remotePort = 14550);
 
     
     /**
@@ -149,6 +193,7 @@ public:
     Q_INVOKABLE bool sendToCoord(const QString droneName, float lat, float lon);
     Q_INVOKABLE bool sendToCoordByUavID(const QString uavID, float lat, float lon);
 
+    
     /**
      * function sendGuidedMode()
      * @brief Sends a MAVLink command to set the target drone to Guided mode.
@@ -211,13 +256,6 @@ public:
     Q_INVOKABLE QVariantList getAllDrones() const;
     QVariantList drones() const { return m_dronesVariant; }
     void rebuildVariant();
-    Q_INVOKABLE void updateWaypoints(const QString &droneName, const QVariantList &wps)
-    {
-        QList<QVariantMap> list;
-        for (const QVariant &v : wps)
-            list.append(v.toMap());
-        droneWaypoints[droneName] = list;
-    }
 
     // unknowndronelist
     QVariantList unknownDrones() const { return m_unknownDronesVariant; }
@@ -252,18 +290,20 @@ public slots:
                        double input_longitude,
                        double input_altitude,
                        QObject *parent);
+    void createAndAddDroneToUI(const QString &input_name,
+                               const uint8_t &input_sysID,
+                               const uint8_t &input_compID,
+                               const uint16_t senderUDPPort,
+                               const QObject *parent);
+
+
     bool updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);
     void deleteALlDrones_UI();
     
     // Functions for serial / MAVLink connections
-    void onMavlinkMessage(const RxMavlinkMsg& msg);
+    void onMavlinkMessage(const RxMavlinkMsg& msg, uint16_t senderUDPPort);
     
-    //temporary
-    void setCheckedHeartBeat(bool checked) {
-        checkHeartBeat = checked;
-    }
-
 signals:
     void droneAdded(const QSharedPointer<DroneClass> &drone);
     void droneDeleted(const QSharedPointer<DroneClass> &drone);
@@ -273,27 +313,34 @@ signals:
     void unknownDronesChanged();
 
 private:
-    QTimer heartBeatSimTimer; //temporary
-    // QTimer simulationTimer;       // Timer for simulated movement
-    // void simulateDroneMovement(); // Function to move a drone periodically
-    QHash<QString, QList<QVariantMap>> droneWaypoints; // droneName -> list of waypoints
-
-    //temporary heartbeat sim
-    void useSimulatedHeartbeat();
     bool checkHeartBeat = false;
-
     DBManager &dbManager;
-
     std::unique_ptr<UARTLink>    uartDevice_;
     std::unique_ptr<UDPLink>     udp_;
     std::unique_ptr<MAVLinkSender> mavTx_;
     std::unique_ptr<MAVLinkReceiver> mavRx_;
-    QHash<uint32_t, QSharedPointer<DroneClass>> dronesMap_;
+    QMetaObject::Connection udpMavlinkBytesConn_; // Holds functor-based connects so openUDP can replace wiring without duplicates.
+    QMetaObject::Connection uartMavlinkBytesConn_; // Holds functor-based connects so openUART can replace wiring without duplicates.
+    QHash<uint32_t, QSharedPointer<DroneClass>> m_drone_map;
     static QList<QSharedPointer<DroneClass>> droneList;
     static QList<QSharedPointer<UnknownDroneClass>> unknownDroneList;
-    
+
     QSharedPointer<DroneClass> getDroneByName(const QString &name);
     QSharedPointer<DroneClass> getDroneByXbeeAddress(const QString &address);
+
+    /**
+     * function getDroneBySysID()
+     * 
+     * // TODO: Instead of adding a new drone from the list to the map, this function 
+     * should return a null ptr so that the function that called it can CREATE a drone.
+     * The newly created drone should be added to both the list and the map stored 
+     * within the DroneController class. 
+     * Once that's been done, the drone list should not be needed in here; only the map.
+     *
+     * @warning inefficient due to looping 
+     * @todo implement map structure in DroneController class (checkout m_drone_map)
+     */
+    QSharedPointer<DroneClass> getDroneBySysID(uint8_t sysID);
     void updateDroneTelem(QSharedPointer<DroneClass> drone, const QString& field, const QVariant& value);
 
     /**
