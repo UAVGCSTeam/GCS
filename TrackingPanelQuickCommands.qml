@@ -13,7 +13,7 @@ Rectangle {
 
     width: 70 // Width of the panel
     height: commandColumn.implicitHeight + 6 // Height of the panel
-    color: GcsStyle.PanelStyle.secondaryColor // Color of the panel
+    color: GcsStyle.PanelStyle.primaryColor // Color of the panel
     radius: GcsStyle.PanelStyle.cornerRadius // Radius of the panel
     border.color: GcsStyle.PanelStyle.defaultBorderColor // Border color of the panel
     border.width: GcsStyle.PanelStyle.defaultBorderWidth // Border width of the panel
