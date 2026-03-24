@@ -28,6 +28,7 @@
         <file>components/ToastNotification.qml</file>
     </qresource>
     <qresource prefix="/resources">
+        <file>settingsButton.svg</file>
         <file>cppLOGO.svg</file>
         <file>droneStatusLightMode.svg</file>
         <file>droneStatusDarkMode.svg</file>
