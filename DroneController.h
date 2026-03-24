@@ -331,12 +331,6 @@ private:
     /**
      * function getDroneBySysID()
      * 
-     * // TODO: Instead of adding a new drone from the list to the map, this function 
-     * should return a null ptr so that the function that called it can CREATE a drone.
-     * The newly created drone should be added to both the list and the map stored 
-     * within the DroneController class. 
-     * Once that's been done, the drone list should not be needed in here; only the map.
-     *
      * @warning inefficient due to looping 
      * @todo implement map structure in DroneController class (checkout m_drone_map)
      */
