@@ -24,3 +24,8 @@ add_gcs_test(test_uavmission
     ${CMAKE_SOURCE_DIR}/uavmission.cpp
     ${CMAKE_SOURCE_DIR}/DroneClass.cpp
 )
+
+add_gcs_test(test_droneclass
+    test_droneclass.cpp
+    ${CMAKE_SOURCE_DIR}/DroneClass.cpp
+)
