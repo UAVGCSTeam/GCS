@@ -43,6 +43,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         SettingsManager.cpp
         uavmission.h uavmission.cpp
         missionmanager.h missionmanager.cpp
+        tests/MockDroneClass.h
+        tests/test_uavmission.cpp
     )
 else()
     if(ANDROID)
@@ -116,4 +118,12 @@ install(TARGETS GCS
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(GCS)
+endif()
+
+# Unit Testing---
+# To build unit tests, change from OFF to ON
+option(BUILD_TESTING "Build unit tests" ON) # ON or OFF
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
