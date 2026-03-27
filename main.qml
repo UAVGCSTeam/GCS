@@ -108,6 +108,26 @@ Window {
             margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
         visible: false
+        allowAutoShow: droneTrackingPanel.activePanel === "drones"
+
+        Connections {
+            target: droneTrackingPanel
+            function onActivePanelChanged() {
+                if (droneTrackingPanel.activePanel !== "drones")
+                    droneCommandPanel.visible = false
+            }
+        }
+    }
+
+    MissionPlanPanel {
+        id: missionPlanPanel
+        activeDrone: mainWindow.activeDrone
+        visible: droneTrackingPanel.activePanel === "mission"
+        anchors {
+            top: droneMenuBar.bottom
+            right: parent.right
+            bottom: parent.bottom
+        }
     }
 
     DroneTrackingPanel {
@@ -115,8 +135,10 @@ Window {
         anchors {
             top: droneMenuBar.bottom
             left: parent.left
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
+            bottom: parent.bottom         
+            // margins: GcsStyle.PanelStyle.applicationBorderMargin
         }
+        
         onSelectionChanged: function(selected) { updateActiveDrone(selected) }
         onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
         onFollowRequested: function(drone) {
@@ -124,10 +146,20 @@ Window {
                 console.warn("Follow requested without a drone reference")
                 return
             }
-            console.log("[main.qml] Follow requested via modifier click:", drone.name)
             mapComponent.turnOffFollowDrone()
             mapComponent.turnOnFollowDrone()
         }
+    }
+
+    TrackingPanelQuickCommands {
+        anchors {
+            top: droneTrackingPanel.top
+            left: droneTrackingPanel.right
+            leftMargin: 8
+        }
+        visible: droneTrackingPanel.activePanel === "drones"
+        commandDrone: mainWindow.activeDrone
+        z: 10
     }
 
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
@@ -181,8 +213,12 @@ Window {
     }
 
     Component.onCompleted: {
+<<<<<<< HEAD
         overlays.loadNoFlyZones(":/data/National_Security_UAS_Flight_Restrictions.geojson")
         droneController.openUdp(14550, "127.0.0.1", 14550)
+=======
+        droneController.openUDP(14550, "127.0.0.1", 14550)
+>>>>>>> main
         // droneController.openUART("/dev/ttys005", 57600)
         // droneController.openUART("/dev/cu.usbserial-AQ015EBI", 57600)
     }

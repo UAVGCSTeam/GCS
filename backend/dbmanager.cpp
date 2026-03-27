@@ -17,10 +17,10 @@ DBManager::DBManager(QObject *parent) : QObject(parent) {
     gcs_db_connection.setDatabaseName(dbPath);
 
     if (!gcs_db_connection.open()) {
-        qCritical() << "[dbmanager.cpp] Database connection failed:" << gcs_db_connection.lastError().text();
+        qCritical() << "Database connection failed:" << gcs_db_connection.lastError().text();
         // this is lowkey impossible
     } else {
-        qDebug() << "[dbmanager.cpp] Database connected at:" << dbPath;
+        qDebug() << "Database connected at:" << dbPath;
     }
 }
 
@@ -30,7 +30,7 @@ DBManager::DBManager(QObject *parent) : QObject(parent) {
 DBManager::~DBManager() {
     if (gcs_db_connection.isOpen()) {
         gcs_db_connection.close();
-        qDebug() << "[dbmanager.cpp] Database connection closed.";
+        qDebug() << "Database connection closed.";
     }
 }
 
@@ -39,15 +39,15 @@ DBManager::~DBManager() {
 // Initialize Database (Check if DB exists, create if not)
 void DBManager::initDB() {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open!";
+        qCritical() << "Database is not open!";
     }
 
     if (!createDroneTable()) {
-        qCritical() << "[dbmanager.cpp] Table creation failed!";
+        qCritical() << "Table creation failed!";
     }
 
     if (!createInitialDrones()) {
-        qWarning() << "[dbmanager.cpp] Failed to create initial drones.";
+        qWarning() << "Failed to create initial drones.";
     }
 }
 
@@ -55,7 +55,7 @@ void DBManager::initDB() {
 
 bool DBManager::createDroneTable() {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot create table.";
+        qCritical() << "Database is not open! Cannot create table.";
         return false;
     }
 
@@ -72,11 +72,11 @@ bool DBManager::createDroneTable() {
     )";
 
     if (!query.exec(createTableQuery)) {
-        qCritical() << "[dbmanager.cpp] Failed to create table:" << query.lastError().text();
+        qCritical() << "Failed to create table:" << query.lastError().text();
         return false;
     }
 
-    qDebug() << "[dbmanager.cpp] Drones table created successfully.";
+    qDebug() << "Drones table created successfully.";
     return true;
 }
 
@@ -93,7 +93,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
                             const QString& xbeeID, const QString& xbeeAddress,
                             int* newDroneID) {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot add drone.";
+        qCritical() << "Database is not open! Cannot add drone.";
         return false;
     }
     QSqlQuery checkDupQuery;
@@ -108,13 +108,13 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
     checkDupQuery.bindValue(":xbeeAddress", xbeeAddress);
 
     if (!checkDupQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Error checking for existing drone:" << checkDupQuery.lastError().text();
+        qCritical() << "Error checking for existing drone:" << checkDupQuery.lastError().text();
         return false;
     }
 
     checkDupQuery.next();
     if (checkDupQuery.value(0).toInt() > 0) {
-        qCritical() << "[dbmanager.cpp] Drone already exists with the same XBee ID or Address.";
+        qCritical() << "Drone already exists with the same XBee ID or Address.";
         return false;
     }
 
@@ -131,17 +131,17 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
     insertQuery.bindValue(":xbeeAddress", xbeeAddress.isEmpty() ? QVariant(QString()) : xbeeAddress);
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to add drone:" << insertQuery.lastError().text();
+        qCritical() << "Failed to add drone:" << insertQuery.lastError().text();
         return false;
     }
 
     // If the newDroneID pointer is provided, set the last inserted ID
     if (newDroneID != nullptr) {
         *newDroneID = insertQuery.lastInsertId().toInt();
-        qDebug() << "[dbmanager.cpp] New drone ID:" << *newDroneID;
+        qDebug() << "New drone ID:" << *newDroneID;
     }
 
-    qDebug() << "[dbmanager.cpp] Drone added successfully: " << droneName;
+    qDebug() << "Drone added successfully: " << droneName;
     return true;
 }
 
@@ -149,7 +149,7 @@ bool DBManager::createDrone(const QString& droneName, const QString& droneRole,
 
 bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot delete drone.";
+        qCritical() << "Database is not open! Cannot delete drone.";
         return false;
     }
 
@@ -158,11 +158,11 @@ bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
     deleteQuery.bindValue(":identifier", xbeeIdOrAddress);
 
     if (!deleteQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to delete the drone: " << deleteQuery.lastError().text();
+        qCritical() << "Failed to delete the drone: " << deleteQuery.lastError().text();
         return false;
     }
 
-    qDebug() << "[dbmanager.cpp] DB: Drone deleted successfully: " << xbeeIdOrAddress;
+    qDebug() << "DB: Drone deleted successfully: " << xbeeIdOrAddress;
     return deleteQuery.numRowsAffected() > 0; // Return true if any rows were affected
 }
 
@@ -170,17 +170,17 @@ bool DBManager::deleteDrone(const QString& xbeeIdOrAddress) {
 
 bool DBManager::deleteAllDrones() {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot delete all drones.";
+        qCritical() << "Database is not open! Cannot delete all drones.";
         return false;
     }
 
     QSqlQuery deleteAllQuery(gcs_db_connection);
     if (!deleteAllQuery.exec("DELETE FROM drones")) {
-        qCritical() << "[dbmanager.cpp] Failed to delete all drones:" << deleteAllQuery.lastError().text();
+        qCritical() << "Failed to delete all drones:" << deleteAllQuery.lastError().text();
         return false;
     }
 
-    qDebug() << "[dbmanager.cpp] All drones deleted successfully.";
+    qDebug() << "All drones deleted successfully.";
     return true;
 }
 
@@ -189,17 +189,17 @@ bool DBManager::deleteAllDrones() {
 bool DBManager::editDrone(int droneID, const QString& droneName, const QString& droneRole,
                           const QString& xbeeID, const QString& xbeeAddress) {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot edit drone.";
+        qCritical() << "Database is not open! Cannot edit drone.";
         return false;
     }
 
     if (droneID <= 0) {
-        qWarning() << "[dbmanager.cpp] Invalid drone ID: " << droneID;
+        qWarning() << "Invalid drone ID: " << droneID;
         return false;
     }
 
     if (!droneName.isEmpty() && checkIfDroneExists(droneName)) {
-        qWarning() << "[dbmanager.cpp] Cannot update drone: name already exists:" << droneName;
+        qWarning() << "Cannot update drone: name already exists:" << droneName;
         return false;
     }
 
@@ -243,11 +243,11 @@ bool DBManager::editDrone(int droneID, const QString& droneName, const QString& 
     }
 
     if (!query.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to edit drone:" << query.lastError().text();
+        qCritical() << "Failed to edit drone:" << query.lastError().text();
         return false;
     }
 
-    qDebug() << "[dbmanager.cpp] Drone updated successfully: ID " << droneID;
+    qDebug() << "Drone updated successfully: ID " << droneID;
     return true;
 }
 
@@ -257,12 +257,12 @@ bool DBManager::editDrone(int droneID, const QString& droneName, const QString& 
 // Shows how to query to fetch all drones, useful for drone list
 void DBManager::printDroneList() {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot fetch drones.";
+        qCritical() << "Database is not open! Cannot fetch drones.";
     }
 
     QSqlQuery query("SELECT drone_id, drone_name, drone_role, xbee_id, xbee_address FROM drones", gcs_db_connection);
 
-    qDebug() << "[dbmanager.cpp] ---- Drone List ----";
+    qDebug() << "---- Drone List ----";
     bool hasData = false;
 
     while (query.next()) {
@@ -273,12 +273,12 @@ void DBManager::printDroneList() {
         QString xbeeId = query.value(3).toString();
         QString xbeeAddress = query.value(4).toString();
 
-        qDebug() << "[dbmanager.cpp] ID:" << id << "| Name:" << name << "| Role:" << role
+        qDebug() << "ID:" << id << "| Name:" << name << "| Role:" << role
                  << "| XBee ID:" << xbeeId << "| XBee Address:" << xbeeAddress;
     }
 
     if (!hasData) {
-        qDebug() << "[dbmanager.cpp] No drones found.";
+        qDebug() << "No drones found.";
     }
 
 }
@@ -287,7 +287,7 @@ void DBManager::printDroneList() {
 
 bool DBManager::checkIfDroneExists(const QString& droneName) {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot check existence.";
+        qCritical() << "Database is not open! Cannot check existence.";
         return false;
     }
 
@@ -296,7 +296,7 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
     query.bindValue(":droneName", droneName);
 
     if (!query.exec()) {
-        qCritical() << "[dbmanager.cpp] Error checking for existing drone:" << query.lastError().text();
+        qCritical() << "Error checking for existing drone:" << query.lastError().text();
         return false;
     }
 
@@ -309,13 +309,13 @@ bool DBManager::checkIfDroneExists(const QString& droneName) {
 // Lets use this function to have "default" drones. 
 bool DBManager::createInitialDrones() {
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot insert initial drones.";
+        qCritical() << "Database is not open! Cannot insert initial drones.";
         return false;
     }
 
     // Check if drones already exist to avoid duplicates
     if (checkIfDroneExists("Firehawk") || checkIfDroneExists("Octoquad")) {
-        qDebug() << "[dbmanager.cpp] Initial drones not created: table already contains drones.";
+        qDebug() << "Initial drones not created: table already contains drones.";
         return false;
     }
 
@@ -332,10 +332,10 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "13A20041D365C4");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert Firehawk:" << insertQuery.lastError().text();
+        qCritical() << "Failed to insert Firehawk:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] Firehawk inserted successfully.";
+        qDebug() << "Firehawk inserted successfully.";
     }
 
 
@@ -346,13 +346,13 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "0013A200422F2FDF");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert Octoquad:" << insertQuery.lastError().text();
+        qCritical() << "Failed to insert Octoquad:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] Octoquad inserted successfully.";
+        qDebug() << "Octoquad inserted successfully.";
     }
 
-    qDebug() << "[dbmanager.cpp] Both initial drones created successfully.";
+    qDebug() << "Both initial drones created successfully.";
 
 
     // Insert Third drone
@@ -362,10 +362,10 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "0013A200422F2FD1");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert Hexacopter:" << insertQuery.lastError().text();
+        qCritical() << "Failed to insert Hexacopter:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] Hexacopter inserted successfully.";
+        qDebug() << "Hexacopter inserted successfully.";
     }
 
     // Insert fourth drone
@@ -375,10 +375,10 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert 4:" << insertQuery.lastError().text();
+        qCritical() << "Failed to insert 4:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] 4 inserted successfully.";
+        qDebug() << "4 inserted successfully.";
     }
 
     // Insert fifth drone
@@ -388,10 +388,10 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert 5:" << insertQuery.lastError().text();
+        qCritical() << "Failed to insert 5:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] 5 inserted successfully.";
+        qDebug() << "5 inserted successfully.";
     }
 
     // Insert sixth drone
@@ -401,13 +401,13 @@ bool DBManager::createInitialDrones() {
     insertQuery.bindValue(":xbeeAddress", "00134200422F2FD1");
 
     if (!insertQuery.exec()) {
-        qCritical() << "[dbmanager.cpp] Failed to insert 6:" << insertQuery.lastError().text();
+        qCritical() << "Failed to insert 6:" << insertQuery.lastError().text();
         return false;
     } else {
-        qDebug() << "[dbmanager.cpp] 6 inserted successfully.";
+        qDebug() << "6 inserted successfully.";
     }
 
-    qDebug() << "[dbmanager.cpp] All initial drones created successfully.";
+    qDebug() << "All initial drones created successfully.";
     return true;
 }
 
@@ -419,7 +419,7 @@ bool DBManager::createInitialDrones() {
 QList<QVariantMap> DBManager::fetchAllDrones() {
     QList<QVariantMap> drones;
     if (!gcs_db_connection.isOpen()) {
-        qCritical() << "[dbmanager.cpp] Database is not open! Cannot fetch drones.";
+        qCritical() << "Database is not open! Cannot fetch drones.";
         return drones;
     }
 
@@ -435,7 +435,7 @@ QList<QVariantMap> DBManager::fetchAllDrones() {
             drones.append(drone);
         }
     } else {
-        qCritical() << "[dbmanager.cpp] Failed to fetch drones:" << query.lastError().text();
+        qCritical() << "Failed to fetch drones:" << query.lastError().text();
     }
     return drones;
 }
