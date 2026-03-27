@@ -147,7 +147,7 @@ bool Overlays::lineSegmentIntersectSegment(const QPointF &p1, const QPointF &p2,
 bool Overlays::lineSegmentCrossesRing(double lat1, double lon1, double lat2, double lon2, const ZoneRing &ring)
 {
     // Test if line segment from (lat1, lon1) to (lat2, lon2) crosses any edge of the ring.
-    // Uses simple cartographic projection (lon → x, lat → y) for small geographic areas.
+    // Uses simple cartographic projection (lon -> x, lat -> y) for small geographic areas.
 
     const QPointF p1(lon1, lat1);
     const QPointF p2(lon2, lat2);
@@ -197,6 +197,121 @@ bool Overlays::doesLineSegmentCrossNoFlyZone(double lat1, double lon1, double la
     }
 
     return false;
+}
+
+QPointF Overlays::projectToMeters(double lat, double lon, double refLat, double refLon)
+{
+    // Equirectangular local projection around refLat/refLon for fast small-area distances.
+    const double metersPerDegLat = 111320.0;
+    const double metersPerDegLon = 111320.0 * qCos(qDegreesToRadians(refLat));
+    return QPointF((lon - refLon) * metersPerDegLon, (lat - refLat) * metersPerDegLat);
+}
+
+double Overlays::distancePointToSegmentMeters(const QPointF &p, const QPointF &a, const QPointF &b)
+{
+    const double abx = b.x() - a.x();
+    const double aby = b.y() - a.y();
+    const double apx = p.x() - a.x();
+    const double apy = p.y() - a.y();
+    const double ab2 = abx * abx + aby * aby;
+    if (ab2 <= 1e-12) {
+        const double dx = p.x() - a.x();
+        const double dy = p.y() - a.y();
+        return qSqrt(dx * dx + dy * dy);
+    }
+
+    double t = (apx * abx + apy * aby) / ab2;
+    t = qBound(0.0, t, 1.0);
+
+    const double cx = a.x() + t * abx;
+    const double cy = a.y() + t * aby;
+    const double dx = p.x() - cx;
+    const double dy = p.y() - cy;
+    return qSqrt(dx * dx + dy * dy);
+}
+
+double Overlays::distanceToRingMeters(double lat, double lon, const ZoneRing &ring)
+{
+    const int n = ring.points.size();
+    if (n < 2) {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    const QPointF p = projectToMeters(lat, lon, lat, lon);
+    double minDistance = std::numeric_limits<double>::infinity();
+
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        const QPointF a = projectToMeters(ring.points[j].y(), ring.points[j].x(), lat, lon);
+        const QPointF b = projectToMeters(ring.points[i].y(), ring.points[i].x(), lat, lon);
+        const double d = distancePointToSegmentMeters(p, a, b);
+        if (d < minDistance) {
+            minDistance = d;
+        }
+    }
+
+    return minDistance;
+}
+
+double Overlays::distanceToNoFlyZoneMeters(double lat, double lon) const
+{
+    // Workflow entrypoint for proximity monitoring:
+    // 1) quick skip for empty index, 2) per-zone prune via AABB lower bound,
+    // 3) exact edge distance only for promising candidates.
+    if (m_zoneIndex.isEmpty()) {
+        return -1.0;
+    }
+
+    const double metersPerDegLat = 111320.0;
+    const double metersPerDegLon = 111320.0 * qCos(qDegreesToRadians(lat));
+    double minDistance = std::numeric_limits<double>::infinity();
+
+    for (const NoFlyZoneData &zone : m_zoneIndex) {
+        if (zone.skipHitTest) {
+            continue;
+        }
+
+        // If the point is truly inside a restricted area (and not inside a hole),
+        // proximity is zero so callers can treat it as immediate danger.
+        const bool insideOuter = pointInRing(lat, lon, zone.outer);
+        if (insideOuter) {
+            bool inHole = false;
+            for (const ZoneRing &hole : zone.holes) {
+                if (pointInRing(lat, lon, hole)) {
+                    inHole = true;
+                    break;
+                }
+            }
+            if (!inHole) {
+                return 0.0;
+            }
+        }
+
+        // Cheap lower bound distance to the zone AABB for pruning exact edge checks.
+        const double dLat = (lat < zone.minLat) ? (zone.minLat - lat)
+                         : (lat > zone.maxLat) ? (lat - zone.maxLat)
+                         : 0.0;
+        const double dLon = (lon < zone.minLon) ? (zone.minLon - lon)
+                         : (lon > zone.maxLon) ? (lon - zone.maxLon)
+                         : 0.0;
+        const double lowerBound = qSqrt(dLat * dLat * metersPerDegLat * metersPerDegLat
+                                      + dLon * dLon * metersPerDegLon * metersPerDegLon);
+        if (lowerBound >= minDistance) {
+            continue;
+        }
+
+        // Exact geometry distance against the outer ring and hole rings.
+        double zoneDistance = distanceToRingMeters(lat, lon, zone.outer);
+        for (const ZoneRing &hole : zone.holes) {
+            zoneDistance = qMin(zoneDistance, distanceToRingMeters(lat, lon, hole));
+        }
+
+        if (zoneDistance < minDistance) {
+            minDistance = zoneDistance;
+        }
+    }
+
+    // Returns -1 when no eligible zone contributed a finite distance.
+    return std::isfinite(minDistance) ? minDistance : -1.0;
 }
 
 bool Overlays::addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties)

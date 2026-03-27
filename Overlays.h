@@ -47,6 +47,23 @@ public:
     Q_INVOKABLE bool isPointInNoFlyZone(double lat, double lon) const;
 
     /**
+     * function distanceToNoFlyZoneMeters()
+     * @brief Computes the nearest distance from a point to any restricted no-fly-zone boundary.
+     *
+     * Uses the precomputed zone index and returns a metric distance to the closest
+     * eligible zone edge. If the point is inside a restricted zone (and not in a hole),
+     * this function returns 0.0.
+     *
+     * @param lat  Latitude of the query point (degrees).
+     * @param lon  Longitude of the query point (degrees).
+     *
+     * @return Distance in meters to the closest restricted boundary,
+     *         0.0 if already inside a restricted zone,
+     *         or -1.0 if no valid zone distance is available.
+     */
+    Q_INVOKABLE double distanceToNoFlyZoneMeters(double lat, double lon) const;
+
+    /**
      * function doesLineSegmentCrossNoFlyZone()
      * @brief Checks whether a straight-line path between two geographic points crosses a no-fly zone.
      *
@@ -90,6 +107,43 @@ private:
      * @return true if the point is inside the ring; false otherwise.
      */
     static bool pointInRing(double lat, double lon, const ZoneRing &ring);
+
+    /**
+     * function projectToMeters()
+     * @brief Projects a geographic point into local planar meters around a reference origin.
+     *
+     * @param lat     Latitude to project (degrees).
+     * @param lon     Longitude to project (degrees).
+     * @param refLat  Reference origin latitude (degrees).
+     * @param refLon  Reference origin longitude (degrees).
+     *
+     * @return Local XY point in meters (x: east-west, y: north-south).
+     */
+    static QPointF projectToMeters(double lat, double lon, double refLat, double refLon);
+
+    /**
+     * function distancePointToSegmentMeters()
+     * @brief Computes shortest Euclidean distance from a point to a line segment in meters.
+     *
+     * @param p  Query point in local projected meters.
+     * @param a  Segment start in local projected meters.
+     * @param b  Segment end in local projected meters.
+     *
+     * @return Shortest distance from point p to segment ab, in meters.
+     */
+    static double distancePointToSegmentMeters(const QPointF &p, const QPointF &a, const QPointF &b);
+
+    /**
+     * function distanceToRingMeters()
+     * @brief Computes shortest distance from a geographic point to a polygon ring boundary.
+     *
+     * @param lat   Query latitude (degrees).
+     * @param lon   Query longitude (degrees).
+     * @param ring  Polygon ring represented as lon/lat points.
+     *
+     * @return Minimum boundary distance in meters.
+     */
+    static double distanceToRingMeters(double lat, double lon, const ZoneRing &ring);
 
     /**
      * function lineSegmentIntersectSegment()

@@ -45,6 +45,13 @@ Item {
     property Waypoint waypointManagerRef: waypointManager
     property bool showNoFlyZones: true
 
+    // Proximity monitoring thresholds:
+    // - warn: early heads-up
+    // - critical: higher urgency and shorter warning cooldown
+    property real noFlyWarnDistanceMeters: 250
+    property real noFlyCriticalDistanceMeters: 100
+    property var _lastNoFlyWarnMsByDrone: ({})
+
     Plugin {
         id: mapPlugin
         name: "osm"
@@ -357,6 +364,93 @@ Item {
             var coord2 = mapview.toCoordinate(Qt.point(pixelLength, mapview.height - 50))
             mapInitialized(coord1, coord2, pixelLength)
         }
+    }
+
+    function noFlyCheckIntervalForDistance(distanceMeters) {
+        // Adaptive polling cadence: run faster when any drone is near a zone.
+        if (distanceMeters < 0)
+            return 8000
+        if (distanceMeters <= 100)
+            return 500
+        if (distanceMeters <= 300)
+            return 1000
+        if (distanceMeters <= 800)
+            return 2500
+        if (distanceMeters <= 2000)
+            return 5000
+        return 8000
+    }
+
+    Timer {
+        id: noFlyProximityTimer
+        running: true
+        repeat: true
+        interval: 5000
+        onTriggered: {
+            // Workflow:
+            // 1) measure each drone's nearest no-fly distance in C++,
+            // 2) emit throttled warnings per drone,
+            // 3) retune this timer interval from the nearest distance.
+            if (!overlays || !droneController)
+                return
+
+            var drones = droneController.drones ? droneController.drones : []
+            if (!drones || drones.length === 0)
+                return
+
+            var nearestDistance = -1
+            var nowMs = Date.now()
+
+            console.log("[NoFlyCheck] cycle start | drones:", drones.length, "| interval(ms):", noFlyProximityTimer.interval)
+
+            for (var i = 0; i < drones.length; i++) {
+                var drone = drones[i]
+                if (!drone || drone.latitude === undefined || drone.longitude === undefined)
+                    continue
+
+                var distance = overlays.distanceToNoFlyZoneMeters(drone.latitude, drone.longitude)
+                var debugName = drone.name ? drone.name : ("Drone #" + (i + 1))
+                console.log("[NoFlyCheck]", debugName,
+                            "lat:", Number(drone.latitude).toFixed(6),
+                            "lon:", Number(drone.longitude).toFixed(6),
+                            "distance(m):", (distance >= 0 ? Math.round(distance) : distance))
+                if (distance >= 0 && (nearestDistance < 0 || distance < nearestDistance))
+                    nearestDistance = distance
+
+                if (distance < 0 || distance > noFlyWarnDistanceMeters)
+                    continue
+
+                var droneName = drone.name ? drone.name : ("Drone #" + (i + 1))
+                // Warning cooldown prevents popup spam while a drone hovers near a boundary.
+                var cooldownMs = distance <= noFlyCriticalDistanceMeters ? 4000 : 12000
+                var lastWarnMs = _lastNoFlyWarnMsByDrone[droneName] || 0
+                if ((nowMs - lastWarnMs) < cooldownMs)
+                    continue
+
+                noFlyProximityWarningPopup.popupVariant = distance <= noFlyCriticalDistanceMeters ? "error" : "warning"
+                noFlyProximityWarningPopup.popupTitle = distance <= noFlyCriticalDistanceMeters
+                    ? "Critical No-Fly Proximity"
+                    : "No-Fly Proximity"
+                noFlyProximityWarningPopup.popupMessage = droneName + " is " + Math.round(distance) + "m from a no-fly zone."
+                noFlyProximityWarningPopup.open()
+                _lastNoFlyWarnMsByDrone[droneName] = nowMs
+                console.log("[NoFlyCheck] warning fired |", droneName, "| distance(m):", Math.round(distance), "| cooldown(ms):", cooldownMs)
+            }
+
+            var nextInterval = noFlyCheckIntervalForDistance(nearestDistance)
+            if (noFlyProximityTimer.interval !== nextInterval) {
+                console.log("[NoFlyCheck] interval update | nearest(m):", (nearestDistance >= 0 ? Math.round(nearestDistance) : nearestDistance), "|", noFlyProximityTimer.interval, "->", nextInterval)
+                noFlyProximityTimer.interval = nextInterval
+            }
+        }
+    }
+
+    UniversalPopup {
+        id: noFlyProximityWarningPopup
+        isNotification: true
+        popupVariant: "warning"  // or "error" when critical
+        popupTitle: "No-Fly Proximity"
+        popupMessage: ""
     }
 
     // Adding functionality to toggle following a drone
