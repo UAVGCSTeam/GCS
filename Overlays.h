@@ -1,3 +1,4 @@
+#ifndef OVERLAYS_H
 #define OVERLAYS_H
 
 #include <QObject>
@@ -6,17 +7,6 @@
 #include <QVariantList>
 #include <QVector>
 #include <QPointF>
-
-struct ZoneRing {
-    QVector<QPointF> points; // x = lon, y = lat
-};
-
-struct NoFlyZoneData {
-    ZoneRing outer;
-    QVector<ZoneRing> holes;
-    double minLat, maxLat, minLon, maxLon;
-    bool skipHitTest; // true for offshore 12NM border-only zones
-};
 
 class Overlays : public QObject
 {
@@ -89,86 +79,225 @@ signals:
     void noFlyZonesChanged();
 
 private:
+    struct GeometryUtils {
+        /**
+         * function lineSegmentIntersectSegment()
+         * @brief Tests whether two line segments intersect in 2D.
+         *
+         * @param p1  Start of first segment.
+         * @param p2  End of first segment.
+         * @param p3  Start of second segment.
+         * @param p4  End of second segment.
+         *
+         * @return true if the segments intersect (including touching endpoints); false otherwise.
+         */
+        static bool lineSegmentIntersectSegment(const QPointF &p1, const QPointF &p2,
+                                                const QPointF &p3, const QPointF &p4);
+
+        /**
+         * function projectToMeters()
+         * @brief Projects a geographic point into local planar meters around a reference origin.
+         *
+         * @param lat     Latitude to project (degrees).
+         * @param lon     Longitude to project (degrees).
+         * @param refLat  Reference origin latitude (degrees).
+         * @param refLon  Reference origin longitude (degrees).
+         *
+         * @return Local XY point in meters (x: east-west, y: north-south).
+         */
+        static QPointF projectToMeters(double lat, double lon, double refLat, double refLon);
+
+        /**
+         * function distancePointToSegmentMeters()
+         * @brief Computes shortest Euclidean distance from a point to a line segment in meters.
+         *
+         * @param p  Query point in local projected meters.
+         * @param a  Segment start in local projected meters.
+         * @param b  Segment end in local projected meters.
+         *
+         * @return Shortest distance from point p to segment ab, in meters.
+         */
+        static double distancePointToSegmentMeters(const QPointF &p, const QPointF &a, const QPointF &b);
+    };
+
+    struct ZoneRing {
+        QVector<QPointF> points; // x = lon, y = lat
+
+        /**
+         * function fromGeoJsonRing()
+         * @brief Builds a ZoneRing from a GeoJSON ring array.
+         *
+         * @param ring  GeoJSON ring represented as [[lon, lat], ...].
+         *
+         * @return Parsed ring with lon/lat points.
+         */
+        static ZoneRing fromGeoJsonRing(const QJsonArray &ring);
+
+        /**
+         * function toVariantPointList()
+         * @brief Converts the ring points into the QVariantList format used by QML.
+         *
+         * @return List of points as QVariantMap entries with lat/lon keys.
+         */
+        QVariantList toVariantPointList() const;
+
+        /**
+         * function isValid()
+         * @brief Checks whether the ring has enough points to form a polygon.
+         *
+         * @return true if the ring has at least three points; false otherwise.
+         */
+        bool isValid() const;
+
+        /**
+         * function contains()
+         * @brief Performs an even-odd point-in-polygon ring test.
+         *
+         * @param lat   Query latitude (degrees).
+         * @param lon   Query longitude (degrees).
+         *
+         * @return true if the point is inside the ring; false otherwise.
+         */
+        bool contains(double lat, double lon) const;
+
+        /**
+         * function crossesSegment()
+         * @brief Checks if a line segment crosses any edge of the ring.
+         *
+         * @param lat1  Start latitude of the segment (degrees).
+         * @param lon1  Start longitude of the segment (degrees).
+         * @param lat2  End latitude of the segment (degrees).
+         * @param lon2  End longitude of the segment (degrees).
+         *
+         * @return true if the segment crosses the ring boundary; false otherwise.
+         */
+        bool crossesSegment(double lat1, double lon1, double lat2, double lon2) const;
+
+        /**
+         * function distanceToBoundaryMeters()
+         * @brief Computes shortest distance from a geographic point to a polygon ring boundary.
+         *
+         * @param lat   Query latitude (degrees).
+         * @param lon   Query longitude (degrees).
+         *
+         * @return Minimum boundary distance in meters.
+         */
+        double distanceToBoundaryMeters(double lat, double lon) const;
+    };
+
+    struct NoFlyZoneData {
+        ZoneRing outer;
+        QVector<ZoneRing> holes;
+        double minLat = 0.0;
+        double maxLat = 0.0;
+        double minLon = 0.0;
+        double maxLon = 0.0;
+        bool skipHitTest = false; // true for offshore 12NM border-only zones
+
+        /**
+         * function fromGeoJsonPolygon()
+         * @brief Builds a no-fly zone record from a GeoJSON polygon ring list.
+         *
+         * @param polygonRings  GeoJSON polygon coordinates containing one outer ring
+         *                      followed by optional hole rings.
+         * @param properties    GeoJSON feature properties used for zone metadata.
+         *
+         * @return Parsed zone data with outer ring, holes, bounds, and hit-test flags.
+         */
+        static NoFlyZoneData fromGeoJsonPolygon(const QJsonArray &polygonRings, const QJsonObject &properties);
+
+        /**
+         * function isValid()
+         * @brief Checks whether the zone has a valid outer ring.
+         *
+         * @return true if the outer ring is valid; false otherwise.
+         */
+        bool isValid() const;
+
+        /**
+         * function contains()
+         * @brief Checks whether a point lies inside the zone excluding holes.
+         *
+         * @param lat  Query latitude (degrees).
+         * @param lon  Query longitude (degrees).
+         *
+         * @return true if the point is inside the zone and outside all holes.
+         */
+        bool contains(double lat, double lon) const;
+
+        /**
+         * function overlapsBoundingBox()
+         * @brief Tests whether an axis-aligned bounding box overlaps the zone bounds.
+         *
+         * @param minLatValue  Minimum latitude of the query box.
+         * @param maxLatValue  Maximum latitude of the query box.
+         * @param minLonValue  Minimum longitude of the query box.
+         * @param maxLonValue  Maximum longitude of the query box.
+         *
+         * @return true if the boxes overlap; false otherwise.
+         */
+        bool overlapsBoundingBox(double minLatValue, double maxLatValue, double minLonValue, double maxLonValue) const;
+
+        /**
+         * function crossesSegment()
+         * @brief Checks whether a line segment crosses the zone boundary or any hole.
+         *
+         * @param lat1  Start latitude of the segment (degrees).
+         * @param lon1  Start longitude of the segment (degrees).
+         * @param lat2  End latitude of the segment (degrees).
+         * @param lon2  End longitude of the segment (degrees).
+         *
+         * @return true if the segment crosses the zone or a hole boundary; false otherwise.
+         */
+        bool crossesSegment(double lat1, double lon1, double lat2, double lon2) const;
+
+        /**
+         * function distanceToBoundaryMeters()
+         * @brief Computes the shortest distance from a point to the zone boundary or hole boundary.
+         *
+         * @param lat  Query latitude (degrees).
+         * @param lon  Query longitude (degrees).
+         *
+         * @return Shortest distance in meters to any zone boundary.
+         */
+        double distanceToBoundaryMeters(double lat, double lon) const;
+
+    private:
+        /**
+         * function computeBounds()
+         * @brief Recomputes the zone's outer-ring bounding box.
+         */
+        void computeBounds();
+    };
+
     QVariantList m_noFlyZones;
     QVector<NoFlyZoneData> m_zoneIndex;
 
+    /**
+     * function addGeoJsonGeometry()
+     * @brief Converts a GeoJSON geometry object into one or more internal zone records.
+     *
+     * @param zoneId      Identifier used for the parsed zone.
+     * @param geometry    GeoJSON geometry object.
+     * @param properties  GeoJSON feature properties used for metadata.
+     *
+     * @return true if at least one zone was added; false otherwise.
+     */
     bool addGeoJsonGeometry(const QString &zoneId, const QJsonObject &geometry, const QJsonObject &properties);
-    QVariantList buildPointListFromPolygonRing(const QJsonArray &ring) const;
-    ZoneRing buildZoneRing(const QJsonArray &ring) const;
 
     /**
-     * function pointInRing()
-     * @brief Performs an even-odd point-in-polygon ring test.
+     * function addPolygonZone()
+     * @brief Adds one polygon zone and its hit-test index from parsed ring coordinates.
      *
-     * @param lat   Query latitude (degrees).
-     * @param lon   Query longitude (degrees).
-     * @param ring  Polygon ring represented as lon/lat points.
+     * @param zoneId         Identifier used for the parsed zone.
+     * @param polygonRings    GeoJSON polygon ring list.
+     * @param properties     GeoJSON feature properties used for metadata.
+     * @param polygonSuffix   Optional suffix for MultiPolygon members.
      *
-     * @return true if the point is inside the ring; false otherwise.
+     * @return true if the polygon was valid and added; false otherwise.
      */
-    static bool pointInRing(double lat, double lon, const ZoneRing &ring);
-
-    /**
-     * function projectToMeters()
-     * @brief Projects a geographic point into local planar meters around a reference origin.
-     *
-     * @param lat     Latitude to project (degrees).
-     * @param lon     Longitude to project (degrees).
-     * @param refLat  Reference origin latitude (degrees).
-     * @param refLon  Reference origin longitude (degrees).
-     *
-     * @return Local XY point in meters (x: east-west, y: north-south).
-     */
-    static QPointF projectToMeters(double lat, double lon, double refLat, double refLon);
-
-    /**
-     * function distancePointToSegmentMeters()
-     * @brief Computes shortest Euclidean distance from a point to a line segment in meters.
-     *
-     * @param p  Query point in local projected meters.
-     * @param a  Segment start in local projected meters.
-     * @param b  Segment end in local projected meters.
-     *
-     * @return Shortest distance from point p to segment ab, in meters.
-     */
-    static double distancePointToSegmentMeters(const QPointF &p, const QPointF &a, const QPointF &b);
-
-    /**
-     * function distanceToRingMeters()
-     * @brief Computes shortest distance from a geographic point to a polygon ring boundary.
-     *
-     * @param lat   Query latitude (degrees).
-     * @param lon   Query longitude (degrees).
-     * @param ring  Polygon ring represented as lon/lat points.
-     *
-     * @return Minimum boundary distance in meters.
-     */
-    static double distanceToRingMeters(double lat, double lon, const ZoneRing &ring);
-
-    /**
-     * function lineSegmentIntersectSegment()
-     * @brief Tests whether two line segments intersect in 2D.
-     *
-     * @param p1  Start of first segment.
-     * @param p2  End of first segment.
-     * @param p3  Start of second segment.
-     * @param p4  End of second segment.
-     *
-     * @return true if the segments intersect (including touching endpoints); false otherwise.
-     */
-    static bool lineSegmentIntersectSegment(const QPointF &p1, const QPointF &p2, const QPointF &p3, const QPointF &p4);
-
-    /**
-     * function lineSegmentCrossesRing()
-     * @brief Checks if a line segment crosses any edge of a polygon ring.
-     *
-     * @param lat1  Start latitude of the segment (degrees).
-     * @param lon1  Start longitude of the segment (degrees).
-     * @param lat2  End latitude of the segment (degrees).
-     * @param lon2  End longitude of the segment (degrees).
-     * @param ring  Polygon ring to test against.
-     *
-     * @return true if the segment crosses the ring boundary; false otherwise.
-     */
-    static bool lineSegmentCrossesRing(double lat1, double lon1, double lat2, double lon2, const ZoneRing &ring);
+    bool addPolygonZone(const QString &zoneId, const QJsonArray &polygonRings,
+                        const QJsonObject &properties, int polygonSuffix = -1);
 };
+
+#endif // OVERLAYS_H
