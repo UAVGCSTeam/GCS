@@ -1,9 +1,5 @@
 #include "unknowndroneclass.h"
 
-#include <QDebug>
-#include <QString>
-#include <QStringList>
-#include <cmath>
 
 UnknownDroneClass::UnknownDroneClass(QObject *parent) :
     QObject(parent)
