@@ -18,6 +18,7 @@ Rectangle {
     property int maxBodyHeight: Math.max(commandsBodyHeight, configBodyHeight)  // commparing the height between the expandedBody (commands/config) pages
     property string currentTab: "Commands"
     property var waypointManager   // reference to Waypoint.qml
+    property bool allowAutoShow: true
     property bool showingWaypoints: false
     property int waypointVersion: 0  // increment to refresh ListView
 
@@ -488,7 +489,7 @@ Rectangle {
     onActiveDroneChanged: {
         if (activeDrone === null) {
             mainPanel.visible = false;
-        } else {
+        } else if (allowAutoShow) {
             mainPanel.visible = true;
         }
     }

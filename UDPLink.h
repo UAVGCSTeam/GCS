@@ -35,12 +35,12 @@ public:
      *
      * @warning Only IPv4 is used (AnyIPv4). IPv6 is not supported by this bind call.
      */
-    bool   open(quint16 localPort,
+    bool   open(uint16_t localPort,
                 const QHostAddress& remoteHost = QHostAddress::LocalHost,
-                quint16 remotePort = 14550);
+                uint16_t remotePort = 14550);
 
     /// Bind to @p port and receive any UDP datagrams sent to it (from any host). Use for listen-only.
-    bool   listen(quint16 port);
+    bool   listen(uint16_t port);
 
     void   close();
 
@@ -75,20 +75,40 @@ public:
      * @warning Only IPv4 is used (AnyIPv4). IPv6 is not supported by this bind call.
      */
     bool   isOpen() const { return socket_.state() == QAbstractSocket::BoundState; }
-    qint64 writeBytes(const QByteArray& bytes);
+    // Send to a specific remote port
+    qint64 writeBytes(const QByteArray& bytes, uint16_t remotePort);
+
+private:
 
 signals:
-    void bytesReceived(const QByteArray& bytes);
+    void bytesReceived(const QByteArray& bytes, uint16_t senderPort);
     void linkError(const QString& msg);
 
 private slots:
     void onReadyRead();
 
 private:
+
+    /**
+     * function readPendingDatagrams()
+     * @brief Reads and processes all pending UDP datagrams from the socket.
+     *
+     * This function continuously retrieves incoming UDP datagrams from the internal
+     * socket while data is available. For each valid datagram, it updates the stored
+     * remote peer address (if it has changed), emits the received payload via the
+     * bytesReceived signal, and marks that a peer has been detected.
+     *
+     * @details
+     * - Iterates through all pending datagrams using a loop.
+     * - Discards invalid datagrams.
+     * - Tracks the most recent sender address as the active remote peer.
+     * - Emits the raw datagram payload along with the sender's port.
+     * - Sets the internal _hasPeer flag to true once at least one datagram is received.
+     */
     void readPendingDatagrams();
 
     QUdpSocket  socket_;
-    QHostAddress _remoteAddress;
-    quint16      _remotePort{0};
+    QHostAddress _remoteAddress; // The remote address (127.0.0.1 for example) will
+                                 // be the same for all incoming connections 
     bool         _hasPeer{false};
 };
