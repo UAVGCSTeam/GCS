@@ -19,6 +19,39 @@ Item {
 
     ListModel { id:logModel }
 
+    ListModel { id: filterLogModel }
+
+    ListModel {
+        id: filterStateModel
+        ListElement {key: "debug"; name: "Debug"; checked: true}
+        ListElement {key: "info"; name: "Info"; checked: true}
+        ListElement {key: "warning";name: "Warning"; checked: true}
+        ListElement {key: "critical";name: "Critical"; checked: true}
+        ListElement {key: "fatal";name: "Fatal";checked: true}
+    }
+
+    function isTypeEnabled(type) {
+        for (let i = 0; i < filterStateModel.count; i++){
+            let filterItem = filterStateModel.get(i)
+            if (filterItem.key === type)
+                return filterItem.checked
+        }
+        return false
+    }
+
+    function updateFilter(){
+        filterLogModel.clear()
+
+        for (let i = 0; i < logModel.count; i++) {
+            let item = logModel.get(i)
+
+            if (isTypeEnabled(item.type)){
+                filterLogModel.append(item)
+            }
+        }
+    }
+    
+
     function typeColor(type) {
         switch (type){
             case "debug":   return "green";
@@ -31,6 +64,7 @@ Item {
 
     function appendLog(type, message){
         logModel.append({type: type, message: message})
+        updateFilter()
     }
 
     Rectangle {
@@ -78,7 +112,7 @@ Item {
                 }
             }
 
-            RowLayout{
+            RowLayout {
                 Layout.margins: 5
 
             Label {
@@ -89,9 +123,80 @@ Item {
                 font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
                 font.family: GcsStyle.PanelStyle.fontFamily
             }
+                Button {
+                    background: Image{
+                        source: "qrc:/resources/warning.png"
+                        sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
+                        sourceSize.height: GcsStyle.PanelStyle.statusIconSize
+                    }
 
+                    onPressed: filterDropdown.visible = !filterDropdown.visible
+
+                    Popup {
+                        id: filterDropdown
+                        width: 100
+                        height: 175
+
+                        modal: false
+                        focus: true
+                        
+                        visible: false
+
+                        background: Rectangle {
+                            color: GcsStyle.PanelStyle.baseBackground
+                            border.color: GcsStyle.PanelStyle.defaultBorderColor
+                            border.width: GcsStyle.PanelStyle.defaultBorderWidth
+                        }
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            spacing: 8
+
+                            Repeater {
+                                model: filterStateModel
+
+                                CheckBox {
+                                    id: checkBox
+                                    checked: model.checked
+
+                                    Layout.fillWidth: true
+                                    Layout.alignment: Qt.AlignVCenter | Qt.AlignTop
+                                    Layout.preferredWidth: 24
+                                    Layout.preferredHeight: 24
+
+                                    contentItem: Text {
+                                        text: model.name
+                                        color: "white"
+                                        verticalAlignment: Text.AlignVCenter
+                                        leftPadding: checkBox.indicator.width
+                                    }
+                                    
+                                    indicator: Rectangle {
+                                        implicitWidth: 20
+                                        implicitHeight: 20
+                                        radius: 4
+                                        border.width: 2
+                                        border.color: checkBox.checked ? "green" : "gray"
+                                        color: checkBox.checked ? "lightgreen" : "transparent"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: checkBox.checked ? "✔" : ""
+                                            color: "white"
+                                        }
+                                    }
+
+                                    onCheckedChanged: {
+                                        filterStateModel.setProperty(index,"checked",checked)
+                                        updateFilter()
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                }
             }
-            
 
             ScrollView {
                 id: messageLog
@@ -105,7 +210,8 @@ Item {
                 ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
                 ListView {
-                    model: logModel
+                    model: filterLogModel
+                    width: parent.width
 
                     delegate: Row {
                         id: textLine
@@ -116,15 +222,18 @@ Item {
                         Text {
                             id: info
                             leftPadding: 5
-                            width: 75
+                            width: 50
+
                             text: "[" + type + "]"
                             color: typeColor(type)
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             font.family: GcsStyle.PanelStyle.fontFamily
                         }
                         Text {
+                            rightPadding: 10
                             width: textLine.width - info.width - textLine.spacing
                             wrapMode: Text.WordWrap
+
                             text: " " + message
                             color: "white"
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
@@ -138,6 +247,11 @@ Item {
                 }
             }
 
+            Button {
+                text: "add text"
+                height: 50
+                onPressed: appendLog("debug", "this is a debug message to test whether this works or not and also wrapping.")
+            }
         }
     }
 }
