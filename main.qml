@@ -126,7 +126,6 @@ Window {
         }
     }
 
-<<<<<<< HEAD
     MessageLogPanel {
         id: messageLogPanel
         droneStatusPanel: droneTrackingPanel
@@ -143,7 +142,8 @@ Window {
         target: droneTrackingPanel
         property: "overlayBottomHeight"
         value: messageLogPanel.height
-=======
+    }
+    
     TrackingPanelQuickCommands {
         anchors {
             top: droneTrackingPanel.top
@@ -153,7 +153,6 @@ Window {
         visible: droneTrackingPanel.activePanel === "drones"
         commandDrone: mainWindow.activeDrone
         z: 10
->>>>>>> main
     }
 
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)
