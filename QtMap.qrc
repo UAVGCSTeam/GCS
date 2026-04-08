@@ -12,11 +12,20 @@
         <file>components/MenuButton.qml</file>
         <file>components/PopupMenuItem.qml</file>
         <file>components/StyledComboBox.qml</file>
+        <file>components/UAVListItem.qml</file>
+        <file>components/BatteryIcon.qml</file>
+        <file>components/ConnectionStatusIcon.qml</file>
+        <file>components/OperationalStatusIcon.qml</file>
+        <file>components/UAVListPanel.qml</file>
+        <file>components/UAVMissionListPanel.qml</file>
+        <file>components/MenuCollapsableBar.qml</file>
         <file>Waypoint.qml</file>
         <file>components/UniversalPopup.qml</file>
         <file>DroneCommandPanel.qml</file>
         <file>settingsWindow.qml</file>
         <file>MessageLogPanel.qml</file>
+        <file>MissionPlanPanel.qml</file>
+        <file>TrackingPanelQuickCommands.qml</file>
         <file>components/ToastNotification.qml</file>
     </qresource>
     <qresource prefix="/resources">
@@ -35,6 +44,13 @@
         <file>plusIcon.png</file>
         <file>discoveryPanelIcon.svg</file>
         <file>discoveryPanelIconDarkMode.svg</file>
+        <file>flightIcon.svg</file>
+        <file>missionPlanningIcon.svg</file>
+        <file>batteryIcon.svg</file>
+        <file>armIcon.svg</file>
+        <file>guidedModeIcon.svg</file>
+        <file>takeoffIcon.svg</file>
+        <file>returnHomeIcon.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>

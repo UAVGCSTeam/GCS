@@ -197,8 +197,6 @@ Rectangle {
         onAccepted: {
             const targetXbeeAddress = activeDrone.xbeeAddress
             const ok = droneController.sendArm(targetXbeeAddress, true)   // true = arm, false = disarm
-            // console.log("[DroneMenuBar.qml] Armed: ", targetXbeeAddress, ok)
-            // armConfirmed.open()
         }
     }
 
@@ -211,8 +209,6 @@ Rectangle {
         onAccepted: {
             const targetXbeeAddress = activeDrone.xbeeAddress
             const ok = droneController.sendTakeoffCmd(targetXbeeAddress, true)   // true = arm, false = disarm
-            // console.log("[DroneMenuBar.qml] Takeoff Response:", targetXbeeAddress, ok)
-            // takeoffConfirmed.open()
         }
     }
 
@@ -225,8 +221,6 @@ Rectangle {
         onAccepted: {
             const targetXbeeAddress = activeDrone.xbeeAddress
             const ok = droneController.sendGuidedMode(targetXbeeAddress, true)   // true = arm, false = disarm
-            // console.log("[DroneMenuBar.qml] Guided mode Response:", targetXbeeAddress, ok)
-            // guidedModeConfirmed.open()
         }
     }
 
