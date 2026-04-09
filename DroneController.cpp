@@ -1022,6 +1022,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDP
     }
     // This is our autopilot message.
     case MAVLINK_MSG_ID_AUTOPILOT_VERSION: {
+        qDebug() << "Got AUTOPILOT_VERSION!";
         mavlink_autopilot_version_t av;
         mavlink_msg_autopilot_version_decode(&msg, &av);
 
