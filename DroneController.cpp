@@ -915,6 +915,21 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDP
         return;
     }
 
+    uint8_t targetSysID = sysID;
+    uint8_t targetCompID = compID;
+
+    // If we have a drone with this sysID but it doesn't have a UID yet, request it.
+    if (!drone.isNull() && drone->getUID().isEmpty() && mavTx_ && mavTx_->isLinkOpen()) {
+        
+        // 1. Lock it so we don't spam
+        drone->setUID("REQUESTING..."); 
+        
+        // 2. Fire the request
+        mavTx_->sendAutoPilotVersionRequest(targetSysID, targetCompID);
+        
+        qDebug() << "[onMavlinkMessage] First contact! Requesting UID for" << drone->getName();
+    }
+
     switch (msg.msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
         mavlink_heartbeat_t hb;
@@ -1005,6 +1020,29 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDP
         emit commandAcknowledged(resultMsg, success);  
         break;
     }
+    // This is our autopilot message.
+    case MAVLINK_MSG_ID_AUTOPILOT_VERSION: {
+        mavlink_autopilot_version_t av;
+        mavlink_msg_autopilot_version_decode(&msg, &av);
+
+        
+        QString uidHex;
+        for (int i = 0; i < 16; ++i) {
+            uidHex += QString("%1").arg(av.uid2[i], 2, 16, QChar('0'));
+        }
+
+        qInfo() << "[DroneController.cpp::onMavlinkMessage] AUTOPILOT_VERSION"
+                << "targetSysID=" << targetSysID << "targetCompID=" << targetCompID
+                << "uid=0x" << uidHex;
+
+        // Update drone object with UID
+        if (!drone.isNull()) {
+            drone->setUID(uidHex);
+            qDebug() << "[DroneController.cpp::onMavlinkMessage] Stored UID for drone" << drone->getName();
+        }
+        break;
+    }
+
     default:
         qInfo() << "Unexpected MAVLink message type: " << msg.msgid;
         break;

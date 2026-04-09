@@ -17,6 +17,7 @@ DroneClass::DroneClass(QObject *parent) :
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
     , m_udp(-1)
+    , m_uid("") // new code for unique identifier, initialize to empty string
 {
     startHeartBeatTimer();
     updateStatus();
@@ -47,6 +48,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)    // temporary
     , m_orientation(QVector3D(-1, -1, -1))
     , m_udp(-1)
+    , m_uid("") // new code for unique identifier, initialize to empty string
 {
     startHeartBeatTimer();
     updateStatus();
@@ -78,6 +80,7 @@ DroneClass::DroneClass(const QString &input_name,
     , m_airspeed(-1)
     , m_orientation(QVector3D(-1, -1, -1))
     , m_udp(input_udpPort)
+    , m_uid("")  // new code for unique identifier, initialize to empty string
 {
     startHeartBeatTimer();
     updateStatus();

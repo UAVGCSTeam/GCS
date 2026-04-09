@@ -87,6 +87,23 @@ public:
                                         double lat_deg, double lon_deg,
                                         float alt_m, int udpPort = -1) const;
 
+    /**
+     * function sendAutoPilotVersionRequest()
+     * @brief Sends a MAVLink AUTOPILOT_VERSION_REQUEST command to a target system.
+     *
+     * This function constructs and transmits an AUTOPILOT_VERSION_REQUEST
+     * message, requesting version information from the target vehicle.
+     *
+     * @param targetSys   Target system ID (vehicle MAVLink system ID).
+     * @param targetComp  Target component ID (e.g., autopilot component).
+     *
+     * @return true if the encoded MAVLink message was successfully written
+     *         to the link; false if the link is not open or the write fails.
+     *
+     * @note isLinkOpen() must return true before sending.
+     */
+    bool sendAutoPilotVersionRequest(uint8_t targetSysID, uint8_t targetCompID, int udpPort = -1) const;
+
 private:
     qint64 writeToLink(const QByteArray& bytes, uint8_t targetSysID, int udpPort = -1) const;
     UARTLink* UARTLink_;

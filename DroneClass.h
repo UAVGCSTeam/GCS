@@ -114,6 +114,11 @@ public:
 
     int       getUdpPort() const { return m_udp; }
     void      setUdpPort(int port) { m_udp = port; }
+    
+    // new code for unique identifier
+    QString   getUID() const {return m_uid;}                   // This is the getter for the unique identifier.
+    void      setUID(const QString &uid) { m_uid = uid; }      // This is the setter for the unique identifier.
+    
 
     // Adapters expected by DroneController (to unblock compile)
     void setConnected(bool v);
@@ -158,6 +163,7 @@ private:
     QString   m_xbeeAddress;
     QString   m_role;
     QString   m_xbeeID;
+    QString   m_uid;      // this is for our unique identifier for the drones. going to use it to get the uid128. 
     int       m_sysID;
     int       m_compID;
     double    m_batteryLevel;
