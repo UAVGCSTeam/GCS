@@ -925,7 +925,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDP
         drone->setUID("REQUESTING..."); 
         
         // 2. Fire the request
-        mavTx_->sendAutoPilotVersionRequest(targetSysID, targetCompID);
+        mavTx_->sendAutoPilotVersionRequest(targetSysID, targetCompID, senderUDPPort);
         
         qDebug() << "[onMavlinkMessage] First contact! Requesting UID for" << drone->getName();
     }
@@ -1045,7 +1045,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDP
     }
 
     default:
-        qInfo() << "Unexpected MAVLink message type: " << msg.msgid;
+        //qInfo() << "Unexpected MAVLink message type: " << msg.msgid;
         break;
     }
 }

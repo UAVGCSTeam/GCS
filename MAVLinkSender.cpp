@@ -121,11 +121,14 @@ bool MAVLinkSender::sendSetPositionTargetGlobalInt(uint8_t targetSysID, uint8_t 
 // Implementation of sendAutoPilotVersionRequest
 bool MAVLinkSender::sendAutoPilotVersionRequest(uint8_t targetSysID, uint8_t targetCompID, int udpPort) const{
     if (!isLinkOpen()) return false;
+
     QByteArray bytes = packCommandLong(
         targetSysID,
         targetCompID,
         MAV_CMD_REQUEST_AUTOPILOT_CAPABILITIES, // 520
-        1.0f
+        1.0f,
+        1.0f,
+        0.0f,0.0f,0.0f,0.0f,0.0f
     );
     return writeToLink(bytes, targetSysID, udpPort) > 0;
 }
