@@ -1,6 +1,6 @@
 // test_uavmission.cpp
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 #include <QObject>
 #include "../uavmission.h"
 #include "../DroneClass.h"

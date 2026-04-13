@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Quick QuickControls2 QuickWidgets Core Sql)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickControls2 Core QuickWidgets Sql SerialPort)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Quick QuickControls2 QuickWidgets Core Sql Test)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Quick QuickControls2 Core Test QuickWidgets Sql SerialPort)
 
 set(PROJECT_SOURCES
         mainwindow.cpp
@@ -91,6 +91,7 @@ target_link_libraries(GCS PRIVATE
     Qt${QT_VERSION_MAJOR}::QuickControls2
     Qt${QT_VERSION_MAJOR}::QuickWidgets
     Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Test
     Qt${QT_VERSION_MAJOR}::Sql
     Qt${QT_VERSION_MAJOR}::SerialPort
 )
