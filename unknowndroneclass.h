@@ -7,12 +7,13 @@
 class UnknownDroneClass : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString   uid      READ getUid      NOTIFY uidChanged      FINAL)
-    Q_PROPERTY(QString   fc       READ getFc       NOTIFY fcChanged       FINAL)
-    Q_PROPERTY(QString   uavType  READ getUavType  NOTIFY uavTypeChanged  FINAL)
-    Q_PROPERTY(int       sysID    READ getSysID    NOTIFY sysIDChanged    FINAL)
-    Q_PROPERTY(int       compID   READ getCompID   NOTIFY compIDChanged   FINAL)
-    Q_PROPERTY(bool      ignored  READ getIgnored  NOTIFY ignoredChanged   FINAL)
+    Q_PROPERTY(QString   uid            READ getUid             NOTIFY uidChanged           FINAL)
+    Q_PROPERTY(QString   fc             READ getFc              NOTIFY fcChanged            FINAL)
+    Q_PROPERTY(QString   uavType        READ getUavType         NOTIFY uavTypeChanged       FINAL)
+    Q_PROPERTY(int       sysID          READ getSysID           NOTIFY sysIDChanged         FINAL)
+    Q_PROPERTY(int       compID         READ getCompID          NOTIFY compIDChanged        FINAL)
+    Q_PROPERTY(int       senderUDPPort  READ getSenderUDPPort   NOTIFY senderUDPPortChanged FINAL)
+    Q_PROPERTY(bool      ignored        READ getIgnored         NOTIFY ignoredChanged       FINAL)
 
 public:
     explicit UnknownDroneClass(QObject *parent = nullptr);
@@ -22,6 +23,7 @@ public:
                       const QString &uavType,
                       int sysID,
                       int compID,
+                      int senderUDPPort,
                       bool ignored,
                       QObject *parent = nullptr);
 
@@ -41,6 +43,9 @@ public:
     int     getCompID()   const { return m_compID; }
     void    setCompID(int compID);
 
+    int     getSenderUDPPort() const { return m_senderUDPPort; }
+    void    setSenderUDPPort(int senderUDPPort);
+
     bool    getIgnored()  const { return m_ignored; }
     void    setIgnored(bool ignored);
 
@@ -50,6 +55,7 @@ signals:
     void uavTypeChanged();
     void sysIDChanged();
     void compIDChanged();
+    void senderUDPPortChanged();
     void ignoredChanged();
 
 private:
@@ -58,6 +64,7 @@ private:
     QString   m_uavType;
     int       m_sysID = -1;
     int       m_compID = -1;
+    int       m_senderUDPPort = -1;
     bool      m_ignored = false;
 };
 

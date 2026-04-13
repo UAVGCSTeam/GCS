@@ -260,9 +260,9 @@ public:
     // unknowndronelist
     QVariantList unknownDrones() const { return m_unknownDronesVariant; }
     Q_INVOKABLE void loadUnknownDrones();
-    Q_INVOKABLE void setUnknownDroneIgnored(const QString &uid, bool ignored);
-    Q_INVOKABLE void acceptUnknownDrone(const QString &uid);
-    Q_INVOKABLE void removeUnknownDrones(const QString &uid);
+    Q_INVOKABLE void setUnknownDroneIgnored(uint8_t sysID, bool ignored);
+    Q_INVOKABLE void acceptUnknownDrone(const QString &uavType, uint8_t sysID, uint8_t compID, uint16_t senderUDPPort);
+    Q_INVOKABLE void removeUnknownDrones(uint8_t sysID);
     void rebuildUnknownVariant();
 
 
@@ -296,6 +296,12 @@ public slots:
                                const uint16_t senderUDPPort,
                                const QObject *parent);
 
+    void addUnknownDrone(const QString &uid,
+                        const QString &fc,
+                        const QString &uavType,
+                        const uint8_t &sysID,
+                        const uint8_t &compID,
+                        const uint16_t &senderUDPPort);
 
     bool updateDrone(const QSharedPointer<DroneClass> &drone);
     void deleteDrone(const QString &xbeeid);

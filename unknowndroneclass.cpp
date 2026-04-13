@@ -10,6 +10,7 @@ UnknownDroneClass::UnknownDroneClass(const QString &uid,
                                      const QString &uavType,
                                      int sysID,
                                      int compID,
+                                     int senderUDPPort,
                                      bool ignored,
                                      QObject *parent)
     : QObject(parent)
@@ -18,6 +19,7 @@ UnknownDroneClass::UnknownDroneClass(const QString &uid,
     , m_uavType(uavType)
     , m_sysID(sysID)
     , m_compID(compID)
+    , m_senderUDPPort(senderUDPPort)
     , m_ignored(ignored)
 {
 }
@@ -55,6 +57,13 @@ void UnknownDroneClass::setCompID(int compID)
     if (m_compID == compID) return;
     m_compID = compID;
     emit compIDChanged();
+}
+
+void UnknownDroneClass::setSenderUDPPort(int senderUDPPort)
+{
+    if (m_senderUDPPort == senderUDPPort) return;
+    m_senderUDPPort = senderUDPPort;
+    emit senderUDPPortChanged();
 }
 
 void UnknownDroneClass::setIgnored(bool ignored)
