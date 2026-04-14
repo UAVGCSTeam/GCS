@@ -72,6 +72,9 @@ int main(int argc, char *argv[])
     QObject::connect(&missionManager, &MissionManager::navigateToNext,
                      &droneController, &DroneController::sendToCoordByUavID);
 
+    // Expose logger to QML
+    engine.rootContext()->setContextProperty("logger", Logger::instance());
+
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*
      * main.qml is our entry point for all of our UI/GUI resources.

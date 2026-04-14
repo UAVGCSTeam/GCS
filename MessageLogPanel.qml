@@ -21,11 +21,11 @@ Item {
 
     function typeColor(type) {
         switch (type){
-            case "debug":   return "green";
-            case "info":    return "white";
-            case "warning": return "yellow";
-            case "critical":return "red";
-            case "fatal":   return "pink";
+            case "Debug":   return "green";
+            case "Info":    return "white";
+            case "Warning": return "yellow";
+            case "Critical":return "red";
+            case "Fatal":   return "pink";
         }
     }
 
@@ -63,11 +63,11 @@ Item {
                     anchors.fill: parent
                     cursorShape: Qt.SizeVerCursor
                     preventStealing: true
-                    onPressed: {
+                    onPressed: function(mouse) {
                         _resizeStartY = resizeHandle.mapToGlobal(mouse.x, mouse.y).y
                         _resizeStartFraction = heightFraction
                     }
-                    onPositionChanged: {
+                    onPositionChanged: function(mouse) {
                         if (pressed && droneStatusPanel) {
                             var currentGlobalY = resizeHandle.mapToGlobal(mouse.x, mouse.y).y
                             var deltaY = _resizeStartY - currentGlobalY
@@ -97,7 +97,6 @@ Item {
                 id: messageLog
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-
                 spacing: 4
                 clip: true
 
@@ -109,8 +108,7 @@ Item {
 
                     delegate: Row {
                         id: textLine
-                        width: parent.width
-
+                        width: ListView.view ? ListView.view.width : 0
                         spacing: 8
 
                         Text {

@@ -136,6 +136,13 @@ Window {
             right: droneTrackingPanel.right
         }
         z: 1000
+
+        Connections {
+            target: logger
+            function onLogReceived(type, message) {
+                messageLogPanel.appendLog(type, message)
+            }
+        }
     }
 
     Binding {

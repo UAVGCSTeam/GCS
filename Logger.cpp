@@ -4,6 +4,17 @@
 QFile*  Logger::logFile = nullptr;
 QMutex  Logger::mutex;
 QString Logger::logs;
+Logger* Logger::s_instance = nullptr;
+
+Logger* Logger::instance() {
+    if (!s_instance) s_instance = new Logger();
+    return s_instance;
+}
+
+Logger::Logger(QObject *parent)
+    : QObject(parent)
+{
+}
 
 void Logger::init()
 {
@@ -48,6 +59,18 @@ void Logger::close()
 
 }
 
+QString Logger::typeToString(QtMsgType type) {
+    switch(type) {
+        case QtDebugMsg: return "Debug";
+        case QtInfoMsg: return "Info";
+        case QtWarningMsg: return "Warning";
+        case QtCriticalMsg: return "Critical";
+        case QtFatalMsg: return "Fatal";
+        default: return "Unknown";
+    }
+    return "Info";
+}
+
 void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     //get message timestamp
@@ -80,6 +103,21 @@ void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const Q
 
     //pass entry to log str
     logs += entry;
+
+    Logger* instance = Logger::instance();
+    const QString typeStr = typeToString(type);
+
+    QMetaObject::invokeMethod(
+        instance,
+        "forwardLog",
+        Qt::QueuedConnection,
+        Q_ARG(QString, typeStr),
+        Q_ARG(QString, msg)
+    );
+}
+
+void Logger::forwardLog(const QString &type, const QString &message) {
+    emit logReceived(type, message);
 }
 
 QString Logger::devBuildRoot()
