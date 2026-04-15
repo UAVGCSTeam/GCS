@@ -161,6 +161,7 @@ Rectangle {
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.bottomMargin: overlayBottomHeight
             spacing: 0
 
             // Header
