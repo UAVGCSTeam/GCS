@@ -17,10 +17,18 @@ Item {
     property real _resizeStartY: 0
     property real _resizeStartFraction: 0.25
 
+    //Dark or light mode theme 
+    property string currentTheme: settingsManager ? settingsManager.currentTheme : "dark"
+    readonly property bool isLightTheme: currentTheme === "light"
+    property string textColor: isLightTheme ? "black" : "white"
+
+    //All the text logs 
     ListModel { id:logModel }
 
+    //Texts log with the filter applied
     ListModel { id: filterLogModel }
 
+    //Used in checkboxes to determine whether checked or not
     ListModel {
         id: filterStateModel
         ListElement {key: "debug"; name: "Debug"; checked: true}
@@ -30,6 +38,7 @@ Item {
         ListElement {key: "fatal";name: "Fatal";checked: true}
     }
 
+    //Returns checked state if the log type and checkbox type are the same
     function isTypeEnabled(type) {
         for (let i = 0; i < filterStateModel.count; i++){
             let filterItem = filterStateModel.get(i)
@@ -39,6 +48,7 @@ Item {
         return false
     }
 
+    //Updates the filtered log based on changes from checkbox
     function updateFilter(){
         filterLogModel.clear()
 
@@ -51,7 +61,7 @@ Item {
         }
     }
     
-
+    //Returns a certain color based on the type of message
     function typeColor(type) {
         switch (type){
             case "debug":   return "green";
@@ -62,11 +72,13 @@ Item {
         }
     }
 
+    //Adds the message to the text log
     function appendLog(type, message){
         logModel.append({type: type, message: message})
         updateFilter()
     }
 
+    //Message log console
     Rectangle {
         anchors.fill: parent
         color: GcsStyle.panelStyle.primaryColor
@@ -115,23 +127,26 @@ Item {
             RowLayout {
                 Layout.margins: 5
 
-            Label {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
-                text: "Message Log"
-                color: "white"
-                font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
-                font.family: GcsStyle.PanelStyle.fontFamily
-            }
+                //Message Log title 
+                Label {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                    text: "Message Log"
+                    color: textColor
+                    font.pixelSize: GcsStyle.PanelStyle.fontSizeMedium
+                    font.family: GcsStyle.PanelStyle.fontFamily
+                }
+                //Filter button to access checkboxes
                 Button {
                     background: Image{
-                        source: "qrc:/resources/warning.png"
+                        source: isLightTheme ? "qrc:/resources/filterIcon_light.svg" : "qrc:/resources/filterIcon_dark.svg"
                         sourceSize.width:  GcsStyle.PanelStyle.statusIconSize
                         sourceSize.height: GcsStyle.PanelStyle.statusIconSize
                     }
 
                     onPressed: filterDropdown.visible = !filterDropdown.visible
 
+                    //Creates a popup with the different filtered checkboxes
                     Popup {
                         id: filterDropdown
                         width: 100
@@ -148,12 +163,13 @@ Item {
                             border.width: GcsStyle.PanelStyle.defaultBorderWidth
                         }
 
+                        //Uses repeater and the filterStateModel to create checkboxes
                         ColumnLayout {
                             anchors.fill: parent
                             spacing: 8
 
                             Repeater {
-                                model: filterStateModel
+                                model: filterStateModel //Links the checboxes to the filterStateModel 
 
                                 CheckBox {
                                     id: checkBox
@@ -166,7 +182,7 @@ Item {
 
                                     contentItem: Text {
                                         text: model.name
-                                        color: "white"
+                                        color: textColor
                                         verticalAlignment: Text.AlignVCenter
                                         leftPadding: checkBox.indicator.width
                                     }
@@ -186,6 +202,7 @@ Item {
                                         }
                                     }
 
+                                    //Updates checked property for filterStateModel
                                     onCheckedChanged: {
                                         filterStateModel.setProperty(index,"checked",checked)
                                         updateFilter()
@@ -198,6 +215,7 @@ Item {
                 }
             }
 
+            //Scrollable text area
             ScrollView {
                 id: messageLog
                 Layout.fillWidth: true
@@ -209,6 +227,7 @@ Item {
                 ScrollBar.vertical.interactive: true
                 ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
+                //Texts messages appears in here with custom ([Type] Message) layout
                 ListView {
                     model: filterLogModel
                     width: parent.width
@@ -219,6 +238,7 @@ Item {
 
                         spacing: 8
 
+                        //Type message
                         Text {
                             id: info
                             leftPadding: 5
@@ -229,24 +249,26 @@ Item {
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             font.family: GcsStyle.PanelStyle.fontFamily
                         }
+                        //Actual message 
                         Text {
                             rightPadding: 10
-                            width: textLine.width - info.width - textLine.spacing
+                            width: textLine.width - info.width - textLine.spacing //Allows the text message to be spaced properly
                             wrapMode: Text.WordWrap
 
                             text: " " + message
-                            color: "white"
+                            color: textColor
                             font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
                             font.family: GcsStyle.PanelStyle.fontFamily
                         }
                 }
-
+                    //Autoscrolling based on whether it is toggeled or not
                     onContentHeightChanged: {
                         if (settingsManager && settingsManager.logAutoScroll) { positionViewAtEnd() }
                     }
                 }
             }
 
+            //test button
             Button {
                 text: "add text"
                 height: 50
