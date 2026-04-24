@@ -26,6 +26,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         main.cpp
         MapController.h MapController.cpp
         Overlays.h Overlays.cpp
+        NoFlyZoneGeometryEngine.h NoFlyZoneGeometryEngine.cpp
         FileHandler.h FileHandler.cpp
         backend/dbmanager.h backend/dbmanager.cpp
         DroneClass.h DroneClass.cpp
