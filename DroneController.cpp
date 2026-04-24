@@ -324,7 +324,8 @@ void DroneController::addUnknownDrone(const QString &uid,
                                        const QString &uavType,
                                        const uint8_t &sysID,
                                        const uint8_t &compID,
-                                       const uint16_t &senderUDPPort)
+                                       const uint16_t &senderUDPPort,
+                                       bool ignored)
 {
     auto unknownDrone = QSharedPointer<UnknownDroneClass>::create(
         uid,
@@ -333,7 +334,7 @@ void DroneController::addUnknownDrone(const QString &uid,
         sysID,
         compID,
         senderUDPPort,
-        false, // default to not ignored
+        ignored,
         nullptr
     );
     unknownDroneList.append(unknownDrone);
@@ -544,7 +545,18 @@ QSharedPointer<DroneClass> DroneController::getDroneByXbeeAddress(const QString 
     return QSharedPointer<DroneClass>(); // Return null pointer if not found
 }
 
-
+// finding unknown drone by sysID
+QSharedPointer<UnknownDroneClass> DroneController::getUnknownDroneBySysID(const uint8_t &sysID) 
+{
+    for (const auto &unknownDrone : unknownDroneList) 
+    {
+        if (unknownDrone->getSysID() == sysID) 
+        {
+            return unknownDrone;
+        }
+    }
+    return QSharedPointer<UnknownDroneClass>(); // returns null pointer if not found
+}
 
 // Gets drones, but is used to REBUILD the drone list; so it refreshes and keeps the drone list up to date
 QVariantList DroneController::getDrones() const
