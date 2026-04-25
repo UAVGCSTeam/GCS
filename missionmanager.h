@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QMap>
+#include <QSet>
 #include <QVariantList>
 #include <QStringList>
 #include "uavmission.h"
@@ -51,11 +52,9 @@ signals:
     void navigateToNext(const QString uavID, float lat, float lon);
 
 private:
-    QMap<QString, UAVMission*> m_missions;   // xbeeAddress -> active mission
+    QMap<QString, UAVMission*> m_missions;      // xbeeAddress -> active mission
     int                        m_numMissions;
-
-    bool    m_guidedActive = false;  // true when a mission is actively executing
-    QString m_guidedUavID;           // xbeeAddress of the drone currently being guided
+    QSet<QString>              m_activeMissions; // xbeeAddresses of drones currently being guided
 };
 
 #endif // MISSIONMANAGER_H
