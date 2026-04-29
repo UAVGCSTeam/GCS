@@ -51,6 +51,8 @@
         <file>guidedModeIcon.svg</file>
         <file>takeoffIcon.svg</file>
         <file>returnHomeIcon.svg</file>
+        <file>filterIcon_dark.svg</file>
+        <file>filterIcon_light.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>
