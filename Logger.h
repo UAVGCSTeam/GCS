@@ -31,6 +31,7 @@ class Logger : public QObject
         static QMutex mutex;
         static QFile* logFile;
         static QString logs;
+        static QtMessageHandler previousHandler;
         static Logger* s_instance;
 
         static QString devBuildRoot();

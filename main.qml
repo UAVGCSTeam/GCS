@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Window 2.15
 import QtQuick.Controls
+import QtQuick.Layouts 1.15
 import Qt.labs.platform
 import "./components" as Components
 import "qrc:/gcsStyle" as GcsStyle
@@ -18,39 +19,6 @@ Window {
     title: qsTr("GCS - Cal Poly Pomona")
     property var selectedDrones: [] // a list of DroneClass objects --- QML doesn't allow list<DroneClass>
     property var activeDrone: null // DroneClass type
-
-    // These are our components that sit on top of our Window object
-    QmlMap {
-        id: mapComponent
-        anchors.fill: parent
-        activeDrone: mainWindow.activeDrone
-        selectedDrones: mainWindow.selectedDrones // Not yet implemented. But will be like this
-        onZoomScaleChanged: function(coord1, coord2, pixelLength) {  
-            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
-        }
-        onMapInitialized: function(coord1, coord2, pixelLength) {  
-            mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
-        }
-    }
-
-    MapScaleBarIndicator {
-        id: mapScaleBar
-        anchors {
-            bottom: parent.bottom
-            left: mapTypeButton.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-    }
-
-    MapDisplayTypeButton {
-        id: mapTypeButton
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-            leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
-            bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
-        }
-    }
 
     // Menu bar above the drone tracking panel
     DroneMenuBar {
@@ -73,93 +41,147 @@ Window {
         }
     }
 
-    DroneCommandPanel {
-        id: droneCommandPanel
-        waypointManager: mapComponent.waypointManagerRef
-        activeDrone: mainWindow.activeDrone
-        anchors {
-            top: droneMenuBar.bottom
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        visible: false
-        allowAutoShow: droneTrackingPanel.activePanel === "drones"
-
-        Connections {
-            target: droneTrackingPanel
-            function onActivePanelChanged() {
-                if (droneTrackingPanel.activePanel !== "drones")
-                    droneCommandPanel.visible = false
-            }
-        }
-    }
-
-    MissionPlanPanel {
-        id: missionPlanPanel
-        activeDrone: mainWindow.activeDrone
-        visible: droneTrackingPanel.activePanel === "mission"
-        anchors {
-            top: droneMenuBar.bottom
-            right: parent.right
-            bottom: parent.bottom
-        }
-    }
-
-    DroneTrackingPanel {
-        id: droneTrackingPanel
+    Item {
+        id: contentArea
         anchors {
             top: droneMenuBar.bottom
             left: parent.left
-            bottom: parent.bottom         
-            // margins: GcsStyle.PanelStyle.applicationBorderMargin
+            right: parent.right
+            bottom: parent.bottom
         }
-        
-        onSelectionChanged: function(selected) { updateActiveDrone(selected) }
-        onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
-        onFollowRequested: function(drone) {
-            if (!drone) {
-                console.warn("Follow requested without a drone reference")
-                return
+
+        RowLayout {
+            anchors.fill: parent
+            spacing: 0
+
+            Item {
+                id: leftPanelColumn
+                Layout.preferredWidth: 350
+                Layout.minimumWidth: 350
+                Layout.fillHeight: true
+
+                DroneTrackingPanel {
+                    id: droneTrackingPanel
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                        bottom: messageLogPanel.top
+                    }
+
+                    onSelectionChanged: function(selected) { updateActiveDrone(selected) }
+                    onActiveDroneChanged: function(activeDrone) { mainWindow.activeDrone = activeDrone }
+                    onFollowRequested: function(drone) {
+                        if (!drone) {
+                            console.warn("Follow requested without a drone reference")
+                            return
+                        }
+                        mapComponent.turnOffFollowDrone()
+                        mapComponent.turnOnFollowDrone()
+                    }
+                }
+
+                MessageLogPanel {
+                    id: messageLogPanel
+                    droneStatusPanel: leftPanelColumn
+                    anchors {
+                        left: leftPanelColumn.left
+                        right: leftPanelColumn.right
+                        bottom: leftPanelColumn.bottom
+                    }
+                    z: 100
+                }
+
+                Connections {
+                    target: logger
+                    function onLogReceived(type, message) {
+                        messageLogPanel.appendLog(type, message)
+                    }
+                }
             }
-            mapComponent.turnOffFollowDrone()
-            mapComponent.turnOnFollowDrone()
-        }
-    }
 
-    MessageLogPanel {
-        id: messageLogPanel
-        droneStatusPanel: droneTrackingPanel
-        anchors {
-            bottom: droneTrackingPanel.bottom
-            left: droneTrackingPanel.left
-            leftMargin: 65  // Keep to the right of the left sidebar
-            right: droneTrackingPanel.right
-        }
-        z: 1000
+            Item {
+                id: mapArea
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-        Connections {
-            target: logger
-            function onLogReceived(type, message) {
-                messageLogPanel.appendLog(type, message)
+                QmlMap {
+                    id: mapComponent
+                    anchors.fill: parent
+                    activeDrone: mainWindow.activeDrone
+                    selectedDrones: mainWindow.selectedDrones // Not yet implemented. But will be like this
+                    onZoomScaleChanged: function(coord1, coord2, pixelLength) {
+                        mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+                    }
+                    onMapInitialized: function(coord1, coord2, pixelLength) {
+                        mapScaleBar.updateScaleBar(coord1, coord2, pixelLength)
+                    }
+                }
+
+                MapScaleBarIndicator {
+                    id: mapScaleBar
+                    anchors {
+                        bottom: parent.bottom
+                        left: mapTypeButton.right
+                        margins: GcsStyle.PanelStyle.applicationBorderMargin
+                    }
+                }
+
+                MapDisplayTypeButton {
+                    id: mapTypeButton
+                    anchors {
+                        bottom: parent.bottom
+                        left: parent.left
+                        leftMargin: GcsStyle.PanelStyle.applicationBorderMargin
+                        bottomMargin: GcsStyle.PanelStyle.applicationBorderMarginBottom
+                    }
+                }
+
+                DroneCommandPanel {
+                    id: droneCommandPanel
+                    waypointManager: mapComponent.waypointManagerRef
+                    activeDrone: mainWindow.activeDrone
+                    anchors {
+                        top: parent.top
+                        right: parent.right
+                        margins: GcsStyle.PanelStyle.applicationBorderMargin
+                    }
+                    visible: false
+                    allowAutoShow: droneTrackingPanel.activePanel === "drones"
+
+                    Connections {
+                        target: droneTrackingPanel
+                        function onActivePanelChanged() {
+                            if (droneTrackingPanel.activePanel !== "drones")
+                                droneCommandPanel.visible = false
+                        }
+                    }
+                }
+
+                MissionPlanPanel {
+                    id: missionPlanPanel
+                    activeDrone: mainWindow.activeDrone
+                    visible: droneTrackingPanel.activePanel === "mission"
+                    anchors {
+                        top: parent.top
+                        right: parent.right
+                        bottom: parent.bottom
+                    }
+                }
+
+                TrackingPanelQuickCommands {
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        topMargin: 8
+                        leftMargin: 8
+                    }
+                    visible: droneTrackingPanel.activePanel === "drones"
+                    commandDrone: mainWindow.activeDrone
+                    z: 200
+                }
             }
         }
-    }
-
-    Binding {
-        target: droneTrackingPanel
-        property: "overlayBottomHeight"
-        value: messageLogPanel.height
-    }
-
-    TrackingPanelQuickCommands {
-        anchors {
-            top: droneTrackingPanel.top
-            left: droneTrackingPanel.right
-            leftMargin: 8
-        }
-        visible: droneTrackingPanel.activePanel === "drones"
-        commandDrone: mainWindow.activeDrone
-        z: 10
     }
 
     // Shortcut for toggling follow functionality (cmd + f or ctrl + f)

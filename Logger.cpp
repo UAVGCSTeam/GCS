@@ -1,9 +1,12 @@
 #include "Logger.h"
+#include <cstdio>
+#include <cstdlib>
 
 //define static variables
 QFile*  Logger::logFile = nullptr;
 QMutex  Logger::mutex;
 QString Logger::logs;
+QtMessageHandler Logger::previousHandler = nullptr;
 Logger* Logger::s_instance = nullptr;
 
 Logger* Logger::instance() {
@@ -34,7 +37,7 @@ void Logger::init()
         return;
     }
 
-    qInstallMessageHandler(newEntry);
+    previousHandler = qInstallMessageHandler(newEntry);
 }
 
 void Logger::close()
@@ -47,7 +50,8 @@ void Logger::close()
     out.flush();
 
     //clear message handler
-    qInstallMessageHandler(0);
+    qInstallMessageHandler(previousHandler);
+    previousHandler = nullptr;
 
     //close file
     logFile->flush();
@@ -114,6 +118,19 @@ void Logger::newEntry(QtMsgType type, const QMessageLogContext &context, const Q
         Q_ARG(QString, typeStr),
         Q_ARG(QString, msg)
     );
+
+    // Preserve the normal Qt terminal output behavior.
+    if (previousHandler) {
+        previousHandler(type, context, msg);
+    } else {
+        const QString formatted = qFormatLogMessage(type, context, msg);
+        std::fprintf(stderr, "%s\n", formatted.toLocal8Bit().constData());
+        std::fflush(stderr);
+
+        if (type == QtFatalMsg) {
+            std::abort();
+        }
+    }
 }
 
 void Logger::forwardLog(const QString &type, const QString &message) {
