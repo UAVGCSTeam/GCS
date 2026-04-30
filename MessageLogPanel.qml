@@ -11,7 +11,7 @@ Item {
     height: droneStatusPanel ? droneStatusPanel.height * heightFraction : 180
 
     property var droneStatusPanel: null
-    property real heightFraction: 0.25  // Default: bottom 1/4 of drone panel
+    property real heightFraction: 0.40  // Default: bottom 1/4 of drone panel
     property real heightFractionMin: 0.1
     property real heightFractionMax: 0.75
     property real _resizeStartY: 0
@@ -21,6 +21,7 @@ Item {
     property string currentTheme: settingsManager ? settingsManager.currentTheme : "dark"
     readonly property bool isLightTheme: currentTheme === "light"
     property string textColor: isLightTheme ? "black" : "white"
+    property real autoScrollThreshold: 24
 
     //All the text logs 
     ListModel { id:logModel }
@@ -60,6 +61,12 @@ Item {
             }
         }
     }
+
+    function isNearBottom() {
+        if (!logListView)
+            return true
+        return (logListView.contentY + logListView.height) >= (logListView.contentHeight - autoScrollThreshold)
+    }
     
     //Returns a certain color based on the type of message
     function typeColor(type) {
@@ -74,15 +81,32 @@ Item {
 
     //Adds the message to the text log
     function appendLog(type, message){
-        logModel.append({type: type.toLowerCase(), message: message})
-        updateFilter()
+        const shouldStayAtBottom = settingsManager
+                && settingsManager.logAutoScroll
+                && (isNearBottom() || (logListView && logListView.followTail))
+        const normalizedType = type.toLowerCase()
+
+        logModel.append({type: normalizedType, message: message})
+
+        if (isTypeEnabled(normalizedType)) {
+            filterLogModel.append({type: normalizedType, message: message})
+        }
+
+        if (shouldStayAtBottom && logListView) {
+            logListView.followTail = true
+            logListView.positionViewAtEnd()
+            Qt.callLater(function() {
+                if (logListView)
+                    logListView.positionViewAtEnd()
+            })
+        }
     }
 
     //Message log console
     Rectangle {
         anchors.fill: parent
         color: GcsStyle.panelStyle.primaryColor
-        radius: GcsStyle.panelStyle.cornerRadius - 5
+        // radius: GcsStyle.panelStyle.cornerRadius - 5
 
         ColumnLayout {
             anchors.fill: parent
@@ -101,7 +125,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: 40
                     height: 4
-                    radius: 2
+                    // radius: 2
                     color: Qt.rgba(1, 1, 1, 0.5)
                 }
 
@@ -190,7 +214,7 @@ Item {
                                     indicator: Rectangle {
                                         implicitWidth: 20
                                         implicitHeight: 20
-                                        radius: 4
+                                        // radius: 4
                                         border.width: 2
                                         border.color: checkBox.checked ? "green" : "gray"
                                         color: checkBox.checked ? "lightgreen" : "transparent"
@@ -216,62 +240,96 @@ Item {
             }
 
             //Scrollable text area
-            ScrollView {
-                id: messageLog
+            ListView {
+                id: logListView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 4
                 clip: true
+                property bool didInitialScrollToBottom: false
+                property int initialScrollAttempts: 0
+                property bool followTail: true
 
-                ScrollBar.vertical.interactive: true
-                ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+                boundsBehavior: Flickable.StopAtBounds
+                ScrollBar.vertical: ScrollBar {
+                    interactive: true
+                    policy: ScrollBar.AlwaysOn
+                }
 
                 //Texts messages appears in here with custom ([Type] Message) layout
-                ListView {
-                    model: filterLogModel
-                    width: parent.width
+                model: filterLogModel
+                width: parent.width
 
-                    delegate: Row {
-                        id: textLine
-                        width: ListView.view ? ListView.view.width : 0
-                        spacing: 8
+                function forceInitialBottomIfNeeded() {
+                    if (didInitialScrollToBottom || count <= 0)
+                        return
 
-                        //Type message
-                        Text {
-                            id: info
-                            leftPadding: 5
-                            width: 50
+                    // Keep trying briefly while delegates and wrapped text settle.
+                    positionViewAtEnd()
+                    initialScrollAttempts += 1
 
-                            text: "[" + type + "]"
-                            color: typeColor(type)
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                            font.family: GcsStyle.PanelStyle.fontFamily
-                        }
-                        //Actual message 
-                        Text {
-                            rightPadding: 10
-                            width: textLine.width - info.width - textLine.spacing //Allows the text message to be spaced properly
-                            wrapMode: Text.WordWrap
-
-                            text: " " + message
-                            color: textColor
-                            font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
-                            font.family: GcsStyle.PanelStyle.fontFamily
-                        }
+                    if (isNearBottom() || initialScrollAttempts >= 20) {
+                        didInitialScrollToBottom = true
+                        initialBottomTimer.stop()
+                    } else if (!initialBottomTimer.running) {
+                        initialBottomTimer.start()
+                    }
                 }
-                    //Autoscrolling based on whether it is toggeled or not
-                    onContentHeightChanged: {
-                        if (settingsManager && settingsManager.logAutoScroll) { positionViewAtEnd() }
+
+                onCountChanged: {
+                    forceInitialBottomIfNeeded()
+                }
+                onContentHeightChanged: {
+                    forceInitialBottomIfNeeded()
+                    if (settingsManager && settingsManager.logAutoScroll && followTail) {
+                        positionViewAtEnd()
+                    }
+                }
+                onMovementEnded: {
+                    followTail = isNearBottom()
+                }
+                onFlickEnded: {
+                    followTail = isNearBottom()
+                }
+                Component.onCompleted: forceInitialBottomIfNeeded()
+
+                Timer {
+                    id: initialBottomTimer
+                    interval: 16
+                    repeat: true
+                    running: false
+                    onTriggered: logListView.forceInitialBottomIfNeeded()
+                }
+
+                delegate: Row {
+                    id: textLine
+                    width: ListView.view ? ListView.view.width : 0
+                    spacing: 8
+
+                    //Type message
+                    Text {
+                        id: info
+                        leftPadding: 5
+                        width: 50
+
+                        text: "[" + type + "]"
+                        color: typeColor(type)
+                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                        font.family: GcsStyle.PanelStyle.fontFamily
+                    }
+                    //Actual message
+                    Text {
+                        rightPadding: 10
+                        width: textLine.width - info.width - textLine.spacing //Allows the text message to be spaced properly
+                        wrapMode: Text.WordWrap
+
+                        text: " " + message
+                        color: textColor
+                        font.pixelSize: GcsStyle.PanelStyle.fontSizeSmall
+                        font.family: GcsStyle.PanelStyle.fontFamily
                     }
                 }
             }
-
-            // //test button
-            // Button {
-            //     text: "add text"
-            //     height: 50
-            //     onPressed: appendLog("Debug", "this is a debug message to test whether this works or not and also wrapping.")
-            // }
         }
     }
 }
