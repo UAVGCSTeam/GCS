@@ -122,7 +122,7 @@ Rectangle {
                       : "No UAV selected"
         onAccepted: {
             if (root.commandDrone)
-                droneController.sendArm(root.commandDrone.xbeeAddress, true)
+                droneController.sendArm(root.commandDrone.xbeeAddress)
         }
     }
 
@@ -135,7 +135,7 @@ Rectangle {
                       : "No UAV selected"
         onAccepted: {
             if (root.commandDrone)
-                droneController.sendGuidedMode(root.commandDrone.xbeeAddress, true)
+                droneController.sendGuidedMode(root.commandDrone.xbeeAddress)
         }
     }
 
@@ -148,7 +148,7 @@ Rectangle {
                       : "No UAV selected"
         onAccepted: {
             if (root.commandDrone)
-                droneController.sendTakeoffCmd(root.commandDrone.xbeeAddress, true)
+                droneController.sendTakeoffCmd(root.commandDrone.xbeeAddress)
         }
     }
 

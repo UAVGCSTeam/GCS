@@ -684,14 +684,13 @@ bool DroneController::openUART(const QString& port, int baud)
 }
 
 
-bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
+bool DroneController::sendArm(const QString& droneKeyOrAddr)
 {
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
         qWarning() << "sendArm: unknown drone/address:" << droneKeyOrAddr;
         return false;
     }
-    // qDebug() << "Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
 
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
         qWarning() << "MAVLink sender not ready; call openUDP() or openUART() first";
@@ -714,18 +713,11 @@ bool DroneController::sendArm(const QString& droneKeyOrAddr, bool arm)
         0.0f,
         0.0f,
         drone->getUdpPort());
-
-    // qInfo() << "Arm" << (arm ? "ON" : "OFF")
-    //         << "->" << drone->getName() << drone->getXbeeAddress()
-    //         << "sent=" << response;
     return response;
 }
 
 
-bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr, bool takeoff) { 
-    if (!takeoff) {
-        return true;
-    }
+bool DroneController::sendTakeoffCmd(const QString& droneKeyOrAddr) { 
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
         qWarning() << "unknown drone:" << droneKeyOrAddr;
@@ -820,13 +812,12 @@ bool DroneController::sendToCoordByUavID(const QString uavID, float lat, float l
     return response;
 }
 
-bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableGuidedMode) {
+bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr) {
     QSharedPointer<DroneClass> drone = getDroneByXbeeAddress(droneKeyOrAddr);
     if (drone.isNull()) {
         qWarning() << "unknown drone:" << droneKeyOrAddr;
         return false;
     }
-    // qDebug() << "Found drone:" << drone->getName() << "with sysID:" << drone->getSysID() << "and compID:" << drone->getCompID();
 
     if (!mavTx_ || !mavTx_->isLinkOpen()) {
         qWarning() << "MAVLink sender not ready; call openUDP() or openUART() first";
@@ -842,13 +833,9 @@ bool DroneController::sendGuidedMode(const QString& droneKeyOrAddr, bool enableG
         targetCompID,
         MAV_CMD_DO_SET_MODE, 
         MAV_MODE_FLAG_CUSTOM_MODE_ENABLED, // param1
-        4.0f,                               // param2 = GUIDED
+        4.0f,                              // param2 = GUIDED
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f,      // p3..p7
         drone->getUdpPort());
-
-    // qInfo() << "Guided mode enabled" << (takeoff ? "ON" : "OFF")
-    //     << "->" << drone->getName() << drone->getXbeeAddress()
-    //     << "sent=" << response;
     return response;
 }
 
@@ -877,9 +864,10 @@ bool DroneController::requestTelem(QSharedPointer<DroneClass> drone) {
     
     bool response = true;
     for (int cmd : requestDataCommands) {
+        // Send a request for each type of message 
         if (!mavTx_->sendTelemRequest(targetSysID, targetCompID, cmd, drone->getUdpPort())) {
             response = false;
-            qInfo() << "Something went wrong requesting data";
+            qWarning() << "Something went wrong requesting data";
             break;
         }
     }

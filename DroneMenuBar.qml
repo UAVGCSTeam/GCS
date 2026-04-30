@@ -196,7 +196,7 @@ Rectangle {
                     : "NO UAV SELECTED")
         onAccepted: {
             const targetXbeeAddress = activeDrone.xbeeAddress
-            const ok = droneController.sendArm(targetXbeeAddress, true)   // true = arm, false = disarm
+            const ok = droneController.sendArm(targetXbeeAddress)
         }
     }
 
@@ -208,7 +208,7 @@ Rectangle {
                     : "NO UAV SELECTED")
         onAccepted: {
             const targetXbeeAddress = activeDrone.xbeeAddress
-            const ok = droneController.sendTakeoffCmd(targetXbeeAddress, true)   // true = arm, false = disarm
+            const ok = droneController.sendTakeoffCmd(targetXbeeAddress)
         }
     }
 
@@ -220,7 +220,7 @@ Rectangle {
                     : "NO UAV SELECTED")
         onAccepted: {
             const targetXbeeAddress = activeDrone.xbeeAddress
-            const ok = droneController.sendGuidedMode(targetXbeeAddress, true)   // true = arm, false = disarm
+            const ok = droneController.sendGuidedMode(targetXbeeAddress)
         }
     }
 
