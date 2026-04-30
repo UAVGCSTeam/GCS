@@ -73,17 +73,17 @@ Window {
         }
     }
 
-    DroneCommandPanel {
-        id: droneCommandPanel
-        waypointManager: mapComponent.waypointManagerRef
-        activeDrone: mainWindow.activeDrone
-        anchors {
-            top: droneMenuBar.bottom
-            right: parent.right
-            margins: GcsStyle.PanelStyle.applicationBorderMargin
-        }
-        visible: false
-        allowAutoShow: droneTrackingPanel.activePanel === "drones"
+    // DroneCommandPanel {
+    //     id: droneCommandPanel
+    //     waypointManager: mapComponent.waypointManagerRef
+    //     activeDrone: mainWindow.activeDrone
+    //     anchors {
+    //         top: droneMenuBar.bottom
+    //         right: parent.right
+    //         margins: GcsStyle.PanelStyle.applicationBorderMargin
+    //     }
+    //     visible: false
+    //     allowAutoShow: droneTrackingPanel.activePanel === "drones"
 
         Connections {
             target: droneTrackingPanel

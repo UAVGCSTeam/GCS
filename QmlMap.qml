@@ -31,9 +31,7 @@ Item {
     readonly property double zoomLevel: mapview.zoomLevel
 
     property var supportedMapTypes: [
-        { name: "Street", type: Map.StreetMap },
-        { name: "Satellite", type: Map.SatelliteMapDay },
-        { name: "Terrain", type: Map.TerrainMap },
+        { name: "Street", type: Map.StreetMap }
     ]
     property int currentMapTypeIndex: 0
     property bool wayPointingActive: false
@@ -47,6 +45,16 @@ Item {
     Plugin {
         id: mapPlugin
         name: "osm"
+        PluginParameter {
+            // Force tile requests to the official OSM tile endpoint.
+            name: "osm.mapping.custom.host"
+            value: "https://tile.openstreetmap.org/"
+        }
+        PluginParameter {
+            // Prevent provider repository fallbacks that can require third-party API keys.
+            name: "osm.mapping.providersrepository.disabled"
+            value: true
+        }
     }
 
     signal zoomScaleChanged(var coord1, var coord2, var pixelLength) // signal to change the scale bar indicator
@@ -354,8 +362,11 @@ Item {
         }
 
         function onMapTypeChanged(index) {
-            if (index < mapview.supportedMapTypes.length) {
-                mapview.activeMapType = mapview.supportedMapTypes[index]
+            for (let i = 0; i < mapview.supportedMapTypes.length; i++) {
+                if (mapview.supportedMapTypes[i].style === MapType.CustomMap) {
+                    mapview.activeMapType = mapview.supportedMapTypes[i]
+                    return
+                }
             }
         }
         function onZoomLevelChanged(level) {
@@ -368,5 +379,13 @@ Item {
         initialLatitude = initialLatitude
         initialLongitude = initialLongitude
         initialZoomLevel = initialZoomLevel
+
+        // Force the map to use the custom OSM host map type.
+        for (let i = 0; i < mapview.supportedMapTypes.length; i++) {
+            if (mapview.supportedMapTypes[i].style === MapType.CustomMap) {
+                mapview.activeMapType = mapview.supportedMapTypes[i]
+                break
+            }
+        }
     }
 }

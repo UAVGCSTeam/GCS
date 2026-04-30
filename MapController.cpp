@@ -1,5 +1,4 @@
 #include "MapController.h"
-#include "DroneClass.h"
 
 
 /*
@@ -11,7 +10,7 @@
 // Define constructor for MapController class
 MapController::MapController(QObject *parent)
     // Defines all variables within our map
-    : QObject(parent), m_currentMapType(0), m_supportedMapTypesCount(3)
+    : QObject(parent), m_currentMapType(0), m_supportedMapTypesCount(1)
 {
 }
 

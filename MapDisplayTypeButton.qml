@@ -7,14 +7,14 @@ import "qrc:/gcsStyle" as GcsStyle
 Button {
     id: mapTypeButton
 
-    property var mapTypes: ["Street", "Satellite", "Terrain"]
+    property var mapTypes: ["Street"]
     property int currentTypeIndex: 0
 
     text: "Map Type: " + mapTypes[currentTypeIndex]
 
     onClicked: {
-        // Call our mapController.cpp logic
-        currentTypeIndex = (currentTypeIndex + 1) % mapTypes.length
+        // Single supported map type (OpenStreetMap Street), keep index pinned to 0.
+        currentTypeIndex = 0
         mapController.changeMapType(currentTypeIndex)
     }
 
