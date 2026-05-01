@@ -110,7 +110,7 @@ bool MissionManager::addWaypoint(DroneClass* drone, double lat, double lon)
 
     // Only navigate if guided is active and this is the first target (origin + 1).
     // Additional waypoints just queue up — the drone gets to them after each prune.
-    if (m_guidedActive && m_guidedUavID == id && mission->getNumWaypoints() == 2) {
+    if (m_activeMissions.contains(id) && mission->getNumWaypoints() == 2) {
         emit navigateToNext(id, static_cast<float>(lat), static_cast<float>(lon));
     }
     return true;
@@ -136,7 +136,7 @@ bool MissionManager::pruneFirstWaypoint(const QString& uavID)
     emit waypointsChanged(uavID);
 
     // After pruning, send the drone to the new next target if guided is active
-    if (m_guidedActive && m_guidedUavID == uavID) {
+    if (m_activeMissions.contains(uavID)) {
         const QList<Waypoint>& wps = mission->getWaypoints();
         if (wps.size() >= 2) {
             emit navigateToNext(uavID, static_cast<float>(wps[1].latitude), static_cast<float>(wps[1].longitude));
@@ -153,8 +153,7 @@ void MissionManager::startMission(const QString& uavID)
         return;
     }
 
-    m_guidedActive = true;
-    m_guidedUavID  = uavID;
+    m_activeMissions.insert(uavID);
 
     const QList<Waypoint>& wps = mission->getWaypoints();
     if (wps.size() >= 2) {
@@ -168,8 +167,7 @@ void MissionManager::startMission(const QString& uavID)
 void MissionManager::stopMission(const QString& uavID)
 {
     qDebug() << "[MissionManager] Mission stopped for" << uavID;
-    m_guidedActive = false;
-    m_guidedUavID.clear();
+    m_activeMissions.remove(uavID);
 }
 
 bool MissionManager::removeMission(const QString& uavID)
@@ -180,6 +178,7 @@ bool MissionManager::removeMission(const QString& uavID)
 
     QString name = mission->getUAV() ? mission->getUAV()->getName() : uavID;
     float runtime = mission->getRuntime();
+    m_activeMissions.remove(uavID);
     m_missions.remove(uavID);
     delete mission;
     m_numMissions--;

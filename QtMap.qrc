@@ -23,6 +23,7 @@
         <file>components/UniversalPopup.qml</file>
         <file>DroneCommandPanel.qml</file>
         <file>settingsWindow.qml</file>
+        <file>MessageLogPanel.qml</file>
         <file>MissionPlanPanel.qml</file>
         <file>TrackingPanelQuickCommands.qml</file>
         <file>components/ToastNotification.qml</file>
@@ -50,6 +51,8 @@
         <file>guidedModeIcon.svg</file>
         <file>takeoffIcon.svg</file>
         <file>returnHomeIcon.svg</file>
+        <file>filterIcon_dark.svg</file>
+        <file>filterIcon_light.svg</file>
     </qresource>
     <qresource prefix="/gcsStyle">
         <file>panelStyle.qml</file>

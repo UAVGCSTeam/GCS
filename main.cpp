@@ -10,12 +10,21 @@
 #include "backend/dbmanager.h"
 #include "DroneController.h"
 #include "SettingsManager.h"
+#include "Logger.h"
 #include "missionmanager.h"
 
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    //create logger
+    Logger::init();
+
+    //tell logger to quit when QAbout to quit
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, []() {
+        Logger::close();
+    });
 
     // Force a non-native style so customization is supported
     QQuickStyle::setStyle("Basic");
@@ -24,7 +33,6 @@ int main(int argc, char *argv[])
      * We want to use QQmlApplicationEngine as it provides more resources for our use case
      * https://doc.qt.io/qt-6/qqmlapplicationengine.html
      */
-
 
     // If the database doesn't exist, it will create the database. The following code intializes the drones Table.
     DBManager gcs_db_manager;
@@ -68,6 +76,9 @@ int main(int argc, char *argv[])
 
     QObject::connect(&missionManager, &MissionManager::navigateToNext,
                      &droneController, &DroneController::sendToCoordByUavID);
+
+    // Expose logger to QML
+    engine.rootContext()->setContextProperty("logger", Logger::instance());
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     /*

@@ -151,6 +151,31 @@ Window {
         }
     }
 
+    MessageLogPanel {
+        id: messageLogPanel
+        droneStatusPanel: droneTrackingPanel
+        anchors {
+            bottom: droneTrackingPanel.bottom
+            left: droneTrackingPanel.left
+            leftMargin: 65  // Keep to the right of the left sidebar
+            right: droneTrackingPanel.right
+        }
+        z: 1000
+
+        Connections {
+            target: logger
+            function onLogReceived(type, message) {
+                messageLogPanel.appendLog(type, message)
+            }
+        }
+    }
+
+    Binding {
+        target: droneTrackingPanel
+        property: "overlayBottomHeight"
+        value: messageLogPanel.height
+    }
+
     TrackingPanelQuickCommands {
         anchors {
             top: droneTrackingPanel.top

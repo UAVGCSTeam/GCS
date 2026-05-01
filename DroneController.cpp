@@ -1006,7 +1006,7 @@ void DroneController::onMavlinkMessage(const RxMavlinkMsg& m, uint16_t senderUDP
         break;
     }
     default:
-        qInfo() << "Unexpected MAVLink message type: " << msg.msgid;
+        // qInfo() << "Unexpected MAVLink message type: " << msg.msgid;
         break;
     }
 }

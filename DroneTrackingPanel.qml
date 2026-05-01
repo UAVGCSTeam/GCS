@@ -158,9 +158,11 @@ Rectangle {
             }
         }
 
+        // Right view (bottom padding reserves space for log panel overlay so list scrolls)
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.bottomMargin: overlayBottomHeight
             spacing: 0
 
             // Header
